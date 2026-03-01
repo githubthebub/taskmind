@@ -171,7 +171,12 @@ def fetch_videos_rss(channel_id: str, max_results: int) -> list[dict]:
     entry by scraping the video's oEmbed endpoint for extra metadata.
     """
     url = f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"
-    resp = SESSION.get(url, timeout=15)
+    try:
+        resp = SESSION.get(url, timeout=15)
+    except requests.RequestException as e:
+        print(f"❌ Could not reach YouTube RSS feed: {e.__class__.__name__}")
+        print("   Make sure you have internet access to youtube.com")
+        sys.exit(1)
     if not resp.ok:
         print(f"❌ RSS feed request failed (HTTP {resp.status_code})")
         sys.exit(1)
@@ -565,11 +570,25 @@ def build_report(
 # ─────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(
-        description="📡 YouTube Radar — Channel Intelligence Report Generator"
+        description="📡 YouTube Radar — Channel Intelligence Report Generator",
+        epilog="Examples:\n"
+               "  %(prog)s @KamikazeCash\n"
+               "  %(prog)s https://www.youtube.com/@mkbhd\n"
+               "  %(prog)s --channel-id UCcmZHsuUt_DOzcgIcLd0Qnw\n"
+               "  YOUTUBE_API_KEY=xxx %(prog)s @mkbhd   # richer stats via API",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "channel",
-        help="YouTube channel name, @handle, or URL",
+        "channel", nargs="?", default=None,
+        help="YouTube channel name, @handle, or URL (e.g. '@mkbhd')",
+    )
+    parser.add_argument(
+        "--channel-id",
+        help="YouTube channel ID directly (e.g. 'UCcmZHsuUt_DOzcgIcLd0Qnw') — skips resolve step",
+    )
+    parser.add_argument(
+        "--channel-name",
+        help="Channel display name (used with --channel-id if RSS title lookup fails)",
     )
     parser.add_argument("-o", "--output", help="Output file path (default: <channel>_radar.md)")
     parser.add_argument(
@@ -578,14 +597,23 @@ def main():
     )
     args = parser.parse_args()
 
+    if not args.channel and not args.channel_id:
+        parser.print_help()
+        sys.exit(1)
+
     api_key = os.environ.get(API_KEY_ENV)
 
     print("📡 YouTube Radar starting up…\n")
 
     # ── Resolve channel ──
-    print(f"🔎 Resolving channel: {args.channel}")
-    channel_id, channel_title = resolve_channel_id(args.channel)
-    print(f"✅ Found: {channel_title}  (ID: {channel_id})\n")
+    if args.channel_id:
+        channel_id = args.channel_id
+        channel_title = args.channel_name or _title_from_channel_id(channel_id) or channel_id
+        print(f"✅ Using channel ID: {channel_id}  ({channel_title})\n")
+    else:
+        print(f"🔎 Resolving channel: {args.channel}")
+        channel_id, channel_title = resolve_channel_id(args.channel)
+        print(f"✅ Found: {channel_title}  (ID: {channel_id})\n")
 
     # ── Fetch videos ──
     data_source = ""
