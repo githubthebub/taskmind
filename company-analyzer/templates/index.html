@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Analyzer</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1c1c1c;
+    --border: #262626;
+    --text: #e4e4e7;
+    --text2: #a1a1aa;
+    --accent: #6366f1;
+    --accent-hover: #4f46e5;
+    --green: #22c55e;
+    --green-bg: #052e16;
+    --amber: #f59e0b;
+    --amber-bg: #451a03;
+    --red: #ef4444;
+    --red-bg: #450a0a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+  }
+
+  /* ── Header ── */
+  .hero {
+    text-align: center;
+    padding: 3.5rem 0 2rem;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+  }
+  .hero p {
+    color: var(--text2);
+    font-size: 1rem;
+  }
+
+  /* ── Input ── */
+  .input-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .input-row input {
+    flex: 1;
+    padding: 0.85rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-row input:focus { border-color: var(--accent); }
+  .input-row input::placeholder { color: #52525b; }
+
+  .btn {
+    padding: 0.85rem 1.75rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .btn:hover { background: var(--accent-hover); }
+  .btn:disabled { background: #27272a; color: #52525b; cursor: not-allowed; }
+
+  .error-msg {
+    color: var(--red);
+    font-size: 0.85rem;
+    min-height: 1.3em;
+    margin-bottom: 1rem;
+  }
+
+  /* ── Loading ── */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 4rem 0 2rem;
+  }
+  .loading.active { display: block; }
+  .dot-pulse {
+    display: inline-flex;
+    gap: 6px;
+    margin-bottom: 1rem;
+  }
+  .dot-pulse span {
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  .dot-pulse span:nth-child(2) { animation-delay: 0.15s; }
+  .dot-pulse span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes pulse {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+  .loading p { color: var(--text2); font-size: 0.9rem; }
+
+  /* ── Results ── */
+  .results {
+    display: none;
+    padding-bottom: 4rem;
+  }
+  .results.active { display: block; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+  .card p {
+    color: var(--text2);
+    font-size: 0.92rem;
+  }
+  .company-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+  .industry-tag {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 0.2rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    margin-bottom: 0.75rem;
+  }
+
+  /* ── Opportunities ── */
+  .opp-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 0.6rem;
+  }
+  .opp-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+  }
+  .opp-num {
+    width: 24px; height: 24px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .opp-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+  .opp-desc {
+    color: var(--text2);
+    font-size: 0.85rem;
+    margin-bottom: 0.6rem;
+    padding-left: 2.1rem;
+  }
+  .opp-meta {
+    display: flex;
+    gap: 0.5rem;
+    padding-left: 2.1rem;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 5px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .badge-time { background: #1e1b4b; color: #a5b4fc; }
+  .badge-high { background: var(--green-bg); color: var(--green); }
+  .badge-medium { background: var(--amber-bg); color: var(--amber); }
+  .badge-low { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+
+  /* ── Outreach ── */
+  .outreach-box {
+    position: relative;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    padding-top: 1rem;
+    white-space: pre-wrap;
+    font-size: 0.88rem;
+    line-height: 1.75;
+    color: var(--text2);
+  }
+  .copy-btn {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: #333; color: #fff; }
+
+  .new-btn-wrap {
+    text-align: center;
+    padding: 1rem 0 2rem;
+  }
+  .btn-outline {
+    padding: 0.6rem 1.5rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text2);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Company Analyzer</h1>
+    <p>Paste a company URL. Get automation insights and outreach copy in seconds.</p>
+  </div>
+
+  <!-- Input -->
+  <div class="input-row">
+    <input type="text" id="url" placeholder="https://example.com" autocomplete="off" />
+    <button class="btn" id="analyze-btn">Analyze</button>
+  </div>
+  <div class="error-msg" id="error"></div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="dot-pulse"><span></span><span></span><span></span></div>
+    <p id="loading-text">Fetching website...</p>
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+
+    <!-- Summary -->
+    <div class="card">
+      <div class="card-label">Company Overview</div>
+      <div class="company-name" id="r-name"></div>
+      <div id="r-industry"></div>
+      <p id="r-summary"></p>
+      <p style="margin-top:0.5rem" id="r-biz"></p>
+    </div>
+
+    <!-- Opportunities -->
+    <div class="card">
+      <div class="card-label">Automation Opportunities</div>
+      <div id="r-opps"></div>
+    </div>
+
+    <!-- Outreach -->
+    <div class="card">
+      <div class="card-label">Outreach Message</div>
+      <div class="outreach-box" id="r-outreach">
+        <button class="copy-btn" id="copy-btn">Copy</button>
+      </div>
+    </div>
+
+    <div class="new-btn-wrap">
+      <button class="btn-outline" id="reset-btn">Analyze another company</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const urlInput   = document.getElementById('url');
+const analyzeBtn = document.getElementById('analyze-btn');
+const errorEl    = document.getElementById('error');
+const loadingEl  = document.getElementById('loading');
+const loadText   = document.getElementById('loading-text');
+const resultsEl  = document.getElementById('results');
+
+urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+analyzeBtn.addEventListener('click', run);
+document.getElementById('reset-btn').addEventListener('click', reset);
+document.getElementById('copy-btn').addEventListener('click', copyOutreach);
+
+function reset() {
+  resultsEl.classList.remove('active');
+  urlInput.value = '';
+  urlInput.focus();
+}
+
+async function run() {
+  const url = urlInput.value.trim();
+  if (!url) { errorEl.textContent = 'Enter a company URL.'; return; }
+
+  errorEl.textContent = '';
+  analyzeBtn.disabled = true;
+  loadingEl.classList.add('active');
+  resultsEl.classList.remove('active');
+
+  // Animate loading text
+  const phases = ['Fetching website...', 'Reading content...', 'Analyzing with AI...', 'Building report...'];
+  let phase = 0;
+  const interval = setInterval(() => {
+    phase = Math.min(phase + 1, phases.length - 1);
+    loadText.textContent = phases[phase];
+  }, 3000);
+
+  try {
+    const res = await fetch('/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Something went wrong');
+
+    render(data);
+  } catch (e) {
+    errorEl.textContent = e.message;
+  } finally {
+    clearInterval(interval);
+    analyzeBtn.disabled = false;
+    loadingEl.classList.remove('active');
+  }
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+function render(d) {
+  document.getElementById('r-name').textContent = d.company_name || 'Company';
+  document.getElementById('r-summary').textContent = d.summary || '';
+  document.getElementById('r-biz').innerHTML = '<strong>Business model:</strong> ' + esc(d.business_model || '');
+
+  const indEl = document.getElementById('r-industry');
+  indEl.innerHTML = d.industry ? '<span class="industry-tag">' + esc(d.industry) + '</span>' : '';
+
+  // Opportunities
+  const oppsEl = document.getElementById('r-opps');
+  oppsEl.innerHTML = '';
+  (d.opportunities || []).forEach((opp, i) => {
+    const impact = (opp.impact || 'Medium').toLowerCase();
+    const badgeClass = impact === 'high' ? 'badge-high' : impact === 'low' ? 'badge-low' : 'badge-medium';
+    oppsEl.innerHTML += `
+      <div class="opp-item">
+        <div class="opp-header">
+          <div class="opp-num">${i + 1}</div>
+          <div class="opp-title">${esc(opp.title)}</div>
+        </div>
+        <div class="opp-desc">${esc(opp.description)}</div>
+        <div class="opp-meta">
+          <span class="badge badge-time">${esc(opp.time_saved)}</span>
+          <span class="badge ${badgeClass}">${esc(opp.impact)} impact</span>
+        </div>
+      </div>`;
+  });
+
+  // Outreach
+  const outreachBox = document.getElementById('r-outreach');
+  const copyBtn = document.getElementById('copy-btn');
+  outreachBox.textContent = d.outreach || '';
+  outreachBox.appendChild(copyBtn);
+
+  resultsEl.classList.add('active');
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyOutreach() {
+  const text = document.getElementById('r-outreach').textContent.replace('Copy', '').replace('Copied!', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+</script>
+</body>
+</html>
