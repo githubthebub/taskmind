@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>taskmind · somatic</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app">
+
+    <section id="menu" class="screen">
+      <div class="wordmark">taskmind · somatic</div>
+      <h1>Full-body states.<br>No feed required.</h1>
+      <p class="lede">
+        Five guided somatic sessions, spoken slowly by a voice that points your
+        attention where it needs to go — breath, weight, warmth, the room.
+        The same mechanisms a good somatic practitioner uses. Each one ends on
+        time and hands you back your evening.
+      </p>
+
+      <div id="session-list"></div>
+
+      <div class="voice-bar">
+        <label for="voice-select">Voice</label>
+        <select id="voice-select"></select>
+        <label for="rate-input">Speed</label>
+        <input id="rate-input" type="range" min="0.7" max="1.0" step="0.05" value="0.85">
+        <button id="voice-test" class="ghost" type="button">Test</button>
+        <span class="hint">
+          Voices come from your device — nothing is recorded or sent anywhere.
+          Pick the one that sounds most human; on most phones there's at least
+          one good "natural" voice. Headphones help.
+        </span>
+      </div>
+
+      <details class="ethics">
+        <summary>Why this app doesn't try to hook you</summary>
+        <p>
+          No account, no streaks, no notifications, no autoplay, no metrics,
+          no infinite anything. Sessions end and say so. The Urge Surf session
+          teaches a skill precisely so that, with practice, you need this app
+          less — that's the point. A tool for your nervous system should behave
+          like a tool: you pick it up, it works, you put it down.
+        </p>
+      </details>
+    </section>
+
+    <section id="player" class="screen hidden">
+      <div class="orb-wrap">
+        <div id="orb" class="idle"></div>
+        <div id="phase"></div>
+      </div>
+      <p id="caption"></p>
+      <div>
+        <div class="progress"><i id="progress-fill"></i></div>
+        <div class="controls">
+          <button id="pause-btn" class="ghost" type="button">Pause</button>
+          <button id="mute-btn" class="ghost" type="button">Voice on</button>
+          <button id="end-btn" class="ghost" type="button">End session</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="done" class="screen hidden">
+      <h2>That's the session.</h2>
+      <p>
+        Take a second to notice how your body actually feels — that's data
+        the feed never gives you. If it worked, the best next move is a
+        dark screen.
+      </p>
+      <button id="done-back" class="ghost" type="button">Back</button>
+    </section>
+
+  </main>
+
+  <script src="sessions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

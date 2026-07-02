@@ -1,0 +1,148 @@
+// Session scripts for taskmind somatic.
+//
+// Step shapes:
+//   { say: "...", pause: seconds }            spoken line, then silence
+//   { breath: { cycles, phases: [...] }, intro: "..." }
+//     phases: { p: "label", s: seconds, scale: orbScale, cue: "short spoken cue" }
+//     cues are spoken on the first two cycles only, then the pacer runs silent.
+
+const SIGH = {
+  cycles: 3,
+  phases: [
+    { p: "Breathe in through the nose", s: 2.5, scale: 1.3, cue: "Breathe in" },
+    { p: "Sip in a little more", s: 1.2, scale: 1.45, cue: "and a little more" },
+    { p: "Long, slow sigh out", s: 7, scale: 1.0, cue: "and slowly, out" },
+  ],
+};
+
+const LONG_EXHALE = (cycles, inS, outS) => ({
+  cycles,
+  phases: [
+    { p: "Breathe in", s: inS, scale: 1.4, cue: "In" },
+    { p: "Slow, thin exhale", s: outS, scale: 1.0, cue: "and out, slowly" },
+  ],
+});
+
+const SESSIONS = [
+  {
+    id: "urge",
+    title: "Urge Surf",
+    minutes: 3,
+    tagline: "For the exact moment your hand reaches for the phone.",
+    hue: 195,
+    steps: [
+      { say: "You don't have to put the phone down. Just turn your hand over, and let it rest in your lap.", pause: 3 },
+      { say: "This takes three minutes. Nothing on that screen expires in three minutes.", pause: 3 },
+      { say: "First, a signal your body can't ignore. Two breaths in through the nose — a big one, then a small one on top — then a long, slow sigh out through the mouth. Follow the circle.", pause: 1.5 },
+      { breath: SIGH },
+      { say: "Good. That is the fastest known way to slow your own heart rate. And you just did it yourself. No app did it for you.", pause: 4 },
+      { say: "Now find the urge. The pull toward the screen lives somewhere in your body. Chest? Stomach? A buzz in the hands? Go looking for it.", pause: 6 },
+      { say: "You don't have to fight it, and you don't have to feed it. A craving is a wave. It rises, it peaks, and if you just watch it, it passes on its own — usually within about ninety seconds.", pause: 6 },
+      { say: "So watch it. Stay with the raw feeling — pressure, heat, fizz, whatever it is. And breathe out longer than you breathe in.", pause: 2 },
+      { breath: LONG_EXHALE(3, 4, 8) },
+      { say: "Check again. Is the wave bigger, or smaller, than a minute ago? Either answer is fine. You're the one watching it — which means it isn't driving.", pause: 6 },
+      { say: "Last step. Lift your eyes and look slowly around the room, left to right, like a lighthouse. Let them land on one thing that isn't going anywhere.", pause: 9 },
+      { say: "That's it. The wave passes whether or not you feed it. Whatever you do next — do it on purpose.", pause: 3 },
+    ],
+  },
+  {
+    id: "tide",
+    title: "Slow Tide",
+    minutes: 8,
+    tagline: "Full-body down-shift. Heaviness, warmth, long exhales.",
+    hue: 225,
+    steps: [
+      { say: "Find a way to sit or lie down that you won't need to fix for the next eight minutes. Shift around until you find it.", pause: 7 },
+      { say: "Let your eyes close, or lower them to a point on the floor, and let them go soft.", pause: 5 },
+      { say: "There is nothing to achieve here. Your body already knows how to do this. We're just getting out of its way.", pause: 5 },
+      { say: "We'll breathe with the circle for a minute. In through the nose for four. And out — slow and thin — for eight. The long exhale is the whole trick. It's a lever wired straight to your heart.", pause: 1.5 },
+      { breath: LONG_EXHALE(6, 4, 8) },
+      { say: "Let the breath go back to normal now. It knows what to do.", pause: 5 },
+      { say: "Take your attention down to your feet. You don't have to move them. Just find them from the inside. The weight of them. The temperature.", pause: 8 },
+      { say: "Let them be heavy. Heavy like they've been walking all day, and are finally, finally done.", pause: 7 },
+      { say: "Let that heaviness rise up through your calves... your knees... your thighs. Legs like sandbags. The floor is doing all the work now.", pause: 9 },
+      { say: "Your hips, and your lower back. Let them sink. There's often a small clench there you don't notice until you look. Look now — and let it soften by ten percent. That's all. Ten percent.", pause: 9 },
+      { say: "Your belly. Let it be round and soft. You don't have to hold it in for anyone. With each exhale, it falls a little further.", pause: 8 },
+      { say: "Your chest. Notice it lifting and lowering on its own — no effort from you. Something in you is being breathed.", pause: 8 },
+      { say: "Your hands. Let warmth pool in them, like they're wrapped around a hot mug. Palms heavy. Fingers thick and warm.", pause: 8 },
+      { say: "Up your arms, and into your shoulders. Let your shoulders drop away from your ears. And again — there's almost always a second drop hiding under the first.", pause: 8 },
+      { say: "Your jaw. Let your teeth come apart behind closed lips. Let your tongue lie loose. The little muscles around your eyes — smooth.", pause: 8 },
+      { say: "Now feel all of it at once. The whole body, heavy and warm, held up by something else for a change.", pause: 10 },
+      { say: "Stay here as long as you like. This state is yours. You made it with attention and breath, and it's available every single day. No login required.", pause: 9 },
+      { say: "When you're ready — one deeper breath... wiggle your fingers and toes... and come back slowly.", pause: 5 },
+    ],
+  },
+  {
+    id: "nsdr",
+    title: "Deep Rest",
+    minutes: 12,
+    tagline: "NSDR-style body rotation. For the deep repair systems.",
+    hue: 262,
+    steps: [
+      { say: "Lie down if you can. This one is for the deep systems — the ones that repair you. All you'll do is move your attention where the voice points it.", pause: 8 },
+      { say: "Take a long breath in... and let it fall out with a sigh. Then twice more, at your own speed.", pause: 13 },
+      { say: "Let your eyes close. And behind your eyelids, let your eyes settle downward, as if looking toward your own heart.", pause: 8 },
+      { say: "Feel the whole surface of your body at once — every point where it touches the ground. Let the ground press up into you.", pause: 9 },
+      { say: "Now we travel. Bring your attention to your right hand. The thumb... the first finger... the middle finger... the fourth... the fifth. The palm. The back of the hand.", pause: 10 },
+      { say: "The right wrist... the forearm... the elbow... the upper arm... the right shoulder. The whole right arm, heavy, and far away.", pause: 10 },
+      { say: "Now the left hand. The thumb... the first finger... the middle finger... the fourth... the fifth. The palm. The back of the hand.", pause: 10 },
+      { say: "The left wrist... the forearm... the elbow... the upper arm... the left shoulder. The whole left arm, heavy.", pause: 10 },
+      { say: "The right foot. The toes... the sole... the heel. The right ankle... the calf... the knee... the thigh. The whole right leg, sinking.", pause: 11 },
+      { say: "The left foot. The toes... the sole... the heel. The left ankle... the calf... the knee... the thigh. The whole left leg, sinking.", pause: 11 },
+      { say: "The lower back... the middle back... the space between the shoulder blades. The whole back of the body, wide and soft against the ground.", pause: 10 },
+      { say: "The belly, rising and falling... the chest... the throat, open and quiet.", pause: 9 },
+      { say: "The jaw... the mouth... the cheeks... the ears... the eyes... the forehead, smooth as still water... the scalp.", pause: 10 },
+      { say: "Now the whole body at once. Every part you visited, glowing faintly — like the windows of a house at dusk.", pause: 11 },
+      { say: "We'll count breaths, down from ten. With each breath out, one step down. Ten.", pause: 8 },
+      { say: "Nine.", pause: 8 },
+      { say: "Eight.", pause: 8 },
+      { say: "Seven.", pause: 8 },
+      { say: "Six.", pause: 8 },
+      { say: "Keep counting down on your own, from five to one. I'll be quiet.", pause: 42 },
+      { say: "Rest here. Nothing is required of you. If thoughts come, let them be weather.", pause: 45 },
+      { say: "Begin to come back now. Feel your hands... your feet... the room around you.", pause: 9 },
+      { say: "Take your time sitting up. This kind of rest counts. It isn't laziness. It's maintenance.", pause: 4 },
+    ],
+  },
+  {
+    id: "room",
+    title: "Back to the Room",
+    minutes: 5,
+    tagline: "Grounding after a scroll-hole. Eyes open.",
+    hue: 150,
+    steps: [
+      { say: "Screens pull all of you into a rectangle. This brings you back out. It works with your eyes open.", pause: 5 },
+      { say: "Press your feet into the floor. Actually push — like you're trying to leave footprints. Feel the muscles in your legs wake up... and release.", pause: 8 },
+      { say: "Feel the weight of your body in the seat — the exact places where you're supported. You are being held up right now, and you didn't even notice.", pause: 8 },
+      { say: "Now look around, slowly. Name five things you can see. Take your time. Really land on each one.", pause: 22 },
+      { say: "Four things you can feel. Fabric. Air. Temperature. Contact.", pause: 16 },
+      { say: "Three things you can hear. Include the quiet ones underneath.", pause: 15 },
+      { say: "Two things you can smell — or two slow breaths through the nose, if the room is being shy.", pause: 10 },
+      { say: "One thing you can taste.", pause: 8 },
+      { say: "Now a few slow breaths, out longer than in.", pause: 1.5 },
+      { breath: LONG_EXHALE(4, 4, 7) },
+      { say: "Notice the difference. The rectangle is flat. This — the room, the weight, the air — has depth. You live here.", pause: 5 },
+    ],
+  },
+  {
+    id: "glow",
+    title: "Glow",
+    minutes: 6,
+    tagline: "Warmth in the chest, spreading. The state the feed imitates.",
+    hue: 25,
+    steps: [
+      { say: "This one builds a state the feed can only imitate. It takes a few minutes, and a little willingness. That's the whole price.", pause: 6 },
+      { say: "Sit comfortably, and let your breath slow down on its own.", pause: 6 },
+      { say: "Four easy breaths with the circle.", pause: 1.5 },
+      { breath: LONG_EXHALE(4, 5, 7) },
+      { say: "Let the corners of your mouth lift — barely. A half-smile, the kind on old statues. Notice it feels slightly ridiculous. Notice it works anyway. The face reports to the brain, not just the other way around.", pause: 9 },
+      { say: "Bring to mind one moment when someone was genuinely glad to see you. A person. A dog. A friend at a door. Don't hunt for the perfect one — the first that shows up is fine.", pause: 12 },
+      { say: "Put yourself back inside it. What did their face do? And what did that moment feel like in your chest, right at the center?", pause: 12 },
+      { say: "Whatever warmth is there — even a pilot light — let it grow a little with each breath in. And with each breath out, let it spread. Down the arms. Into the belly. Up the neck, and behind the face.", pause: 14 },
+      { say: "If it tingles, let it tingle. If it's faint, that's fine. Faint and real beats vivid and fake.", pause: 9 },
+      { say: "Stay with it. Warmth in the chest. Breath slow. The half-smile doing its quiet work.", pause: 20 },
+      { say: "Here's the thing about this feeling. It is generated entirely by you. No one is monetizing this moment. There is no algorithm between you and it.", pause: 8 },
+      { say: "One more slow breath... and let the session go. The warmth can stay.", pause: 5 },
+    ],
+  },
+];
