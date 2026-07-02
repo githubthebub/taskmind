@@ -3,6 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#07090f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stillpoint">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Stillpoint — Somatic Descent</title>
 <style>
   :root{
@@ -54,16 +62,17 @@
   .ghost:hover{color:var(--ink)}
 
   /* ---------- home ---------- */
+  #home{justify-content:flex-start;overflow-y:auto;padding-top:max(40px,env(safe-area-inset-top,0px) + 28px);padding-bottom:32px}
   #home h1{font-size:34px;font-weight:700;letter-spacing:.5px;margin-bottom:6px;text-align:center}
   #home .sub{color:var(--ink-dim);font-size:14px;text-align:center;max-width:420px;line-height:1.6;margin-bottom:30px}
   #home .menu{display:flex;flex-direction:column;gap:12px;width:100%;max-width:420px}
-  .stats{display:flex;gap:12px;margin-top:28px}
+  .stats{display:flex;gap:8px;margin-top:26px;flex-wrap:wrap;justify-content:center}
   .stat{background:rgba(255,255,255,.035);border:1px solid var(--card-edge);border-radius:14px;
-    padding:10px 18px;text-align:center;min-width:104px}
-  .stat b{display:block;font-size:22px;color:var(--glow);font-weight:700}
-  .stat span{font-size:11px;color:var(--ink-dim);letter-spacing:.5px;text-transform:uppercase}
-  .foot{position:absolute;bottom:18px;font-size:11px;color:rgba(139,150,173,.55);text-align:center;
-    max-width:520px;line-height:1.6;padding:0 20px}
+    padding:9px 12px;text-align:center;min-width:82px}
+  .stat b{display:block;font-size:20px;color:var(--glow);font-weight:700}
+  .stat span{font-size:10px;color:var(--ink-dim);letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+  .foot{margin-top:26px;font-size:11px;color:rgba(139,150,173,.55);text-align:center;
+    max-width:520px;line-height:1.6;padding:0 20px;flex-shrink:0}
 
   /* ---------- session ---------- */
   #stage{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
@@ -111,6 +120,58 @@
   .fadeSlow{animation:fadeIn 2.2s ease both}
   @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
+  /* ---------- focus lock ---------- */
+  .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:14px 0 4px}
+  .chip{background:rgba(255,255,255,.05);border:1px solid var(--card-edge);color:var(--ink-dim);
+    border-radius:20px;padding:9px 18px;font-size:14px;cursor:pointer;font-family:inherit;
+    transition:all .25s}
+  .chip.sel{background:var(--glow-soft);border-color:rgba(127,180,255,.5);color:var(--ink)}
+  #goalInput{background:var(--card);border:1px solid var(--card-edge);color:var(--ink);
+    border-radius:14px;padding:14px 18px;font-size:15px;font-family:inherit;width:100%;
+    max-width:420px;text-align:center;outline:none;margin-top:18px;transition:border-color .3s}
+  #goalInput:focus{border-color:rgba(127,180,255,.4)}
+  #goalInput::placeholder{color:rgba(139,150,173,.5)}
+  #focusSetup h2, #focusDone h2{font-size:24px;font-weight:600;margin-bottom:8px;text-align:center}
+  #focusSetup .sub{color:var(--ink-dim);font-size:14px;text-align:center;max-width:400px;line-height:1.6}
+  #fsStart{margin-top:24px;text-align:center}
+  #fsStart .t{text-align:center}
+  #focusRing{position:relative;width:min(60vmin,300px);height:min(60vmin,300px);
+    display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+  #focusRing svg{position:absolute;inset:0;transform:rotate(-90deg)}
+  #focusRing .track{fill:none;stroke:rgba(255,255,255,.06);stroke-width:3}
+  #focusRing .fill{fill:none;stroke:url(#ringGrad);stroke-width:3;stroke-linecap:round;
+    transition:stroke-dashoffset 1s linear}
+  #focusTime{font-size:clamp(40px,11vmin,58px);font-weight:200;letter-spacing:2px;
+    font-variant-numeric:tabular-nums}
+  #focusGoal{font-size:15px;color:var(--ink-dim);max-width:440px;text-align:center;
+    line-height:1.6;padding:0 24px;min-height:24px}
+  #focusNote{font-size:13px;color:var(--ink-dim);margin-top:16px;min-height:20px;
+    transition:opacity 1s;text-align:center;padding:0 24px}
+  #focusOrbMini{width:14px;height:14px;border-radius:50%;margin-bottom:22px;
+    background:radial-gradient(circle at 38% 32%, rgba(220,238,255,.95), var(--glow) 45%, rgba(30,70,140,.9));
+    box-shadow:0 0 24px 8px var(--glow-soft);will-change:transform}
+
+  /* 7-day practice trail */
+  .trail{display:flex;gap:9px;margin-top:20px;align-items:center}
+  .trail .day{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.06)}
+  .trail .day.lit{background:var(--glow);border-color:transparent;
+    box-shadow:0 0 8px 1px var(--glow-soft)}
+  .trail .day.today{outline:1px solid rgba(255,255,255,.25);outline-offset:2px}
+  .trail .lbl{font-size:10px;color:rgba(139,150,173,.6);letter-spacing:1.5px;
+    text-transform:uppercase;margin-right:4px}
+
+  #installHint{display:none;margin-top:16px;font-size:12px;color:var(--ink-dim);
+    background:rgba(255,255,255,.035);border:1px solid var(--card-edge);border-radius:12px;
+    padding:9px 16px;cursor:pointer;font-family:inherit;transition:color .3s}
+  #installHint:hover{color:var(--ink)}
+
+  .doneRow{display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px;align-items:center}
+
+  @media (prefers-reduced-motion: reduce){
+    .fadeSlow{animation:none}
+  }
+
   /* stars */
   #sky{position:absolute;inset:0;pointer-events:none;opacity:.5}
 </style>
@@ -136,12 +197,19 @@
         <span class="m">90 sec</span><span class="t">Urge Surf 🌊</span>
         <span class="d">Feeling the pull to scroll? Ride the craving like a wave. It peaks and passes in about a minute — every time.</span>
       </button>
+      <button class="btn" id="btnFocusSetup">
+        <span class="m">15–90 min</span><span class="t">Focus Lock 🎯</span>
+        <span class="d">Carry the stillness into your work. One goal, one unbroken block — the app gently notices if you drift away.</span>
+      </button>
     </div>
     <div class="stats">
       <div class="stat"><b id="stStreak">0</b><span>day streak</span></div>
-      <div class="stat"><b id="stMin">0</b><span>still minutes</span></div>
+      <div class="stat"><b id="stMin">0</b><span>still min</span></div>
+      <div class="stat"><b id="stFocus">0</b><span>focus min</span></div>
       <div class="stat"><b id="stSurf">0</b><span>urges surfed</span></div>
     </div>
+    <div class="trail" id="trail"></div>
+    <button id="installHint">📲 install on your home screen — right where the feeds used to live</button>
     <div class="foot">Built on evidence-based practice: progressive muscle relaxation (Jacobson), resonance-frequency breathing (~5.5 breaths/min), body-scan interoception, urge surfing (Marlatt), and classical jhana factors. Not medical advice — a training tool for attention.</div>
   </div>
 
@@ -177,7 +245,48 @@
     <div id="sessionBar">
       <button class="ghost" id="btnPause">pause</button>
       <button class="ghost" id="btnSound">sound: on</button>
+      <button class="ghost" id="btnVoice">voice: off</button>
+      <button class="ghost" id="btnHaptics" hidden>haptics: on</button>
       <button class="ghost" id="btnExit">end</button>
+    </div>
+  </div>
+
+  <!-- FOCUS SETUP -->
+  <div class="screen" id="focusSetup">
+    <h2>Focus Lock</h2>
+    <div class="sub">One block, one aim. The stillness you just practiced is the fuel — this is where it gets spent.</div>
+    <div class="chips" id="durChips">
+      <button class="chip" data-min="15">15 min</button>
+      <button class="chip sel" data-min="25">25 min</button>
+      <button class="chip" data-min="50">50 min</button>
+      <button class="chip" data-min="90">90 min</button>
+    </div>
+    <input id="goalInput" maxlength="80" placeholder="what is this block for? (optional)" autocomplete="off">
+    <button class="btn" id="fsStart" style="max-width:280px"><span class="t">Begin the block</span></button>
+    <div style="margin-top:14px"><button class="ghost" id="fsBack">back</button></div>
+  </div>
+
+  <!-- FOCUS RUNNING -->
+  <div class="screen" id="focus">
+    <div id="focusRing">
+      <svg viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7fb4ff"/><stop offset="100%" stop-color="#9be8c8"/>
+          </linearGradient>
+        </defs>
+        <circle class="track" cx="50" cy="50" r="46"/>
+        <circle class="fill" id="ringFill" cx="50" cy="50" r="46"/>
+      </svg>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div id="focusOrbMini"></div>
+        <div id="focusTime">25:00</div>
+      </div>
+    </div>
+    <div id="focusGoal"></div>
+    <div id="focusNote"></div>
+    <div style="margin-top:22px;display:flex;gap:6px">
+      <button class="ghost" id="btnFocusEnd">end block</button>
     </div>
   </div>
 
@@ -194,7 +303,10 @@
     <div class="big fadeSlow" id="doneTitle">The body remembers this.</div>
     <p class="fadeSlow" id="doneText"></p>
     <div class="earn fadeSlow" id="doneEarn"></div>
-    <button class="btn fadeSlow" id="btnHome" style="text-align:center"><span class="t" style="text-align:center">Return</span></button>
+    <div class="doneRow fadeSlow">
+      <button class="btn" id="btnChainFocus" style="max-width:320px"><span class="t" style="text-align:center">Carry it into Focus Lock 🎯</span></button>
+      <button class="ghost" id="btnHome">return home</button>
+    </div>
   </div>
 </div>
 
@@ -210,23 +322,45 @@ const store = {
   write(d){ try{ localStorage.setItem("stillpoint", JSON.stringify(d)) }catch(e){} }
 };
 function today(){ return new Date().toISOString().slice(0,10) }
+function dayKey(offset){ return new Date(Date.now()-offset*864e5).toISOString().slice(0,10) }
+function touchDay(d, minutes){
+  d.days = d.days||{};
+  const t = today();
+  d.days[t] = (d.days[t]||0) + minutes;
+  // keep the map small
+  for(const k of Object.keys(d.days)) if(k < dayKey(30)) delete d.days[k];
+  if(d.lastDay !== t){
+    d.streak = (d.lastDay === dayKey(1)) ? (d.streak||0)+1 : 1;
+    d.lastDay = t;
+  }
+}
 function logSession(minutes, surfed){
   const d = store.read();
   d.minutes = (d.minutes||0) + minutes;
   d.surfs   = (d.surfs||0) + (surfed?1:0);
-  const t = today();
-  if(d.lastDay !== t){
-    const y = new Date(Date.now()-864e5).toISOString().slice(0,10);
-    d.streak = (d.lastDay === y) ? (d.streak||0)+1 : 1;
-    d.lastDay = t;
-  }
+  touchDay(d, minutes);
+  store.write(d);
+}
+function logFocus(minutes){
+  const d = store.read();
+  d.focus = (d.focus||0) + minutes;
+  touchDay(d, minutes);
   store.write(d);
 }
 function renderStats(){
   const d = store.read();
   stStreak.textContent = d.streak||0;
   stMin.textContent    = Math.round(d.minutes||0);
+  stFocus.textContent  = Math.round(d.focus||0);
   stSurf.textContent   = d.surfs||0;
+  // 7-day practice trail, oldest → today
+  const trail = document.getElementById("trail");
+  trail.innerHTML = '<span class="lbl">last 7 days</span>';
+  for(let i=6;i>=0;i--){
+    const dot = document.createElement("span");
+    dot.className = "day" + (((d.days||{})[dayKey(i)]||0) > 0 ? " lit":"") + (i===0?" today":"");
+    trail.appendChild(dot);
+  }
 }
 
 /* ---------- audio engine (generative, no assets) ---------- */
@@ -306,6 +440,57 @@ const Sound = {
   toggle(){ this.on=!this.on; if(!this.on) this.stopDrone(.6); else this.startDrone(); return this.on; }
 };
 
+/* ---------- screen wake lock (keeps display on during practice) ---------- */
+const Wake = {
+  lock:null, want:false,
+  async acquire(){
+    this.want=true;
+    try{ this.lock = await navigator.wakeLock?.request("screen") }catch(e){}
+  },
+  release(){
+    this.want=false;
+    try{ this.lock?.release() }catch(e){}
+    this.lock=null;
+  },
+  rearm(){ if(this.want && document.visibilityState==="visible") this.acquire(); }
+};
+document.addEventListener("visibilitychange",()=>Wake.rearm());
+
+/* ---------- spoken guidance (eyes-closed practice) ---------- */
+const Voice = {
+  on:false, voice:null,
+  pick(){
+    if(this.voice || !window.speechSynthesis) return;
+    const vs = speechSynthesis.getVoices().filter(v=>v.lang.startsWith("en"));
+    const calm = ["Samantha","Karen","Daniel","Moira","Google UK English Female","Google US English"];
+    this.voice = vs.find(v=>calm.includes(v.name)) || vs[0] || null;
+  },
+  say(text){
+    if(!this.on || !text || !window.speechSynthesis) return;
+    this.pick();
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/…/g,", ,"));
+    u.rate=.82; u.pitch=.9; u.volume=.9;
+    if(this.voice) u.voice=this.voice;
+    speechSynthesis.speak(u);
+  },
+  stop(){ try{ window.speechSynthesis && speechSynthesis.cancel() }catch(e){} },
+  toggle(){ this.on=!this.on; if(!this.on) this.stop(); return this.on; }
+};
+if(window.speechSynthesis) speechSynthesis.onvoiceschanged = ()=>Voice.pick();
+
+/* ---------- haptic breath cues (mobile, eyes-closed pacing) ---------- */
+const Haptics = {
+  on:true, supported: !!navigator.vibrate,
+  cue(label){
+    if(!this.on || !this.supported) return;
+    if(label==="breathe in") navigator.vibrate(35);
+    else if(label==="breathe out") navigator.vibrate([18,60,18]);
+    else if(label==="hold") navigator.vibrate(12);
+  },
+  toggle(){ this.on=!this.on; return this.on; }
+};
+
 /* ---------- session scripts ----------
    step: { text, dur(s), phase, breath:{in,h1,out,h2}|null|"free", region, bell }
    breath "free" = orb drifts gently, no counted pacing            */
@@ -376,7 +561,8 @@ const SURF_SCRIPT = [
 
 /* ---------- DOM refs ---------- */
 const $ = id => document.getElementById(id);
-const screens = {home:$("home"), session:$("session"), surf:$("surf"), done:$("done")};
+const screens = {home:$("home"), session:$("session"), surf:$("surf"), done:$("done"),
+                 focusSetup:$("focusSetup"), focus:$("focus")};
 const orb=$("orb"), halo1=$("halo1"), halo2=$("halo2"), cue=$("cue"),
       breathLabel=$("breathLabel"), phaseTag=$("phaseTag"), progress=$("progress"),
       bodyFig=$("bodyFig");
@@ -437,7 +623,10 @@ const Breath = {
     halo1.style.opacity=(haloA*.7).toFixed(2);
     halo2.style.transform=`scale(${(0.55+0.75*scale).toFixed(3)})`;
     halo2.style.opacity=(haloA*.35).toFixed(2);
-    if(breathLabel.textContent!==label) breathLabel.textContent=label;
+    if(breathLabel.textContent!==label){
+      breathLabel.textContent=label;
+      if(label) Haptics.cue(label);
+    }
   }
 };
 function ease(p){ return p<.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2 } // easeInOutQuad
@@ -456,6 +645,7 @@ const Runner = {
     document.querySelectorAll("#bodyFig .region").forEach(r=>r.classList.remove("lit","done"));
     bodyFig.classList.remove("show");
     Sound.init(); Sound.startDrone();
+    Wake.acquire();
     show("session");
     this.next();
   },
@@ -483,6 +673,7 @@ const Runner = {
     // cue text
     if(s.text){ cue.classList.add("hidden");
       setTimeout(()=>{ cue.textContent=s.text; cue.classList.remove("hidden") }, 600);
+      Voice.say(s.text);
     } else cue.classList.add("hidden");
 
     Breath.set(s.breath);
@@ -505,6 +696,7 @@ const Runner = {
     this.remaining -= performance.now()-this.stepStart;
     clearTimeout(this.timer); clearTimeout(this._pt);
     Breath.pause();
+    try{ window.speechSynthesis && speechSynthesis.pause() }catch(e){}
     $("btnPause").textContent="resume";
   },
   resume(){
@@ -512,11 +704,12 @@ const Runner = {
     this.paused=false; this.stepStart=performance.now();
     this.timer=setTimeout(()=>this.next(), this.remaining);
     Breath.resume(); this.tickProgress();
+    try{ window.speechSynthesis && speechSynthesis.resume() }catch(e){}
     $("btnPause").textContent="pause";
   },
   stop(){
     clearTimeout(this.timer); clearTimeout(this._pt);
-    Sound.stopDrone();
+    Sound.stopDrone(); Voice.stop(); Wake.release();
     Breath.set(null); this.paused=false; $("btnPause").textContent="pause";
   },
   finish(){
@@ -539,6 +732,7 @@ const Surf = {
   start(){
     this.i=0; this.running=true;
     Sound.init(); Sound.startDrone();
+    Wake.acquire();
     show("surf");
     this.t0=performance.now();
     this.step();
@@ -551,6 +745,7 @@ const Surf = {
     const el=$("surfCue");
     el.style.opacity=0;
     setTimeout(()=>{ el.textContent=s.t; el.style.opacity=1 },500);
+    Voice.say(s.t);
     this.timer=setTimeout(()=>{ this.i++; this.step() }, s.dur*1000);
   },
   tick(){
@@ -588,7 +783,7 @@ const Surf = {
     };
     this.raf=requestAnimationFrame(draw);
   },
-  stop(){ this.running=false; clearTimeout(this.timer); cancelAnimationFrame(this.raf); Sound.stopDrone(); },
+  stop(){ this.running=false; clearTimeout(this.timer); cancelAnimationFrame(this.raf); Sound.stopDrone(); Wake.release(); },
   finish(){
     this.stop();
     Sound.bell(520);
@@ -601,6 +796,97 @@ const Surf = {
   }
 };
 
+/* ---------- focus lock ---------- */
+const Focus = {
+  mins:25, total:0, endAt:0, timer:null, running:false,
+  drifts:0, hiddenAt:0, raf:null, startedAt:0,
+  RING: 2*Math.PI*46,
+  setup(){
+    show("focusSetup");
+    setTimeout(()=>$("goalInput").blur(),50);
+  },
+  start(){
+    this.total=this.mins*60*1000;
+    this.startedAt=performance.now();
+    this.endAt=Date.now()+this.total;
+    this.running=true; this.drifts=0;
+    const goal=$("goalInput").value.trim();
+    $("focusGoal").textContent = goal ? "→ "+goal : "";
+    $("focusNote").textContent = "";
+    const ring=$("ringFill");
+    ring.style.strokeDasharray=this.RING;
+    ring.style.strokeDashoffset=0;
+    Wake.acquire();
+    Sound.init(); Sound.bell(520);
+    show("focus");
+    this.tick();
+    this.breathe();
+  },
+  tick(){
+    if(!this.running) return;
+    const left=this.endAt-Date.now();
+    if(left<=0) return this.finish();
+    const m=Math.floor(left/60000), s=Math.floor((left%60000)/1000);
+    $("focusTime").textContent=`${m}:${String(s).padStart(2,"0")}`;
+    $("ringFill").style.strokeDashoffset=(this.RING*(1-left/this.total)).toFixed(1);
+    this.timer=setTimeout(()=>this.tick(), 1000-(Date.now()%1000));
+  },
+  breathe(){
+    // tiny orb keeps a slow resonance rhythm in peripheral vision
+    const step=(now)=>{
+      if(!this.running) return;
+      const t=(now-this.startedAt)/1000;
+      const sc=1+.8*(0.5+0.5*Math.sin(t*2*Math.PI/11 - Math.PI/2));
+      $("focusOrbMini").style.transform=`scale(${sc.toFixed(3)})`;
+      this.raf=requestAnimationFrame(step);
+    };
+    this.raf=requestAnimationFrame(step);
+  },
+  drifted(){
+    if(!this.running) return;
+    this.drifts++;
+    const note=$("focusNote");
+    note.style.opacity=0;
+    setTimeout(()=>{
+      note.textContent = this.drifts===1
+        ? "You drifted — it happens. Feel your feet, take one slow exhale, and re-enter."
+        : `Drift ${this.drifts}. No judgment. Notice what pulled you, exhale, return.`;
+      note.style.opacity=1;
+    },300);
+    setTimeout(()=>{ note.style.opacity=0 }, 9000);
+  },
+  finish(){
+    this.stop();
+    Sound.bell(392); setTimeout(()=>Sound.bell(523),1200);
+    logFocus(this.mins);
+    $("doneTitle").textContent="Block complete. 🎯";
+    const goal=$("goalInput").value.trim();
+    $("doneText").textContent = (goal?`"${goal}" got ${this.mins} unbroken minutes of you. `:`${this.mins} unbroken minutes. `)
+      + (this.drifts===0
+        ? "Zero drifts — full absorption carried into action. This is what the practice is for."
+        : `${this.drifts} drift${this.drifts>1?"s":""}, and you returned every time. Returning IS the skill.`);
+    $("doneEarn").textContent=`+${this.mins} focus minutes · streak alive 🔥`;
+    show("done"); renderStats();
+  },
+  stop(){
+    this.running=false;
+    clearTimeout(this.timer); cancelAnimationFrame(this.raf);
+    Wake.release();
+  },
+  abandon(){
+    if(!this.running) return;
+    const spent=Math.round((this.total-(this.endAt-Date.now()))/60000);
+    this.stop();
+    if(spent>=1) logFocus(spent);
+    show("home"); renderStats();
+  }
+};
+document.addEventListener("visibilitychange",()=>{
+  if(!Focus.running) return;
+  if(document.hidden) Focus.hiddenAt=Date.now();
+  else if(Date.now()-Focus.hiddenAt>10000) Focus.drifted(); // >10s away counts as a drift
+});
+
 /* ---------- wiring ---------- */
 document.querySelectorAll("[data-session]").forEach(b=>{
   b.addEventListener("click",()=>{
@@ -612,8 +898,51 @@ $("btnPause").addEventListener("click",()=>Runner.paused?Runner.resume():Runner.
 $("btnExit").addEventListener("click",()=>{ Runner.stop(); show("home"); renderStats(); });
 $("btnSurfExit").addEventListener("click",()=>{ Surf.stop(); show("home"); renderStats(); });
 $("btnSound").addEventListener("click",e=>{ e.target.textContent="sound: "+(Sound.toggle()?"on":"off"); });
+$("btnVoice").addEventListener("click",e=>{ e.target.textContent="voice: "+(Voice.toggle()?"on":"off"); });
+if(Haptics.supported){
+  const hb=$("btnHaptics"); hb.hidden=false;
+  hb.addEventListener("click",e=>{ e.target.textContent="haptics: "+(Haptics.toggle()?"on":"off"); });
+}
 $("btnHome").addEventListener("click",()=>{ show("home"); renderStats(); });
 document.addEventListener("visibilitychange",()=>{ if(document.hidden && !Runner.paused && screens.session.classList.contains("on")) Runner.pause(); });
+
+/* focus lock */
+$("btnFocusSetup").addEventListener("click",()=>Focus.setup());
+$("fsBack").addEventListener("click",()=>{ show("home"); renderStats(); });
+$("fsStart").addEventListener("click",()=>Focus.start());
+$("btnFocusEnd").addEventListener("click",()=>Focus.abandon());
+$("btnChainFocus").addEventListener("click",()=>Focus.setup());
+document.querySelectorAll("#durChips .chip").forEach(c=>{
+  c.addEventListener("click",()=>{
+    document.querySelectorAll("#durChips .chip").forEach(x=>x.classList.remove("sel"));
+    c.classList.add("sel");
+    Focus.mins=+c.dataset.min;
+  });
+});
+$("goalInput").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); Focus.start(); } });
+
+/* space = pause/resume during a session */
+document.addEventListener("keydown",e=>{
+  if(e.code!=="Space" || e.target.tagName==="INPUT") return;
+  if(screens.session.classList.contains("on")){ e.preventDefault(); Runner.paused?Runner.resume():Runner.pause(); }
+});
+
+/* PWA: service worker + install prompt (no-ops on file:// or unsupported) */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+let deferredInstall=null;
+addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault(); deferredInstall=e;
+  $("installHint").style.display="block";
+});
+$("installHint").addEventListener("click",async()=>{
+  if(!deferredInstall) return;
+  deferredInstall.prompt();
+  await deferredInstall.userChoice;
+  deferredInstall=null;
+  $("installHint").style.display="none";
+});
 
 renderStats();
 </script>

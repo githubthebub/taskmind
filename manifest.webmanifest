@@ -1,0 +1,16 @@
+{
+  "name": "Stillpoint — Somatic Descent",
+  "short_name": "Stillpoint",
+  "description": "A somatic descent toward jhana-like stillness. Release the body, absorb into the breath, surf the urge to scroll.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07090f",
+  "theme_color": "#07090f",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
