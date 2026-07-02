@@ -376,9 +376,9 @@ textarea{
 const Store = {
   KS:"stillpoint.v1.sessions", KC:"stillpoint.v1.settings",
   sessions(){ try{ return JSON.parse(localStorage.getItem(this.KS)) || []; }catch{ return []; } },
-  addSession(s){ const a=this.sessions(); a.push(s); localStorage.setItem(this.KS, JSON.stringify(a)); },
+  addSession(s){ const a=this.sessions(); a.push(s); try{ localStorage.setItem(this.KS, JSON.stringify(a)); }catch{} },
   settings(){ try{ return JSON.parse(localStorage.getItem(this.KC)) || {}; }catch{ return {}; } },
-  saveSettings(p){ localStorage.setItem(this.KC, JSON.stringify({...this.settings(), ...p})); },
+  saveSettings(p){ try{ localStorage.setItem(this.KC, JSON.stringify({...this.settings(), ...p})); }catch{} },
 };
 
 /* ═══════════════════════════ settings state ═══════════════════════════ */
