@@ -1,6 +1,7 @@
 // ============================================================
 // POKeMON FRLG: SEVII EDITION - engine
-// Rendered at 240x160 (GBA resolution), scaled 3x
+// 3D world rendered by render3d.js (WebGL, HD-2D style);
+// UI drawn on a transparent 240x160 2D canvas layered on top.
 // ============================================================
 
 'use strict';
@@ -10,7 +11,7 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
-const SAVE_KEY = 'frlg-sevii-save-v1';
+const SAVE_KEY = 'frlg-sevii-save-v2';
 
 // ---------- Input ----------
 const keys = {};
@@ -89,6 +90,8 @@ const game = {
   party: [],
   bag: [],
   gotGift: false,
+  collected: {},
+  beaten: {},
   steps: 0,
   frame: 0,
 };
@@ -96,13 +99,15 @@ const game = {
 function newGame() {
   game.party = STARTING_PARTY.map(p => makeMon(p.species, p.level, p.moves));
   game.bag = STARTING_BAG.map(s => ({ ...s }));
-  game.map = 'oneisland'; game.px = 12; game.py = 32; game.dir = 'up';
+  game.map = 'oneisland'; game.px = 13; game.py = 49; game.dir = 'up';
   game.gotGift = false;
+  game.collected = {}; game.beaten = {};
+  R3D.setMap(game.map);
   startDialog([
     'ONE ISLAND - SEVII ISLANDS',
-    'After conquering the POKeMON', 'LEAGUE, you sailed here on the', 'SEAGALLOP ferry with your team.',
-    'BILL asked you to visit CELIO at', 'the POKeMON NETWORK CENTER.',
-    'KINDLE ROAD and MT. EMBER lie to', 'the north. Good luck, trainer!',
+    'You step off the SEAGALLOP ferry', 'onto the harbor pier.',
+    'After conquering the POKeMON', 'LEAGUE, BILL asked you to visit', 'CELIO at the NETWORK CENTER here.',
+    'KINDLE ROAD, EMBER SPA and', 'MT. EMBER lie to the north.', 'Good luck, CHAMPION!',
   ], () => { game.state = 'world'; });
 }
 
@@ -111,6 +116,7 @@ function saveGame() {
   const s = {
     map: game.map, px: game.px, py: game.py, dir: game.dir,
     party: game.party, bag: game.bag, gotGift: game.gotGift,
+    collected: game.collected, beaten: game.beaten,
   };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); return true; }
   catch (e) { return false; }
@@ -120,6 +126,9 @@ function loadGame() {
     const s = JSON.parse(localStorage.getItem(SAVE_KEY));
     if (!s || !s.party) return false;
     Object.assign(game, s);
+    game.collected = game.collected || {};
+    game.beaten = game.beaten || {};
+    R3D.setMap(game.map);
     return true;
   } catch (e) { return false; }
 }
@@ -167,7 +176,7 @@ function updateDialog() {
 }
 
 // ---------- Map helpers ----------
-const SOLID_TILES = new Set(['#', 'R', 'W', 'A', 'a', 'B', 'b', '!', '4', 'w', 'c', 'h', 'p', 'k', 't']);
+const SOLID_TILES = new Set(['#', 'R', 'W', 'A', 'a', 'B', 'b', '!', '4', '~', 'w', 'c', 'h', 'p', 'k', 't']);
 function tileAt(mapKey, x, y) {
   const g = MAPS[mapKey].grid;
   if (y < 0 || y >= g.length || x < 0 || x >= g[0].length) return '#';
@@ -178,7 +187,9 @@ function npcAt(mapKey, x, y) {
 }
 function isBlocked(mapKey, x, y) {
   if (npcAt(mapKey, x, y)) return true;
-  return SOLID_TILES.has(tileAt(mapKey, x, y));
+  const t = tileAt(mapKey, x, y);
+  if (t === 'I') return !game.collected[x + ',' + y]; // item ball blocks until picked up
+  return SOLID_TILES.has(t);
 }
 
 // ---------- World update ----------
@@ -223,6 +234,7 @@ function doWarp(warp) {
   fadeOut(() => {
     game.map = warp.map; game.px = warp.x; game.py = warp.y; game.dir = warp.dir;
     game.walking = false; game.ox = game.oy = 0;
+    R3D.setMap(game.map);
     fadeIn(() => { game.state = 'world'; });
   });
 }
@@ -242,7 +254,10 @@ function interact() {
   if (npc) {
     // face the player
     npc.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[game.dir];
-    if (npc.action === 'heal') {
+    if (npc.trainer) {
+      if (game.beaten[npc.trainer.id]) startDialog(npc.trainer.after);
+      else startDialog(npc.trainer.intro, () => startTrainerBattle(npc));
+    } else if (npc.action === 'heal') {
       startDialog(npc.lines, null, {
         options: ['YES', 'NO'],
         cb: idx => {
@@ -269,9 +284,27 @@ function interact() {
   const sign = MAPS[game.map].signs[tx + ',' + ty];
   if (sign) { startDialog(sign); return; }
   const t = tileAt(game.map, tx, ty);
+  if (t === 'I') {
+    const key = tx + ',' + ty;
+    const ball = game.map === 'oneisland' && ITEM_BALLS[key];
+    if (ball && !game.collected[key]) {
+      game.collected[key] = true;
+      addItem(ball.item, ball.qty);
+      R3D.hideItem(key);
+      blip(1200, .1);
+      startDialog(['You found ' + ball.qty + ' ' + ball.item + '!']);
+    }
+    return;
+  }
+  if (t === '~') {
+    blip(1000, .1); blip(1300, .12);
+    healParty();
+    startDialog(['You soaked in the EMBER SPA\'s', 'soothing hot spring...', 'Your POKeMON were fully healed!']);
+    return;
+  }
   if (t === '4') startDialog(['The door is locked.', 'Somebody must be out on the KINDLE', 'ROAD...']);
   if (t === 'p' && game.map === 'center') startDialog(['It\'s the POKeMON NETWORK MACHINE.', 'CELIO is fine-tuning it.']);
-  if (t === 'W') startDialog(['The sea sparkles in the sunlight.', 'FOUR ISLAND lies far beyond.']);
+  if (t === 'W') startDialog(['The sea sparkles in the sunlight.', 'The other SEVII ISLANDS lie far', 'beyond the horizon.']);
 }
 
 function healParty() {
@@ -376,7 +409,10 @@ const battle = {
   foe: null, activeIdx: 0, phase: 'intro', menuIdx: 0, moveIdx: 0,
   queue: [], pendingSwitch: -1, foeAnim: 0, playerAnim: 0, shake: 0,
   catchShakes: 0, expGain: 0,
+  trainer: null, trainerParty: [], foeIdx: 0,
 };
+
+const wildOrFoe = () => (battle.trainer ? 'Foe ' : 'Wild ');
 
 function stageMult(stg) { return stg >= 0 ? (2 + stg) / 2 : 2 / (2 - stg); }
 function freshStages() { return { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 }; }
@@ -388,10 +424,26 @@ function startWildBattle() {
   for (const w of WILD_TABLE) { if (r < w.weight) { pick = w; break; } r -= w.weight; }
   const lv = pick.minLv + rand(pick.maxLv - pick.minLv + 1);
   const foe = makeMon(pick.species, lv, pick.moves);
-  startBattle(foe);
+  battle.trainer = null; battle.trainerParty = []; battle.foeIdx = 0;
+  const lead = game.party.find(p => p.hp > 0);
+  beginBattle(foe, ['Wild ' + foe.name + ' appeared!', 'Go! ' + lead.name + '!']);
 }
 
-function startBattle(foe) {
+function startTrainerBattle(npc) {
+  const tr = npc.trainer;
+  battle.trainer = { id: tr.id, name: npc.name, npc };
+  battle.trainerParty = tr.party.map(p => makeMon(p.species, p.level, p.moves));
+  battle.foeIdx = 0;
+  const foe = battle.trainerParty[0];
+  const lead = game.party.find(p => p.hp > 0);
+  beginBattle(foe, [
+    npc.name + ' would like to battle!',
+    npc.name + ' sent out ' + foe.name + '!',
+    'Go! ' + lead.name + '!',
+  ]);
+}
+
+function beginBattle(foe, introMsgs) {
   battle.foe = foe;
   battle.foe.stages = freshStages();
   battle.activeIdx = game.party.findIndex(p => p.hp > 0);
@@ -403,8 +455,9 @@ function startBattle(foe) {
   blip(200, .15, .06); blip(150, .2, .06);
   fadeOut(() => {
     game.state = 'battle';
-    queueMsg('Wild ' + foe.name + ' appeared!');
-    queueMsg('Go! ' + playerMon().name + '!', () => { battle.phase = 'menu'; });
+    introMsgs.forEach((m, i) => {
+      queueMsg(m, i === introMsgs.length - 1 ? () => { battle.phase = 'menu'; } : null);
+    });
     fade.alpha = 0;
   });
 }
@@ -454,7 +507,11 @@ function updateBattle() {
     else if (sel === 'POKeMON') { party.idx = 0; party.mode = 'switch'; game.state = 'party'; }
     else { // RUN
       battle.phase = 'msg';
-      if (Math.random() < 0.85) queueMsg('Got away safely!', endBattle);
+      if (battle.trainer) queueMsg('No! There\'s no running from a', () => {
+        queueMsg('TRAINER battle!', () => { battle.phase = 'menu'; });
+        battle.phase = 'msg';
+      });
+      else if (Math.random() < 0.85) queueMsg('Got away safely!', () => endBattle());
       else queueMsg('Can\'t escape!', () => doTurn(null));
     }
     return;
@@ -527,8 +584,8 @@ function runSteps(steps, i) {
 }
 
 function executeMove(who, user, target, mv, done) {
-  const foePrefix = who === 'foe' ? 'Wild ' : '';
-  const tgtPrefix = who === 'foe' ? '' : 'Wild ';
+  const foePrefix = who === 'foe' ? wildOrFoe() : '';
+  const tgtPrefix = who === 'foe' ? '' : wildOrFoe();
   battle.phase = 'msg';
 
   // flinch
@@ -672,7 +729,7 @@ function pickFoeMove(foe) {
 
 function endOfTurn(done) {
   const msgs = [];
-  for (const [mon, prefix] of [[playerMon(), ''], [battle.foe, 'Wild ']]) {
+  for (const [mon, prefix] of [[playerMon(), ''], [battle.foe, wildOrFoe()]]) {
     if (mon.hp <= 0) continue;
     if (mon.status === 'PSN' || mon.status === 'BRN') {
       const amt = Math.max(1, Math.floor(mon.stats.hp / 8));
@@ -686,7 +743,7 @@ function endOfTurn(done) {
 function checkFaints() {
   const foe = battle.foe, pm = playerMon();
   if (foe.hp <= 0) {
-    queueMsg('Wild ' + foe.name + ' fainted!', () => giveExp());
+    queueMsg(wildOrFoe() + foe.name + ' fainted!', () => giveExp(afterFoeFainted));
     battle.phase = 'msg';
     return true;
   }
@@ -699,6 +756,7 @@ function checkFaints() {
             endBattle(() => {
               healParty();
               game.map = 'center'; game.px = 4; game.py = 4; game.dir = 'down';
+              R3D.setMap('center');
               startDialog(['You scurried back to the POKeMON', 'CENTER...']);
             });
           });
@@ -716,7 +774,7 @@ function checkFaints() {
   return false;
 }
 
-function giveExp() {
+function giveExp(done) {
   const foe = battle.foe, pm = playerMon();
   const exp = Math.floor(SPECIES[foe.species].exp * foe.level / 7);
   pm.exp += exp;
@@ -733,11 +791,31 @@ function giveExp() {
     }
     if (leveled) {
       blip(800, .08); blip(1000, .08); blip(1300, .12);
-      queueMsg(pm.name + ' grew to LV. ' + pm.level + '!', () => endBattle());
-    } else endBattle();
+      queueMsg(pm.name + ' grew to LV. ' + pm.level + '!', done);
+    } else done();
     battle.phase = 'msg';
   });
   battle.phase = 'msg';
+}
+
+function afterFoeFainted() {
+  if (battle.trainer && battle.foeIdx + 1 < battle.trainerParty.length) {
+    battle.foeIdx++;
+    const next = battle.trainerParty[battle.foeIdx];
+    next.stages = freshStages();
+    battle.foe = next;
+    queueMsg(battle.trainer.name + ' sent out ' + next.name + '!', () => { battle.phase = 'menu'; });
+    battle.phase = 'msg';
+  } else if (battle.trainer) {
+    queueMsg('You defeated ' + battle.trainer.name + '!', () => {
+      const tr = battle.trainer.npc.trainer;
+      game.beaten[tr.id] = true;
+      endBattle(() => startDialog(tr.win));
+    });
+    battle.phase = 'msg';
+  } else {
+    endBattle();
+  }
 }
 
 function endBattle(cb) {
@@ -745,6 +823,7 @@ function endBattle(cb) {
   for (const p of game.party) { p.stages = freshStages(); p.flinched = false; }
   fadeOut(() => {
     battle.foe = null;
+    battle.trainer = null; battle.trainerParty = []; battle.foeIdx = 0;
     fadeIn();
     if (cb) cb();
   }, 'battle');
@@ -792,6 +871,13 @@ function useBattleItem(slot, item) {
     return;
   }
   // ball
+  if (battle.trainer) {
+    queueMsg('The TRAINER blocked the BALL!', () => {
+      queueMsg('Don\'t be a thief!', () => { battle.phase = 'menu'; });
+      battle.phase = 'msg';
+    });
+    return;
+  }
   consumeItem(slot);
   throwBall(item.bonus);
 }
@@ -852,124 +938,10 @@ function drawSprite(sprite, x, y, scale = 1, flip = false) {
   }
 }
 
-function drawPlayerSprite(x, y, dir, bob) {
-  const flip = dir === 'left';
-  const rows = PLAYER_SPRITES[dir === 'left' ? 'right' : dir];
-  drawSprite({ pal: PLAYER_SPRITES.pal, px: rows }, x, y + (bob ? -1 : 0), 1, flip);
-}
-
-// ---------- Tiles ----------
-function drawTile(t, x, y, frame, outdoor) {
-  switch (t) {
-    case 'G': case 'F': case 'T': case 'R': case '!':
-      px(x, y, TS, TS, '#78c850');
-      px(x + 3, y + 5, 2, 1, '#68b840'); px(x + 10, y + 11, 2, 1, '#68b840');
-      px(x + 12, y + 3, 1, 1, '#88d860'); px(x + 5, y + 13, 1, 1, '#88d860');
-      break;
-    case 'P':
-      px(x, y, TS, TS, '#e0c890');
-      px(x + 2, y + 3, 1, 1, '#d0b878'); px(x + 11, y + 9, 2, 1, '#d0b878');
-      px(x + 6, y + 13, 1, 1, '#d0b878');
-      break;
-    case 'S':
-      px(x, y, TS, TS, '#f0dfa8');
-      px(x + 4, y + 4, 1, 1, '#e0cf90'); px(x + 11, y + 8, 1, 1, '#e0cf90');
-      px(x + 7, y + 12, 2, 1, '#e0cf90');
-      break;
-    case 'W': {
-      px(x, y, TS, TS, '#5090d8');
-      const ph = Math.floor(frame / 20) % 2;
-      px(x + 2 + ph * 2, y + 4, 5, 1, '#70b0f0');
-      px(x + 8 - ph * 2, y + 11, 5, 1, '#70b0f0');
-      break;
-    }
-    case '#':
-      px(x, y, TS, TS, '#a09078');
-      px(x, y, TS, 2, '#b8a890');
-      px(x + 1, y + 5, 6, 1, '#887860'); px(x + 9, y + 10, 6, 1, '#887860');
-      px(x, y + 14, TS, 2, '#786850');
-      break;
-    case 'A': px(x, y, TS, TS, '#e86858'); px(x, y + 13, TS, 3, '#c04838'); px(x + 2, y + 3, 3, 3, '#f89888'); break;
-    case 'a': px(x, y, TS, TS, '#f0e8d8'); px(x + 3, y + 3, 4, 5, '#88c8f0'); px(x + 10, y + 3, 4, 5, '#88c8f0'); px(x, y + 14, TS, 2, '#c8c0b0'); break;
-    case '1': px(x, y, TS, TS, '#f0e8d8'); px(x + 3, y + 2, 10, 14, '#b05840'); px(x + 4, y + 3, 8, 12, '#c86848'); break;
-    case 'B': px(x, y, TS, TS, '#6890d8'); px(x, y + 13, TS, 3, '#4868a8'); px(x + 2, y + 3, 3, 3, '#98b8e8'); break;
-    case 'b': px(x, y, TS, TS, '#e8dcc8'); px(x + 5, y + 3, 6, 5, '#88c8f0'); px(x, y + 14, TS, 2, '#c0b4a0'); break;
-    case '2': case '4': px(x, y, TS, TS, '#e8dcc8'); px(x + 3, y + 2, 10, 14, '#886048'); px(x + 4, y + 3, 8, 12, '#987058'); break;
-    // interior
-    case 'f': px(x, y, TS, TS, '#e8d8b8'); px(x, y, TS, 1, '#d8c8a8'); px(x, y, 1, TS, '#d8c8a8'); break;
-    case 'w': px(x, y, TS, TS, '#c8b090'); px(x, y + 12, TS, 4, '#a89070'); px(x + 2, y + 2, 12, 8, '#d8c0a0'); break;
-    case 'c': px(x, y, TS, TS, '#e8d8b8'); px(x, y + 2, TS, 10, '#c87858'); px(x, y + 2, TS, 2, '#e89878'); break;
-    case 'm': px(x, y, TS, TS, '#e8d8b8'); px(x + 2, y + 2, 12, 12, '#88a858'); px(x + 4, y + 4, 8, 8, '#a8c878'); break;
-    case 'h': px(x, y, TS, TS, '#e8d8b8'); px(x + 1, y + 1, 14, 14, '#d0d4dc'); px(x + 3, y + 4, 4, 4, '#e85858'); px(x + 9, y + 4, 4, 4, '#58e858'); break;
-    case 'p': px(x, y, TS, TS, '#e8d8b8'); px(x + 1, y + 1, 14, 14, '#8890a0'); px(x + 3, y + 3, 10, 7, '#70e8c8'); px(x + 5, y + 12, 6, 2, '#585c68'); break;
-    case 'k': px(x, y, TS, TS, '#c8b090'); px(x + 1, y + 1, 14, 14, '#986848'); px(x + 2, y + 3, 12, 3, '#e8a848'); px(x + 2, y + 8, 12, 3, '#68a8e8'); break;
-    case 't': px(x, y, TS, TS, '#e8d8b8'); px(x + 1, y + 3, 14, 10, '#b08858'); px(x + 2, y + 4, 12, 8, '#c89868'); break;
-    default: px(x, y, TS, TS, outdoor ? '#78c850' : '#e8d8b8');
-  }
-  // decorations layered on grass
-  if (t === 'T') {
-    px(x, y, TS, TS, '#50a848');
-    for (const [gx, gy] of [[2, 2], [9, 1], [5, 7], [12, 8], [1, 10], [8, 12]]) {
-      px(x + gx, y + gy + 2, 3, 3, '#387838');
-      px(x + gx + 1, y + gy, 1, 3, '#387838');
-    }
-  }
-  if (t === 'F') {
-    const ph = Math.floor(frame / 30) % 2;
-    px(x + 3, y + 3 + ph, 3, 3, '#e85858'); px(x + 4, y + 4 + ph, 1, 1, '#f0d020');
-    px(x + 10, y + 9 - ph, 3, 3, '#f0d020'); px(x + 11, y + 10 - ph, 1, 1, '#e85858');
-  }
-  if (t === 'R') {
-    px(x + 6, y + 10, 4, 6, '#886040');
-    px(x + 1, y, 14, 11, '#308048');
-    px(x + 3, y - 2, 10, 4, '#409858');
-    px(x + 4, y + 2, 3, 2, '#50b068'); px(x + 9, y + 6, 3, 2, '#286838');
-  }
-  if (t === '!') {
-    px(x + 7, y + 8, 2, 6, '#886040');
-    px(x + 3, y + 3, 10, 6, '#b89058');
-    px(x + 4, y + 5, 8, 1, '#68503080'); px(x + 4, y + 7, 8, 1, '#68503080');
-  }
-}
-
-// ---------- World draw ----------
+// ---------- World draw (3D scene + optional location banner) ----------
 function drawWorld() {
-  const m = MAPS[game.map];
-  const g = m.grid;
-  const camX = game.px * TS + game.ox - VW / 2 + TS / 2;
-  const camY = game.py * TS + game.oy - VH / 2 + TS / 2;
-  const cx = clamp(camX, 0, Math.max(0, g[0].length * TS - VW));
-  const cy = clamp(camY, 0, Math.max(0, g.length * TS - VH));
-
-  px(0, 0, VW, VH, m.outdoor ? '#78c850' : '#302820');
-
-  const x0 = Math.floor(cx / TS), y0 = Math.floor(cy / TS);
-  for (let ty = y0; ty <= y0 + Math.ceil(VH / TS); ty++) {
-    for (let tx = x0; tx <= x0 + Math.ceil(VW / TS); tx++) {
-      if (ty < 0 || ty >= g.length || tx < 0 || tx >= g[0].length) continue;
-      drawTile(g[ty][tx], tx * TS - cx, ty * TS - cy, game.frame, m.outdoor);
-    }
-  }
-  // NPCs
-  for (const n of m.npcs) {
-    const nx = n.x * TS - cx, ny = n.y * TS - cy;
-    if (nx < -TS || nx > VW || ny < -TS || ny > VH) continue;
-    drawNPC(nx, ny - 2, n);
-  }
-  // player
-  const plx = game.px * TS + game.ox - cx, ply = game.py * TS + game.oy - cy;
-  drawPlayerSprite(plx, ply - 2, game.dir, game.walking && game.walkFrame % 8 >= 4);
-}
-
-function drawNPC(x, y, n) {
-  const c = n.color;
-  // simple villager: colored shirt + skin head
-  px(x + 5, y + 2, 6, 2, '#584838');
-  px(x + 4, y + 3, 8, 5, '#e8b088');
-  px(x + 6, y + 5, 1, 1, '#282020'); px(x + 9, y + 5, 1, 1, '#282020');
-  px(x + 4, y + 8, 8, 5, c);
-  px(x + 3, y + 9, 1, 3, c); px(x + 12, y + 9, 1, 3, c);
-  px(x + 5, y + 13, 2, 2, '#404048'); px(x + 9, y + 13, 2, 2, '#404048');
+  game.frame++;
+  R3D.renderWorld();
 }
 
 // ---------- UI primitives ----------
@@ -1060,33 +1032,16 @@ function drawBag() {
   if (game.bag[bagUI.idx]) text(ITEMS[game.bag[bagUI.idx].item].desc, 16, VH - 26, '#585858');
 }
 
-// ---------- Battle draw ----------
+// ---------- Battle draw (3D arena + 2D UI overlay) ----------
 function drawBattle() {
-  // background
-  const grd = ctx.createLinearGradient(0, 0, 0, VH);
-  grd.addColorStop(0, '#a8d8f0'); grd.addColorStop(0.6, '#c8e8b0');
-  ctx.fillStyle = grd; ctx.fillRect(0, 0, VW, VH);
-  // platforms
-  ctx.fillStyle = '#98c878';
-  ctx.beginPath(); ctx.ellipse(178, 66, 44, 12, 0, 0, 7); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(60, 112, 48, 13, 0, 0, 7); ctx.fill();
+  game.frame++;
+  R3D.renderBattle();
+  drawBattleUI();
+}
 
-  const shakeX = battle.shake > 0 ? (battle.shake % 2 ? 2 : -2) : 0;
-
-  // foe
+function drawBattleUI() {
   const foe = battle.foe;
-  if (foe && foe.hp > 0) {
-    const dx = battle.foeAnim > 0 ? -battle.foeAnim : 0;
-    if (battle.foeAnim > 0) battle.foeAnim--;
-    drawSprite(SPRITES[foe.species], 154 + dx + shakeX, 18, 3);
-  }
-  // player mon (mirrored, larger, back-ish)
   const pm = playerMon();
-  if (pm && pm.hp > 0) {
-    const dx = battle.playerAnim > 0 ? battle.playerAnim : 0;
-    if (battle.playerAnim > 0) battle.playerAnim--;
-    drawSprite(SPRITES[pm.species], 24 + dx, 62, 3, true);
-  }
 
   // foe info box
   if (foe) {
@@ -1182,6 +1137,7 @@ function updateTitle() {
 
 // ---------- Main loop ----------
 function frame() {
+  ctx.clearRect(0, 0, VW, VH); // UI layer is transparent over the 3D canvas
   switch (game.state) {
     case 'title': updateTitle(); drawTitle(); break;
     case 'world': updateWorld(); drawWorld(); break;
@@ -1208,7 +1164,9 @@ function frame() {
   requestAnimationFrame(frame);
 }
 
+R3D.init(document.getElementById('gl'));
+
 // debug hook for automated testing
-window.GAME = { game, battle, startWildBattle, startBattle, makeMon, newGame };
+window.GAME = { game, battle, startWildBattle, startTrainerBattle, makeMon, newGame };
 
 requestAnimationFrame(frame);

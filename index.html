@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pokemon FRLG: Sevii Edition</title>
+<title>Pokemon FRLG: Sevii Edition 3D</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -17,16 +17,26 @@
     min-height: 100vh;
     gap: 12px;
   }
-  #game {
+  #stack {
+    position: relative;
     width: 720px;
     height: 480px;
     max-width: 96vw;
     max-height: 64vw;
-    image-rendering: pixelated;
     border: 4px solid #384858;
     border-radius: 6px;
     background: #000;
+    overflow: hidden;
   }
+  #stack canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+  }
+  #game { z-index: 2; }
+  #gl { z-index: 1; }
   .controls {
     font-size: 13px;
     color: #7a8ba0;
@@ -37,13 +47,18 @@
 </style>
 </head>
 <body>
-  <canvas id="game" width="240" height="160"></canvas>
+  <div id="stack">
+    <canvas id="gl" width="480" height="320"></canvas>
+    <canvas id="game" width="240" height="160"></canvas>
+  </div>
   <div class="controls">
     <b>Arrows / WASD</b> move &nbsp;·&nbsp; <b>Z / Enter</b> confirm, talk &nbsp;·&nbsp;
     <b>X / Esc</b> menu, back<br>
-    Heal at the POKeMON CENTER · Wild POKeMON live in the tall grass on KINDLE ROAD
+    Soak in EMBER SPA or heal at the POKeMON CENTER · Trainers &amp; wild POKeMON await on KINDLE ROAD
   </div>
+  <script src="lib/three.min.js"></script>
   <script src="data.js"></script>
+  <script src="render3d.js"></script>
   <script src="game.js"></script>
 </body>
 </html>

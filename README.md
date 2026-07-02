@@ -1,15 +1,18 @@
-# Pokémon FRLG: Sevii Edition
+# Pokémon FRLG: Sevii Edition — 3D
 
-A FireRed/LeafGreen-style fan game demo that runs entirely in the browser —
-no dependencies, no build step. The adventure starts on **One Island** in the
-**Sevii Islands**, right after your victory at the Pokémon League: Bill has
-dropped you off by Seagallop ferry to visit Celio at the Pokémon Network Center.
+A FireRed/LeafGreen-style fan game demo rendered in **3D** (HD-2D style: a
+low-res voxel world with billboard pixel sprites, three.js) that runs entirely
+in the browser. The adventure starts on **One Island** in the **Sevii
+Islands**, right after your victory at the Pokémon League: the Seagallop ferry
+drops you at the harbor pier, and Bill has asked you to visit Celio at the
+Pokémon Network Center.
 
-![Title screen](docs/title.png)
+![Arriving at the pier](docs/pier.png)
 
 ## How to play
 
-Open `index.html` in any browser. That's it.
+Open `index.html` in any browser (WebGL required — any modern browser has it).
+No build step, no server.
 
 | Key | Action |
 |---|---|
@@ -30,35 +33,51 @@ You begin with a full endgame team of six:
 | **Raichu** | 53 | Thunderbolt, Thunder Wave, Quick Attack, Brick Break |
 | **Nidoking** | 55 | Earthquake, Sludge Bomb, Megahorn, Thunderbolt |
 
-![Party screen](docs/party.png)
+## One Island, like the real thing
 
-## Features
+Laid out after FRLG's One Island, from south to north:
 
-- **One Island overworld** — the town, Treasure Beach, and Kindle Road heading
-  north toward Mt. Ember, rendered at authentic GBA resolution (240×160)
-- **Wild encounters** in the tall grass on Kindle Road: Spearow, Ponyta,
-  Meowth, and Geodude (Lv. 29–34)
-- **Gen-3-style battle system** — physical/special split by move type (as in
-  Gen 3), STAB, type effectiveness, critical hits, stat stages, priority moves,
-  and status conditions (paralysis, poison, burn, sleep, freeze)
-- **Catching** with Poké Balls and Great Balls using the Gen 3 capture formula —
-  caught Pokémon are sent to Bill's PC (your party is full!)
-- **EXP and level-ups** from battles
-- **Pokémon Center** — talk to the nurse to heal; Celio is inside tinkering with
-  the Network Machine
-- **NPCs, signs, and interiors** to explore; one villager has a gift for you
-- **Save/continue** via localStorage (Menu → SAVE)
+- **Seagallop harbor** — you arrive on the pier, ferry docked alongside
+- **Treasure Beach** — item balls washed up in the sand (grab them!)
+- **One Island town** — the Pokémon Network Center (nurse heals, Celio tinkers
+  with his machine), houses, and islanders to talk to
+- **Kindle Road** — tall grass with wild Spearow, Ponyta, Meowth, Geodude, and
+  rare Fearow and Rapidash (Lv. 29–37), plus two trainers who want a fight:
+  Bird Keeper Milo and Camper Rick
+- **Ember Spa** — a hot spring at the foot of the mountain that fully heals
+  your party, just like the real one
+- **Mt. Ember** — smoking on the horizon
+
+![Town](docs/town.png)
+![Ember Spa](docs/ember-spa.png)
+
+## Battles
+
+3D arena with billboard sprites, Mt. Ember in the backdrop, and the classic
+GBA UI on top:
+
+- Gen-3 mechanics: physical/special split by move type, STAB, type chart,
+  critical hits, stat stages, priority moves, status conditions
+- **Trainer battles** — multi-Pokémon teams, no running, no catching
+  ("Don't be a thief!")
+- **Catching** wild Pokémon with the Gen 3 capture formula — caught Pokémon
+  go to Bill's PC (your party is full)
+- EXP and level-ups
 
 ![Battle](docs/battle.png)
-![Overworld](docs/overworld.png)
 
 ## Project layout
 
-- `index.html` — page shell and canvas
-- `data.js` — type chart, moves, species stats, party/wild tables, pixel-art
-  sprites, and tile maps
-- `game.js` — engine: overworld movement, dialog, menus, battle state machine,
-  rendering, and save/load
+- `index.html` — page shell; WebGL canvas + transparent 2D UI canvas stacked
+- `lib/three.min.js` — vendored three.js (r147)
+- `data.js` — type chart, moves, species, party/wild/trainer tables, pixel-art
+  sprites, tile maps
+- `render3d.js` — HD-2D renderer: instanced voxel terrain, billboard sprites,
+  animated sea, volcano smoke, battle arena
+- `game.js` — game logic: movement, dialog, menus, battle state machine,
+  save/load (localStorage)
+
+Save via Menu → SAVE; the title screen offers CONTINUE when a save exists.
 
 This is a non-commercial fan demo for educational purposes. Pokémon and all
 related names are trademarks of Nintendo / Creatures Inc. / GAME FREAK inc.
