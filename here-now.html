@@ -1,0 +1,793 @@
+<title>Here Now — a meditation hall</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ink:#150A0D;
+    --ink-2:#1D0F13;
+    --robe:#6E2230;
+    --robe-deep:#3A1420;
+    --marigold:#E2A144;
+    --marigold-dim:#8A6430;
+    --bone:#ECE1D1;
+    --dusk:#A98E88;
+    --ember:#B8472E;
+    --hairline:rgba(236,225,209,.14);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --ui:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+  body{
+    background:var(--ink);
+    color:var(--bone);
+    font-family:var(--serif);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--marigold);color:var(--ink)}
+
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  button:focus-visible, a:focus-visible, [tabindex]:focus-visible{
+    outline:2px solid var(--marigold);outline-offset:3px;border-radius:2px;
+  }
+
+  .label{
+    font-family:var(--ui);
+    font-size:.68rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--dusk);
+  }
+  .label--gold{color:var(--marigold)}
+
+  .wrap{max-width:64rem;margin:0 auto;padding:0 1.5rem}
+  .prose{max-width:34em}
+
+  /* ---------- header ---------- */
+  .top{
+    display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    padding:1.4rem 0;
+  }
+  .top .label{color:var(--dusk)}
+  .sound-toggle{
+    display:flex;align-items:center;gap:.55rem;
+    font-family:var(--ui);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--dusk);
+    padding:.45rem .8rem;
+    border:1px solid var(--hairline);
+    border-radius:999px;
+    transition:color .2s,border-color .2s;
+  }
+  .sound-toggle[aria-pressed="true"]{color:var(--marigold);border-color:var(--marigold-dim)}
+  .sound-toggle .dot{width:.45rem;height:.45rem;border-radius:50%;background:currentColor}
+
+  /* ---------- hero: the first door ---------- */
+  .hero{
+    min-height:92vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2.2rem;
+    text-align:center;
+    padding:3rem 1.5rem 4rem;
+    position:relative;
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 60% 45% at 50% 42%, rgba(110,34,48,.35), transparent 70%);
+  }
+  .hero > *{position:relative}
+  .enso-stage{position:relative;width:min(19rem,72vw);aspect-ratio:1}
+  .enso-stage canvas{position:absolute;inset:0;width:100%;height:100%}
+  .breath-word{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--ui);font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--dusk);
+    transition:color 1s;
+  }
+  .breath-word.is-gap{color:var(--marigold)}
+  .hero h1{
+    font-size:clamp(1.9rem,4.6vw,3rem);
+    font-weight:400;
+    line-height:1.2;
+    letter-spacing:.01em;
+    text-wrap:balance;
+    max-width:16em;
+  }
+  .hero .sutra{
+    color:var(--dusk);
+    font-style:italic;
+    max-width:30em;
+    text-wrap:balance;
+  }
+  .hero .sutra cite{font-style:normal;display:block;margin-top:.6rem;font-family:var(--ui);font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;color:var(--marigold-dim)}
+  .down-hint{color:var(--dusk);font-family:var(--ui);font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;padding:.6rem 1rem}
+  .down-hint:hover{color:var(--marigold)}
+
+  /* ---------- section scaffolding ---------- */
+  .section{padding:5.5rem 0 6rem;border-top:1px solid var(--hairline)}
+  .section-head{display:flex;flex-direction:column;gap:1rem;margin-bottom:2.8rem}
+  .section-head h2{
+    font-size:clamp(1.6rem,3.4vw,2.3rem);
+    font-weight:400;line-height:1.25;text-wrap:balance;max-width:18em;
+  }
+  .section-head .intro{color:var(--dusk);max-width:36em}
+
+  /* ---------- meditations ---------- */
+  .med-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1px;background:var(--hairline);border:1px solid var(--hairline)}
+  .med-card{
+    background:var(--ink-2);
+    padding:1.7rem 1.5rem 1.6rem;
+    display:flex;flex-direction:column;gap:.8rem;
+    text-align:left;
+    transition:background .25s;
+  }
+  .med-card:hover{background:var(--robe-deep)}
+  .med-card h3{font-size:1.3rem;font-weight:400}
+  .med-card .tag{color:var(--marigold);font-family:var(--ui);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase}
+  .med-card p{color:var(--dusk);font-size:.92rem;line-height:1.55}
+  .med-card .go{margin-top:auto;color:var(--bone);font-family:var(--ui);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase}
+  .med-card:hover .go{color:var(--marigold)}
+
+  .length-row{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:1.6rem}
+  .length-row .label{margin-right:.4rem}
+  .chip{
+    font-family:var(--ui);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--dusk);
+    border:1px solid var(--hairline);border-radius:999px;
+    padding:.42rem .95rem;
+    transition:color .2s,border-color .2s,background .2s;
+  }
+  .chip[aria-pressed="true"]{color:var(--ink);background:var(--marigold);border-color:var(--marigold)}
+  .chip:hover:not([aria-pressed="true"]){color:var(--bone);border-color:var(--dusk)}
+
+  /* ---------- session (running meditation) ---------- */
+  .session{
+    position:fixed;inset:0;z-index:40;
+    background:var(--ink);
+    display:none;
+    flex-direction:column;align-items:center;justify-content:center;
+    gap:1.6rem;
+    text-align:center;
+    padding:2rem 1.5rem;
+  }
+  .session.is-open{display:flex}
+  .session::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 55% 42% at 50% 55%, rgba(110,34,48,.3), transparent 70%);
+  }
+  .session > *{position:relative;max-width:38em}
+  .session .stage-count{color:var(--marigold);font-family:var(--ui);font-size:.68rem;letter-spacing:.26em;text-transform:uppercase}
+  .session h2{font-size:clamp(2rem,6vw,3.4rem);font-weight:400;line-height:1.15;text-wrap:balance}
+  .session .instruction{color:var(--dusk);font-size:1.05rem;line-height:1.65;text-wrap:pretty}
+  .session .clock{
+    font-family:var(--ui);font-weight:200;
+    font-size:clamp(2.6rem,9vw,4.4rem);
+    letter-spacing:.06em;
+    font-variant-numeric:tabular-nums;
+    color:var(--bone);
+    line-height:1;
+  }
+  .stage-dots{display:flex;gap:.55rem;justify-content:center}
+  .stage-dots span{width:.5rem;height:.5rem;border-radius:50%;background:var(--hairline)}
+  .stage-dots span.done{background:var(--marigold-dim)}
+  .stage-dots span.now{background:var(--marigold)}
+  .session .end-btn{
+    margin-top:.8rem;
+    font-family:var(--ui);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--dusk);
+    border:1px solid var(--hairline);border-radius:999px;
+    padding:.6rem 1.3rem;
+    transition:color .2s,border-color .2s;
+  }
+  .session .end-btn:hover{color:var(--bone);border-color:var(--dusk)}
+  .session .total-left{color:var(--dusk);font-family:var(--ui);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase}
+
+  /* ---------- stop bell ---------- */
+  .stop-controls{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.8rem}
+  .big-chip{
+    font-family:var(--ui);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+    border:1px solid var(--hairline);border-radius:999px;
+    padding:.75rem 1.4rem;color:var(--bone);
+    transition:color .2s,border-color .2s,background .2s;
+  }
+  .big-chip:hover{border-color:var(--dusk)}
+  .big-chip[aria-pressed="true"]{background:var(--robe);border-color:var(--robe);color:var(--bone)}
+  .bell-status{margin-top:1.1rem;color:var(--marigold-dim);font-family:var(--ui);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;min-height:1.2em}
+
+  .stop-overlay{
+    position:fixed;inset:0;z-index:60;
+    background:var(--ember);
+    color:var(--ink);
+    display:none;
+    flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;
+    text-align:center;padding:2rem;
+  }
+  .stop-overlay.is-open{display:flex}
+  .stop-overlay .stop-word{
+    font-size:clamp(4rem,17vw,10rem);
+    font-weight:700;line-height:1;letter-spacing:.02em;
+  }
+  .stop-overlay p{max-width:26em;font-size:1.05rem;line-height:1.55;color:rgba(21,10,13,.85);text-wrap:balance}
+  .stop-overlay .clock{font-family:var(--ui);font-weight:300;font-size:2rem;font-variant-numeric:tabular-nums}
+  .stop-overlay .release{
+    font-family:var(--ui);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;
+    color:rgba(21,10,13,.7);
+    border:1px solid rgba(21,10,13,.4);border-radius:999px;padding:.55rem 1.2rem;
+  }
+  .stop-overlay .release:focus-visible{outline-color:var(--ink)}
+
+  /* ---------- deck ---------- */
+  .deck{
+    border:1px solid var(--hairline);
+    background:var(--ink-2);
+    padding:3rem clamp(1.4rem,5vw,3.5rem);
+    display:flex;flex-direction:column;gap:1.5rem;
+    min-height:19rem;justify-content:center;
+  }
+  .deck .door-no{color:var(--marigold);font-family:var(--ui);font-size:.68rem;letter-spacing:.26em;text-transform:uppercase}
+  .deck blockquote{
+    font-size:clamp(1.25rem,2.6vw,1.7rem);
+    line-height:1.45;font-style:italic;text-wrap:balance;max-width:26em;
+    transition:opacity .45s;
+  }
+  .deck .commentary{color:var(--dusk);max-width:36em;transition:opacity .45s}
+  .deck.is-turning blockquote,.deck.is-turning .commentary{opacity:0}
+  .deck-actions{display:flex;align-items:baseline;gap:1.4rem;margin-top:.4rem}
+  .deck-note{color:var(--dusk);font-size:.85rem;font-style:italic}
+
+  .gold-btn{
+    font-family:var(--ui);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink);background:var(--marigold);
+    border-radius:999px;padding:.8rem 1.6rem;
+    transition:background .2s;
+  }
+  .gold-btn:hover{background:#EFB55C}
+
+  /* ---------- contemplations / footer ---------- */
+  .contemplation{
+    display:flex;flex-direction:column;gap:1.4rem;align-items:flex-start;
+  }
+  .contemplation blockquote{
+    font-size:clamp(1.4rem,3vw,2rem);line-height:1.4;font-weight:400;
+    max-width:24em;text-wrap:balance;transition:opacity .45s;
+  }
+  .contemplation.is-turning blockquote{opacity:0}
+  .quiet-btn{
+    font-family:var(--ui);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--dusk);border-bottom:1px solid var(--hairline);padding-bottom:.2rem;
+    transition:color .2s,border-color .2s;
+  }
+  .quiet-btn:hover{color:var(--marigold);border-color:var(--marigold-dim)}
+
+  footer{border-top:1px solid var(--hairline);padding:3.2rem 0 4rem;display:flex;flex-direction:column;gap:1.2rem}
+  footer p{color:var(--dusk);font-size:.9rem;max-width:44em}
+  footer .sendoff{color:var(--bone);font-style:italic;font-size:1.05rem}
+
+  @media (prefers-reduced-motion:reduce){
+    .deck blockquote,.deck .commentary,.contemplation blockquote{transition:none}
+  }
+</style>
+
+<header class="wrap top">
+  <span class="label">A meditation hall &middot; in the spirit of Osho</span>
+  <button class="sound-toggle" id="soundToggle" aria-pressed="false">
+    <span class="dot" aria-hidden="true"></span><span id="soundLabel">Sound off</span>
+  </button>
+</header>
+
+<!-- ============ HERO: technique one, running ============ -->
+<section class="hero" aria-label="Breath watching">
+  <div class="enso-stage">
+    <canvas id="enso" aria-hidden="true"></canvas>
+    <div class="breath-word" id="breathWord" aria-hidden="true">in</div>
+  </div>
+  <h1>The door is between two breaths.</h1>
+  <p class="sutra">&ldquo;Radiant one, this experience may dawn between two breaths. After breath comes in, and just before turning up &mdash; the beneficence.&rdquo;
+    <cite>Vigyan Bhairav Tantra &middot; the first of 112 techniques</cite>
+  </p>
+  <button class="down-hint" id="beginBtn">Watch three breaths, then come down &darr;</button>
+</section>
+
+<main class="wrap">
+
+  <!-- ============ THE MEDITATIONS ============ -->
+  <section class="section" id="meditations" aria-labelledby="medH">
+    <div class="section-head">
+      <span class="label label--gold">The meditations</span>
+      <h2 id="medH">First the storm, then the silence.</h2>
+      <p class="intro">Osho designed his meditations for people like you &mdash; restless, modern, full of undone shouting. You cannot sit still by force, so don&rsquo;t: exhaust the madness first, and stillness arrives on its own. Choose one. The bell will move you from stage to stage; you only have to be total.</p>
+    </div>
+
+    <div class="med-grid" id="medGrid"></div>
+
+    <div class="length-row" role="group" aria-label="Session length">
+      <span class="label">How long do you have?</span>
+      <button class="chip" data-len="taste" aria-pressed="true">A taste &middot; ~7 min</button>
+      <button class="chip" data-len="short" aria-pressed="false">Half &middot; ~30 min</button>
+      <button class="chip" data-len="full" aria-pressed="false">Full &middot; ~60 min</button>
+    </div>
+  </section>
+
+  <!-- ============ THE REMEMBERING BELL ============ -->
+  <section class="section" aria-labelledby="stopH">
+    <div class="section-head">
+      <span class="label label--gold">The stop exercise</span>
+      <h2 id="stopH">A bell that interrupts your sleep.</h2>
+      <p class="intro prose">Osho loved Gurdjieff&rsquo;s trick: in the middle of ordinary life a voice shouts <em>stop!</em> &mdash; and you freeze, mid-gesture, mid-thought, like a statue. In that sudden halt the machinery runs on without you, and for one raw moment you can watch it. Leave this page open while you work. At some unguessable moment, the bell will strike. Freeze exactly as you are &mdash; don&rsquo;t swallow, don&rsquo;t settle into comfort &mdash; and simply witness, for one minute.</p>
+    </div>
+    <div class="stop-controls">
+      <button class="big-chip" id="bellToggle" aria-pressed="false">Arm the bell &middot; it strikes when it wants</button>
+      <button class="big-chip" id="bellNow">Strike it now</button>
+    </div>
+    <p class="bell-status" id="bellStatus" role="status"></p>
+  </section>
+
+  <!-- ============ 112 DOORS ============ -->
+  <section class="section" aria-labelledby="deckH">
+    <div class="section-head">
+      <span class="label label--gold">The book of secrets</span>
+      <h2 id="deckH">One hundred and twelve doors, and every one opens inward.</h2>
+      <p class="intro prose">Five thousand years ago Shiva gave Devi 112 ways in; Osho spent five years walking through them one by one. No belief required &mdash; each is an experiment. Draw a door. Try it today, in traffic, in the kitchen, in bed. If nothing happens, draw another; one of the 112 is yours.</p>
+    </div>
+    <div class="deck" id="deck">
+      <span class="door-no" id="doorNo"></span>
+      <blockquote id="doorSutra"></blockquote>
+      <p class="commentary" id="doorNote"></p>
+      <div class="deck-actions">
+        <button class="gold-btn" id="drawBtn">Draw a door</button>
+        <span class="deck-note">twelve of the 112, chosen for people with pockets full of phones</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTEMPLATIONS ============ -->
+  <section class="section" aria-labelledby="contH">
+    <div class="section-head">
+      <span class="label label--gold">To carry with you</span>
+      <h2 id="contH" hidden>Contemplations</h2>
+    </div>
+    <div class="contemplation" id="contemplation">
+      <blockquote id="contQuote"></blockquote>
+      <button class="quiet-btn" id="contBtn">Another</button>
+    </div>
+  </section>
+
+  <footer>
+    <p class="sendoff">Enough now. Close the tab &mdash; the real hall is wherever you are sitting, and it was open the whole time.</p>
+    <p>An unofficial homage, made with love and a little mischief. The sutras are from the Vigyan Bhairav Tantra, which Osho unfolded in <em>The Book of Secrets</em>; the meditations are adapted from those he devised in Pune. He would want you to know: the map is not the territory, the menu is not the meal, and this webpage is not meditation. Only you can do that part.</p>
+  </footer>
+</main>
+
+<!-- ============ RUNNING SESSION ============ -->
+<div class="session" id="session" role="dialog" aria-modal="true" aria-labelledby="sessStage">
+  <span class="stage-count" id="sessCount"></span>
+  <h2 id="sessStage"></h2>
+  <p class="instruction" id="sessText"></p>
+  <div class="clock" id="sessClock">00:00</div>
+  <div class="stage-dots" id="sessDots" aria-hidden="true"></div>
+  <span class="total-left" id="sessTotal"></span>
+  <button class="end-btn" id="sessEnd">End the session</button>
+  <span class="label" id="sessLive" role="status" aria-live="polite" style="position:absolute;left:-9999px"></span>
+</div>
+
+<!-- ============ STOP OVERLAY ============ -->
+<div class="stop-overlay" id="stopOverlay" role="dialog" aria-modal="true" aria-label="Stop. Freeze and witness.">
+  <div class="stop-word">STOP.</div>
+  <p>Freeze. Exactly as you are &mdash; hand in the air, word half-typed, thought half-thought. Don&rsquo;t improve the pose. The body has stopped; now watch who didn&rsquo;t.</p>
+  <div class="clock" id="stopClock">60</div>
+  <button class="release" id="stopRelease">release early</button>
+</div>
+
+<script>
+'use strict';
+
+/* ========== audio: gongs synthesized in place ========== */
+const Sound = (() => {
+  let ctx = null, master = null, enabled = false;
+
+  function ensure() {
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      master = ctx.createGain();
+      master.gain.value = 0.5;
+      master.connect(ctx.destination);
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+  }
+
+  function strike(base, dur, gain) {
+    if (!enabled) return;
+    ensure();
+    const t = ctx.currentTime;
+    // inharmonic bell partials
+    const partials = [1, 1.51, 2.05, 2.62, 3.43, 4.79];
+    partials.forEach((p, i) => {
+      const o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value = base * p * (1 + (i % 2 ? 0.002 : -0.002));
+      const g = ctx.createGain();
+      const amp = gain / Math.pow(i + 1, 1.35);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(amp, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur * (1 - i * 0.09));
+      o.connect(g); g.connect(master);
+      o.start(t); o.stop(t + dur);
+    });
+  }
+
+  return {
+    gong: () => strike(96, 9, 0.55),        // deep hall gong
+    bell: () => strike(340, 5, 0.35),       // brighter remembering bell
+    close: () => { strike(96, 10, 0.55); setTimeout(() => strike(128, 9, 0.4), 1400); },
+    setEnabled(v) { enabled = v; if (v) { ensure(); strike(340, 2.5, 0.18); } },
+    get enabled() { return enabled; }
+  };
+})();
+
+const soundToggle = document.getElementById('soundToggle');
+soundToggle.addEventListener('click', () => {
+  const on = soundToggle.getAttribute('aria-pressed') !== 'true';
+  soundToggle.setAttribute('aria-pressed', on);
+  document.getElementById('soundLabel').textContent = on ? 'Sound on' : 'Sound off';
+  Sound.setEnabled(on);
+});
+
+/* ========== hero: breathing enso ========== */
+(() => {
+  const canvas = document.getElementById('enso');
+  const word = document.getElementById('breathWord');
+  const g = canvas.getContext('2d');
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  function size() {
+    const r = canvas.getBoundingClientRect();
+    canvas.width = r.width * dpr; canvas.height = r.height * dpr;
+  }
+  size(); addEventListener('resize', size);
+
+  // fixed wobble so the circle feels brushed, not geometric
+  const N = 180, wobble = [];
+  let seed = 7;
+  const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < N; i++) wobble.push((rand() - 0.5));
+
+  // phases: in 4s, gap 2.4s, out 4.4s, gap 2.4s
+  const PHASES = [
+    { name: 'breath coming in', dur: 4000,  from: 0, to: 1,   gap: false },
+    { name: 'the gap — stay',dur: 2400, from: 1, to: 1,   gap: true  },
+    { name: 'breath going out', dur: 4400,  from: 1, to: 0,   gap: false },
+    { name: 'the gap',          dur: 2400,  from: 0, to: 0,   gap: true  },
+  ];
+  const CYCLE = PHASES.reduce((s, p) => s + p.dur, 0);
+  const ease = x => x < .5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
+
+  let lastPhase = -1;
+  function frame(now) {
+    let t = now % CYCLE, idx = 0;
+    while (t >= PHASES[idx].dur) { t -= PHASES[idx].dur; idx++; }
+    const ph = PHASES[idx];
+    if (idx !== lastPhase) {
+      lastPhase = idx;
+      word.textContent = ph.name;
+      word.classList.toggle('is-gap', ph.gap);
+    }
+    const k = ph.from + (ph.to - ph.from) * ease(t / ph.dur);
+    draw(reduceMotion ? 0.55 : k, ph.gap);
+    requestAnimationFrame(frame);
+  }
+
+  function draw(k, gap) {
+    const w = canvas.width, h = canvas.height, cx = w/2, cy = h/2;
+    g.clearRect(0, 0, w, h);
+    const base = Math.min(w, h) * (0.26 + 0.13 * k);
+    const open = 0.42;                       // the enso's opening, radians
+    const a0 = -Math.PI/2 + open/2, a1 = a0 + (Math.PI*2 - open);
+    g.lineCap = 'round';
+    for (let i = 0; i < N - 1; i++) {
+      const f0 = i/(N-1), f1 = (i+1)/(N-1);
+      const th0 = a0 + (a1-a0)*f0, th1 = a0 + (a1-a0)*f1;
+      const taper = Math.sin(f0 * Math.PI);   // thick mid-stroke, thin ends
+      const r0 = base * (1 + wobble[i] * 0.02);
+      const r1 = base * (1 + wobble[i+1] * 0.02);
+      g.beginPath();
+      g.moveTo(cx + Math.cos(th0)*r0, cy + Math.sin(th0)*r0);
+      g.lineTo(cx + Math.cos(th1)*r1, cy + Math.sin(th1)*r1);
+      g.lineWidth = (1.5 + taper * 7) * dpr * (0.9 + 0.25*k);
+      const alpha = gap ? 0.95 : 0.55 + 0.35*k;
+      g.strokeStyle = gap
+        ? 'rgba(226,161,68,' + alpha * (0.35 + 0.65*taper) + ')'
+        : 'rgba(236,225,209,' + alpha * (0.25 + 0.6*taper) + ')';
+      g.stroke();
+    }
+  }
+
+  requestAnimationFrame(frame);
+
+  document.getElementById('beginBtn').addEventListener('click', () => {
+    document.getElementById('meditations').scrollIntoView({
+      behavior: reduceMotion ? 'auto' : 'smooth'
+    });
+  });
+})();
+
+/* ========== the meditations ========== */
+const MEDITATIONS = {
+  nomind: {
+    name: 'No-Mind',
+    tag: 'Gibberish, then silence',
+    blurb: 'Speak nonsense until the mind runs out of it. Osho called gibberish the most scientific way to throw out the garbage.',
+    totals: { taste: 7*60, short: 30*60, full: 60*60 },
+    stages: [
+      { frac: .50, name: 'Gibberish', text: 'Speak aloud in no language you know — sounds, syllables, absurdities. Say everything you never dared to say, in words that mean nothing. Let the body join in: flail, grimace, sing. Be totally, gloriously mad. This is the mind’s garbage — out with it.' },
+      { frac: .33, name: 'Silence', text: 'Stop. Sit straight and utterly still, eyes closed. All that noise — where did it go? Watch thoughts pass like traffic on a far road. You are the watcher on the hill, not the road.' },
+      { frac: .17, name: 'Let-go', text: 'Lie back and let the body melt into the floor. Nothing to do, nowhere to be, no one to become. Rest as existence rests.' },
+    ],
+  },
+  kundalini: {
+    name: 'Kundalini',
+    tag: 'Shake · dance · sit · lie',
+    blurb: 'The sunset meditation. Let the day’s accumulated rust shake loose from the feet up, flower into dance, and settle into stillness.',
+    totals: { taste: 8*60, short: 30*60, full: 60*60 },
+    stages: [
+      { frac: .25, name: 'Shake', text: 'Stand loose and let the body shake — feel the energy rise from the feet. Don’t do the shaking; allow it, become it. Be the shaking, not the shaker. Eyes open or closed.' },
+      { frac: .25, name: 'Dance', text: 'Let the shaking flower into dance — any way the body wants to move. No steps, no audience, no mirror. Let the whole body celebrate.' },
+      { frac: .25, name: 'Be still', text: 'Sit or stand, eyes closed, completely still. Witness whatever is happening, inside and out — the sweat, the heartbeat, the settling dust of you.' },
+      { frac: .25, name: 'Lie down', text: 'Lie down, eyes closed, and remain still. Nothing is asked of you now. Silence does the rest.' },
+    ],
+  },
+  nadabrahma: {
+    name: 'Nadabrahma',
+    tag: 'The humming bee',
+    blurb: 'An old Tibetan method Osho revived. Hum until you are a hollow bamboo, a vessel with nothing inside but vibration.',
+    totals: { taste: 7*60, short: 30*60, full: 60*60 },
+    stages: [
+      { frac: .50, name: 'Hum', text: 'Sit relaxed, eyes and lips closed. Hum — loudly enough that your own bones can hear it. Feel the sound vibrate through the whole body, a hollow bamboo filled with humming. The breath finds its own rhythm.' },
+      { frac: .25, name: 'Hands', text: 'Palms up: move the hands and arms outward in slow circles — so slow it seems like no movement at all — giving energy out to existence. Halfway through, turn the palms down and circle inward, receiving it back.' },
+      { frac: .25, name: 'Stillness', text: 'Sit absolutely quiet and still. The humming has stopped in the throat; notice where it hasn’t.' },
+    ],
+  },
+  dynamic: {
+    name: 'Dynamic',
+    tag: 'The famous morning storm',
+    blurb: 'Osho’s signature: chaotic breath, catharsis, the mantra HOO!, a sudden freeze — then celebration. Do this one on an empty stomach.',
+    totals: { taste: 8*60, short: 30*60, full: 60*60 },
+    stages: [
+      { frac: 1/6, name: 'Chaotic breath', text: 'Breathe through the nose — fast, deep, chaotic, no rhythm. Put your whole body behind the exhale and let the inhale take care of itself. Be the bellows.' },
+      { frac: 1/6, name: 'Explode', text: 'Catharsis — let everything out. Scream, weep, laugh, shake, kick, rage at the empty air. Never hold back, never stay polite. Be total; totality is the whole technique.' },
+      { frac: 1/6, name: 'Hoo!', text: 'Arms raised, jump so you land flat on your feet, shouting HOO! — let the sound hammer deep down into your center. Exhaust yourself completely.' },
+      { frac: .25, name: 'STOP', text: 'Freeze. Exactly where you are, exactly as you are — don’t arrange the body, don’t wipe the sweat. The storm has stopped; now witness what the storm was hiding.' },
+      { frac: .25, name: 'Celebrate', text: 'Dance. Softly, gratefully, any way at all. Carry this aliveness with you into the whole day — that is the point of all of it.' },
+    ],
+  },
+};
+
+let chosenLen = 'taste';
+document.querySelectorAll('.chip[data-len]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chip[data-len]').forEach(c => c.setAttribute('aria-pressed', 'false'));
+    chip.setAttribute('aria-pressed', 'true');
+    chosenLen = chip.dataset.len;
+  });
+});
+
+const medGrid = document.getElementById('medGrid');
+Object.entries(MEDITATIONS).forEach(([key, m]) => {
+  const b = document.createElement('button');
+  b.className = 'med-card';
+  b.innerHTML = '<span class="tag">' + m.tag + '</span><h3>' + m.name + '</h3><p>' + m.blurb + '</p><span class="go">Begin →</span>';
+  b.addEventListener('click', () => Session.start(key, chosenLen));
+  medGrid.appendChild(b);
+});
+
+/* ========== session engine ========== */
+const Session = (() => {
+  const el = {
+    root: document.getElementById('session'),
+    count: document.getElementById('sessCount'),
+    stage: document.getElementById('sessStage'),
+    text: document.getElementById('sessText'),
+    clock: document.getElementById('sessClock'),
+    dots: document.getElementById('sessDots'),
+    total: document.getElementById('sessTotal'),
+    live: document.getElementById('sessLive'),
+    end: document.getElementById('sessEnd'),
+  };
+  let s = null;
+
+  const fmt = sec => {
+    sec = Math.max(0, Math.round(sec));
+    return String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0');
+  };
+
+  function start(key, lenKey) {
+    const m = MEDITATIONS[key];
+    const total = m.totals[lenKey];
+    const stages = m.stages.map(st => ({ ...st, sec: Math.max(30, Math.round(st.frac * total)) }));
+    s = { m, stages, idx: -1, stageEnd: 0, sessionEnd: Date.now() + stages.reduce((a,x)=>a+x.sec,0)*1000, timer: null };
+    el.root.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    el.dots.innerHTML = stages.map(() => '<span></span>').join('');
+    next();
+    s.timer = setInterval(tick, 250);
+    el.end.focus();
+  }
+
+  function next() {
+    s.idx++;
+    if (s.idx >= s.stages.length) return finish(false);
+    const st = s.stages[s.idx];
+    s.stageEnd = Date.now() + st.sec * 1000;
+    el.count.textContent = s.m.name + ' · stage ' + (s.idx+1) + ' of ' + s.stages.length;
+    el.stage.textContent = st.name;
+    el.text.textContent = st.text;
+    el.live.textContent = 'Stage ' + (s.idx+1) + ': ' + st.name + '. ' + st.text;
+    [...el.dots.children].forEach((d, i) => {
+      d.className = i < s.idx ? 'done' : i === s.idx ? 'now' : '';
+    });
+    Sound.gong();
+  }
+
+  function tick() {
+    if (!s) return;
+    const left = (s.stageEnd - Date.now()) / 1000;
+    if (left <= 0) return next();
+    el.clock.textContent = fmt(left);
+    el.total.textContent = fmt((s.sessionEnd - Date.now())/1000) + ' remaining in the whole sitting';
+  }
+
+  function finish(early) {
+    clearInterval(s.timer);
+    if (early) {
+      close();
+      Sound.bell();
+      return;
+    }
+    Sound.close();
+    el.count.textContent = s.m.name + ' · complete';
+    el.stage.textContent = 'Done. Don’t rush back.';
+    el.text.textContent = 'Sit for a few more breaths before you touch anything with a screen. Whatever you found here, don’t make a belief out of it — come again tomorrow and find it fresh.';
+    el.clock.textContent = '';
+    el.total.textContent = '';
+    el.live.textContent = 'Meditation complete.';
+    [...el.dots.children].forEach(d => d.className = 'done');
+    el.end.textContent = 'Return';
+    s = null;
+  }
+
+  function close() {
+    el.root.classList.remove('is-open');
+    document.body.style.overflow = '';
+    el.end.textContent = 'End the session';
+    if (s) { clearInterval(s.timer); s = null; }
+  }
+
+  el.end.addEventListener('click', () => { s ? finish(true) : close(); });
+
+  return { start };
+})();
+
+/* ========== the remembering bell ========== */
+const Bell = (() => {
+  const toggle = document.getElementById('bellToggle');
+  const nowBtn = document.getElementById('bellNow');
+  const status = document.getElementById('bellStatus');
+  const overlay = document.getElementById('stopOverlay');
+  const clock = document.getElementById('stopClock');
+  const release = document.getElementById('stopRelease');
+  let armed = false, timeout = null, countdown = null;
+
+  function schedule() {
+    // somewhere between 3 and 10 minutes: unguessable is the point
+    const ms = (180 + Math.random() * 420) * 1000;
+    timeout = setTimeout(strike, ms);
+    status.textContent = 'Armed. It will strike within the next ten minutes — don’t wait for it.';
+  }
+
+  function strike() {
+    if (overlay.classList.contains('is-open')) return;
+    Sound.bell();
+    overlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    release.focus();
+    let left = 60;
+    clock.textContent = left;
+    countdown = setInterval(() => {
+      left--;
+      clock.textContent = left;
+      if (left <= 0) end();
+    }, 1000);
+  }
+
+  function end() {
+    clearInterval(countdown);
+    overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+    Sound.gong();
+    if (armed) schedule();
+  }
+
+  toggle.addEventListener('click', () => {
+    armed = !armed;
+    toggle.setAttribute('aria-pressed', armed);
+    toggle.textContent = armed ? 'Bell is armed · disarm' : 'Arm the bell · it strikes when it wants';
+    clearTimeout(timeout);
+    if (armed) schedule();
+    else status.textContent = 'Disarmed. The mind is relieved; that should worry you a little.';
+  });
+
+  nowBtn.addEventListener('click', strike);
+  release.addEventListener('click', end);
+})();
+
+/* ========== 112 doors ========== */
+const DOORS = [
+  { n: 2,  sutra: 'As breath turns from down to up, and again as breath curves from up to down — through both these turns, realize.', note: 'You breathe all day and never once attend the turning. Today, catch the curve — just the curve. It costs nothing and no one will notice you doing it.' },
+  { n: 3,  sutra: 'Whenever in-breath and out-breath fuse, at this instant touch the energyless, energy-filled center.', note: 'Not a technique for the cushion — do it in the queue, in the elevator, in the meeting that should have been an email.' },
+  { n: 10, sutra: 'While being caressed, sweet princess, enter the caressing as everlasting life.', note: 'Whatever touches you today — water, wind, another hand — be entirely at the point of contact. Love is attention with nowhere else to be.' },
+  { n: 24, sutra: 'When a mood against someone or for someone arises, do not place it on the person in question, but remain centered.', note: 'The anger is yours; the other person is only the screen you project it on. Keep the film in the projector for one minute and watch what it is made of.' },
+  { n: 28, sutra: 'Suppose you are gradually being deprived of strength or of knowledge. At the instant of deprivation, transcend.', note: 'Exhaustion is a door. The next time you are too tired to keep up the performance, don’t reach for a screen — fall through.' },
+  { n: 33, sutra: 'Simply by looking into the blue sky beyond clouds — the serenity.', note: 'The sky is the cheapest temple and it is always open. Lie back. The sky has no edges, and slowly, neither do you.' },
+  { n: 41, sutra: 'While listening to stringed instruments, hear their composite central sound; thus omnipresence.', note: 'Next song you play: stop following the melody and listen to the one sound all the sounds are made of. Headphones become a monastery.' },
+  { n: 44, sutra: 'In the beginning and gradual refinement of the sound of any letter, awake.', note: 'Say your own name slowly, once, aloud. Where does the sound come from? Where does it go? Follow it home.' },
+  { n: 50, sutra: 'At the point of sleep, when sleep has not yet come and external wakefulness vanishes — at this point, being is revealed.', note: 'Tonight, instead of scrolling yourself unconscious, watch yourself fall asleep. You will fail for many nights. The failing is the practice.' },
+  { n: 62, sutra: 'Just as you have the impulse to do something — stop.', note: 'Reaching for the phone? Stop, hand in mid-air, three seconds. In that gap you exist. The notification will still be there; you almost weren’t.' },
+  { n: 76, sutra: 'In rain during a black night, enter that blackness as the form of forms.', note: 'Darkness is not the absence of anything — it is the one thing your eyes can rest in. Turn off every light and let it hold you like water.' },
+  { n: 97, sutra: 'Wherever satisfaction is found, in whatever act, actualize this.', note: 'The first sip of tea, the stretch after sitting too long — tiny satisfactions arrive all day and are wasted. Be there for one of them completely.' },
+];
+
+const Deck = (() => {
+  const deck = document.getElementById('deck');
+  const no = document.getElementById('doorNo');
+  const sutra = document.getElementById('doorSutra');
+  const note = document.getElementById('doorNote');
+  let bag = [];
+
+  function draw() {
+    if (!bag.length) bag = DOORS.map((_, i) => i).sort(() => Math.random() - 0.5);
+    const d = DOORS[bag.pop()];
+    deck.classList.add('is-turning');
+    setTimeout(() => {
+      no.textContent = 'Door ' + d.n + ' of 112';
+      sutra.textContent = '“' + d.sutra + '”';
+      note.textContent = d.note;
+      deck.classList.remove('is-turning');
+    }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 380);
+  }
+
+  document.getElementById('drawBtn').addEventListener('click', draw);
+  // open with a door already on the table
+  const d = DOORS[Math.floor(Math.random() * DOORS.length)];
+  no.textContent = 'Door ' + d.n + ' of 112';
+  sutra.textContent = '“' + d.sutra + '”';
+  note.textContent = d.note;
+})();
+
+/* ========== contemplations ========== */
+const QUOTES = [
+  'Be — don’t try to become.',
+  'The mind: a beautiful servant, a dangerous master.',
+  'Life begins where fear ends.',
+  'Drop the idea of becoming someone, because you are already a masterpiece.',
+  'Creativity is the greatest rebellion in existence.',
+  'Be realistic: plan for a miracle.',
+  'Take hold of your own life. See that the whole existence is celebrating.',
+  'Seriousness is a sickness; your sense of humor makes you more human, more humble.',
+];
+
+(() => {
+  const box = document.getElementById('contemplation');
+  const q = document.getElementById('contQuote');
+  let i = Math.floor(Math.random() * QUOTES.length);
+  q.textContent = QUOTES[i];
+  document.getElementById('contBtn').addEventListener('click', () => {
+    box.classList.add('is-turning');
+    setTimeout(() => {
+      i = (i + 1) % QUOTES.length;
+      q.textContent = QUOTES[i];
+      box.classList.remove('is-turning');
+    }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 380);
+  });
+})();
+</script>
