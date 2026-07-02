@@ -952,7 +952,9 @@ function monCanvas(species) {
 }
 function drawMon(species, x, y, size) {
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(monCanvas(species), x, y, size, size);
+  // small icons use the crisp 24px base; big art uses the smoothed 96px version
+  const src = size >= 40 ? R3D.bigMonCanvas(species) : monCanvas(species);
+  ctx.drawImage(src, x, y, size, size);
 }
 
 // ---------- World draw (3D scene + optional location banner) ----------

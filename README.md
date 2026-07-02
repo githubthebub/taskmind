@@ -50,6 +50,8 @@ Laid out after FRLG's One Island, from south to north:
 - **Mt. Ember** — smoking on the horizon
 
 ![Town](docs/town.png)
+![Kindle Road](docs/kindle-road.png)
+![Ember Spa](docs/ember-spa.png)
 
 ## Battles
 

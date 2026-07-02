@@ -10,6 +10,8 @@ const R3D = (() => {
   let battleScene, battleCam, foeSprite, monSprite;
   let playerSprite, playerShadow, npcSprites = [], itemSprites = {};
   let waterMesh, waterGeo, waterTexRef = null, smokeSprites = [], ferryGroup;
+  let flowerSprites = [], tuftMatRef = null, foamMatRef = null, cloudSprites = [];
+  let lavaMatRef = null, lavaLightRef = null;
   let mapGroup = null, currentMap = null;
   let t = 0;
   const texCache = {};
@@ -35,21 +37,168 @@ const R3D = (() => {
     tex.minFilter = THREE.NearestFilter;
     return tex;
   }
-  function pixelTex(key, rows, pal, flip) {
+
+  // ---------- sprite enhancement pipeline ----------
+  // autoShade: soft top-light / bottom-shade per column, skipping outlines
+  function autoShade(src, outlineColor) {
+    const w = src.width, h = src.height;
+    const g = src.getContext('2d');
+    const img = g.getImageData(0, 0, w, h);
+    const d = img.data;
+    const oc = outlineColor ? parseInt(outlineColor.slice(1), 16) : -1;
+    const isOutline = i => ((d[i] << 16) | (d[i + 1] << 8) | d[i + 2]) === oc;
+    const shade = (i, f) => {
+      d[i] = Math.min(255, Math.round(d[i] * f));
+      d[i + 1] = Math.min(255, Math.round(d[i + 1] * f));
+      d[i + 2] = Math.min(255, Math.round(d[i + 2] * f));
+    };
+    for (let x = 0; x < w; x++) {
+      let top = -1, bottom = -1;
+      for (let y = 0; y < h; y++) {
+        const i = (y * w + x) * 4;
+        if (d[i + 3] > 0 && !isOutline(i)) { if (top < 0) top = y; bottom = y; }
+      }
+      if (top >= 0) {
+        shade((top * w + x) * 4, 1.18);
+        if (top + 1 <= bottom) shade(((top + 1) * w + x) * 4, 1.08);
+        if (bottom > top + 2) shade((bottom * w + x) * 4, 0.82);
+      }
+    }
+    g.putImageData(img, 0, 0);
+    return src;
+  }
+
+  // EPX / Scale2x: doubles resolution while smoothing diagonals
+  function epx(src) {
+    const w = src.width, h = src.height;
+    const d = src.getContext('2d').getImageData(0, 0, w, h).data;
+    const out = document.createElement('canvas');
+    out.width = w * 2; out.height = h * 2;
+    const og = out.getContext('2d');
+    const oimg = og.createImageData(w * 2, h * 2);
+    const od = oimg.data;
+    const at = (x, y) => {
+      if (x < 0 || y < 0 || x >= w || y >= h) return 0;
+      const i = (y * w + x) * 4;
+      if (d[i + 3] === 0) return 0;
+      return (d[i] << 24 >>> 0) + (d[i + 1] << 16) + (d[i + 2] << 8) + 255;
+    };
+    const put = (x, y, v) => {
+      const i = (y * w * 2 + x) * 4;
+      if (v === 0) { od[i + 3] = 0; return; }
+      od[i] = (v >>> 24) & 255; od[i + 1] = (v >>> 16) & 255; od[i + 2] = (v >>> 8) & 255; od[i + 3] = 255;
+    };
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const P = at(x, y), A = at(x, y - 1), B = at(x + 1, y), C = at(x - 1, y), D = at(x, y + 1);
+        let p1 = P, p2 = P, p3 = P, p4 = P;
+        if (C === A && C !== D && A !== B) p1 = A;
+        if (A === B && A !== C && B !== D) p2 = B;
+        if (D === C && D !== B && C !== A) p3 = C;
+        if (B === D && B !== A && D !== C) p4 = D;
+        put(x * 2, y * 2, p1); put(x * 2 + 1, y * 2, p2);
+        put(x * 2, y * 2 + 1, p3); put(x * 2 + 1, y * 2 + 1, p4);
+      }
+    }
+    og.putImageData(oimg, 0, 0);
+    return out;
+  }
+
+  function fxCanvas(rows, pal, flip, passes) {
+    let c = autoShade(makeCanvas(rows, pal, flip), pal.k);
+    for (let i = 0; i < passes; i++) c = epx(c);
+    return c;
+  }
+  function pixelTex(key, rows, pal, flip, passes = 1) {
     if (texCache[key]) return texCache[key];
-    return (texCache[key] = nearest(new THREE.CanvasTexture(makeCanvas(rows, pal, flip))));
+    return (texCache[key] = nearest(new THREE.CanvasTexture(fxCanvas(rows, pal, flip, passes))));
   }
   function monTex(species, flip) {
     const s = SPRITES[species];
-    return pixelTex('mon:' + species + (flip ? ':f' : ''), s.px, s.pal, flip);
+    return pixelTex('mon:' + species + (flip ? ':f' : ''), s.px, s.pal, flip, 2);
+  }
+  // processed 96x96 canvas for big 2D drawing (title screen)
+  const bigMonCache = {};
+  function bigMonCanvas(species) {
+    if (bigMonCache[species]) return bigMonCache[species];
+    const s = SPRITES[species];
+    return (bigMonCache[species] = fxCanvas(s.px, s.pal, false, 2));
   }
   // face + walk frame + mirror (for alternating steps)
   function playerTex(face, frame, mirror) {
     const base = face === 'left' ? 'right' : face;
     const flip = (face === 'left') !== !!mirror;
     const rows = PLAYER_SPRITES[base][frame];
-    return pixelTex('pl:' + base + ':' + frame + (flip ? ':f' : ''), rows, PLAYER_SPRITES.pal, flip);
+    return pixelTex('pl:' + base + ':' + frame + (flip ? ':f' : ''), rows, PLAYER_SPRITES.pal, flip, 1);
   }
+
+  function softShadowTex() {
+    if (texCache.softsh) return texCache.softsh;
+    const c = document.createElement('canvas');
+    c.width = 32; c.height = 32;
+    const g = c.getContext('2d');
+    const grd = g.createRadialGradient(16, 16, 2, 16, 16, 15);
+    grd.addColorStop(0, 'rgba(20,40,20,0.42)');
+    grd.addColorStop(0.7, 'rgba(20,40,20,0.22)');
+    grd.addColorStop(1, 'rgba(20,40,20,0)');
+    g.fillStyle = grd;
+    g.fillRect(0, 0, 32, 32);
+    return (texCache.softsh = new THREE.CanvasTexture(c));
+  }
+  function cloudTex(seed) {
+    const key = 'cloud' + seed;
+    if (texCache[key]) return texCache[key];
+    const c = document.createElement('canvas');
+    c.width = 64; c.height = 32;
+    const g = c.getContext('2d');
+    const blobs = [[18, 20, 11], [32, 16, 13], [46, 20, 10], [26, 22, 9], [40, 23, 8]];
+    for (const [bx, by, br] of blobs) {
+      const grd = g.createRadialGradient(bx, by - seed, 1, bx, by - seed, br);
+      grd.addColorStop(0, 'rgba(255,255,255,0.95)');
+      grd.addColorStop(0.8, 'rgba(250,252,255,0.7)');
+      grd.addColorStop(1, 'rgba(250,252,255,0)');
+      g.fillStyle = grd;
+      g.fillRect(0, 0, 64, 32);
+    }
+    return (texCache[key] = new THREE.CanvasTexture(c));
+  }
+  function skyTex(top, bottom) {
+    const key = 'sky:' + top + bottom;
+    if (texCache[key]) return texCache[key];
+    const c = document.createElement('canvas');
+    c.width = 4; c.height = 128;
+    const g = c.getContext('2d');
+    const grd = g.createLinearGradient(0, 0, 0, 128);
+    grd.addColorStop(0, top);
+    grd.addColorStop(1, bottom);
+    g.fillStyle = grd;
+    g.fillRect(0, 0, 4, 128);
+    return (texCache[key] = new THREE.CanvasTexture(c));
+  }
+
+  const FLOWER_FRAMES = [
+    [
+      '..rr....',
+      '.rRRr...',
+      '.rRWr.y.',
+      '..rr.yYy',
+      '...g..y.',
+      '...gg...',
+      '..g.....',
+      '........',
+    ],
+    [
+      '........',
+      '..rr....',
+      '.rRRr.y.',
+      '.rRWryYy',
+      '..rrg.y.',
+      '...gg...',
+      '....g...',
+      '........',
+    ],
+  ];
+  const FLOWER_PAL = { r:'#e04838', R:'#f47868', W:'#f8e8b0', y:'#f0c828', Y:'#f8e468', g:'#3a8c4a' };
 
   const NPC_ROWS = [
     '.....kkkkkk.....',
@@ -77,7 +226,7 @@ const R3D = (() => {
     const key = 'npc:' + color;
     if (texCache[key]) return texCache[key];
     const pal = { k:'#2a2020', H:'#5a4632', s:'#ecb488', W:'#ffffff', C:color, L:'#404048' };
-    return (texCache[key] = nearest(new THREE.CanvasTexture(makeCanvas(NPC_ROWS, pal))));
+    return (texCache[key] = nearest(new THREE.CanvasTexture(fxCanvas(NPC_ROWS, pal, false, 1))));
   }
 
   const TREE_ROWS = [
@@ -114,19 +263,23 @@ const R3D = (() => {
     g.fillStyle = '#2a2020'; g.fillRect(7, 8, 2, 2);
     return (texCache.ball = nearest(new THREE.CanvasTexture(c)));
   }
-  function grassTuftTex() {
-    if (texCache.tuft) return texCache.tuft;
+  function grassTuftTex(frame) {
+    const key = 'tuft' + frame;
+    if (texCache[key]) return texCache[key];
     const c = document.createElement('canvas');
     c.width = 16; c.height = 16;
     const g = c.getContext('2d');
+    const lean = frame ? 1 : 0;
     g.fillStyle = '#256e2c';
     for (const [x, h] of [[1, 7], [4, 10], [7, 12], [10, 9], [13, 7]]) {
       g.fillRect(x, 16 - h, 2, h);
-      g.fillRect(x + 1, 16 - h - 2, 1, 2);
+      g.fillRect(x + 1 + lean, 16 - h - 2, 1, 2);
     }
     g.fillStyle = '#389040';
-    for (const [x, h] of [[2, 5], [6, 8], [9, 6], [12, 5]]) g.fillRect(x, 16 - h, 1, h);
-    return (texCache.tuft = nearest(new THREE.CanvasTexture(c)));
+    for (const [x, h] of [[2, 5], [6, 8], [9, 6], [12, 5]]) g.fillRect(x + (frame ? (x % 2 ? 1 : 0) : 0), 16 - h, 1, h);
+    g.fillStyle = '#4aa850';
+    g.fillRect(3 + lean, 5, 1, 2); g.fillRect(8 + lean, 3, 1, 2); g.fillRect(12, 7, 1, 2);
+    return (texCache[key] = nearest(new THREE.CanvasTexture(c)));
   }
 
   // ---------- procedural tile textures ----------
@@ -259,8 +412,8 @@ const R3D = (() => {
 
   function blobShadow(r) {
     const m = new THREE.Mesh(
-      new THREE.CircleGeometry(r, 12),
-      new THREE.MeshBasicMaterial({ color: 0x1a2a1a, transparent: true, opacity: 0.3 })
+      new THREE.PlaneGeometry(r * 2.6, r * 2.6),
+      new THREE.MeshBasicMaterial({ map: softShadowTex(), transparent: true, depthWrite: false })
     );
     m.rotation.x = -Math.PI / 2;
     return m;
@@ -281,6 +434,10 @@ const R3D = (() => {
     itemSprites = {};
     smokeSprites.forEach(s => worldScene.remove(s));
     smokeSprites = [];
+    cloudSprites.forEach(s => worldScene.remove(s));
+    cloudSprites = [];
+    flowerSprites = [];
+    tuftMatRef = null; foamMatRef = null; lavaMatRef = null; lavaLightRef = null;
     if (waterMesh) { worldScene.remove(waterMesh); waterMesh = null; waterTexRef = null; }
     if (ferryGroup) { worldScene.remove(ferryGroup); ferryGroup = null; }
 
@@ -290,9 +447,19 @@ const R3D = (() => {
     worldScene.add(mapGroup);
 
     if (m.outdoor) {
-      worldScene.background = new THREE.Color(0x9cd0ee);
-      worldScene.fog = new THREE.Fog(0x9cd0ee, 20, 46);
+      worldScene.background = skyTex('#5aa8e8', '#c8ecff');
+      worldScene.fog = new THREE.Fog(0xb8e0f8, 20, 46);
       sun.intensity = 1.15;
+      // drifting clouds
+      for (let i = 0; i < 4; i++) {
+        const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex(i % 2), transparent: true, opacity: 0.85, depthWrite: false }));
+        spr.scale.set(7 + i * 1.5, 3 + i * 0.6, 1);
+        spr.userData.baseX = 2 + i * 9;
+        spr.userData.speed = 0.12 + i * 0.04;
+        spr.position.set(spr.userData.baseX, 10 + (i % 2) * 2.2, 4 + i * 12);
+        worldScene.add(spr);
+        cloudSprites.push(spr);
+      }
     } else {
       worldScene.background = new THREE.Color(0x241c14);
       worldScene.fog = new THREE.Fog(0x241c14, 12, 26);
@@ -327,14 +494,22 @@ const R3D = (() => {
       for (let x = 0; x < grid[y].length; x++) cb(grid[y][x], x, y);
   }
 
-  function instanced(group, geo, material, positions, { castShadow = false, receiveShadow = true } = {}) {
+  function instanced(group, geo, material, positions, { castShadow = false, receiveShadow = true, vary = 0 } = {}) {
     if (!positions.length) return;
     const im = new THREE.InstancedMesh(geo, material, positions.length);
     const m4 = new THREE.Matrix4();
+    const col = new THREE.Color();
     positions.forEach((p, i) => {
       m4.makeTranslation(p[0], p[1], p[2]);
       if (p[3]) { const r = new THREE.Matrix4().makeRotationY(p[3]); m4.multiply(r); }
       im.setMatrixAt(i, m4);
+      if (vary) {
+        // deterministic per-tile brightness variation breaks up flat terrain
+        const hsh = (Math.sin(p[0] * 127.1 + p[2] * 311.7) * 43758.5453) % 1;
+        const f = 1 - vary / 2 + Math.abs(hsh) * vary;
+        col.setRGB(f, f, f);
+        im.setColorAt(i, col);
+      }
     });
     im.castShadow = castShadow;
     im.receiveShadow = receiveShadow;
@@ -377,10 +552,10 @@ const R3D = (() => {
       if (tc === '!') pos.sign.push([cx, 0, cz]);
     });
 
-    instanced(g, groundGeo, groundMats('grass', 0x4e8834), pos.grass);
-    instanced(g, groundGeo, groundMats('dark', 0x3d7a2c), pos.dark);
-    instanced(g, groundGeo, groundMats('path', 0xb89868), pos.path);
-    instanced(g, groundGeo, groundMats('sand', 0xc8ac74), pos.sand);
+    instanced(g, groundGeo, groundMats('grass', 0x4e8834), pos.grass, { vary: 0.1 });
+    instanced(g, groundGeo, groundMats('dark', 0x3d7a2c), pos.dark, { vary: 0.1 });
+    instanced(g, groundGeo, groundMats('path', 0xb89868), pos.path, { vary: 0.06 });
+    instanced(g, groundGeo, groundMats('sand', 0xc8ac74), pos.sand, { vary: 0.07 });
     instanced(g, new THREE.BoxGeometry(1, 1.7, 1),
       [allMat('rockSide'), allMat('rockSide'), new THREE.MeshLambertMaterial({ map: tileTex('tt:rockTop', 16, 16, TILE_DRAWS.rockTop) }), allMat('rockSide'), allMat('rockSide'), allMat('rockSide')],
       pos.rock, { castShadow: true });
@@ -395,6 +570,9 @@ const R3D = (() => {
     instanced(g, new THREE.BoxGeometry(1.08, 0.7, 1.08), allMat('roofBlue'), pos.roofH.map(p => [p[0], 1.82, p[2]]), { castShadow: true });
     instanced(g, new THREE.BoxGeometry(1.08, 0.28, 1.08), allMat('roofRed'), pos.wallC.map(p => [p[0], 1.6, p[2]]));
     instanced(g, new THREE.BoxGeometry(1.08, 0.28, 1.08), allMat('roofBlue'), pos.wallH.map(p => [p[0], 1.6, p[2]]));
+    // ridge caps along the roof tops
+    instanced(g, new THREE.BoxGeometry(1.1, 0.09, 0.34), mat('ridgeC', { color: 0xb03828 }), pos.roofC.map(p => [p[0], 2.21, p[2]]));
+    instanced(g, new THREE.BoxGeometry(1.1, 0.09, 0.34), mat('ridgeH', { color: 0x3c5898 }), pos.roofH.map(p => [p[0], 2.21, p[2]]));
 
     // doors, windows, and the PokeCenter sign
     eachTile(grid, (tc, x, y) => {
@@ -434,17 +612,48 @@ const R3D = (() => {
       g.add(sh);
     }
 
-    // tall grass tufts: crossed quads
+    // tall grass tufts: crossed quads with a 2-frame sway
     const tuftGeo = new THREE.PlaneGeometry(0.95, 0.55);
-    const tuftMat = new THREE.MeshLambertMaterial({ map: grassTuftTex(), alphaTest: 0.4, side: THREE.DoubleSide });
-    instanced(g, tuftGeo, tuftMat, pos.tuftA);
-    instanced(g, tuftGeo, tuftMat, pos.tuftB);
+    tuftMatRef = new THREE.MeshLambertMaterial({ map: grassTuftTex(0), alphaTest: 0.4, side: THREE.DoubleSide });
+    instanced(g, tuftGeo, tuftMatRef, pos.tuftA);
+    instanced(g, tuftGeo, tuftMatRef, pos.tuftB);
 
-    // flowers
-    instanced(g, new THREE.SphereGeometry(0.09, 6, 4), mat('flowerR', { color: 0xe85858, emissive: 0x401010 }),
-      pos.flower.map(p => [p[0] - 0.22, 0.1, p[2] - 0.15]));
-    instanced(g, new THREE.SphereGeometry(0.09, 6, 4), mat('flowerY', { color: 0xf0d020, emissive: 0x403408 }),
-      pos.flower.map(p => [p[0] + 0.2, 0.1, p[2] + 0.2]));
+    // foam strips where sand/planks meet the sea
+    const foamPos = [];
+    eachTile(grid, (tc, x, y) => {
+      if (tc !== 'W') return;
+      const solidBeach = c2 => c2 === 'S' || c2 === 'D' || c2 === 'I';
+      if (y > 0 && solidBeach(grid[y - 1][x])) foamPos.push([x + 0.5, -0.14, y + 0.14, 0]);
+      if (x > 0 && solidBeach(grid[y][x - 1])) foamPos.push([x + 0.14, -0.14, y + 0.5, Math.PI / 2]);
+      if (x < grid[y].length - 1 && solidBeach(grid[y][x + 1])) foamPos.push([x + 0.86, -0.14, y + 0.5, Math.PI / 2]);
+    });
+    if (foamPos.length) {
+      foamMatRef = new THREE.MeshBasicMaterial({ color: 0xe8f8ff, transparent: true, opacity: 0.55, depthWrite: false });
+      const foamGeo = new THREE.PlaneGeometry(1, 0.22);
+      const fm = new THREE.InstancedMesh(foamGeo, foamMatRef, foamPos.length);
+      const m4 = new THREE.Matrix4(), rx = new THREE.Matrix4().makeRotationX(-Math.PI / 2);
+      foamPos.forEach((p, i) => {
+        m4.makeTranslation(p[0], p[1], p[2]);
+        const ry = new THREE.Matrix4().makeRotationY(p[3]);
+        m4.multiply(ry).multiply(rx);
+        fm.setMatrixAt(i, m4);
+      });
+      g.add(fm);
+    }
+
+    // flowers: animated billboard sprites (two sway frames)
+    const fTexA = pixelTex('flowerA', FLOWER_FRAMES[0], FLOWER_PAL, false, 1);
+    const fTexB = pixelTex('flowerB', FLOWER_FRAMES[1], FLOWER_PAL, false, 1);
+    for (const p of pos.flower) {
+      for (const [ox, oz] of [[-0.2, -0.12], [0.22, 0.18]]) {
+        const spr = makeSprite(fTexA, 0.42, 0.42);
+        spr.center.set(0.5, 0.1);
+        spr.position.set(p[0] + ox, 0.02, p[2] + oz);
+        spr.userData.texA = fTexA; spr.userData.texB = fTexB;
+        g.add(spr);
+        flowerSprites.push(spr);
+      }
+    }
 
     // signs
     instanced(g, new THREE.BoxGeometry(0.12, 0.5, 0.12), mat('trunk', { color: 0x7a5230 }), pos.sign.map(p => [p[0], 0.25, p[2]]), { castShadow: true });
@@ -468,10 +677,13 @@ const R3D = (() => {
     const crater = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 3.4, 1.6, 9), mat('crater', { color: 0x4a3a30 }));
     crater.position.set(13, 7.4, -7.5);
     g.add(crater);
-    const lava = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.1, 0.3, 9),
-      new THREE.MeshBasicMaterial({ color: 0xff6830 }));
+    lavaMatRef = new THREE.MeshBasicMaterial({ color: 0xff6830 });
+    const lava = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.1, 0.3, 9), lavaMatRef);
     lava.position.set(13, 8.05, -7.5);
     g.add(lava);
+    lavaLightRef = new THREE.PointLight(0xff7838, 1.4, 16);
+    lavaLightRef.position.set(13, 8.8, -7.5);
+    g.add(lavaLightRef);
     for (let i = 0; i < 4; i++) {
       const c = document.createElement('canvas');
       c.width = 32; c.height = 32;
@@ -606,6 +818,28 @@ const R3D = (() => {
       posAttr.needsUpdate = true;
     }
     if (waterTexRef) { waterTexRef.offset.x = t * 0.02; waterTexRef.offset.y = t * 0.008; }
+
+    // ambient life: swaying tufts, flower frames, drifting clouds, foam pulse, lava glow
+    const frame2 = Math.floor(t * 1.7) % 2;
+    if (tuftMatRef && tuftMatRef.userData.frame !== frame2) {
+      tuftMatRef.userData.frame = frame2;
+      tuftMatRef.map = grassTuftTex(frame2);
+      tuftMatRef.needsUpdate = true;
+    }
+    for (const f of flowerSprites) {
+      const want = frame2 ? f.userData.texB : f.userData.texA;
+      if (f.material.map !== want) { f.material.map = want; f.material.needsUpdate = true; }
+    }
+    for (const cSpr of cloudSprites) {
+      cSpr.position.x = ((cSpr.userData.baseX + t * cSpr.userData.speed) % 44) - 6;
+    }
+    if (foamMatRef) foamMatRef.opacity = 0.4 + 0.22 * Math.sin(t * 2.2);
+    if (lavaMatRef) {
+      const pulse = 0.5 + 0.5 * Math.sin(t * 3.1);
+      lavaMatRef.color.setRGB(1, 0.42 + pulse * 0.25, 0.19 + pulse * 0.12);
+      if (lavaLightRef) lavaLightRef.intensity = 1.1 + pulse * 0.8;
+    }
+
     for (const s of smokeSprites) {
       const ph = (t * 0.14 + s.userData.phase) % 1;
       s.position.y = 8.6 + ph * 4.2;
@@ -622,8 +856,14 @@ const R3D = (() => {
   // ---------- battle ----------
   function buildBattleScene() {
     battleScene = new THREE.Scene();
-    battleScene.background = new THREE.Color(0xa6d8f0);
-    battleScene.fog = new THREE.Fog(0xa6d8f0, 18, 40);
+    battleScene.background = skyTex('#4ea0e4', '#cceeff');
+    battleScene.fog = new THREE.Fog(0xbce4f8, 18, 40);
+    for (let i = 0; i < 3; i++) {
+      const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex(i % 2), transparent: true, opacity: 0.9, depthWrite: false }));
+      spr.scale.set(9 + i * 2, 3.6 + i, 1);
+      spr.position.set(-14 + i * 13, 8 + i * 1.6, -24);
+      battleScene.add(spr);
+    }
     battleCam = new THREE.PerspectiveCamera(40, 480 / 320, 0.1, 100);
     battleCam.position.set(0, 2.1, 6.4);
     battleCam.lookAt(0.3, 1.0, -1.2);
@@ -649,8 +889,14 @@ const R3D = (() => {
     ground.receiveShadow = true;
     battleScene.add(ground);
 
-    // battle platforms: pale grassy discs with darker rims
-    const platTop = new THREE.MeshLambertMaterial({ color: 0xb2d478 });
+    // battle platforms: mottled grassy discs with darker rims
+    const ptex = tileTex('tt:dark', 16, 16, TILE_DRAWS.dark);
+    ptex.wrapS = ptex.wrapT = THREE.RepeatWrapping;
+    const ptex2 = ptex.clone();
+    ptex2.needsUpdate = true;
+    ptex2.wrapS = ptex2.wrapT = THREE.RepeatWrapping;
+    ptex2.repeat.set(3, 3);
+    const platTop = new THREE.MeshLambertMaterial({ map: ptex2, color: 0xd8e8b0 });
     const platSide = new THREE.MeshLambertMaterial({ color: 0x86ac58 });
     const mkPlat = (r, x, z) => {
       const p = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 1.12, 0.22, 20), [platSide, platTop, platSide]);
@@ -687,38 +933,48 @@ const R3D = (() => {
     const monSh = blobShadow(0.95); monSh.position.set(-1.9, 0.23, 1.4); battleScene.add(monSh);
   }
 
+  let foeIntro = 0, monIntro = 0;
   function renderBattle() {
     const foe = battle.foe, pm = game.party[battle.activeIdx];
     if (foe && curFoeSpecies !== foe.species) {
       curFoeSpecies = foe.species;
       foeSprite.material.map = monTex(foe.species);
       foeSprite.material.needsUpdate = true;
+      foeIntro = 1; // slide in from the right
     }
     if (pm && curMonSpecies !== pm.species) {
       curMonSpecies = pm.species;
       monSprite.material.map = monTex(pm.species, true);
       monSprite.material.needsUpdate = true;
+      monIntro = 1; // slide in from the left
     }
     foeSprite.visible = !!(foe && foe.hp > 0);
     monSprite.visible = !!(pm && pm.hp > 0);
 
+    foeIntro = Math.max(0, foeIntro - 0.04);
+    monIntro = Math.max(0, monIntro - 0.04);
+    const ease = v => v * v;
+
     let foeDx = 0, monDx = 0;
     if (battle.foeAnim > 0) { foeDx = -battle.foeAnim * 0.06; battle.foeAnim--; }
     if (battle.playerAnim > 0) { monDx = battle.playerAnim * 0.06; battle.playerAnim--; }
-    foeSprite.position.x = 1.9 + foeDx;
-    monSprite.position.x = -1.9 + monDx;
+    foeSprite.position.x = 1.9 + foeDx + ease(foeIntro) * 7;
+    monSprite.position.x = -1.9 + monDx - ease(monIntro) * 7;
 
     t += 1 / 240;
     foeSprite.position.y = 0.2 + Math.sin(t * 9) * 0.03;
     monSprite.position.y = 0.2 + Math.cos(t * 8) * 0.03;
 
+    // gentle camera drift + hit shake
+    const driftX = Math.sin(t * 1.7) * 0.05, driftY = Math.cos(t * 1.3) * 0.03;
     if (battle.shake > 0) {
-      battleCam.position.x = (battle.shake % 2 ? 0.09 : -0.09);
+      battleCam.position.x = driftX + (battle.shake % 2 ? 0.09 : -0.09);
       battle.shake--;
-    } else battleCam.position.x = 0;
+    } else battleCam.position.x = driftX;
+    battleCam.position.y = 2.1 + driftY;
 
     renderer.render(battleScene, battleCam);
   }
 
-  return { init, setMap, renderWorld, renderBattle, hideItem, snapCamera };
+  return { init, setMap, renderWorld, renderBattle, hideItem, snapCamera, bigMonCanvas };
 })();
