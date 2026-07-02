@@ -1,5 +1,8 @@
-/* Velvet service worker — cache-first, versioned */
-const CACHE = 'velvet-v1';
+/* Velvet service worker.
+   Navigations: network-first (falls back to cache offline).
+   Assets: stale-while-revalidate — serve cache instantly, refresh
+   in the background so the next load picks up deployed changes. */
+const CACHE = 'velvet-v2';
 const ASSETS = [
   '.',
   'index.html',
@@ -26,17 +29,35 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(hit =>
-      hit ||
-      fetch(e.request).then(res => {
-        if (res.ok && new URL(e.request.url).origin === location.origin) {
+  const url = new URL(e.request.url);
+  if (e.request.method !== 'GET' || url.origin !== location.origin) return;
+
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
           const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, copy));
-        }
+          caches.open(CACHE).then(c => c.put('index.html', copy));
+          return res;
+        })
+        .catch(() => caches.match('index.html'))
+    );
+    return;
+  }
+
+  e.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    const hit = await cache.match(e.request, { ignoreSearch: true });
+    const refresh = fetch(e.request)
+      .then(res => {
+        if (res.ok) cache.put(e.request, res.clone());
         return res;
       })
-    )
-  );
+      .catch(() => null);
+    if (hit) {
+      e.waitUntil(refresh); // background revalidate
+      return hit;
+    }
+    return (await refresh) || Response.error();
+  })());
 });

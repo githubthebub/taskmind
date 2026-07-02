@@ -15,7 +15,10 @@ const store = {
     try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
     catch (_) { return fallback; }
   },
-  set(key, val) { localStorage.setItem(key, JSON.stringify(val)); },
+  set(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); }
+    catch (_) { /* storage blocked or full — keep the app usable */ }
+  },
 };
 
 const settings = Object.assign(
@@ -30,7 +33,13 @@ sound.volume = settings.volume;
 
 /* ---------- journal ---------- */
 
-function journal() { return store.get('velvet.journal', []); }
+function journal() {
+  const raw = store.get('velvet.journal', []);
+  if (!Array.isArray(raw)) return [];
+  // tolerate hand-edited or legacy entries rather than bricking the UI
+  return raw.filter(e => e && typeof e.ts === 'number' && typeof e.title === 'string')
+            .map(e => ({ ...e, seconds: Number(e.seconds) || 0 }));
+}
 function addEntry(entry) {
   const j = journal();
   j.unshift(entry);
@@ -42,8 +51,8 @@ function dayKey(ts) {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
-function streak() {
-  const days = new Set(journal().map(e => dayKey(e.ts)));
+function streak(entries = journal()) {
+  const days = new Set(entries.map(e => dayKey(e.ts)));
   if (!days.size) return 0;
   let count = 0;
   const cursor = new Date();
@@ -60,25 +69,46 @@ function streak() {
 
 const CUSTOM_TINT = '#c9a86a';
 
-function customSessions() { return store.get('velvet.custom', []); }
+/* only the recipe {id, title, blocks} is stored; phases are materialized
+   from PHASE_LIBRARY on read, so library improvements reach old customs */
+function customRecipes() {
+  const raw = store.get('velvet.custom', []);
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter(r => r && typeof r.id === 'string' && Array.isArray(r.blocks))
+    .map(r => ({
+      id: r.id,
+      title: typeof r.title === 'string' ? r.title : 'My practice',
+      blocks: r.blocks.filter(b =>
+        b && PHASE_LIBRARY.some(x => x.id === b.blockId) &&
+        Number(b.minutes) >= 1),
+    }))
+    .filter(r => r.blocks.length);
+}
+function customSessions() {
+  return customRecipes().map(r => buildCustom(r.id, r.title, r.blocks));
+}
 function saveCustom(sess) {
-  const c = customSessions().filter(x => x.id !== sess.id);
-  c.push(sess);
+  const c = customRecipes().filter(x => x.id !== sess.id);
+  c.push({ id: sess.id, title: sess.title, blocks: sess.blocks });
   store.set('velvet.custom', c);
 }
 function deleteCustom(id) {
-  store.set('velvet.custom', customSessions().filter(x => x.id !== id));
+  store.set('velvet.custom', customRecipes().filter(x => x.id !== id));
 }
 function allSessions() { return [...SESSIONS, ...customSessions()]; }
 
-/* scale one phase to a new duration, keeping cue rhythm */
+/* scale one phase to a new duration, keeping cue rhythm.
+   Cues are clamped to t >= 2 so a heavily shortened phase's first cue
+   can't clobber the spoken phase announcement, and dropped when they'd
+   land on the phase's final seconds. */
 function scalePhase(phase, dur) {
   const f = dur / phase.dur;
   return {
     ...phase,
     dur,
     cues: phase.cues
-      .map(c => ({ ...c, t: Math.round(c.t * f) }))
+      .map(c => ({ ...c, t: Math.max(2, Math.round(c.t * f)) }))
       .filter(c => c.t < dur - 3),
   };
 }
@@ -103,6 +133,20 @@ function show(screenEl) {
   app.replaceChildren(screenEl);
   window.scrollTo(0, 0);
 }
+
+/* Back-button support: home sits on the base history entry; every other
+   screen shares one "deep" entry, so Back always returns home (ending a
+   live session through its normal finish path) instead of exiting the app. */
+function markDeep() {
+  if (!history.state?.deep) history.pushState({ deep: true }, '');
+}
+function markHome() {
+  history.replaceState({ deep: false }, '');
+}
+window.addEventListener('popstate', () => {
+  if (engine && !engine.done) engine.finish(false);
+  else homeScreen();
+});
 
 /* ============================================================
    SCREENS
@@ -158,6 +202,7 @@ function nav(active) {
 /* ---------- home ---------- */
 
 function homeScreen() {
+  markHome();
   const st = streak();
   const total = journal().length;
   const s = el(`
@@ -208,6 +253,7 @@ function homeScreen() {
 /* ---------- session detail ---------- */
 
 function detailScreen(sess) {
+  markDeep();
   const s = el(`
     <section class="screen detail" style="--tint:${sess.tint}">
       <button class="back" aria-label="Back">‹ Back</button>
@@ -264,6 +310,7 @@ function detailScreen(sess) {
 /* ---------- custom session builder ---------- */
 
 function builderScreen(existing) {
+  markDeep();
   // working copy: [{blockId, minutes}]
   let seq = existing
     ? existing.blocks.map(b => ({ ...b }))
@@ -346,6 +393,7 @@ function builderScreen(existing) {
 
 /* materialize a stored custom recipe into a full session object */
 function buildCustom(id, title, blocks) {
+  blocks = blocks.filter(b => PHASE_LIBRARY.some(x => x.id === b.blockId));
   const phases = blocks.map(b => {
     const lib = PHASE_LIBRARY.find(x => x.id === b.blockId);
     return scalePhase(lib.phase, b.minutes * 60);
@@ -363,19 +411,10 @@ function buildCustom(id, title, blocks) {
   };
 }
 
-/* clone a session with phase durations and cue times scaled */
+/* clone a session with phase durations and cue times scaled.
+   Always clones (even at f=1) so the engine never aliases SESSIONS data. */
 function scaleSession(sess, f) {
-  if (f === 1) return sess;
-  return {
-    ...sess,
-    phases: sess.phases.map(p => ({
-      ...p,
-      dur: Math.round(p.dur * f),
-      cues: p.cues
-        .map(c => ({ ...c, t: Math.round(c.t * f) }))
-        .filter(c => c.t < Math.round(p.dur * f) - 3),
-    })),
-  };
+  return { ...sess, phases: sess.phases.map(p => scalePhase(p, Math.round(p.dur * f))) };
 }
 
 /* ============================================================
@@ -385,7 +424,9 @@ function scaleSession(sess, f) {
 let engine = null;
 
 function practiceScreen(sess) {
-  const totalDur = sess.phases.reduce((a, p) => a + p.dur, 0);
+  const totalDur = sess.phases?.reduce((a, p) => a + p.dur, 0) ?? 0;
+  if (!totalDur) return homeScreen(); // corrupted/empty session — nothing to run
+  markDeep();
   const s = el(`
     <section class="screen practice" style="--tint:${sess.tint}">
       <canvas class="ambient" aria-hidden="true"></canvas>
@@ -426,18 +467,19 @@ function practiceScreen(sess) {
   ring.style.strokeDashoffset = RING_LEN;
 
   const state = {
-    sess, totalDur,
     phaseIdx: -1,
     phaseT: 0,        // seconds into current phase
     totalT: 0,
     breathT: 0,       // seconds into current breath cycle
     seg: '',          // current breath segment name
+    segs: [],         // breath segments for the current phase
+    cycleLen: 1,
+    nextCue: 0,       // index of the next unfired cue
+    shownSec: -1,     // last rendered countdown second
     running: true,
     done: false,
     raf: 0,
     last: performance.now(),
-    firedCues: new Set(),
-    startedAt: Date.now(),
   };
   engine = state;
 
@@ -445,8 +487,8 @@ function practiceScreen(sess) {
 
   function segments(breath) {
     return [
-      ['in', breath.in], ['holdIn', breath.holdIn],
-      ['out', breath.out], ['holdOut', breath.holdOut],
+      ['in', breath?.in], ['holdIn', breath?.holdIn],
+      ['out', breath?.out], ['holdOut', breath?.holdOut],
     ].filter(([, d]) => d > 0);
   }
 
@@ -454,8 +496,11 @@ function practiceScreen(sess) {
     state.phaseIdx = i;
     state.phaseT = 0;
     state.breathT = 0;
-    state.firedCues = new Set();
+    state.seg = '';   // re-fire the first breath cue of the new phase
+    state.nextCue = 0;
     const p = currentPhase();
+    state.segs = segments(p.breath);
+    state.cycleLen = state.segs.reduce((a, [, d]) => a + d, 0);
     phaseEl.textContent = `${p.name} · ${i + 1}/${sess.phases.length}`;
     halo.style.opacity = 0.35 + p.intensity * 0.65;
     document.documentElement.style.setProperty('--pulse', p.intensity);
@@ -493,21 +538,17 @@ function practiceScreen(sess) {
       }
     }
 
-    // ---- cues ----
-    for (const c of currentPhase().cues) {
-      if (state.phaseT >= c.t && !state.firedCues.has(c.t)) {
-        state.firedCues.add(c.t);
-        setCue(c.text);
-      }
+    // ---- cues (ordered by t; fire at most one per frame) ----
+    const cues = currentPhase().cues;
+    if (state.nextCue < cues.length && state.phaseT >= cues[state.nextCue].t) {
+      setCue(cues[state.nextCue++].text);
     }
 
     // ---- breath cycle ----
-    const segs = segments(currentPhase().breath);
-    const cycleLen = segs.reduce((a, [, d]) => a + d, 0);
-    let t = state.breathT % cycleLen;
-    let segName = 'in', segDur = 1, segPos = 0;
-    for (const [name, d] of segs) {
-      if (t < d) { segName = name; segDur = d; segPos = t / d; break; }
+    let t = state.cycleLen > 0 ? state.breathT % state.cycleLen : 0;
+    let segName = 'in', segPos = 0;
+    for (const [name, d] of state.segs) {
+      if (t < d) { segName = name; segPos = t / d; break; }
       t -= d;
     }
     if (segName !== state.seg) {
@@ -532,9 +573,13 @@ function practiceScreen(sess) {
     orb.style.transform = `scale(${scale.toFixed(4)})`;
     halo.style.transform = `scale(${(scale * 1.15).toFixed(4)})`;
 
-    // progress + clock
+    // progress ring every frame; clock text only when the second changes
     ring.style.strokeDashoffset = RING_LEN * (1 - state.totalT / totalDur);
-    timeEl.textContent = fmtTime(totalDur - state.totalT);
+    const secLeft = Math.ceil(totalDur - state.totalT);
+    if (secLeft !== state.shownSec) {
+      state.shownSec = secLeft;
+      timeEl.textContent = fmtTime(secLeft);
+    }
 
     state.raf = requestAnimationFrame(tick);
   }
@@ -556,11 +601,15 @@ function practiceScreen(sess) {
   }
   pauseBtn.onclick = () => (state.running ? pause() : resume());
   state.pause = pause;
+  state.finish = finish;
 
   // keep the screen awake during practice
   let wakeLock = null;
   navigator.wakeLock?.request('screen')
-    .then(l => { wakeLock = l; })
+    .then(l => {
+      if (state.done) l.release().catch(() => {}); // finished before it resolved
+      else wakeLock = l;
+    })
     .catch(() => {});
 
   // ambient drifting motes, energy follows phase intensity
@@ -593,7 +642,9 @@ function practiceScreen(sess) {
   s.querySelector('#p-exit').onclick = () => finish(false);
 
   show(s);
-  sound.start().then(() => sound.setIntensity(sess.phases[0].intensity, 1));
+  // if resume() was slow the session may already be past phase 0,
+  // so apply whatever phase is current once the graph exists
+  sound.start().then(() => sound.setIntensity(currentPhase()?.intensity ?? 0.2, 1));
   enterPhase(0);
   setCue(`${sess.title}. Settle in.`);
   state.last = performance.now();
@@ -654,6 +705,7 @@ function startAmbient(canvas, tint, energy) {
 /* ---------- completion + rating ---------- */
 
 function completeScreen(sess, seconds, completed) {
+  markDeep();
   engine = null;
   let glow = 0;
   const s = el(`
@@ -700,6 +752,7 @@ function completeScreen(sess, seconds, completed) {
 /* ---------- journal ---------- */
 
 function journalScreen() {
+  markDeep();
   const entries = journal();
   const totalMin = Math.round(entries.reduce((a, e) => a + e.seconds, 0) / 60);
   const s = el(`
@@ -709,7 +762,7 @@ function journalScreen() {
           <h1>Journal</h1>
           <p class="sub">${entries.length
             ? `${entries.length} session${entries.length === 1 ? '' : 's'} · ` +
-              `${totalMin} mindful minute${totalMin === 1 ? '' : 's'} · ${streak()}-day streak`
+              `${totalMin} mindful minute${totalMin === 1 ? '' : 's'} · ${streak(entries)}-day streak`
             : 'Your practice history will live here.'}</p>
         </div>
       </header>
@@ -737,12 +790,13 @@ function journalScreen() {
     list.appendChild(el(`<p class="foot-note">Finish any session and it lands here —
       with your glow rating and notes, so you can watch the practice deepen.</p>`));
   }
+  const sessionsById = new Map(allSessions().map(x => [x.id, x]));
   for (const e of entries) {
     const d = new Date(e.ts);
     const when = d.toLocaleDateString(undefined,
       { weekday: 'short', month: 'short', day: 'numeric' }) +
       ' · ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-    const sess = allSessions().find(x => x.id === e.sessionId);
+    const sess = sessionsById.get(e.sessionId);
     list.appendChild(el(`
       <div class="entry" style="--tint:${sess?.tint ?? '#e0637c'}">
         <div class="entry-head">
@@ -763,6 +817,7 @@ function journalScreen() {
 /* ---------- learn ---------- */
 
 function learnScreen() {
+  markDeep();
   const s = el(`
     <section class="screen">
       <header class="home-head"><div>
@@ -784,6 +839,7 @@ function learnScreen() {
 /* ---------- settings ---------- */
 
 function settingsScreen() {
+  markDeep();
   const s = el(`
     <section class="screen">
       <header class="home-head"><div>
@@ -867,9 +923,10 @@ const routes = {
   settings: settingsScreen,
 };
 
-// keep speech voices warm (Chrome loads them async)
+// Chrome loads speech voices async — re-pick once they actually arrive
 window.speechSynthesis?.getVoices();
-window.speechSynthesis?.addEventListener?.('voiceschanged', () => {});
+window.speechSynthesis?.addEventListener?.('voiceschanged',
+  () => sound.invalidateVoice());
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && engine?.running) engine.pause();

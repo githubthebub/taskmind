@@ -21,14 +21,23 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   font-family: "Avenir Next", Avenir, "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--bg-0);
+  color: var(--ink);
+  min-height: 100dvh;
+  line-height: 1.5;
+}
+
+/* fixed gradient layer — composited once, no per-scroll repaint
+   (background-attachment: fixed is janky on mobile) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   background:
     radial-gradient(120% 90% at 50% -10%, #33131f 0%, transparent 60%),
     radial-gradient(100% 80% at 50% 115%, #22101c 0%, transparent 55%),
     linear-gradient(180deg, var(--bg-1), var(--bg-0));
-  background-attachment: fixed;
-  color: var(--ink);
-  min-height: 100dvh;
-  line-height: 1.5;
 }
 
 #app { max-width: 520px; margin: 0 auto; }
@@ -429,13 +438,15 @@ h1 {
   will-change: transform;
 }
 .orb-halo {
-  width: 62%;
+  width: 80%;
   aspect-ratio: 1;
   border-radius: 50%;
+  /* softness baked into the gradient stops so per-frame scaling is a
+     pure composite — a blur filter here would re-render every frame */
   background: radial-gradient(circle,
-    color-mix(in srgb, var(--tint) 55%, transparent) 0%,
-    transparent 70%);
-  filter: blur(18px);
+    color-mix(in srgb, var(--tint) 45%, transparent) 0%,
+    color-mix(in srgb, var(--tint) 22%, transparent) 40%,
+    transparent 68%);
   opacity: 0.5;
   will-change: transform, opacity;
   transition: opacity 3s ease;

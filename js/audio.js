@@ -14,6 +14,7 @@ class SoundScape {
     this.voiceEnabled = true;
     this.volume = 0.7;
     this._voice = null;
+    this._gen = 0; // bumped by stop(); start() aborts if it changed mid-await
   }
 
   _ensure() {
@@ -25,10 +26,34 @@ class SoundScape {
     this.master.connect(this.ctx.destination);
   }
 
+  _ramp(param, v, seconds) {
+    const t = this.ctx.currentTime;
+    param.cancelScheduledValues(t);
+    param.setValueAtTime(param.value, t);
+    param.linearRampToValueAtTime(v, t + seconds);
+  }
+
+  /* one-shot sine with a soft attack/decay envelope */
+  _tone(freq, at, peak, decay, dest) {
+    const ctx = this.ctx;
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(peak, at + 0.06);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + decay);
+    o.connect(g).connect(dest);
+    o.start(at);
+    o.stop(at + decay + 0.1);
+  }
+
   async start() {
     this._ensure();
+    const gen = this._gen;
     if (this.ctx.state === 'suspended') await this.ctx.resume();
-    if (this.nodes) return;
+    // a stop() during the await means nobody owns this soundscape anymore
+    if (gen !== this._gen || this.nodes) return;
 
     const ctx = this.ctx;
     const bus = ctx.createGain();
@@ -91,70 +116,42 @@ class SoundScape {
     tone.frequency.value = 900;
     bus.connect(tone).connect(this.master);
 
-    this.nodes = { oscs, oscGains, noiseGain, noiseFilter, tone, bus };
+    this.nodes = { oscs, oscGains, lfo, surfLfo, noise, noiseGain, noiseFilter, tone, bus };
     this.setEnabled(this.enabled);
   }
 
   /* morph timbre with session intensity 0..1 */
   setIntensity(x, seconds = 4) {
     if (!this.nodes) return;
-    const t = this.ctx.currentTime;
-    const ramp = (param, v) => {
-      param.cancelScheduledValues(t);
-      param.setValueAtTime(param.value, t);
-      param.linearRampToValueAtTime(v, t + seconds);
-    };
-    ramp(this.nodes.tone.frequency, 700 + x * 2200);
-    ramp(this.nodes.noiseFilter.frequency, 300 + x * 900);
-    ramp(this.nodes.noiseGain.gain, 0.04 + x * 0.09);
-    ramp(this.nodes.oscGains[3].gain, 0.05 + x * 0.18);
+    this._ramp(this.nodes.tone.frequency, 700 + x * 2200, seconds);
+    this._ramp(this.nodes.noiseFilter.frequency, 300 + x * 900, seconds);
+    this._ramp(this.nodes.noiseGain.gain, 0.04 + x * 0.09, seconds);
+    this._ramp(this.nodes.oscGains[3].gain, 0.05 + x * 0.18, seconds);
     this.nodes.oscs.forEach((o, i) =>
-      ramp(o.detune, (i % 2 ? 1 : -1) * (4 + x * 9)));
+      this._ramp(o.detune, (i % 2 ? 1 : -1) * (4 + x * 9), seconds));
   }
 
   /* soft cue tone at breath transitions: dir 'in' | 'out' */
   breathCue(dir) {
     if (!this.ctx || !this.enabled) return;
-    const ctx = this.ctx;
-    const t = ctx.currentTime;
-    const o = ctx.createOscillator();
-    o.type = 'sine';
-    o.frequency.value = dir === 'in' ? 523.25 : 392; // C5 up, G4 down
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.05, t + 0.06);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
-    o.connect(g).connect(this.master);
-    o.start(t);
-    o.stop(t + 1);
+    // C5 rising for the inhale, G4 falling for the exhale
+    this._tone(dir === 'in' ? 523.25 : 392, this.ctx.currentTime, 0.05, 0.9, this.master);
   }
 
-  /* gentle completion chime — small rising arpeggio */
+  /* gentle completion chime — small rising arpeggio.
+     Routed straight to the destination so the master fade in stop()
+     can't cut it short. */
   chime() {
     if (!this.ctx || !this.enabled) return;
-    const ctx = this.ctx;
-    [523.25, 659.25, 783.99].forEach((f, i) => {
-      const t = ctx.currentTime + i * 0.35;
-      const o = ctx.createOscillator();
-      o.type = 'sine';
-      o.frequency.value = f;
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.08, t + 0.05);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
-      o.connect(g).connect(this.master);
-      o.start(t);
-      o.stop(t + 2.3);
-    });
+    const level = 0.11 * this.volume;
+    [523.25, 659.25, 783.99].forEach((f, i) =>
+      this._tone(f, this.ctx.currentTime + i * 0.35, level, 2.2, this.ctx.destination));
   }
 
   setEnabled(on) {
     this.enabled = on;
     if (!this.ctx || !this.master) return;
-    const t = this.ctx.currentTime;
-    this.master.gain.cancelScheduledValues(t);
-    this.master.gain.setValueAtTime(this.master.gain.value, t);
-    this.master.gain.linearRampToValueAtTime(on ? this.volume * 0.6 : 0, t + 1.2);
+    this._ramp(this.master.gain, on ? this.volume * 0.6 : 0, 1.2);
   }
 
   setVolume(v) {
@@ -166,32 +163,35 @@ class SoundScape {
   resume()  { this.ctx?.resume(); }
 
   stop() {
+    this._gen++;
     if (!this.ctx) return;
-    const t = this.ctx.currentTime;
-    this.master.gain.cancelScheduledValues(t);
-    this.master.gain.setValueAtTime(this.master.gain.value, t);
-    this.master.gain.linearRampToValueAtTime(0, t + 2);
+    this._ramp(this.master.gain, 0, 2);
     const nodes = this.nodes;
     this.nodes = null;
+    if (!nodes) return;
     setTimeout(() => {
       try {
-        nodes?.oscs.forEach(o => o.stop());
-        nodes?.bus.disconnect();
+        [...nodes.oscs, nodes.lfo, nodes.surfLfo, nodes.noise].forEach(o => o.stop());
+        nodes.bus.disconnect();
+        nodes.tone.disconnect();
       } catch (_) { /* already stopped */ }
     }, 2500);
   }
 
   /* ---------- spoken guidance ---------- */
 
+  invalidateVoice() { this._voice = null; }
+
   _pickVoice() {
     if (this._voice !== null) return this._voice;
     const voices = window.speechSynthesis?.getVoices() ?? [];
+    if (!voices.length) return undefined; // don't cache "no voices yet"
     const prefs = [/samantha/i, /female/i, /karen/i, /serena/i, /zira/i, /en[-_]/i];
     for (const p of prefs) {
       const v = voices.find(v => p.test(v.name) || p.test(v.lang));
       if (v) { this._voice = v; return v; }
     }
-    this._voice = voices[0] ?? undefined;
+    this._voice = voices[0];
     return this._voice;
   }
 

@@ -13,7 +13,6 @@ const SESSIONS = [
     id: 'full-body-wave',
     title: 'Full-Body Wave',
     subtitle: 'The classic breath-and-energy practice',
-    minutes: 25,
     level: 'Deep',
     tint: '#e0637c',
     description:
@@ -117,7 +116,6 @@ const SESSIONS = [
     id: 'pelvic-pulse',
     title: 'Pelvic Pulse',
     subtitle: 'Wake up the floor of the body',
-    minutes: 12,
     level: 'Foundation',
     tint: '#d98e4a',
     description:
@@ -181,7 +179,6 @@ const SESSIONS = [
     id: 'spinal-current',
     title: 'Spinal Current',
     subtitle: 'Run energy up the spine',
-    minutes: 18,
     level: 'Deep',
     tint: '#8b6fd6',
     description:
@@ -246,7 +243,6 @@ const SESSIONS = [
     id: 'quick-glow',
     title: 'Quick Glow',
     subtitle: 'Five minutes of embodied warmth',
-    minutes: 5,
     level: 'Anytime',
     tint: '#4aa8a0',
     description:
@@ -292,7 +288,6 @@ const SESSIONS = [
     id: 'evening-surrender',
     title: 'Evening Surrender',
     subtitle: 'Downshift into pleasure and sleep',
-    minutes: 15,
     level: 'Gentle',
     tint: '#5a7fd6',
     description:
@@ -340,6 +335,12 @@ const SESSIONS = [
     ],
   },
 ];
+
+/* minutes shown in the UI derive from the actual phase durations,
+   so cards, pills and the in-session countdown always agree */
+for (const s of SESSIONS) {
+  s.minutes = Math.round(s.phases.reduce((a, p) => a + p.dur, 0) / 60);
+}
 
 /* ---------- building blocks for custom sessions ----------
    Each references a canonical phase; duration is user-adjustable
