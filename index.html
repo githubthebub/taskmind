@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0a08">
+<meta name="description" content="Sukha — an instrument for savoring the breath. Hyperfocus on what is pleasant in breathing.">
+<title>Sukha — savor the breath</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='18' fill='%23FFC98A'/%3E%3Ccircle cx='32' cy='32' r='28' fill='%23FFC98A' opacity='.25'/%3E%3C/svg%3E">
+<!-- sukha:start -->
+<style>
+:root{
+  --ground:#0d0a08;
+  --surface:#1b1512;
+  --surface-2:#241c17;
+  --line:#33281f;
+  --ember:#ffc98a;
+  --ember-deep:#e8834e;
+  --ember-dim:rgba(255,201,138,.55);
+  --ink:#ede3d4;
+  --ink-mute:#a08f7c;
+  --ink-faint:#6e6152;
+  --cool:#8fa5be;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.55;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,summary:focus-visible{outline:1px solid var(--ember);outline-offset:3px;border-radius:2px}
+
+#ember{position:fixed;inset:0;width:100%;height:100%;display:block}
+
+/* ---------- chrome ---------- */
+.chrome{
+  position:fixed;top:0;left:0;right:0;z-index:30;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:calc(env(safe-area-inset-top, 0px) + 18px) 22px 0;
+  pointer-events:none;
+}
+.chrome>*{pointer-events:auto}
+.wordmark{
+  font-family:var(--serif);font-style:italic;font-size:19px;
+  color:var(--ink-mute);letter-spacing:.02em;user-select:none;
+}
+.chrome-right{display:flex;gap:8px}
+.ghost-btn{
+  font-size:11px;text-transform:uppercase;letter-spacing:.18em;
+  color:var(--ink-mute);padding:8px 12px;border-radius:999px;
+  border:1px solid transparent;transition:color .3s,border-color .3s;
+}
+.ghost-btn:hover{color:var(--ink);border-color:var(--line)}
+body[data-quiet="1"] .chrome{opacity:.35;transition:opacity 1.2s}
+.chrome{transition:opacity 1.2s}
+
+/* ---------- screens ---------- */
+.screen{
+  position:fixed;inset:0;z-index:20;
+  display:flex;flex-direction:column;align-items:center;
+  overflow-y:auto;overflow-x:hidden;
+  opacity:0;visibility:hidden;transition:opacity .9s ease,visibility 0s .9s;
+}
+.screen.on{opacity:1;visibility:visible;transition:opacity .9s ease}
+
+/* ---------- welcome ---------- */
+#welcome{justify-content:flex-start;padding:15vh 24px 48px;text-align:center}
+#welcome .inner{width:100%;max-width:420px;display:flex;flex-direction:column;gap:34px;align-items:center}
+.title{
+  font-family:var(--serif);font-weight:400;font-size:clamp(40px,8vw,54px);
+  letter-spacing:.01em;text-wrap:balance;line-height:1.1;
+}
+.tagline{
+  font-family:var(--serif);font-style:italic;font-size:17px;color:var(--ink-mute);
+  margin-top:10px;
+}
+.lede{
+  font-size:14.5px;color:var(--ink-mute);max-width:38ch;text-wrap:pretty;
+}
+.lede em{font-family:var(--serif);color:var(--ink)}
+.field{display:flex;flex-direction:column;gap:9px;width:100%}
+.field-label{
+  font-size:10.5px;text-transform:uppercase;letter-spacing:.22em;color:var(--ink-faint);
+}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{
+  padding:7px 15px;border-radius:999px;font-size:13.5px;color:var(--ink-mute);
+  border:1px solid var(--line);background:transparent;
+  transition:color .25s,border-color .25s,background .25s;
+}
+.chip:hover{color:var(--ink)}
+.chip[aria-pressed="true"]{
+  color:var(--ground);background:var(--ember);border-color:var(--ember);font-weight:500;
+}
+.begin{
+  font-family:var(--serif);font-style:italic;font-size:19px;color:var(--ground);
+  background:var(--ember);padding:13px 46px;border-radius:999px;
+  box-shadow:0 0 34px rgba(255,201,138,.28);
+  transition:box-shadow .4s,transform .4s;
+}
+.begin:hover{box-shadow:0 0 54px rgba(255,201,138,.45);transform:translateY(-1px)}
+.keepsake{
+  font-size:12px;color:var(--ink-faint);letter-spacing:.06em;
+  font-variant-numeric:tabular-nums;
+}
+.keepsake b{color:var(--ink-mute);font-weight:500}
+
+/* ---------- session ---------- */
+#session{justify-content:center;text-align:center;user-select:none;-webkit-user-select:none;touch-action:none;cursor:default}
+#phaseCue{
+  position:absolute;top:24%;left:0;right:0;
+  font-size:12px;text-transform:uppercase;letter-spacing:.3em;
+  color:var(--ink-mute);transition:color .8s,opacity .8s;opacity:.9;
+}
+#phaseCue.cool{color:var(--cool)}
+#whisper{
+  position:absolute;top:68%;left:50%;transform:translateX(-50%);
+  width:min(84vw,460px);
+  font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.6vw,21px);
+  line-height:1.5;color:var(--ink);text-wrap:balance;
+  opacity:0;transition:opacity 2.4s ease;pointer-events:none;
+}
+#whisper.on{opacity:.92}
+#timer{
+  position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 30px);left:0;right:0;
+  font-size:13px;color:var(--ink-faint);font-variant-numeric:tabular-nums;
+  letter-spacing:.14em;
+}
+#hint{
+  position:absolute;top:calc(68% + 90px);left:50%;transform:translateX(-50%);
+  width:min(84vw,420px);
+  font-size:12px;letter-spacing:.08em;color:var(--ink-faint);
+  opacity:0;transition:opacity 2s;pointer-events:none;
+}
+#hint.on{opacity:.85}
+
+/* ---------- afterglow ---------- */
+#afterglow{justify-content:flex-start;padding:12vh 24px 60px}
+#afterglow .inner{width:100%;max-width:520px;display:flex;flex-direction:column;gap:30px;align-items:center;text-align:center}
+.after-title{font-family:var(--serif);font-weight:400;font-size:34px}
+.after-sub{font-family:var(--serif);font-style:italic;color:var(--ink-mute);font-size:16px;margin-top:6px;text-wrap:balance}
+.stats{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));
+  gap:1px;width:100%;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+}
+.stat{background:var(--surface);padding:16px 8px 14px}
+.stat b{
+  display:block;font-family:var(--serif);font-weight:400;font-size:26px;
+  font-variant-numeric:tabular-nums;color:var(--ink);
+}
+.stat span{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-faint)}
+.trace-card{
+  width:100%;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:18px 18px 12px;text-align:left;
+}
+.trace-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.trace-title{font-size:10.5px;text-transform:uppercase;letter-spacing:.2em;color:var(--ink-faint)}
+.trace-peak{font-size:12px;color:var(--ink-mute);font-variant-numeric:tabular-nums}
+#traceWrap{position:relative;width:100%}
+#traceWrap svg{display:block;width:100%;height:auto}
+#traceTip{
+  position:absolute;top:0;transform:translate(-50%,-120%);
+  background:var(--surface-2);border:1px solid var(--line);border-radius:8px;
+  padding:5px 10px;font-size:12px;color:var(--ink);white-space:nowrap;
+  font-variant-numeric:tabular-nums;pointer-events:none;opacity:0;transition:opacity .15s;
+}
+.trace-axis{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-faint);font-variant-numeric:tabular-nums;margin-top:6px}
+details.numbers{width:100%;text-align:left}
+details.numbers summary{
+  font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-faint);
+  cursor:pointer;list-style:none;padding:4px 0;
+}
+details.numbers summary::before{content:"+ "}
+details.numbers[open] summary::before{content:"− "}
+details.numbers table{
+  width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px;
+  font-variant-numeric:tabular-nums;color:var(--ink-mute);
+}
+details.numbers th{
+  text-align:left;font-weight:500;font-size:10px;text-transform:uppercase;
+  letter-spacing:.16em;color:var(--ink-faint);padding:5px 8px;border-bottom:1px solid var(--line);
+}
+details.numbers td{padding:5px 8px;border-bottom:1px solid var(--line)}
+details.numbers td:last-child,details.numbers th:last-child{text-align:right}
+.again-row{display:flex;gap:14px;align-items:center}
+
+@media (prefers-reduced-motion:reduce){
+  .screen,.begin,#whisper,.chrome{transition-duration:.01s}
+}
+</style>
+
+<script>
+"use strict";
+/* ================================================================
+   Sukha — an instrument for savoring the breath.
+   Everything below is dependency-free: Canvas ember, WebAudio tide
+   and bells, localStorage keepsakes. No network, no build step.
+   ================================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+
+/* ---------- constants ---------- */
+const PATTERNS = {
+  natural : { label:"Natural",  phases:null, blurb:"unpaced — the breath breathes itself" },
+  coherent: { label:"Coherent 5½", phases:[["in",5.5],["out",5.5]] },
+  soften  : { label:"Soften 4·6",  phases:[["in",4],["out",6]] },
+  box     : { label:"Box 4·4·4·4", phases:[["in",4],["hold",4],["out",4],["rest",4]] },
+  deep    : { label:"4·7·8",       phases:[["in",4],["hold",7],["out",8]] },
+};
+const CUES = { in:"breathe in", hold:"hold, softly", out:"let it go", rest:"rest, empty" };
+const WHISPERS = [
+  "Where in the body does this breath feel nicest?",
+  "Find one thing about this breath that is even faintly pleasant.",
+  "The coolness at the nostrils — is it agreeable?",
+  "Let the pleasantness spread, like warmth into cold hands.",
+  "Nothing to fix. Just enjoy the breathing.",
+  "Is the out-breath a small relief? Rest in that.",
+  "Soften the face. Notice if the breath sweetens.",
+  "This breath is happening anyway — you may as well enjoy it.",
+  "Lean toward the comfort in it, the way you would lean toward sun.",
+  "The gentle stretch of the ribs — savor it.",
+  "If it feels pleasant, let yourself be pleased.",
+  "Notice the moment the inhale turns. There is a stillness there.",
+  "Breathe as if the air were fragrant.",
+  "The body knows how to do this. Watch it being done for you.",
+  "What is the most comfortable part of this exhale?",
+  "Hold the pleasantness lightly, like water in cupped hands.",
+  "Smile slightly. See what changes.",
+  "Warmth, tingling, ease — anything counts. Find one.",
+  "Let each exhale be a settling, like a house at night.",
+  "You are allowed to enjoy this.",
+  "Make the pleasure itself the object. Let the breath carry it.",
+  "Stay with what is nice. When it fades, go looking again.",
+];
+const WHISPER_GAP = { off:Infinity, sparse:72, often:40 };  // seconds between whispers
+const SAMPLE_EVERY = 0.5;                                    // savor-trace resolution, seconds
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- state ---------- */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem("sukha."+k); return v ? JSON.parse(v) : d; }catch{ return d; } },
+  set(k, v){ try{ localStorage.setItem("sukha."+k, JSON.stringify(v)); }catch{} },
+};
+const settings = Object.assign(
+  { pattern:"coherent", minutes:10, whispers:"sparse", sound:"tide" },
+  store.get("settings", {})
+);
+const S = {
+  screen:"welcome", running:false,
+  t0:0, elapsed:0,
+  breath:0.35, phaseName:"", quietBreathT:0, dim:0.4,
+  held:false, savor:0, holds:0, holdStart:0, longest:0, heldTime:0,
+  samples:[], whisperAt:0, whisperIdx: Math.floor(Math.random()*WHISPERS.length),
+  lastFrame: performance.now(),
+};
+
+/* ---------- dom ---------- */
+const $ = id => document.getElementById(id);
+const el = {
+  welcome:$("welcome"), session:$("session"), afterglow:$("afterglow"),
+  phaseCue:$("phaseCue"), whisper:$("whisper"), timer:$("timer"), hint:$("hint"),
+  endBtn:$("endBtn"), soundBtn:$("soundBtn"), keepsake:$("keepsake"),
+  afterSub:$("afterSub"), stats:$("stats"), traceWrap:$("traceWrap"),
+  traceTip:$("traceTip"), tracePeak:$("tracePeak"), traceAxis:$("traceAxis"),
+  numbersBody:$("numbersBody"),
+};
+
+function show(name){
+  S.screen = name;
+  for (const k of ["welcome","session","afterglow"]) el[k].classList.toggle("on", k===name);
+  el.endBtn.hidden = name !== "session";
+  document.body.dataset.quiet = name === "session" ? "1" : "";
+}
+
+/* ---------- settings chips ---------- */
+function bindChips(groupId, key, onPick){
+  const group = $(groupId);
+  const chips = [...group.querySelectorAll(".chip")];
+  const sync = () => chips.forEach(c => c.setAttribute("aria-pressed", String(c.dataset.v === String(settings[key]))));
+  group.addEventListener("click", e => {
+    const c = e.target.closest(".chip"); if (!c) return;
+    settings[key] = key === "minutes" ? Number(c.dataset.v) : c.dataset.v;
+    store.set("settings", settings); sync(); if (onPick) onPick();
+  });
+  sync();
+}
+bindChips("gPattern","pattern");
+bindChips("gMinutes","minutes");
+bindChips("gWhispers","whispers");
+bindChips("gSound","sound", () => Tone.applySetting());
+
+/* ---------- keepsakes (history / streak) ---------- */
+function todayKey(d = new Date()){
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function computeStreak(history){
+  const days = new Set(history.map(h => h.day));
+  let streak = 0;
+  const cursor = new Date();
+  if (!days.has(todayKey(cursor))) cursor.setDate(cursor.getDate()-1);   // today not sat yet — count from yesterday
+  while (days.has(todayKey(cursor))){ streak++; cursor.setDate(cursor.getDate()-1); }
+  return streak;
+}
+function renderKeepsake(){
+  const history = store.get("history", []);
+  if (!history.length){ el.keepsake.textContent = ""; return; }
+  const mins = Math.round(history.reduce((a,h)=>a+h.minutes,0));
+  const streak = computeStreak(history);
+  el.keepsake.innerHTML =
+    "<b>" + history.length + "</b> sit" + (history.length>1?"s":"") +
+    " · <b>" + mins + "</b> min savored" +
+    (streak>1 ? " · <b>" + streak + "</b>-day streak" : "");
+}
+renderKeepsake();
+
+/* ================================================================
+   Breath engine
+   ================================================================ */
+function patternBreath(t){
+  const spec = PATTERNS[settings.pattern];
+  if (!spec.phases){                       // natural: slow autonomous swell, ~11s cycle
+    return { name:"", value: 0.5 - 0.5 * Math.cos(2*Math.PI * t / 11) };
+  }
+  const total = spec.phases.reduce((a,p)=>a+p[1],0);
+  let m = t % total;
+  for (const [name, dur] of spec.phases){
+    if (m < dur){
+      const p = m / dur, eased = 0.5 - 0.5*Math.cos(Math.PI*p);
+      const value = name==="in" ? eased : name==="out" ? 1-eased : (name==="hold" ? 1 : 0);
+      return { name, value };
+    }
+    m -= dur;
+  }
+  return { name:"", value:0 };
+}
+
+/* ================================================================
+   Sound — a tide of filtered noise that swells with the inhale,
+   a faint warm drone (optional), and struck-bowl bells. All synthesized.
+   ================================================================ */
+const Tone = {
+  ctx:null, master:null, tideGain:null, tideFilter:null,
+  shimmerGain:null, droneGain:null,
+  ensure(){
+    if (this.ctx){ if (this.ctx.state==="suspended") this.ctx.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ctx = this.ctx = new AC();
+    this.master = ctx.createGain(); this.master.gain.value = 0.9;
+    this.master.connect(ctx.destination);
+
+    // tide: looped noise -> gentle lowpass -> gain
+    const len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    let last = 0;
+    for (let i=0;i<len;i++){ last = last*0.97 + (Math.random()*2-1)*0.14; data[i] = last; } // softened noise
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    this.tideFilter = ctx.createBiquadFilter(); this.tideFilter.type="lowpass";
+    this.tideFilter.frequency.value = 400; this.tideFilter.Q.value = 0.4;
+    this.tideGain = ctx.createGain(); this.tideGain.gain.value = 0;
+    src.connect(this.tideFilter).connect(this.tideGain).connect(this.master);
+    src.start();
+
+    // savor shimmer: airy high band that opens while savoring
+    const src2 = ctx.createBufferSource(); src2.buffer = buf; src2.loop = true;
+    const hp = ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value = 3200;
+    this.shimmerGain = ctx.createGain(); this.shimmerGain.gain.value = 0;
+    src2.connect(hp).connect(this.shimmerGain).connect(this.master);
+    src2.start();
+
+    // drone: soft fifth, barely there
+    this.droneGain = ctx.createGain(); this.droneGain.gain.value = 0;
+    const dl = ctx.createBiquadFilter(); dl.type="lowpass"; dl.frequency.value = 340;
+    this.droneGain.connect(dl).connect(this.master);
+    for (const [f, g] of [[73.4,0.5],[110.0,0.35],[146.8,0.18]]){
+      const o = ctx.createOscillator(); o.type = "triangle"; o.frequency.value = f;
+      o.detune.value = (f % 7) - 3;
+      const og = ctx.createGain(); og.gain.value = g;
+      o.connect(og).connect(this.droneGain); o.start();
+    }
+    this.applySetting();
+  },
+  applySetting(){
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this.droneGain.gain.setTargetAtTime(settings.sound==="drone" ? 0.05 : 0, t, 1.2);
+  },
+  frame(breath, savor){
+    if (!this.ctx || this.ctx.state!=="running") return;
+    const on = settings.sound !== "off", t = this.ctx.currentTime;
+    this.tideGain.gain.setTargetAtTime(on ? 0.015 + 0.10*breath : 0, t, 0.18);
+    this.tideFilter.frequency.setTargetAtTime(280 + 640*breath, t, 0.18);
+    this.shimmerGain.gain.setTargetAtTime(on ? 0.014*savor : 0, t, 0.35);
+  },
+  bell(delay = 0, base = 196){
+    if (!this.ctx || settings.sound==="off") return;
+    const ctx = this.ctx, t0 = ctx.currentTime + delay;
+    for (const [ratio, amp, dec] of [[1,.5,7],[2.71,.18,5],[4.95,.08,3.4],[7.4,.035,2.2]]){
+      const o = ctx.createOscillator(); o.frequency.value = base*ratio; o.detune.value = ratio*2;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(amp, t0+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+dec);
+      o.connect(g).connect(this.master);
+      o.start(t0); o.stop(t0+dec+0.1);
+    }
+  },
+};
+el.soundBtn.addEventListener("click", () => {
+  settings.sound = settings.sound==="off" ? "tide" : "off";
+  store.set("settings", settings);
+  syncSoundBtn(); syncSoundChips();
+  if (settings.sound!=="off") Tone.ensure();
+});
+function syncSoundBtn(){ el.soundBtn.textContent = settings.sound==="off" ? "sound off" : "sound on"; }
+function syncSoundChips(){
+  [...$("gSound").querySelectorAll(".chip")].forEach(c =>
+    c.setAttribute("aria-pressed", String(c.dataset.v===settings.sound)));
+}
+syncSoundBtn();
+
+/* ================================================================
+   The ember — Canvas. Radius follows the breath; warmth follows
+   the savor envelope; motes drift like dust in warm light.
+   ================================================================ */
+const canvas = $("ember"), cx2d = canvas.getContext("2d");
+let W=0, H=0, DPR=1;
+function resize(){
+  DPR = Math.min(devicePixelRatio||1, 2);
+  W = canvas.width  = Math.round(innerWidth*DPR);
+  H = canvas.height = Math.round(innerHeight*DPR);
+  canvas.style.width = innerWidth+"px"; canvas.style.height = innerHeight+"px";
+}
+addEventListener("resize", resize); resize();
+
+const MOTES = [];
+for (let i=0;i<42;i++) MOTES.push({
+  x:Math.random(), y:Math.random(), r:0.6+Math.random()*1.7,
+  vy:0.008+Math.random()*0.02, sway:Math.random()*Math.PI*2, tw:0.4+Math.random()*0.6,
+});
+
+function lerp(a,b,t){ return a+(b-a)*t; }
+function warmColor(t){ // 0 = ember light, 1 = deep bloom
+  return [ Math.round(lerp(255,232,t)), Math.round(lerp(201,131,t)), Math.round(lerp(138,78,t)) ];
+}
+function drawEmber(now){
+  cx2d.fillStyle = "#0d0a08";
+  cx2d.fillRect(0,0,W,H);
+  const cx = W/2, cy = H*0.44;
+  const amp = REDUCED ? 0.14 : 0.42;
+  const base = Math.min(W,H)*0.135;
+  const r = base * (0.85 + amp*S.breath);
+  const warmth = S.savor;
+  const [cr,cg,cb] = warmColor(warmth*0.55);
+  cx2d.globalCompositeOperation = "lighter";
+  cx2d.globalAlpha = S.dim;   // the ember recedes behind text screens, fills the sit
+
+  // far halo
+  let g = cx2d.createRadialGradient(cx,cy,0, cx,cy, r*3.4);
+  g.addColorStop(0, `rgba(${cr},${cg},${cb},${0.10+0.20*warmth})`);
+  g.addColorStop(1, "rgba(232,131,78,0)");
+  cx2d.fillStyle = g; cx2d.beginPath(); cx2d.arc(cx,cy,r*3.4,0,7); cx2d.fill();
+
+  // mid glow
+  g = cx2d.createRadialGradient(cx,cy,0, cx,cy, r*1.75);
+  g.addColorStop(0, `rgba(${cr},${cg},${cb},${0.30+0.30*warmth})`);
+  g.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+  cx2d.fillStyle = g; cx2d.beginPath(); cx2d.arc(cx,cy,r*1.75,0,7); cx2d.fill();
+
+  // core
+  g = cx2d.createRadialGradient(cx,cy,0, cx,cy, r);
+  g.addColorStop(0, `rgba(255,238,214,${0.85+0.15*warmth})`);
+  g.addColorStop(0.55, `rgba(${cr},${cg},${cb},0.55)`);
+  g.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+  cx2d.fillStyle = g; cx2d.beginPath(); cx2d.arc(cx,cy,r,0,7); cx2d.fill();
+
+  // motes
+  const t = now/1000;
+  for (const m of MOTES){
+    if (!REDUCED){
+      m.y -= m.vy/60; m.sway += 0.004;
+      if (m.y < -0.05){ m.y = 1.05; m.x = Math.random(); }
+    }
+    const mx = (m.x + Math.sin(m.sway)*0.012) * W;
+    const my = m.y * H;
+    const dist = Math.hypot(mx-cx, my-cy) / (r*3.2);
+    const near = Math.max(0, 1-dist);
+    const a = (0.04 + 0.30*warmth*near) * (0.6 + 0.4*Math.sin(t*m.tw + m.sway));
+    if (a <= 0.01) continue;
+    cx2d.fillStyle = `rgba(${cr},${cg},${cb},${a})`;
+    cx2d.beginPath(); cx2d.arc(mx,my,m.r*DPR,0,7); cx2d.fill();
+  }
+  cx2d.globalAlpha = 1;
+  cx2d.globalCompositeOperation = "source-over";
+}
+
+/* ================================================================
+   Session flow
+   ================================================================ */
+let wakeLock = null;
+async function grabWakeLock(){
+  try{ wakeLock = await navigator.wakeLock?.request("screen"); }catch{}
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState==="visible" && S.running) grabWakeLock();
+});
+
+function startSession(){
+  Object.assign(S, {
+    running:true, t0:performance.now(), elapsed:0,
+    held:false, savor:0, holds:0, longest:0, heldTime:0,
+    samples:[], phaseName:"", whisperAt: 26 + Math.random()*10,
+  });
+  el.whisper.classList.remove("on");
+  el.hint.classList.add("on");
+  setTimeout(() => el.hint.classList.remove("on"), 14000);
+  el.phaseCue.textContent = PATTERNS[settings.pattern].phases ? "" : "at its own pace";
+  show("session");
+  if (settings.sound!=="off"){ Tone.ensure(); Tone.applySetting(); Tone.bell(0.6); }
+  grabWakeLock();
+}
+
+function endSession(){
+  if (!S.running) return;
+  S.running = false;
+  if (S.held) releaseSavor();
+  Tone.bell(0.15); Tone.bell(1.6, 147);
+  try{ wakeLock?.release(); }catch{}
+  const minutes = S.elapsed/60;
+  if (minutes >= 0.75){
+    const history = store.get("history", []);
+    history.push({ day:todayKey(), minutes:+minutes.toFixed(2), holds:S.holds, savorSec:+S.heldTime.toFixed(1) });
+    if (history.length > 400) history.splice(0, history.length-400);
+    store.set("history", history);
+  }
+  renderKeepsake();
+  renderAfterglow();
+  show("afterglow");
+}
+
+/* savor hold */
+function beginSavor(){
+  if (!S.running || S.held) return;
+  S.held = true; S.holds++; S.holdStart = S.elapsed;
+  try{ navigator.vibrate?.(12); }catch{}
+}
+function releaseSavor(){
+  if (!S.held) return;
+  S.held = false;
+  S.longest = Math.max(S.longest, S.elapsed - S.holdStart);
+}
+el.session.addEventListener("pointerdown", e => { if (!e.target.closest("button")) beginSavor(); });
+addEventListener("pointerup", releaseSavor);
+addEventListener("pointercancel", releaseSavor);
+addEventListener("blur", releaseSavor);
+addEventListener("keydown", e => {
+  if (S.screen!=="session") return;
+  if (e.code==="Space"){ e.preventDefault(); if (!e.repeat) beginSavor(); }
+  if (e.code==="Escape") endSession();
+});
+addEventListener("keyup", e => { if (e.code==="Space") releaseSavor(); });
+el.endBtn.addEventListener("click", endSession);
+$("beginBtn").addEventListener("click", startSession);
+$("againBtn").addEventListener("click", startSession);
+$("homeBtn").addEventListener("click", () => show("welcome"));
+
+/* ---------- whispers ---------- */
+function maybeWhisper(){
+  const gap = WHISPER_GAP[settings.whispers];
+  if (S.elapsed < S.whisperAt || !isFinite(gap)) return;
+  S.whisperIdx = (S.whisperIdx + 1 + Math.floor(Math.random()*3)) % WHISPERS.length;
+  el.whisper.textContent = WHISPERS[S.whisperIdx];
+  el.whisper.classList.add("on");
+  setTimeout(() => el.whisper.classList.remove("on"), 10000);
+  S.whisperAt = S.elapsed + gap * (0.8 + Math.random()*0.5);
+}
+
+/* ---------- main loop ---------- */
+function frame(now){
+  const dt = Math.min((now - S.lastFrame)/1000, 0.1);
+  S.lastFrame = now;
+
+  if (S.running){
+    S.elapsed = (now - S.t0)/1000;
+    const { name, value } = patternBreath(S.elapsed);
+    S.breath = value;
+    if (name !== S.phaseName && PATTERNS[settings.pattern].phases){
+      S.phaseName = name;
+      el.phaseCue.textContent = CUES[name] || "";
+      el.phaseCue.classList.toggle("cool", name==="out" || name==="rest");
+    }
+    // savor envelope: quick to warm, slow to fade — an afterglow
+    const target = S.held ? 1 : 0;
+    const k = S.held ? 2.6 : 0.55;
+    S.savor += (target - S.savor) * Math.min(1, k*dt);
+    if (S.held) S.heldTime += dt;
+    while (S.samples.length < Math.floor(S.elapsed / SAMPLE_EVERY))
+      S.samples.push(+S.savor.toFixed(3));
+
+    maybeWhisper();
+
+    const total = settings.minutes * 60;
+    if (settings.minutes > 0 && S.elapsed >= total){ endSession(); }
+    else {
+      const shown = settings.minutes > 0 ? total - S.elapsed : S.elapsed;
+      const mm = Math.floor(shown/60), ss = Math.floor(shown%60);
+      el.timer.textContent = mm + ":" + String(ss).padStart(2,"0");
+    }
+    Tone.frame(S.breath, S.savor);
+  } else {
+    // idle: the ember keeps breathing gently on welcome/afterglow
+    S.quietBreathT += dt;
+    S.breath = 0.5 - 0.5*Math.cos(2*Math.PI * S.quietBreathT / 9);
+    S.savor *= (1 - 0.3*dt);
+    Tone.frame(S.screen==="welcome" ? S.breath*0.4 : 0, 0);
+  }
+  const dimTarget = S.screen==="session" ? 1 : 0.4;
+  S.dim += (dimTarget - S.dim) * Math.min(1, 1.4*dt);
+  drawEmber(now);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ================================================================
+   Afterglow — the savoring trace (single series: ink labels,
+   ember-colored mark, area fill, crosshair tooltip, table view)
+   ================================================================ */
+function fmtTime(sec){
+  const m = Math.floor(sec/60), s = Math.floor(sec%60);
+  return m + ":" + String(s).padStart(2,"0");
+}
+function renderAfterglow(){
+  const mins = S.elapsed/60;
+  const pct = S.elapsed ? Math.round(100*S.heldTime/S.elapsed) : 0;
+  const streak = computeStreak(store.get("history", []));
+  el.afterSub.textContent =
+    S.holds === 0 ? "A quiet sit. The noticing itself is the practice." :
+    pct >= 40 ? "You dwelt in the pleasant. This is how the mind learns to rest." :
+    "Each hold is a moment the mind chose comfort. It adds up.";
+  el.stats.innerHTML =
+    statCell(mins >= 10 ? Math.round(mins) : +mins.toFixed(1), "minutes") +
+    statCell(S.holds, "savor holds") +
+    statCell(pct + "%", "time savoring") +
+    statCell(S.longest >= 1 ? Math.round(S.longest) + "s" : "—", "longest hold") +
+    (streak > 1 ? statCell(streak, "day streak") : "");
+  drawTrace();
+  renderNumbers();
+}
+function statCell(v, label){ return `<div class="stat"><b>${v}</b><span>${label}</span></div>`; }
+
+function drawTrace(){
+  const s = S.samples.length > 1 ? S.samples : [0,0];
+  const VW = 600, VH = 110, PAD = 4;
+  const x = i => PAD + (VW-2*PAD) * i/(s.length-1);
+  const y = v => VH - PAD - (VH-2*PAD)*v;
+  let line = "M" + x(0).toFixed(1) + " " + y(s[0]).toFixed(1);
+  for (let i=1;i<s.length;i++) line += " L" + x(i).toFixed(1) + " " + y(s[i]).toFixed(1);
+  const area = line + ` L${(VW-PAD)} ${VH-PAD} L${PAD} ${VH-PAD} Z`;
+  let peakI = 0; s.forEach((v,i) => { if (v > s[peakI]) peakI = i; });
+  const hasPeak = s[peakI] > 0.05;
+  el.tracePeak.textContent = hasPeak ? "warmest at " + fmtTime(peakI*SAMPLE_EVERY) : "";
+  el.traceWrap.innerHTML = `
+    <svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="Savoring intensity across the session">
+      <line x1="${PAD}" y1="${VH-PAD}" x2="${VW-PAD}" y2="${VH-PAD}" stroke="#33281f" stroke-width="1"/>
+      <path d="${area}" fill="rgba(255,201,138,.14)"/>
+      <path d="${line}" fill="none" stroke="#ffc98a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${hasPeak ? `<circle cx="${x(peakI).toFixed(1)}" cy="${y(s[peakI]).toFixed(1)}" r="4.5" fill="#ffc98a" stroke="#1b1512" stroke-width="2"/>` : ""}
+      <line id="traceCross" x1="0" x2="0" y1="${PAD}" y2="${VH-PAD}" stroke="#a08f7c" stroke-width="1" opacity="0"/>
+    </svg>` ;
+  el.traceWrap.appendChild(el.traceTip);
+  el.traceAxis.innerHTML = `<span>0:00</span><span>${fmtTime(S.elapsed)}</span>`;
+
+  const svg = el.traceWrap.querySelector("svg");
+  const cross = el.traceWrap.querySelector("#traceCross");
+  const move = e => {
+    const r = svg.getBoundingClientRect();
+    const fx = Math.min(Math.max((e.clientX - r.left)/r.width, 0), 1);
+    const i = Math.round(fx*(s.length-1));
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i));
+    cross.setAttribute("opacity", "0.5");
+    el.traceTip.style.left = (fx*100) + "%";
+    el.traceTip.style.top = (r.height*0.55) + "px";
+    el.traceTip.style.opacity = "1";
+    el.traceTip.textContent = fmtTime(i*SAMPLE_EVERY) + " · " + Math.round(s[i]*100) + "% warm";
+  };
+  svg.addEventListener("pointermove", move);
+  svg.addEventListener("pointerleave", () => {
+    cross.setAttribute("opacity","0"); el.traceTip.style.opacity = "0";
+  });
+}
+
+function renderNumbers(){
+  const per = [];
+  for (let m=0; m*60 < S.elapsed; m++){
+    const a = Math.floor(m*60/SAMPLE_EVERY), b = Math.min(S.samples.length, Math.floor((m+1)*60/SAMPLE_EVERY));
+    const slice = S.samples.slice(a, b);
+    const avg = slice.length ? slice.reduce((x,y)=>x+y,0)/slice.length : 0;
+    per.push(`<tr><td>minute ${m+1}</td><td>${Math.round(avg*100)}%</td></tr>`);
+  }
+  el.numbersBody.innerHTML = per.join("") || `<tr><td>—</td><td>—</td></tr>`;
+}
+
+show("welcome");
+});
+</script>
+</head>
+<body data-quiet="">
+
+<canvas id="ember" aria-hidden="true"></canvas>
+
+<header class="chrome">
+  <div class="wordmark">Sukha</div>
+  <div class="chrome-right">
+    <button id="soundBtn" class="ghost-btn" type="button">sound on</button>
+    <button id="endBtn" class="ghost-btn" type="button" hidden>end sit</button>
+  </div>
+</header>
+
+<section id="welcome" class="screen on" aria-label="Begin">
+  <div class="inner">
+    <div>
+      <h1 class="title">Sukha</h1>
+      <p class="tagline">an instrument for savoring the breath</p>
+    </div>
+    <p class="lede">Attention goes where the pleasure is. When any part of a breath feels good —
+      the cool at the nostrils, the settling of an exhale — <em>press and hold, anywhere.</em>
+      The ember warms with you. Let go when the feeling fades, then find it again.</p>
+
+    <div class="field">
+      <span class="field-label" id="lPattern">Pace</span>
+      <div class="chips" id="gPattern" role="group" aria-labelledby="lPattern">
+        <button class="chip" type="button" data-v="natural">Natural</button>
+        <button class="chip" type="button" data-v="coherent">Coherent 5½</button>
+        <button class="chip" type="button" data-v="soften">Soften 4·6</button>
+        <button class="chip" type="button" data-v="box">Box</button>
+        <button class="chip" type="button" data-v="deep">4·7·8</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label" id="lMinutes">Length</span>
+      <div class="chips" id="gMinutes" role="group" aria-labelledby="lMinutes">
+        <button class="chip" type="button" data-v="3">3 min</button>
+        <button class="chip" type="button" data-v="5">5</button>
+        <button class="chip" type="button" data-v="10">10</button>
+        <button class="chip" type="button" data-v="20">20</button>
+        <button class="chip" type="button" data-v="0">open</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label" id="lWhispers">Whispers</span>
+      <div class="chips" id="gWhispers" role="group" aria-labelledby="lWhispers">
+        <button class="chip" type="button" data-v="often">often</button>
+        <button class="chip" type="button" data-v="sparse">sparse</button>
+        <button class="chip" type="button" data-v="off">none</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field-label" id="lSound">Sound</span>
+      <div class="chips" id="gSound" role="group" aria-labelledby="lSound">
+        <button class="chip" type="button" data-v="tide">breath tide</button>
+        <button class="chip" type="button" data-v="drone">tide &amp; drone</button>
+        <button class="chip" type="button" data-v="off">silent</button>
+      </div>
+    </div>
+
+    <button class="begin" id="beginBtn" type="button">begin</button>
+    <p class="keepsake" id="keepsake"></p>
+  </div>
+</section>
+
+<section id="session" class="screen" aria-label="Sitting">
+  <div id="phaseCue" aria-live="polite"></div>
+  <p id="whisper"></p>
+  <p id="hint">when the breath feels good, press &amp; hold — anywhere · space works too</p>
+  <div id="timer">0:00</div>
+</section>
+
+<section id="afterglow" class="screen" aria-label="Afterglow">
+  <div class="inner">
+    <div>
+      <h2 class="after-title">Afterglow</h2>
+      <p class="after-sub" id="afterSub"></p>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="trace-card">
+      <div class="trace-head">
+        <span class="trace-title">Savoring trace</span>
+        <span class="trace-peak" id="tracePeak"></span>
+      </div>
+      <div id="traceWrap"><div id="traceTip"></div></div>
+      <div class="trace-axis" id="traceAxis"></div>
+    </div>
+    <details class="numbers">
+      <summary>as numbers</summary>
+      <table>
+        <thead><tr><th scope="col">Stretch</th><th scope="col">Avg. warmth</th></tr></thead>
+        <tbody id="numbersBody"></tbody>
+      </table>
+    </details>
+    <div class="again-row">
+      <button class="begin" id="againBtn" type="button">sit again</button>
+      <button class="ghost-btn" id="homeBtn" type="button">settings</button>
+    </div>
+  </div>
+</section>
+
+<!-- sukha:end -->
+</body>
+</html>
