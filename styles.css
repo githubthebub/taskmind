@@ -1,0 +1,201 @@
+/* FOCUS METRIC ENGINE — global shell styles.
+   Component modules (breathing overlay, crucible portal) inject their own
+   scoped <style> elements; this file owns layout, tabs, HUD, theming. */
+
+:root {
+  --fme-bg: #0d1117;
+  --fme-surface: #161d27;
+  --fme-surface-2: #1e2836;
+  --fme-border: #2c3a4d;
+  --fme-text: #dbe4ef;
+  --fme-text-dim: #8a99ad;
+  --fme-accent: #4cc2ff;
+  --fme-accent-2: #9d7bff;
+  --fme-good: #46d488;
+  --fme-warn: #ffb84c;
+  --fme-danger: #ff5d73;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--fme-bg);
+  color: var(--fme-text);
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+}
+
+.fme-app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+/* Header */
+.fme-header { text-align: center; margin-bottom: 18px; }
+.fme-title {
+  margin: 0;
+  font-size: 1.9rem;
+  letter-spacing: 0.35em;
+  color: var(--fme-accent);
+  text-shadow: 0 0 24px rgba(76, 194, 255, 0.35);
+}
+.fme-subtitle { margin: 6px 0 0; color: var(--fme-text-dim); font-size: 0.9rem; }
+
+/* Tabs */
+.fme-tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 22px; }
+.fme-tab {
+  background: var(--fme-surface);
+  color: var(--fme-text-dim);
+  border: 1px solid var(--fme-border);
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms, background 120ms;
+}
+.fme-tab:hover:not(:disabled) { color: var(--fme-text); border-color: var(--fme-accent); }
+.fme-tab-active { color: var(--fme-bg); background: var(--fme-accent); border-color: var(--fme-accent); font-weight: 600; }
+
+/* State panel */
+.fme-state-panel {
+  background: var(--fme-surface);
+  border: 1px solid var(--fme-border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+.fme-panel-heading { margin: 0 0 12px; font-size: 1.05rem; letter-spacing: 0.12em; color: var(--fme-text); }
+.fme-archetype-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.fme-archetype {
+  flex: 1 1 180px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--fme-border);
+  background: var(--fme-surface-2);
+  color: var(--fme-text);
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: transform 100ms, border-color 120ms, box-shadow 120ms;
+}
+.fme-archetype:hover:not(:disabled) { transform: translateY(-1px); }
+.fme-archetype:disabled { opacity: 0.45; cursor: not-allowed; }
+.fme-archetype-sluggish { border-bottom: 3px solid var(--fme-warn); }
+.fme-archetype-balanced { border-bottom: 3px solid var(--fme-good); }
+.fme-archetype-hyper { border-bottom: 3px solid var(--fme-danger); }
+.fme-archetype-active { border-color: var(--fme-accent); box-shadow: 0 0 0 2px rgba(76, 194, 255, 0.35); }
+.fme-state-label { margin-top: 14px; font-weight: 700; letter-spacing: 0.1em; color: var(--fme-accent); }
+.fme-state-description { margin: 4px 0 0; color: var(--fme-text-dim); font-size: 0.88rem; }
+
+/* Stage: canvas + HUD */
+.fme-stage { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+.fme-canvas {
+  background: #05070c;
+  border: 1px solid var(--fme-border);
+  border-radius: 10px;
+  outline: none;
+  flex: 0 0 auto;
+}
+.fme-canvas:focus { border-color: var(--fme-accent); }
+.fme-hud {
+  flex: 1 1 240px;
+  background: var(--fme-surface);
+  border: 1px solid var(--fme-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 0.9rem;
+}
+.fme-hud-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed var(--fme-border); }
+.fme-hud-row:last-child { border-bottom: none; }
+.fme-hud-key { color: var(--fme-text-dim); }
+.fme-hud-value { color: var(--fme-text); font-variant-numeric: tabular-nums; }
+
+/* Exit-driven UX panel */
+.fme-exit-panel {
+  margin-top: 22px;
+  padding: 22px 24px;
+  border-radius: 12px;
+  border: 2px solid var(--fme-good);
+  background: linear-gradient(180deg, rgba(70, 212, 136, 0.12), rgba(70, 212, 136, 0.04));
+  text-align: center;
+}
+.fme-exit-heading { margin: 0 0 10px; letter-spacing: 0.25em; color: var(--fme-good); }
+.fme-exit-body { margin: 0 auto 16px; max-width: 640px; color: var(--fme-text); }
+.fme-exit-lock {
+  background: var(--fme-good);
+  color: #06130c;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.fme-exit-lock:hover:not(:disabled) { filter: brightness(1.1); }
+
+/* Lock screen */
+.fme-lockscreen { text-align: center; padding: 18vh 20px; }
+.fme-lockscreen-title { letter-spacing: 0.5em; color: var(--fme-good); }
+.fme-lockscreen-body { max-width: 520px; margin: 12px auto; color: var(--fme-text); }
+.fme-lockscreen-hint { color: var(--fme-text-dim); font-size: 0.85rem; }
+
+/* Vault */
+.fme-vault-note { color: var(--fme-text-dim); font-size: 0.9rem; }
+.fme-vault-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 14px; }
+.fme-vault-card {
+  background: var(--fme-surface);
+  border: 1px solid var(--fme-border);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.fme-vault-card-title { margin: 0 0 4px; font-size: 1rem; color: var(--fme-accent-2); }
+.fme-vault-card-kind { margin: 0 0 8px; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fme-text-dim); }
+.fme-vault-card-body { margin: 0; font-size: 0.92rem; }
+.fme-vault-locked { opacity: 0.55; border-style: dashed; }
+.fme-vault-locked .fme-vault-card-body { color: var(--fme-text-dim); font-style: italic; }
+.fme-vault-play {
+  margin-top: 12px;
+  background: var(--fme-surface-2);
+  border: 1px solid var(--fme-accent-2);
+  color: var(--fme-accent-2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.fme-vault-play:hover:not(:disabled) { background: var(--fme-accent-2); color: var(--fme-bg); }
+
+/* Breathing-gate lock state: dim everything beneath the overlay */
+body.fme-gate-locked .fme-app { filter: grayscale(0.6) brightness(0.55); pointer-events: none; }
+
+/* Sluggish mode: maximum-contrast noradrenergic push (UI chrome side;
+   the canvas switches its own palette via contrastMode 'max') */
+body.fme-contrast-max {
+  --fme-bg: #000000;
+  --fme-surface: #0a0a0a;
+  --fme-surface-2: #141414;
+  --fme-border: #ffffff;
+  --fme-text: #ffffff;
+  --fme-text-dim: #d0d0d0;
+  --fme-accent: #00ffff;
+  --fme-accent-2: #ffff00;
+  --fme-good: #00ff6a;
+  --fme-warn: #ffcc00;
+  --fme-danger: #ff2d55;
+}
+body.fme-contrast-max .fme-title { text-shadow: 0 0 30px rgba(0, 255, 255, 0.8); }
+
+/* Hyper mode: calm, low-stimulation chrome for the high-precision iteration */
+body.fme-mode-hyper {
+  --fme-accent: #7fd4c1;
+  --fme-accent-2: #9fb8d8;
+}
+
+@media (max-width: 760px) {
+  .fme-stage { flex-direction: column; }
+  .fme-canvas { align-self: center; }
+}
