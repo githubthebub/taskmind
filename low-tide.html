@@ -115,12 +115,22 @@
     font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sage);
   }
   #mudra{
-    position:fixed;left:50%;bottom:12.5vh;transform:translateX(-50%);
-    width:min(46ch,88vw);text-align:center;z-index:10;
-    font-size:.78rem;letter-spacing:.03em;line-height:1.6;color:var(--sage);
+    position:fixed;left:50%;bottom:11vh;transform:translateX(-50%);
+    width:min(52ch,90vw);z-index:10;
+    display:flex;align-items:center;justify-content:center;gap:.9rem;
     opacity:0;transition:opacity 1.4s ease;
   }
-  #mudra b{color:var(--ember);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:.7rem;margin-right:.5em;}
+  #mudra .m-icon{
+    flex:none;width:56px;height:56px;border:1px solid #24332a;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #mudra .m-icon svg{width:42px;height:42px;display:block;}
+  #mudra .m-icon:empty{display:none;}
+  #mudra .m-text{
+    max-width:38ch;text-align:left;
+    font-size:.78rem;letter-spacing:.03em;line-height:1.6;color:var(--sage);
+  }
+  #mudra .m-text b{color:var(--ember);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:.7rem;margin-right:.5em;}
   #tide{
     position:fixed;left:50%;bottom:6vh;transform:translateX(-50%);
     height:1px;background:var(--sage);opacity:.4;z-index:10;
@@ -244,7 +254,7 @@
 
 <div id="phaseLabel" class="eyebrow"></div>
 <div id="guidance" aria-live="polite"></div>
-<div id="mudra"></div>
+<div id="mudra"><span class="m-icon"></span><span class="m-text"></span></div>
 <div id="tide"></div>
 <button id="soundBtn" class="corner">sound · on</button>
 <button id="skipBtn" class="corner">skip →</button>
@@ -385,14 +395,25 @@ const QUOTES = {
   dham:  {t:'“There is no fire like passion. There is no happiness higher than peace.”', s:'dhammapada'},
 };
 
+/* mudra glyphs — simple primitives, ember line on dark */
+const GLYPH_ATTRS = 'viewBox="0 0 64 64" fill="none" stroke="#e8a26b" stroke-width="2.2" stroke-linecap="round"';
+const GLYPHS = {
+  gyan: `<svg ${GLYPH_ATTRS}><circle cx="24" cy="40" r="7"/><path d="M30 34 Q38 24 42 15"/><path d="M34 38 Q44 30 50 24"/><path d="M36 44 Q46 40 54 37"/><path d="M18 46 Q20 54 28 56"/></svg>`,
+  dhyana: `<svg ${GLYPH_ATTRS}><path d="M12 34 Q32 50 52 34"/><path d="M17 39 Q32 52 47 39"/><ellipse cx="32" cy="30" rx="7" ry="3.4"/></svg>`,
+  vishnu: `<svg ${GLYPH_ATTRS}><path d="M16 48 Q21 38 26 48"/><path d="M38 48 Q43 38 48 48"/><path d="M56 18 Q49 28 45 37"/><circle cx="43" cy="41" r="4" fill="#e8a26b" stroke="none"/><path d="M21 32 Q19 24 22 16" opacity=".75"/></svg>`,
+  shan: `<svg ${GLYPH_ATTRS}><circle cx="32" cy="36" r="15"/><path d="M15 34 Q12 29 16 25"/><path d="M49 34 Q52 29 48 25"/><path d="M26 12 Q28 8 26 5" opacity=".8"/><path d="M32 11 Q34 7 32 4" opacity=".8"/><path d="M38 12 Q40 8 38 5" opacity=".8"/></svg>`,
+  sham: `<svg ${GLYPH_ATTRS}><path d="M16 40 Q23 46 30 40"/><path d="M34 40 Q41 46 48 40"/><circle cx="32" cy="24" r="2.4" fill="#e8a26b" stroke="none"/><path d="M32 17 L32 14" opacity=".7"/><path d="M25 20 L23 18" opacity=".7"/><path d="M39 20 L41 18" opacity=".7"/></svg>`,
+  earth: `<svg ${GLYPH_ATTRS}><path d="M9 37 Q9 27 19 27 Q29 27 29 37 Z"/><path d="M35 37 Q35 27 45 27 Q55 27 55 37 Z"/><path d="M15 43 L14 51" opacity=".7"/><path d="M19 43 L19 53" opacity=".7"/><path d="M23 43 L24 51" opacity=".7"/><path d="M41 43 L40 51" opacity=".7"/><path d="M45 43 L45 53" opacity=".7"/><path d="M49 43 L50 51" opacity=".7"/></svg>`,
+};
+
 const MUDRAS = {
-  gyan:   'gyān mudrā — index fingertips to thumb tips, hands resting heavy on the thighs',
-  dhyana: 'dhyāna mudrā — right hand cradled in the left in your lap, thumb tips touching. tongue resting lightly on the roof of the mouth',
-  vishnu: 'viṣṇu mudrā — right hand: fold index and middle finger to the palm. thumb closes the right nostril, ring finger the left',
-  shan:   'if you like — thumbs resting lightly over the ear openings while you hum (ṣaṇmukhī)',
-  root:   'gyān mudrā, spine tall — and on each inhale, a featherweight lift of the pelvic floor. release completely on the exhale',
-  sham:   'śāmbhavī — the closed-eye gaze floats gently up toward the brow. never strain it',
-  earth:  'palms down on the thighs — the earth-touching gesture',
+  gyan:   {icon:'gyan',   text:'gyān mudrā — index fingertips to thumb tips, hands resting heavy on the thighs'},
+  dhyana: {icon:'dhyana', text:'dhyāna mudrā — right hand cradled in the left in your lap, thumb tips touching. tongue resting lightly on the roof of the mouth'},
+  vishnu: {icon:'vishnu', text:'viṣṇu mudrā — right hand: fold index and middle finger to the palm. thumb closes the right nostril, ring finger the left'},
+  shan:   {icon:'shan',   text:'if you like — thumbs resting lightly over the ear openings while you hum (ṣaṇmukhī)'},
+  root:   {icon:'gyan',   text:'gyān mudrā, spine tall — and on each inhale, a featherweight lift of the pelvic floor. release completely on the exhale'},
+  sham:   {icon:'sham',   text:'śāmbhavī — the closed-eye gaze floats gently up toward the brow. never strain it'},
+  earth:  {icon:'earth',  text:'palms down on the thighs — the earth-touching gesture'},
 };
 
 /* ================= step builders ================= */
@@ -559,12 +580,17 @@ function setGuidance(t, src) {
 }
 
 let mudraTimer = null;
-function setMudra(t) {
+function setMudra(m) {
   clearTimeout(mudraTimer);
-  if (!t) { mudraEl.style.opacity = 0; return; }
-  mudraEl.innerHTML = '';
+  const iconEl = mudraEl.querySelector('.m-icon');
+  const textEl = mudraEl.querySelector('.m-text');
+  if (!m) { mudraEl.style.opacity = 0; return; }
+  const icon = typeof m === 'object' ? m.icon : null;
+  const text = typeof m === 'object' ? m.text : m;
+  iconEl.innerHTML = icon && GLYPHS[icon] ? GLYPHS[icon] : '';
+  textEl.innerHTML = '';
   const b = document.createElement('b'); b.textContent = 'hands';
-  mudraEl.appendChild(b); mudraEl.appendChild(document.createTextNode(t));
+  textEl.appendChild(b); textEl.appendChild(document.createTextNode(text));
   mudraEl.style.opacity = 1;
   mudraTimer = setTimeout(() => { mudraEl.style.opacity = 0; }, 18000);
 }
