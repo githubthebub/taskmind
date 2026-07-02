@@ -1,0 +1,15 @@
+{
+  "name": "sensory-rewire",
+  "version": "1.0.0",
+  "description": "Offline-first sensory re-indexing grid and neuro-somatic focus accelerator. Zero cloud dependencies.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "check": "tsc --noEmit",
+    "serve": "npx --yes http-server -p 4173 -c-1 ."
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
