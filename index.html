@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Attune — a somatic navigation instrument</title>
+<meta name="description" content="Choose the state you want your nervous system to arrive at. Attune plans and guides an adaptive somatic journey to get you there.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='38' fill='none' stroke='%237fb8a4' stroke-width='6'/><circle cx='50' cy='50' r='12' fill='%237fb8a4'/></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<canvas id="field"></canvas>
+<div id="grain"></div>
+
+<main id="app" aria-live="polite">
+
+  <!-- ============ WELCOME ============ -->
+  <section class="screen" id="screen-welcome">
+    <div class="welcome-inner">
+      <div class="sigil" aria-hidden="true">
+        <svg viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="44" class="sigil-ring"/>
+          <circle cx="60" cy="60" r="10" class="sigil-core"/>
+        </svg>
+      </div>
+      <h1 class="wordmark">attune</h1>
+      <p class="tagline">a somatic navigation instrument</p>
+      <p class="welcome-copy">
+        Your nervous system is always somewhere — wired, foggy, braced, settled.
+        Attune helps you notice where you are, choose where you want to be,
+        and travel the distance in your body, not just your head.
+      </p>
+      <button class="btn btn-primary" id="btn-begin">Begin</button>
+      <button class="btn btn-ghost" id="btn-history">Past journeys</button>
+      <p class="fineprint">
+        Attune is a practice companion, not medical or psychological care.
+        Everything here is an invitation — nothing is required. If any practice
+        feels like too much, open your eyes, look around the room, and let it go.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ CHECK-IN ============ -->
+  <section class="screen" id="screen-checkin" hidden>
+    <header class="screen-head">
+      <h2>Where are you right now?</h2>
+      <p class="screen-sub">Answer from the body, not from the story. First impressions are fine.</p>
+    </header>
+
+    <div class="checkin-grid">
+      <div class="panel" id="bodymap-panel">
+        <h3>The body map</h3>
+        <p class="panel-hint">Tap anywhere you notice something — tension, numbness, warmth, flutter. Tap again to change the quality, once more to clear.</p>
+        <div id="bodymap-wrap">
+          <svg id="bodymap" viewBox="0 0 200 420" aria-label="Body map — tap regions to mark sensations"></svg>
+        </div>
+        <div class="bodymap-legend">
+          <span class="lg lg-tension">tension / bracing</span>
+          <span class="lg lg-numb">numb / absent</span>
+          <span class="lg lg-warm">warm / alive</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Four honest sliders</h3>
+        <div class="slider-block" data-dim="energy">
+          <div class="slider-labels"><span>flat, shut down</span><span class="slider-name">activation</span><span>wired, racing</span></div>
+          <input type="range" min="0" max="100" value="50" id="sl-energy">
+        </div>
+        <div class="slider-block" data-dim="ease">
+          <div class="slider-labels"><span>tight, distressed</span><span class="slider-name">ease</span><span>at ease</span></div>
+          <input type="range" min="0" max="100" value="50" id="sl-ease">
+        </div>
+        <div class="slider-block" data-dim="ground">
+          <div class="slider-labels"><span>floaty, not here</span><span class="slider-name">groundedness</span><span>in my body</span></div>
+          <input type="range" min="0" max="100" value="50" id="sl-ground">
+        </div>
+        <div class="slider-block" data-dim="clarity">
+          <div class="slider-labels"><span>foggy, scattered</span><span class="slider-name">clarity</span><span>clear, focused</span></div>
+          <input type="range" min="0" max="100" value="50" id="sl-clarity">
+        </div>
+
+        <h3 class="mt">One word for the weather</h3>
+        <p class="panel-hint">Optional. Naming a feeling precisely already begins to settle it.</p>
+        <div id="feeling-words" class="chip-row"></div>
+      </div>
+    </div>
+
+    <footer class="screen-foot">
+      <button class="btn btn-ghost" data-nav="welcome">Back</button>
+      <button class="btn btn-primary" id="btn-to-destination">Choose where you're going</button>
+    </footer>
+  </section>
+
+  <!-- ============ DESTINATION ============ -->
+  <section class="screen" id="screen-destination" hidden>
+    <header class="screen-head">
+      <h2>Where do you want to arrive?</h2>
+      <p class="screen-sub">Drag the glowing point, or choose a shore. The line is the journey Attune will guide.</p>
+    </header>
+
+    <div class="dest-grid">
+      <div class="panel map-panel">
+        <canvas id="statemap" aria-label="State map — drag the destination point"></canvas>
+        <div class="preset-row" id="preset-row"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Fine-tune the arrival state</h3>
+        <div class="slider-block">
+          <div class="slider-labels"><span>quiet</span><span class="slider-name">energy on arrival</span><span>charged</span></div>
+          <input type="range" min="0" max="100" value="40" id="tg-energy">
+        </div>
+        <div class="slider-block">
+          <div class="slider-labels"><span>—</span><span class="slider-name">ease on arrival</span><span>deeply at ease</span></div>
+          <input type="range" min="0" max="100" value="80" id="tg-ease">
+        </div>
+        <div class="slider-block">
+          <div class="slider-labels"><span>—</span><span class="slider-name">groundedness</span><span>rooted</span></div>
+          <input type="range" min="0" max="100" value="75" id="tg-ground">
+        </div>
+        <div class="slider-block">
+          <div class="slider-labels"><span>soft focus</span><span class="slider-name">mental clarity</span><span>sharp</span></div>
+          <input type="range" min="0" max="100" value="55" id="tg-clarity">
+        </div>
+
+        <h3 class="mt">How long do we have?</h3>
+        <div class="duration-row" id="duration-row">
+          <button class="dur-btn" data-min="5">5<small>min</small></button>
+          <button class="dur-btn" data-min="10">10<small>min</small></button>
+          <button class="dur-btn selected" data-min="20">20<small>min</small></button>
+          <button class="dur-btn" data-min="40">40<small>min</small></button>
+        </div>
+
+        <h3 class="mt">Your journey</h3>
+        <ol id="itinerary" class="itinerary"></ol>
+
+        <div class="option-row">
+          <label class="switch"><input type="checkbox" id="opt-voice" checked><span></span>spoken guidance</label>
+          <label class="switch"><input type="checkbox" id="opt-sound" checked><span></span>soundscape</label>
+        </div>
+      </div>
+    </div>
+
+    <footer class="screen-foot">
+      <button class="btn btn-ghost" data-nav="checkin">Back</button>
+      <button class="btn btn-primary btn-big" id="btn-embark">Embark</button>
+    </footer>
+  </section>
+
+  <!-- ============ SESSION ============ -->
+  <section class="screen screen-session" id="screen-session" hidden>
+    <div class="session-top">
+      <div class="phase-crumbs" id="phase-crumbs"></div>
+      <div class="session-clock" id="session-clock">20:00</div>
+    </div>
+
+    <div class="session-stage">
+      <canvas id="pacer" width="640" height="640" aria-hidden="true"></canvas>
+      <div class="guidance" id="guidance"><p id="guidance-text"></p></div>
+      <div class="breath-label" id="breath-label"></div>
+    </div>
+
+    <div class="session-controls">
+      <button class="ctl" id="ctl-back" title="previous step" aria-label="previous step">⟲</button>
+      <button class="ctl ctl-main" id="ctl-pause" title="pause" aria-label="pause">II</button>
+      <button class="ctl" id="ctl-skip" title="next step" aria-label="next step">⟳</button>
+      <button class="ctl" id="ctl-voice" title="toggle voice" aria-label="toggle voice">🗣</button>
+      <button class="ctl" id="ctl-sound" title="toggle sound" aria-label="toggle sound">♫</button>
+      <button class="ctl ctl-exit" id="ctl-exit" title="end session" aria-label="end session">✕</button>
+    </div>
+
+    <!-- mid-session check-in overlay -->
+    <div class="overlay" id="micro-checkin" hidden>
+      <div class="overlay-card">
+        <h3 id="micro-title">A quiet checkpoint</h3>
+        <p class="panel-hint">No right answer. Just what's true in the body, right now.</p>
+        <div class="slider-block">
+          <div class="slider-labels"><span>flat</span><span class="slider-name">activation now</span><span>wired</span></div>
+          <input type="range" min="0" max="100" value="50" id="micro-energy">
+        </div>
+        <div class="slider-block">
+          <div class="slider-labels"><span>far away</span><span class="slider-name">in your body?</span><span>right here</span></div>
+          <input type="range" min="0" max="100" value="50" id="micro-ground">
+        </div>
+        <button class="btn btn-primary" id="micro-continue">Continue the journey</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ARRIVAL ============ -->
+  <section class="screen" id="screen-arrival" hidden>
+    <header class="screen-head">
+      <h2>You've arrived. Notice that you traveled.</h2>
+      <p class="screen-sub">Before the day takes you back — mark where you actually landed.</p>
+    </header>
+
+    <div class="dest-grid">
+      <div class="panel map-panel">
+        <canvas id="arrivalmap"></canvas>
+      </div>
+      <div class="panel">
+        <h3>Where did you land?</h3>
+        <div class="slider-block">
+          <div class="slider-labels"><span>flat</span><span class="slider-name">activation</span><span>wired</span></div>
+          <input type="range" min="0" max="100" value="50" id="ar-energy">
+        </div>
+        <div class="slider-block">
+          <div class="slider-labels"><span>tight</span><span class="slider-name">ease</span><span>at ease</span></div>
+          <input type="range" min="0" max="100" value="50" id="ar-ease">
+        </div>
+        <div class="slider-block">
+          <div class="slider-labels"><span>floaty</span><span class="slider-name">groundedness</span><span>rooted</span></div>
+          <input type="range" min="0" max="100" value="50" id="ar-ground">
+        </div>
+        <div class="slider-block">
+          <div class="slider-labels"><span>foggy</span><span class="slider-name">clarity</span><span>clear</span></div>
+          <input type="range" min="0" max="100" value="50" id="ar-clarity">
+        </div>
+        <div id="arrival-readout" class="arrival-readout"></div>
+        <footer class="screen-foot">
+          <button class="btn btn-primary" id="btn-save-arrival">Save this journey</button>
+        </footer>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HISTORY ============ -->
+  <section class="screen" id="screen-log" hidden>
+    <header class="screen-head">
+      <h2>Past journeys</h2>
+      <p class="screen-sub">The nervous system learns routes it has traveled before. Yours are here.</p>
+    </header>
+    <div class="panel" id="log-list"></div>
+    <footer class="screen-foot">
+      <button class="btn btn-ghost" data-nav="welcome">Back</button>
+    </footer>
+  </section>
+
+</main>
+
+<script src="js/state.js"></script>
+<script src="js/practices.js"></script>
+<script src="js/sequencer.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/visuals.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
