@@ -42,14 +42,14 @@ Laid out after FRLG's One Island, from south to north:
 - **One Island town** — the Pokémon Network Center (nurse heals, Celio tinkers
   with his machine), houses, and islanders to talk to
 - **Kindle Road** — tall grass with wild Spearow, Ponyta, Meowth, Geodude, and
-  rare Fearow and Rapidash (Lv. 29–37), plus two trainers who want a fight:
-  Bird Keeper Milo and Camper Rick
+  rare Fearow and Rapidash (Lv. 29–37), plus two trainers with pre-battle
+  banter, defeat quotes, and post-battle grudges: Bird Keeper Milo and
+  Camper Rick (ask him about his tent)
 - **Ember Spa** — a hot spring at the foot of the mountain that fully heals
   your party, just like the real one
 - **Mt. Ember** — smoking on the horizon
 
 ![Town](docs/town.png)
-![Ember Spa](docs/ember-spa.png)
 
 ## Battles
 
@@ -65,6 +65,11 @@ GBA UI on top:
 - EXP and level-ups
 
 ![Battle](docs/battle.png)
+![Move select](docs/moves.png)
+
+All twelve Pokémon are hand-drawn 24×24 outlined pixel sprites:
+
+![Sprite sheet](docs/sprites.png)
 
 ## Project layout
 

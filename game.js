@@ -807,12 +807,18 @@ function afterFoeFainted() {
     queueMsg(battle.trainer.name + ' sent out ' + next.name + '!', () => { battle.phase = 'menu'; });
     battle.phase = 'msg';
   } else if (battle.trainer) {
-    queueMsg('You defeated ' + battle.trainer.name + '!', () => {
-      const tr = battle.trainer.npc.trainer;
-      game.beaten[tr.id] = true;
-      endBattle(() => startDialog(tr.win));
-    });
-    battle.phase = 'msg';
+    const tr = battle.trainer.npc.trainer;
+    const finish = () => {
+      queueMsg('You defeated ' + battle.trainer.name + '!', () => {
+        game.beaten[tr.id] = true;
+        endBattle(() => startDialog(tr.win));
+      });
+      battle.phase = 'msg';
+    };
+    if (tr.defeat) {
+      queueMsg(battle.trainer.name + ': ' + tr.defeat, finish);
+      battle.phase = 'msg';
+    } else finish();
   } else {
     endBattle();
   }
@@ -922,20 +928,31 @@ function throwBall(bonus) {
 }
 
 // ============================================================
-// RENDERING
+// RENDERING (UI layer)
 // ============================================================
 function px(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); }
 
-function drawSprite(sprite, x, y, scale = 1, flip = false) {
-  const { pal, px: rows } = sprite;
-  for (let r = 0; r < rows.length; r++) {
-    for (let c = 0; c < rows[r].length; c++) {
-      const ch = flip ? rows[r][rows[r].length - 1 - c] : rows[r][c];
+// pre-rendered sprite canvases for crisp scaled drawing
+const monCanvasCache = {};
+function monCanvas(species) {
+  if (monCanvasCache[species]) return monCanvasCache[species];
+  const s = SPRITES[species];
+  const c = document.createElement('canvas');
+  c.width = s.px[0].length; c.height = s.px.length;
+  const g = c.getContext('2d');
+  for (let r = 0; r < s.px.length; r++) {
+    for (let i = 0; i < s.px[r].length; i++) {
+      const ch = s.px[r][i];
       if (ch === '.') continue;
-      ctx.fillStyle = pal[ch] || '#f0f';
-      ctx.fillRect(x + c * scale, y + r * scale, scale, scale);
+      g.fillStyle = s.pal[ch] || '#f0f';
+      g.fillRect(i, r, 1, 1);
     }
   }
+  return (monCanvasCache[species] = c);
+}
+function drawMon(species, x, y, size) {
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(monCanvas(species), x, y, size, size);
 }
 
 // ---------- World draw (3D scene + optional location banner) ----------
@@ -945,11 +962,26 @@ function drawWorld() {
 }
 
 // ---------- UI primitives ----------
+// FRLG-style frames: white dialog box with blue frame, cream battle info boxes
 function drawBox(x, y, w, h) {
   px(x, y, w, h, '#f8f8f8');
-  ctx.strokeStyle = '#586068'; ctx.lineWidth = 2;
+  ctx.strokeStyle = '#4870a8'; ctx.lineWidth = 2;
   ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
-  ctx.strokeStyle = '#a8b0c0'; ctx.lineWidth = 1;
+  ctx.strokeStyle = '#a8c0e0'; ctx.lineWidth = 1;
+  ctx.strokeRect(x + 3.5, y + 3.5, w - 7, h - 7);
+}
+
+function drawInfoBox(x, y, w, h) {
+  px(x, y, w, h, '#f8f0d8');
+  ctx.strokeStyle = '#584838'; ctx.lineWidth = 2;
+  ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+  px(x + 2, y + h - 4, w - 4, 2, '#d8c8a0');
+}
+
+function drawMsgPanel(x, y, w, h) {
+  px(x, y, w, h, '#b05038');
+  px(x + 3, y + 3, w - 6, h - 6, '#28384e');
+  ctx.strokeStyle = '#e8d8b0'; ctx.lineWidth = 1;
   ctx.strokeRect(x + 3.5, y + 3.5, w - 7, h - 7);
 }
 
@@ -960,11 +992,22 @@ function text(str, x, y, color = '#383838', size = 8) {
   ctx.fillText(str, x, y);
 }
 
-function drawHPBar(x, y, w, cur, max) {
-  px(x, y, w, 4, '#585858');
-  const ratio = cur / max;
+function drawHPBar(x, y, w, cur, max, label) {
+  if (label) {
+    px(x, y, 13, 6, '#584838');
+    text('HP', x + 1, y, '#f8b830', 6);
+    x += 13; w -= 13;
+  }
+  px(x, y, w, 6, '#584838');
+  const ratio = clamp(cur / max, 0, 1);
   const c = ratio > 0.5 ? '#58c838' : ratio > 0.2 ? '#e8b030' : '#e85838';
-  px(x + 1, y + 1, Math.max(0, Math.round((w - 2) * ratio)), 2, c);
+  px(x + 1, y + 1, Math.max(0, Math.round((w - 2) * ratio)), 4, c);
+  px(x + 1, y + 1, Math.max(0, Math.round((w - 2) * ratio)), 1, ratio > 0.5 ? '#88e868' : ratio > 0.2 ? '#f8d060' : '#f88868');
+}
+
+function drawExpBar(x, y, w, cur, max) {
+  px(x, y, w, 3, '#584838');
+  px(x + 1, y + 1, Math.max(0, Math.round((w - 2) * clamp(cur / max, 0, 1))), 1, '#48a0f8');
 }
 
 function drawDialogBox() {
@@ -1008,11 +1051,11 @@ function drawParty() {
     const sel = party.idx === i;
     px(6, y, VW - 12, 21, sel ? '#f8f8f8' : '#d8e0d8');
     if (sel) { ctx.strokeStyle = '#e85838'; ctx.lineWidth = 2; ctx.strokeRect(7, y + 1, VW - 14, 19); }
-    drawSprite(SPRITES[p.species], 8, y + 2, 1);
+    drawMon(p.species, 7, y + 1, 19);
     text(p.name, 30, y + 2, '#383838');
     text('Lv' + p.level, 100, y + 2);
-    drawHPBar(140, y + 5, 60, p.hp, p.stats.hp);
-    text(p.hp + '/' + p.stats.hp, 140, y + 11, '#484848');
+    drawHPBar(140, y + 4, 66, p.hp, p.stats.hp, true);
+    text(p.hp + '/' + p.stats.hp, 153, y + 11, '#484848', 7);
     if (p.status) text(p.status, 206, y + 2, '#c04838');
     if (i === battle.activeIdx && party.mode === 'switch') text('IN BATTLE', 30, y + 11, '#3868c0');
   });
@@ -1043,63 +1086,77 @@ function drawBattleUI() {
   const foe = battle.foe;
   const pm = playerMon();
 
-  // foe info box
+  // foe info box (no HP numbers, like the original)
   if (foe) {
-    drawBox(4, 4, 104, 30);
-    text(foe.name, 10, 9, '#383838', 7);
-    text('Lv' + foe.level, 78, 9, '#383838', 7);
-    drawHPBar(10, 20, 80, foe.hp, foe.stats.hp);
-    if (foe.status) text(foe.status, 10, 25, '#c04838', 6);
+    drawInfoBox(4, 4, 108, 28);
+    text(foe.name, 9, 8, '#40342c', 7);
+    text('Lv' + foe.level, 82, 8, '#40342c', 7);
+    drawHPBar(9, 19, 94, foe.hp, foe.stats.hp, true);
+    if (foe.status) text(foe.status, 86, 25, '#c04838', 6);
+    if (battle.trainer) {
+      // party dots for trainer battles
+      battle.trainerParty.forEach((mon2, i) => {
+        px(64 + i * 8, 9, 6, 6, '#584838');
+        px(65 + i * 8, 10, 4, 4, mon2.hp > 0 ? '#e85838' : '#a09888');
+      });
+    }
   }
-  // player info box
+  // player info box with HP numbers + EXP bar
   if (pm) {
-    drawBox(VW - 110, 78, 106, 36);
-    text(pm.name, VW - 104, 83, '#383838', 7);
-    text('Lv' + pm.level, VW - 36, 83, '#383838', 7);
-    drawHPBar(VW - 104, 94, 80, pm.hp, pm.stats.hp);
-    text(pm.hp + '/' + pm.stats.hp, VW - 104, 100, '#484848', 7);
-    if (pm.status) text(pm.status, VW - 30, 100, '#c04838', 6);
+    drawInfoBox(VW - 116, 74, 112, 40);
+    text(pm.name, VW - 110, 78, '#40342c', 7);
+    text('Lv' + pm.level, VW - 40, 78, '#40342c', 7);
+    drawHPBar(VW - 110, 89, 100, pm.hp, pm.stats.hp, true);
+    text(pm.hp + '/' + pm.stats.hp, VW - 68, 97, '#484038', 7);
+    if (pm.status) text(pm.status, VW - 110, 97, '#c04838', 6);
+    drawExpBar(VW - 110, 108, 100, pm.exp, pm.expNext);
   }
 
-  // bottom panel
-  drawBox(2, VH - 42, VW - 4, 40);
+  // bottom: FRLG dark message panel / split command panel
   if (battle.phase === 'msg' || battleMsg.text) {
+    drawMsgPanel(2, VH - 42, VW - 4, 40);
     const t = battleMsg.text.slice(0, Math.floor(battleMsg.chars));
-    wrapText(t, 10, VH - 34, VW - 24, 13);
+    wrapText(t, 12, VH - 33, VW - 28, 13, '#f8f8f8');
     if (battleMsg.text && battleMsg.chars >= battleMsg.text.length && Math.floor(game.frame / 20) % 2 === 0) {
-      text('▼', VW - 18, VH - 14, '#e85838');
+      text('▼', VW - 18, VH - 14, '#f8b830');
     }
   } else if (battle.phase === 'menu') {
-    text('What will ' + playerMon().name + ' do?', 10, VH - 36, '#383838', 7);
+    drawMsgPanel(2, VH - 42, 126, 40);
+    wrapText('What will ' + playerMon().name + ' do?', 12, VH - 33, 106, 12, '#f8f8f8');
+    drawInfoBox(128, VH - 42, VW - 130, 40);
     const opts = ['FIGHT', 'BAG', 'POKeMON', 'RUN'];
     opts.forEach((o, i) => {
-      const x = 26 + (i % 2) * 110, y = VH - 26 + Math.floor(i / 2) * 12;
-      text(o, x, y);
-      if (battle.menuIdx === i) text('▶', x - 10, y, '#e85838');
+      const x = 146 + (i % 2) * 52, y = VH - 34 + Math.floor(i / 2) * 15;
+      text(o, x, y, '#40342c', 7);
+      if (battle.menuIdx === i) text('▶', x - 9, y, '#e85838', 7);
     });
   } else if (battle.phase === 'moves') {
+    drawInfoBox(2, VH - 42, 158, 40);
     const moves = playerMon().moves;
     moves.forEach((m, i) => {
-      const x = 18 + (i % 2) * 112, y = VH - 38 + Math.floor(i / 2) * 12;
-      text(m.name, x, y, m.pp > 0 ? '#383838' : '#a0a0a0', 7);
-      if (battle.moveIdx === i) text('▶', x - 9, y, '#e85838');
+      const x = 16 + (i % 2) * 74, y = VH - 35 + Math.floor(i / 2) * 15;
+      text(m.name, x, y, m.pp > 0 ? '#40342c' : '#a89c88', 6);
+      if (battle.moveIdx === i) text('▶', x - 9, y, '#e85838', 7);
     });
     const sel = moves[battle.moveIdx];
-    text('PP ' + sel.pp + '/' + sel.maxPp + '   ' + MOVES[sel.name].type, 18, VH - 12, '#585858', 7);
+    drawInfoBox(162, VH - 42, VW - 164, 40);
+    text('PP', 170, VH - 35, '#584838', 7);
+    text(sel.pp + '/' + sel.maxPp, 192, VH - 35, '#40342c', 7);
+    text(MOVES[sel.name].type + '/', 170, VH - 20, '#584838', 7);
   }
 }
 
-function wrapText(str, x, y, w, lh) {
+function wrapText(str, x, y, w, lh, color = '#383838') {
   ctx.font = 'bold 8px monospace';
   const words = str.split(' ');
   let line = '', ly = y;
   for (const word of words) {
     const test = line ? line + ' ' + word : word;
     if (ctx.measureText(test).width > w && line) {
-      text(line, x, ly); line = word; ly += lh;
+      text(line, x, ly, color); line = word; ly += lh;
     } else line = test;
   }
-  if (line) text(line, x, ly);
+  if (line) text(line, x, ly, color);
 }
 
 // ---------- Title ----------
@@ -1118,8 +1175,8 @@ function drawTitle() {
   text('POKeMON', 60, 22, '#c04838', 24);
   text('FIRERED: SEVII EDITION', 52, 52, '#f8f8f8', 10);
   text('~ One Island Adventure ~', 62, 66, '#88b8d8', 8);
-  drawSprite(SPRITES.BLASTOISE, 36, 78, 2);
-  drawSprite(SPRITES.PIDGEOT, 172, 78, 2);
+  drawMon('BLASTOISE', 30, 72, 52);
+  drawMon('PIDGEOT', 162, 72, 52);
   if (Math.floor(game.frame / 30) % 2 === 0) {
     text(hasSave() ? 'ENTER: CONTINUE   N: NEW GAME' : 'PRESS ENTER', hasSave() ? 32 : 86, 142, '#f8f8f8', 8);
   }
