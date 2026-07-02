@@ -1,0 +1,1241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D1120">
+<title>Lull — for the moment you're actually in</title>
+<style>
+  :root {
+    --night: #0D1120;      /* ground: last-hour-before-dawn indigo */
+    --raise: #151B2D;      /* raised surfaces */
+    --raise-2: #1B2238;    /* hover / active surfaces */
+    --line: #242D47;       /* hairlines */
+    --text: #EAE7DE;       /* warm off-white */
+    --dim: #7E879E;        /* blue-grey secondary */
+    --faint: #545D75;      /* tertiary */
+    --ember: #E8A857;      /* sodium-lamp amber: the one accent */
+    --ember-soft: rgba(232, 168, 87, .14);
+    --rose: #C97B6E;       /* dawn partner for the orb */
+    --sage: #96B598;       /* done / let-go */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { height: 100%; }
+  body {
+    min-height: 100dvh;
+    background: var(--night);
+    background-image: radial-gradient(120% 90% at 50% -10%, #131A30 0%, var(--night) 60%);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #app {
+    max-width: 440px;
+    margin: 0 auto;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding: max(20px, env(safe-area-inset-top)) 22px max(28px, env(safe-area-inset-bottom));
+  }
+
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visible {
+    outline: 2px solid var(--ember);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* ---------- shared type ---------- */
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 600;
+  }
+  .display {
+    font-family: var(--serif);
+    font-weight: 400;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  /* ---------- header ---------- */
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 34px;
+  }
+  .wordmark {
+    font-family: var(--serif);
+    font-size: 26px;
+    letter-spacing: .01em;
+  }
+  .wordmark::after { content: "."; color: var(--ember); }
+  .record-link {
+    font-size: 13px;
+    color: var(--dim);
+    padding: 4px 2px;
+  }
+  .record-link:hover { color: var(--text); }
+
+  /* ---------- home ---------- */
+  .home-prompt {
+    font-family: var(--serif);
+    font-size: 30px;
+    line-height: 1.25;
+    margin-bottom: 6px;
+    text-wrap: balance;
+  }
+  .home-sub {
+    color: var(--dim);
+    font-size: 14.5px;
+    margin-bottom: 26px;
+  }
+
+  .moments { display: flex; flex-direction: column; gap: 10px; }
+
+  .moment {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--raise);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 15px 17px 14px;
+    transition: border-color .18s ease, background .18s ease, transform .12s ease;
+  }
+  .moment:hover, .moment:focus-visible {
+    background: var(--raise-2);
+    border-color: #3A4568;
+  }
+  .moment:active { transform: scale(.99); }
+  .moment .eyebrow { display: block; margin-bottom: 5px; }
+  .moment-title {
+    display: block;
+    font-family: var(--serif);
+    font-size: 19.5px;
+    line-height: 1.25;
+    margin-bottom: 3px;
+  }
+  .moment-sub { display: block; font-size: 13.5px; color: var(--dim); }
+  .moment-dur {
+    display: block;
+    width: fit-content;
+    margin-top: 9px;
+    font-size: 11.5px;
+    color: var(--ember);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .vault-banner {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 18px;
+    padding: 13px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(232,168,87,.35);
+    background: var(--ember-soft);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .vault-banner strong { font-weight: 600; color: var(--ember); }
+
+  .manifesto {
+    margin-top: 34px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    color: var(--faint);
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+
+  /* ---------- session chrome ---------- */
+  .session {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .session-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 32px;
+    margin-bottom: 8px;
+  }
+  .leave {
+    font-size: 13px;
+    color: var(--faint);
+    padding: 6px 2px;
+  }
+  .leave:hover { color: var(--dim); }
+
+  .stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0;
+    padding: 12px 0 28px;
+  }
+
+  /* ---------- the orb ---------- */
+  .orb-wrap {
+    position: relative;
+    width: min(62vw, 250px);
+    aspect-ratio: 1;
+    margin: 30px 0 34px;
+    display: grid;
+    place-items: center;
+  }
+  .orb-guide {
+    position: absolute;
+    inset: -14%;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+  }
+  .orb {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 42% 36%,
+      #F4CD96 0%, var(--ember) 34%, var(--rose) 66%, rgba(201,123,110,0) 74%);
+    box-shadow: 0 0 90px 8px rgba(232,168,87,.22);
+    transform: scale(.72);
+    will-change: transform;
+  }
+  .orb-count {
+    position: absolute;
+    font-family: var(--serif);
+    font-size: 30px;
+    color: #3B2A18;
+    font-variant-numeric: tabular-nums;
+    opacity: .85;
+  }
+
+  .phase-label {
+    font-family: var(--serif);
+    font-size: 24px;
+    line-height: 1.3;
+    min-height: 2.6em;
+    display: flex;
+    align-items: center;
+    text-wrap: balance;
+  }
+  .phase-note {
+    margin-top: 10px;
+    color: var(--dim);
+    font-size: 14.5px;
+    min-height: 3em;
+    max-width: 34ch;
+    text-wrap: balance;
+  }
+
+  .rep-dots { display: flex; gap: 8px; margin-top: 26px; }
+  .rep-dots span {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--line);
+    transition: background .3s ease;
+  }
+  .rep-dots span.done { background: var(--ember); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .orb { transition: none !important; transform: scale(.9) !important; }
+    .fade-line { transition: none !important; }
+  }
+
+  /* ---------- generic content screens ---------- */
+  .sheet {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8px 0 40px;
+  }
+  .sheet .eyebrow { margin-bottom: 14px; }
+  .sheet-title {
+    font-family: var(--serif);
+    font-size: 29px;
+    line-height: 1.28;
+    margin-bottom: 14px;
+    text-wrap: balance;
+  }
+  .sheet-body {
+    color: var(--dim);
+    font-size: 15.5px;
+    max-width: 38ch;
+  }
+  .sheet-body em { color: var(--text); font-style: normal; }
+
+  .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 30px; }
+  .btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 15px 18px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    background: var(--ember);
+    color: #241705;
+    transition: filter .15s ease, transform .12s ease;
+  }
+  .btn:hover { filter: brightness(1.07); }
+  .btn:active { transform: scale(.99); }
+  .btn-quiet {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--dim);
+    font-weight: 500;
+  }
+  .btn-quiet:hover { color: var(--text); border-color: #3A4568; filter: none; }
+
+  textarea, input[type="text"] {
+    width: 100%;
+    background: var(--raise);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    color: var(--text);
+    font: inherit;
+    padding: 14px 16px;
+    resize: none;
+  }
+  textarea::placeholder, input::placeholder { color: var(--faint); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .chip {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 13.5px;
+    color: var(--dim);
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .chip:hover, .chip[aria-pressed="true"] { border-color: var(--ember); color: var(--text); }
+
+  /* ---------- grounding ---------- */
+  .sense-count {
+    font-family: var(--serif);
+    font-size: 88px;
+    line-height: 1;
+    color: var(--ember);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 8px;
+  }
+  .tap-note { color: var(--faint); font-size: 13px; margin-top: 26px; }
+  .sense-taps { display: flex; gap: 12px; margin-top: 24px; }
+  .sense-taps button {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    transition: background .2s ease, border-color .2s ease;
+  }
+  .sense-taps button.hit { background: var(--ember); border-color: var(--ember); }
+
+  /* ---------- waiting ---------- */
+  .wait-clock {
+    font-family: var(--serif);
+    font-size: 76px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .01em;
+    margin: 18px 0 6px;
+  }
+  .wait-label { color: var(--faint); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+  .fade-line {
+    font-family: var(--serif);
+    font-size: 21px;
+    line-height: 1.45;
+    max-width: 30ch;
+    min-height: 5.8em;
+    display: flex;
+    align-items: center;
+    text-wrap: balance;
+    margin-top: 34px;
+    opacity: 1;
+    transition: opacity .9s ease;
+  }
+  .fade-line.out { opacity: 0; }
+  .wait-pulse {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--ember);
+    margin-top: 30px;
+    animation: pulse 5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: .5; }
+    50% { transform: scale(2.1); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .wait-pulse { animation: none; } }
+
+  /* ---------- unstick countdown ---------- */
+  .big-count {
+    font-family: var(--serif);
+    font-size: 110px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--ember);
+    margin: 20px 0 10px;
+  }
+
+  /* ---------- done ---------- */
+  .done-title {
+    font-family: var(--serif);
+    font-size: 40px;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    text-wrap: balance;
+  }
+  .done-meta { color: var(--dim); font-size: 15px; }
+  .receipt {
+    margin-top: 30px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: var(--raise);
+    border: 1px solid var(--line);
+    text-align: left;
+  }
+  .receipt .eyebrow { display: block; margin-bottom: 7px; color: var(--ember); }
+  .receipt p { font-size: 14px; color: var(--dim); line-height: 1.6; }
+
+  /* ---------- vault review ---------- */
+  .worry-card {
+    background: var(--raise);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    margin-top: 22px;
+    text-align: left;
+  }
+  .worry-when { font-size: 12px; color: var(--faint); margin-bottom: 8px; }
+  .worry-text {
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.4;
+    margin-bottom: 16px;
+  }
+  .worry-actions { display: flex; gap: 9px; }
+  .worry-actions .btn { padding: 11px 12px; font-size: 14px; }
+  .btn-sage { background: var(--sage); color: #16220F; }
+
+  /* ---------- record ---------- */
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 13px 2px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14.5px;
+  }
+  .stat-row:first-of-type { border-top: 1px solid var(--line); }
+  .stat-row .v {
+    font-family: var(--serif);
+    font-size: 19px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-hero {
+    font-family: var(--serif);
+    font-size: 62px;
+    line-height: 1;
+    margin: 8px 0 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-hero-label { color: var(--dim); font-size: 14px; margin-bottom: 30px; }
+  .sage-ink { color: var(--sage); }
+  .danger-link {
+    margin-top: 36px;
+    font-size: 12.5px;
+    color: var(--faint);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .danger-link:hover { color: var(--rose); }
+
+  .screen-enter { animation: rise .45s cubic-bezier(.2,.7,.3,1) both; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .screen-enter { animation: none; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   Lull — for the moment you're actually in.
+   Silent, 60–120 second interventions for the moments
+   meditation apps miss. No account. No audio. No streaks.
+   ============================================================ */
+
+/* ---------- store ---------- */
+const store = {
+  read() {
+    try { return JSON.parse(localStorage.getItem("lull") || "{}"); }
+    catch { return {}; }
+  },
+  write(data) {
+    try { localStorage.setItem("lull", JSON.stringify(data)); } catch {}
+  },
+  patch(fn) {
+    const d = this.read();
+    fn(d);
+    this.write(d);
+    return d;
+  },
+};
+
+function logSession(momentKey, seconds) {
+  store.patch(d => {
+    d.seconds = (d.seconds || 0) + Math.round(seconds);
+    d.counts = d.counts || {};
+    d.counts[momentKey] = (d.counts[momentKey] || 0) + 1;
+  });
+}
+
+/* ---------- copy: moments ---------- */
+const MOMENTS = {
+  scary: {
+    eyebrow: "In the next few minutes",
+    title: "Something scary is coming",
+    sub: "An interview, a difficult call, a room you have to walk into.",
+    dur: "90 seconds",
+    countLabel: "scary things walked into",
+  },
+  spiral: {
+    eyebrow: "Late at night",
+    title: "My head won’t stop",
+    sub: "The 2am loop: replaying, rehearsing, catastrophising.",
+    dur: "2 minutes",
+    countLabel: "spirals interrupted",
+  },
+  anger: {
+    eyebrow: "Right now",
+    title: "I’m about to snap",
+    sub: "The reply, the comment, the thing you’ll regret sending.",
+    dur: "100 seconds",
+    countLabel: "things not sent",
+  },
+  much: {
+    eyebrow: "All day",
+    title: "Everything is too much",
+    sub: "Too many tabs — in your browser and in your head.",
+    dur: "2 minutes",
+    countLabel: "overwhelms triaged",
+  },
+  start: {
+    eyebrow: "Staring at it",
+    title: "I can’t start",
+    sub: "The task grows teeth the longer you look at it.",
+    dur: "60 seconds",
+    countLabel: "cold starts",
+  },
+  wait: {
+    eyebrow: "Meanwhile",
+    title: "I’m stuck waiting",
+    sub: "A queue, a delay, hold music. Time you didn’t choose.",
+    dur: "as long as it lasts",
+    countLabel: "waits reclaimed",
+  },
+};
+
+/* ---------- copy: breath patterns ---------- */
+const PATTERNS = {
+  sigh: {
+    reps: 3,
+    phases: [
+      { label: "Breathe in through your nose", dur: 2200, scale: 1.12 },
+      { label: "One more short sip of air", dur: 1100, scale: 1.3 },
+      { label: "Long, slow exhale through your mouth", dur: 6500, scale: 0.72 },
+      { label: "Rest", dur: 1600, scale: 0.72 },
+    ],
+  },
+  ten: {
+    reps: 10,
+    phases: [
+      { label: "In", dur: 3500, scale: 1.26 },
+      { label: "Out, slowly", dur: 5500, scale: 0.72 },
+    ],
+  },
+  extend: {
+    reps: 6,
+    phases: [
+      { label: "Breathe in", dur: 4000, scale: 1.26 },
+      { label: "Breathe out, longer", dur: 7000, scale: 0.72 },
+    ],
+  },
+  sleep: {
+    reps: 8,
+    phases: [
+      { label: "In through your nose", dur: 4000, scale: 1.26 },
+      { label: "Out, long and quiet", dur: 8000, scale: 0.72 },
+    ],
+  },
+};
+
+/* Lines shown one per breath during the anger session. */
+const ANGER_LINES = [
+  "Don’t type. Just breathe.",
+  "The surge you feel is chemistry. It peaks and fades in about ninety seconds.",
+  "You don’t have to attend every argument you’re invited to.",
+  "Nobody has ever read a reply and thought: I wish this had been angrier.",
+  "You can still say it later. You can never unsay it.",
+  "What outcome do you actually want here?",
+  "Being right and being effective are different projects.",
+  "The strongest move in the room is usually the slowest one.",
+  "Half of anger is being tired, hungry, or interrupted.",
+  "Last breath. Decide what you want — not what it wants.",
+];
+
+/* Rotating reframes for the waiting room. */
+const WAIT_LINES = [
+  "Nobody can schedule anything into this delay. It may be the only truly free time you get today.",
+  "You didn’t lose these minutes. You found them.",
+  "Everyone around you is having a terrible wait. You’re having a rather good one.",
+  "This is what your calendar never gives you: time with no assignment.",
+  "The queue moves at the same speed however you feel about it. The feeling is the only part you own.",
+  "A delayed train is a small paid holiday from being reachable.",
+  "You spend all week wishing for a pause. Here one is, free, slightly inconvenient.",
+  "Let your eyes rest on the farthest thing you can see. Screens never let them do that.",
+  "Boredom is just calm you haven’t accepted yet.",
+  "Whatever you’re waiting for will arrive at the same time whether or not you suffer about it.",
+];
+
+const UNSTICK_CHIPS = [
+  "Open the document",
+  "Write one ugly sentence",
+  "Read the first paragraph only",
+  "Make the file and name it",
+  "Put your shoes on",
+  "Clear just the desk",
+];
+
+/* ---------- science receipts ---------- */
+const RECEIPTS = {
+  sigh: "The double inhale re-inflates collapsed air sacs in your lungs; the long exhale slows your heart through the vagus nerve. In trials at Stanford, this “physiological sigh” calmed people faster than meditation did.",
+  reframe: "Fear and excitement are the same chemistry — racing heart, sharp senses. In Harvard experiments, people who relabelled nerves as excitement performed better than people who tried to calm down. You don’t fight arousal; you rename it.",
+  ground: "Naming what your senses report pulls activity away from the brain’s alarm circuits and back to the sensory cortex. A spiral needs your full attention to keep running. This takes the attention back.",
+  vault: "Worry postponement is a core technique from CBT for insomnia: written down and given an appointment, most worries don’t survive the night. The vault keeps score, so you’ll have your own evidence soon.",
+  anger: "The chemical surge of anger peaks and drains in roughly ninety seconds — unless you refuel it with thoughts. Ten slow breaths outlasts the surge, and the long exhales put the brakes on directly.",
+  much: "Exhaling longer than you inhale activates the parasympathetic brake, and choosing one thing works because overwhelm is not too much work — it’s too many open decisions.",
+  start: "Dread is highest just before you begin — starting, not effort, is the bottleneck. Once a task is open, your mind wants to close it. Sixty bad seconds breaks the seal.",
+  wait: "The unpleasant part of waiting is rarely the wait — it’s the feeling that time is being stolen. Reclaim it on purpose and the same minutes change owners. The wait doesn’t shrink; it stops being theirs.",
+};
+
+/* ============================================================
+   tiny view engine
+   ============================================================ */
+const app = document.getElementById("app");
+let cleanup = null; // per-screen timer teardown
+
+function show(html, wire) {
+  if (cleanup) { cleanup(); cleanup = null; }
+  app.innerHTML = html;
+  const enter = app.firstElementChild;
+  if (enter) enter.classList.add("screen-enter");
+  if (wire) cleanup = wire() || null;
+  window.scrollTo(0, 0);
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
+
+function on(sel, ev, fn) {
+  app.querySelectorAll(sel).forEach(el => el.addEventListener(ev, fn));
+}
+
+function buzz(ms) {
+  if (navigator.vibrate) { try { navigator.vibrate(ms); } catch {} }
+}
+
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ============================================================
+   screens
+   ============================================================ */
+
+/* ---------- home ---------- */
+function homeScreen() {
+  const d = store.read();
+  const due = (d.worries || []).filter(w => w.status === "parked" && Date.now() >= w.reveal);
+  const banner = due.length
+    ? `<button class="vault-banner" data-go="review">
+         <strong>${due.length === 1 ? "A worry you parked" : due.length + " worries you parked"}</strong>
+         ${due.length === 1 ? "is" : "are"} ready for a second look. Most don’t survive the night — come see.
+       </button>`
+    : "";
+
+  const cards = Object.entries(MOMENTS).map(([key, m]) => `
+    <button class="moment" data-moment="${key}">
+      <span class="eyebrow">${m.eyebrow}</span>
+      <span class="moment-title display">${m.title}</span>
+      <span class="moment-sub">${m.sub}</span>
+      <span class="moment-dur">${m.dur}</span>
+    </button>`).join("");
+
+  show(`
+    <div>
+      <header>
+        <div class="wordmark">lull</div>
+        <button class="record-link" data-go="record">your record</button>
+      </header>
+      ${banner}
+      <h1 class="home-prompt">Right now &mdash;</h1>
+      <p class="home-sub">Pick the moment you’re in. Ninety seconds, in silence, wherever you’re standing.</p>
+      <div class="moments">${cards}</div>
+      <p class="manifesto">
+        No account. No streak. No subscription. No headphones.<br>
+        Nothing you type here ever leaves this device.
+      </p>
+    </div>
+  `, () => {
+    on("[data-moment]", "click", e => startMoment(e.currentTarget.dataset.moment));
+    on("[data-go='record']", "click", recordScreen);
+    on("[data-go='review']", "click", reviewScreen);
+  });
+}
+
+function startMoment(key) {
+  ({
+    scary: scaryFlow,
+    spiral: vaultScreen,
+    anger: () => breathScreen({
+      pattern: "ten",
+      moment: "anger",
+      heading: "Ten breaths before you answer",
+      lines: ANGER_LINES,
+      done: () => doneScreen({
+        moment: "anger",
+        title: "Still want to send it?",
+        meta: "The surge has had its ninety seconds. Whatever you write now is yours, not the anger’s.",
+        receipt: "anger",
+        seconds: 100,
+      }),
+    }),
+    much: () => breathScreen({
+      pattern: "extend",
+      moment: "much",
+      heading: "Lengthen the exhale",
+      note: "Everything can stay too much for the next two minutes. Your only job is the out-breath.",
+      done: triageScreen,
+    }),
+    start: unstickScreen,
+    wait: waitScreen,
+  })[key]();
+}
+
+/* ---------- breath engine ---------- */
+function breathScreen({ pattern, moment, heading, note, lines, done }) {
+  const p = PATTERNS[pattern];
+  const dots = Array.from({ length: p.reps }, () => "<span></span>").join("");
+
+  show(`
+    <div class="session">
+      <div class="session-top">
+        <span class="eyebrow">${esc(heading)}</span>
+        <button class="leave">leave</button>
+      </div>
+      <div class="stage">
+        <div class="phase-label display" id="phase">Ready&hellip;</div>
+        <div class="orb-wrap">
+          <div class="orb-guide"></div>
+          <div class="orb" id="orb"></div>
+          <div class="orb-count" id="count"></div>
+        </div>
+        <div class="phase-note" id="note">${esc(lines ? lines[0] : (note || ""))}</div>
+        <div class="rep-dots" id="dots">${dots}</div>
+      </div>
+    </div>
+  `, () => {
+    const orb = document.getElementById("orb");
+    const phaseEl = document.getElementById("phase");
+    const noteEl = document.getElementById("note");
+    const countEl = document.getElementById("count");
+    const dotEls = document.querySelectorAll("#dots span");
+    const timers = [];
+    let secTimer = null;
+    let finished = false;
+
+    function setPhase(phase) {
+      phaseEl.textContent = phase.label;
+      if (!reducedMotion) {
+        orb.style.transition = `transform ${phase.dur}ms cubic-bezier(.45,.05,.55,.95)`;
+        orb.style.transform = `scale(${phase.scale})`;
+      }
+      buzz(15);
+      let left = Math.round(phase.dur / 1000);
+      countEl.textContent = left > 1 ? left : "";
+      clearInterval(secTimer);
+      secTimer = setInterval(() => {
+        left -= 1;
+        countEl.textContent = left > 1 ? left : "";
+      }, 1000);
+    }
+
+    function runRep(rep) {
+      if (rep >= p.reps) {
+        finished = true;
+        clearInterval(secTimer);
+        buzz([20, 80, 20]);
+        const total = p.reps * p.phases.reduce((a, ph) => a + ph.dur, 0) / 1000;
+        logSession(moment, total);
+        done();
+        return;
+      }
+      if (lines) noteEl.textContent = lines[Math.min(rep, lines.length - 1)];
+      let t = 600;
+      p.phases.forEach(phase => {
+        timers.push(setTimeout(() => setPhase(phase), t));
+        t += phase.dur;
+      });
+      timers.push(setTimeout(() => {
+        dotEls[rep].classList.add("done");
+        runRep(rep + 1);
+      }, t));
+    }
+
+    runRep(0);
+    on(".leave", "click", () => { if (!finished) homeScreen(); });
+
+    return () => { timers.forEach(clearTimeout); clearInterval(secTimer); };
+  });
+}
+
+/* ---------- scary: sigh ×3 then reframe ---------- */
+function scaryFlow() {
+  breathScreen({
+    pattern: "sigh",
+    moment: "scary",
+    heading: "Steady the body first",
+    note: "Two sips of air in, one long pour out. Your heart rate has no choice but to follow.",
+    done: reframeScreen,
+  });
+}
+
+function reframeScreen() {
+  show(`
+    <div class="sheet">
+      <span class="eyebrow">Now the head</span>
+      <h2 class="sheet-title">Your body can’t tell fear from excitement.</h2>
+      <p class="sheet-body">
+        Racing heart, sharp senses, quick breath &mdash; the chemistry is identical.
+        The only difference is the caption you put on it. So caption it, out loud
+        or under your breath: <em>&ldquo;I’m excited.&rdquo;</em>
+        Not calm. Excited. Then walk in like you mean it.
+      </p>
+      <div class="actions">
+        <button class="btn" data-act="go">Say it, then walk in</button>
+      </div>
+    </div>
+  `, () => {
+    on("[data-act='go']", "click", () => doneScreen({
+      moment: "scary",
+      title: "Go get it.",
+      meta: "Ninety seconds ago you were dreading this. Now you’re merely early.",
+      receipt: "reframe",
+      seconds: 0,
+      logged: true,
+    }));
+  });
+}
+
+/* ---------- spiral: the worry vault ---------- */
+function nextTenAM() {
+  const t = new Date();
+  const reveal = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 10, 0, 0);
+  if (t >= reveal) reveal.setDate(reveal.getDate() + 1);
+  return reveal.getTime();
+}
+
+function vaultScreen() {
+  show(`
+    <div class="sheet">
+      <span class="eyebrow">The worry vault</span>
+      <h2 class="sheet-title">Give the loop somewhere to go.</h2>
+      <p class="sheet-body">
+        A spiral repeats because your brain is scared of dropping the thread.
+        So don’t drop it &mdash; park it. Write the worry in one sentence.
+        It gets locked until <em>10:00 tomorrow morning</em>, when you’ll be
+        someone who slept.
+      </p>
+      <div class="actions">
+        <textarea id="worry" rows="3" maxlength="280"
+          placeholder="The worry, in one sentence&hellip;" autocomplete="off"></textarea>
+        <button class="btn" data-act="park">Park it until 10am</button>
+        <button class="btn btn-quiet" data-act="skip">No words for it &mdash; just slow me down</button>
+      </div>
+    </div>
+  `, () => {
+    const ta = document.getElementById("worry");
+    ta.focus();
+    on("[data-act='park']", "click", () => {
+      const text = ta.value.trim();
+      if (!text) { ta.focus(); return; }
+      store.patch(d => {
+        d.worries = d.worries || [];
+        d.worries.push({ text, at: Date.now(), reveal: nextTenAM(), status: "parked" });
+      });
+      parkedScreen();
+    });
+    on("[data-act='skip']", "click", sleepBreath);
+  });
+}
+
+function parkedScreen() {
+  show(`
+    <div class="sheet">
+      <span class="eyebrow">Parked</span>
+      <h2 class="sheet-title">It’s in the vault. It is not allowed to follow you to bed.</h2>
+      <p class="sheet-body">
+        If it knocks again tonight, you can tell it honestly:
+        <em>you have an appointment at ten.</em>
+        Tomorrow you’ll decide whether it was worth the invitation.
+      </p>
+      <div class="actions">
+        <button class="btn" data-act="breathe">Slow my breathing down for sleep</button>
+        <button class="btn btn-quiet" data-act="home">That’s all I needed</button>
+      </div>
+    </div>
+  `, () => {
+    on("[data-act='breathe']", "click", sleepBreath);
+    on("[data-act='home']", "click", () => doneScreen({
+      moment: "spiral",
+      title: "Back to bed.",
+      meta: "The vault holds it now. Your only job left tonight is lying down.",
+      receipt: "vault",
+      seconds: 60,
+    }));
+  });
+}
+
+function sleepBreath() {
+  breathScreen({
+    pattern: "sleep",
+    moment: "spiral",
+    heading: "Down-shift",
+    note: "Long exhales are the body’s own sedative. Eight of these, then bed.",
+    done: () => doneScreen({
+      moment: "spiral",
+      title: "Back to bed.",
+      meta: "Screen off. If the loop restarts, the vault is still open.",
+      receipt: "vault",
+      seconds: 0,
+      logged: true,
+    }),
+  });
+}
+
+/* ---------- vault review ---------- */
+function reviewScreen() {
+  const d = store.read();
+  const due = (d.worries || []).filter(w => w.status === "parked" && Date.now() >= w.reveal);
+  if (!due.length) { homeScreen(); return; }
+  const w = due[0];
+  const when = new Date(w.at);
+  const stamp = when.toLocaleString([], {
+    weekday: "long", hour: "numeric", minute: "2-digit",
+  });
+
+  show(`
+    <div class="sheet">
+      <span class="eyebrow">The morning after</span>
+      <h2 class="sheet-title">You parked this. Does daylight agree?</h2>
+      <div class="worry-card">
+        <div class="worry-when">Parked ${esc(stamp)}</div>
+        <div class="worry-text display">&ldquo;${esc(w.text)}&rdquo;</div>
+        <div class="worry-actions">
+          <button class="btn btn-sage" data-act="drop">Let it go</button>
+          <button class="btn btn-quiet" data-act="keep">It’s real &mdash; I’ll handle it today</button>
+        </div>
+      </div>
+      ${due.length > 1 ? `<p class="sheet-body" style="margin-top:16px">${due.length - 1} more waiting after this one.</p>` : ""}
+    </div>
+  `, () => {
+    function settle(status) {
+      store.patch(dd => {
+        const target = (dd.worries || []).find(x => x.at === w.at && x.status === "parked");
+        if (target) target.status = status;
+      });
+      const rest = store.read().worries.filter(x => x.status === "parked" && Date.now() >= x.reveal);
+      if (rest.length) { reviewScreen(); return; }
+      const all = store.read().worries.filter(x => x.status !== "parked");
+      const dropped = all.filter(x => x.status === "dropped").length;
+      const pct = all.length ? Math.round(100 * dropped / all.length) : 0;
+      doneScreen({
+        moment: "spiral",
+        title: "Vault cleared.",
+        meta: all.length >= 3
+          ? `So far, ${pct}% of the worries you’ve parked didn’t survive the night. Worth remembering at 2am.`
+          : "Keep parking them. In a while you’ll have your own statistics on how many worries survive the night.",
+        receipt: "vault",
+        seconds: 30,
+      });
+    }
+    on("[data-act='drop']", "click", () => settle("dropped"));
+    on("[data-act='keep']", "click", () => settle("kept"));
+  });
+}
+
+/* ---------- much: triage after breath ---------- */
+function triageScreen() {
+  show(`
+    <div class="sheet">
+      <span class="eyebrow">Now the triage</span>
+      <h2 class="sheet-title">Overwhelm isn’t too much work. It’s too many open decisions.</h2>
+      <p class="sheet-body">
+        Close all of them but one. What’s the single thing that matters
+        most in the next hour? Not today &mdash; the next hour. Everything
+        else officially has permission to wait.
+      </p>
+      <div class="actions">
+        <input type="text" id="one" maxlength="120" placeholder="The one thing&hellip;" autocomplete="off">
+        <button class="btn" data-act="go">That’s the one &mdash; go do it</button>
+      </div>
+    </div>
+  `, () => {
+    document.getElementById("one").focus();
+    on("[data-act='go']", "click", () => {
+      const one = document.getElementById("one").value.trim();
+      doneScreen({
+        moment: "much",
+        title: one ? `Just this: “${one}”` : "Just the one thing.",
+        meta: "The rest is still there, and it will still be there. That was never the problem.",
+        receipt: "much",
+        seconds: 0,
+        logged: true,
+      });
+    });
+  });
+}
+
+/* ---------- start: the sixty-second contract ---------- */
+function unstickScreen() {
+  let picked = "";
+  show(`
+    <div class="sheet">
+      <span class="eyebrow">The sixty-second contract</span>
+      <h2 class="sheet-title">Don’t do the task. Do the smallest physical thing that points at it.</h2>
+      <p class="sheet-body">
+        Dread is at its maximum right before you begin, and never again.
+        So the deal is sixty seconds, done <em>badly on purpose</em>, then
+        you’re free to stop.
+      </p>
+      <div class="chips">
+        ${UNSTICK_CHIPS.map(c => `<button class="chip" aria-pressed="false">${c}</button>`).join("")}
+      </div>
+      <div class="actions">
+        <input type="text" id="tiny" maxlength="80" placeholder="&hellip;or name your own tiny move" autocomplete="off">
+        <button class="btn" data-act="start">Start my 60 seconds</button>
+      </div>
+    </div>
+  `, () => {
+    on(".chip", "click", e => {
+      app.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", "false"));
+      e.currentTarget.setAttribute("aria-pressed", "true");
+      picked = e.currentTarget.textContent;
+      document.getElementById("tiny").value = "";
+    });
+    on("[data-act='start']", "click", () => {
+      const own = document.getElementById("tiny").value.trim();
+      countdownScreen(own || picked || "The tiny move");
+    });
+  });
+}
+
+function countdownScreen(move) {
+  show(`
+    <div class="session">
+      <div class="session-top">
+        <span class="eyebrow">Sixty seconds, badly</span>
+        <button class="leave">leave</button>
+      </div>
+      <div class="stage">
+        <p class="phase-note">${esc(move)}</p>
+        <div class="big-count" id="cd">60</div>
+        <p class="sheet-body" style="text-align:center">
+          Badly counts. Slowly counts. Reluctantly counts.
+        </p>
+      </div>
+    </div>
+  `, () => {
+    let left = 60;
+    const el = document.getElementById("cd");
+    const t = setInterval(() => {
+      left -= 1;
+      el.textContent = left;
+      if (left <= 0) {
+        clearInterval(t);
+        buzz([20, 80, 20]);
+        logSession("start", 60);
+        doneScreen({
+          moment: "start",
+          title: "The seal is broken.",
+          meta: "Keep going or stop — both count as a win. Starting was the whole battle.",
+          receipt: "start",
+          seconds: 0,
+          logged: true,
+        });
+      }
+    }, 1000);
+    on(".leave", "click", homeScreen);
+    return () => clearInterval(t);
+  });
+}
+
+/* ---------- wait: found time ---------- */
+function waitScreen() {
+  show(`
+    <div class="session">
+      <div class="session-top">
+        <span class="eyebrow">Found time</span>
+        <button class="leave">leave</button>
+      </div>
+      <div class="stage">
+        <div class="wait-label">Time reclaimed</div>
+        <div class="wait-clock" id="clock">0:00</div>
+        <div class="fade-line display" id="line">${WAIT_LINES[0]}</div>
+        <div class="wait-pulse" aria-hidden="true"></div>
+      </div>
+      <button class="btn btn-quiet" data-act="end">The wait is over</button>
+    </div>
+  `, () => {
+    const t0 = Date.now();
+    const clock = document.getElementById("clock");
+    const line = document.getElementById("line");
+    let li = 0;
+
+    const tick = setInterval(() => {
+      const s = Math.floor((Date.now() - t0) / 1000);
+      clock.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    }, 250);
+
+    const rotate = setInterval(() => {
+      line.classList.add("out");
+      setTimeout(() => {
+        li = (li + 1) % WAIT_LINES.length;
+        line.textContent = WAIT_LINES[li];
+        line.classList.remove("out");
+      }, 950);
+    }, 16000);
+
+    on("[data-act='end'], .leave", "click", () => {
+      const secs = (Date.now() - t0) / 1000;
+      if (secs >= 20) {
+        logSession("wait", secs);
+        const mins = Math.max(1, Math.round(secs / 60));
+        doneScreen({
+          moment: "wait",
+          title: `${mins} minute${mins === 1 ? "" : "s"}, reclaimed.`,
+          meta: "Same wait as everyone else’s. Yours just belonged to you.",
+          receipt: "wait",
+          seconds: 0,
+          logged: true,
+        });
+      } else {
+        homeScreen();
+      }
+    });
+
+    return () => { clearInterval(tick); clearInterval(rotate); };
+  });
+}
+
+/* ---------- done ---------- */
+function doneScreen({ moment, title, meta, receipt, seconds, logged }) {
+  if (!logged && seconds) logSession(moment, seconds);
+  show(`
+    <div class="sheet" style="text-align:center">
+      <h2 class="done-title">${esc(title)}</h2>
+      <p class="done-meta" style="margin:0 auto; max-width:34ch">${meta}</p>
+      <div class="receipt">
+        <span class="eyebrow">Why that works</span>
+        <p>${RECEIPTS[receipt]}</p>
+      </div>
+      <div class="actions">
+        <button class="btn btn-quiet" data-act="home">That’s it. Close this.</button>
+      </div>
+    </div>
+  `, () => {
+    on("[data-act='home']", "click", homeScreen);
+  });
+}
+
+/* ---------- record ---------- */
+function recordScreen() {
+  const d = store.read();
+  const mins = Math.round((d.seconds || 0) / 60);
+  const counts = d.counts || {};
+  const worries = d.worries || [];
+  const settled = worries.filter(w => w.status !== "parked");
+  const dropped = settled.filter(w => w.status === "dropped").length;
+
+  const rows = Object.entries(MOMENTS)
+    .filter(([k]) => counts[k])
+    .map(([k, m]) => `
+      <div class="stat-row"><span>${m.countLabel}</span><span class="v">${counts[k]}</span></div>
+    `).join("");
+
+  const worryRow = settled.length
+    ? `<div class="stat-row"><span>parked worries that didn’t survive the night</span>
+         <span class="v sage-ink">${dropped} of ${settled.length}</span></div>`
+    : "";
+
+  show(`
+    <div class="sheet" style="justify-content:flex-start; padding-top:4px">
+      <header>
+        <div class="wordmark">lull</div>
+        <button class="record-link" data-act="home">back</button>
+      </header>
+      <span class="eyebrow">Your record</span>
+      <div class="stat-hero">${mins}</div>
+      <div class="stat-hero-label">minute${mins === 1 ? "" : "s"} of your life spent turning bad moments around</div>
+      ${rows || worryRow
+        ? rows + worryRow
+        : `<p class="sheet-body">Nothing yet. The record starts the first time a bad moment brings you here.</p>`}
+      <p class="manifesto" style="border-top:none; padding-top:24px">
+        You’ll find no streak here. A gap in this record doesn’t mean you failed &mdash;
+        it means you were fine, which was always the goal. This number only ever counts up,
+        and it never expires.
+      </p>
+      <button class="danger-link" data-act="wipe">Erase everything Lull remembers</button>
+    </div>
+  `, () => {
+    on("[data-act='home']", "click", homeScreen);
+    on("[data-act='wipe']", "click", e => {
+      if (e.currentTarget.dataset.armed) {
+        try { localStorage.removeItem("lull"); } catch {}
+        homeScreen();
+      } else {
+        e.currentTarget.dataset.armed = "1";
+        e.currentTarget.textContent = "Tap again to erase — there’s no undo";
+      }
+    });
+  });
+}
+
+/* ---------- boot ---------- */
+homeScreen();
+</script>
+</body>
+</html>
