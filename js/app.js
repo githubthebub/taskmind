@@ -47,11 +47,32 @@ const App = {
     }
   },
 
-  /* portrait <img>: local asset → hosted copy → styled monogram */
+  /* Companion media: breathing video loop → local/hosted portrait → styled monogram.
+     Videos carry their own motion, so the 'ambient' CSS breath animation is dropped. */
   portraitImg(c, cls) {
-    return `<img class="${cls}" src="${c.portrait}" alt="${c.name}"
-      data-remote="${c.portraitRemote || ''}" data-initial="${c.name[0]}"
+    if (c.videoRemote || c.video) {
+      const vcls = cls.replace(/\bambient\b/, '').trim();
+      return `<video class="${vcls}" autoplay muted loop playsinline disablepictureinpicture
+        poster="${c.portrait}" data-id="${c.id}" data-cls="${cls}"
+        onerror="App.videoFallback(this)">
+        ${c.video ? `<source src="${c.video}" type="video/mp4">` : ''}
+        ${c.videoRemote ? `<source src="${c.videoRemote}" type="video/mp4" onerror="App.videoFallback(this.parentNode)">` : ''}
+      </video>`;
+    }
+    return this._imgTag(c.portrait, c.portraitRemote, c.name[0], cls);
+  },
+
+  _imgTag(src, remote, initial, cls) {
+    return `<img class="${cls}" src="${src}" alt=""
+      data-remote="${remote || ''}" data-initial="${initial}"
       onerror="App.portraitFallback(this)">`;
+  },
+
+  videoFallback(video) {
+    if (!video || video.tagName !== 'VIDEO' || !video.isConnected) return;
+    const c = COMPANIONS[video.dataset.id];
+    const cls = video.dataset.cls || video.className;
+    video.replaceWith(el(this._imgTag(c.portrait, c.portraitRemote, c.name[0], cls)));
   },
 
   portraitFallback(img) {

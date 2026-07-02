@@ -11,4 +11,9 @@ curl -fsSL "$base/hf_20260702_181043_fd67e02d-4a1c-4029-897c-6a1c63e504e1.png" -
 curl -fsSL "$base/hf_20260702_181046_453520db-45e2-420c-9dd7-9602f7021420.png" -o assets/noa.png
 curl -fsSL "$base/hf_20260702_181049_d71cab0b-51b0-44f4-91f0-8c7ae7f31df3.png" -o assets/kai.png
 
-echo "Portraits saved to assets/. Haven is now fully offline."
+# breathing video loops (480x640, ~6s, silent)
+curl -fsSL "$base/hf_20260702_184419_dbfabd7f-8bf9-4183-8bb0-47630cbf1e96.mp4" -o assets/sera.mp4
+curl -fsSL "$base/hf_20260702_184422_dceb591c-1892-4bc4-a0b4-cfdfb17d9fd6.mp4" -o assets/noa.mp4
+curl -fsSL "$base/hf_20260702_184424_55d4a78c-d2ea-4e6b-9783-b99b913da34a.mp4" -o assets/kai.mp4
+
+echo "Portraits and breathing loops saved to assets/. Haven is now fully offline."

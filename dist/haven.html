@@ -1,0 +1,1828 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Haven — the companion that wants you to leave</title>
+<meta name="description" content="A companion built to downregulate your nervous system, not monetize your loneliness.">
+<style>
+/* =========================================================
+   Haven — visual system
+   Calm, dark, unhurried. Everything animates slowly.
+   ========================================================= */
+
+:root {
+  --c1: #0e1024; --c2: #181a35; --c3: #232042;        /* ambient, per companion */
+  --accent: #a99df2;
+  --accent-soft: rgba(169,157,242,.16);
+  --glow: rgba(183,166,240,.35);
+  --ink: #eceaf4;
+  --ink-dim: rgba(236,234,244,.62);
+  --ink-faint: rgba(236,234,244,.38);
+  --card: rgba(255,255,255,.055);
+  --card-edge: rgba(255,255,255,.10);
+  --radius: 22px;
+  --breath: 0;                                         /* 0..1, set by JS */
+  --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--c1);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- ambient background ---------- */
+.bg-gradient {
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(120% 90% at 70% -10%, var(--c3) 0%, transparent 60%),
+    radial-gradient(100% 80% at 10% 110%, var(--c2) 0%, transparent 55%),
+    var(--c1);
+  transition: background 2s ease;
+}
+.bg-particles { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+.bg-particles span {
+  position: absolute;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--glow);
+  filter: blur(1px);
+  opacity: 0;
+  animation: drift linear infinite;
+}
+@keyframes drift {
+  0%   { transform: translateY(20px); opacity: 0; }
+  15%  { opacity: .5; }
+  85%  { opacity: .25; }
+  100% { transform: translateY(-90vh); opacity: 0; }
+}
+
+/* ---------- layout ---------- */
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 28px 20px 140px;
+  min-height: 100vh;
+}
+.screen { animation: fadeUp .8s ease both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: .2px; }
+h1 { font-size: 2.1rem; line-height: 1.15; }
+h2 { font-size: 1.45rem; }
+h3 { font-size: 1.08rem; }
+p  { line-height: 1.65; }
+
+.dim   { color: var(--ink-dim); }
+.faint { color: var(--ink-faint); font-size: .85rem; }
+.accent{ color: var(--accent); }
+.hidden{ display: none !important; }
+
+.stack   { display: flex; flex-direction: column; gap: 16px; }
+.row     { display: flex; gap: 12px; align-items: center; }
+.spread  { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+
+/* ---------- cards & buttons ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-edge);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  backdrop-filter: blur(14px);
+}
+.card.click { cursor: pointer; transition: transform .35s ease, border-color .35s ease, background .35s ease; }
+.card.click:hover { transform: translateY(-2px); border-color: var(--accent); background: var(--accent-soft); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--sans); font-size: 1rem; font-weight: 600;
+  color: var(--c1);
+  background: var(--accent);
+  border: none; border-radius: 16px;
+  padding: 15px 26px;
+  cursor: pointer;
+  transition: transform .3s ease, box-shadow .3s ease, opacity .3s ease;
+  box-shadow: 0 6px 30px -8px var(--glow);
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 10px 34px -8px var(--glow); }
+.btn:disabled { opacity: .35; cursor: default; transform: none; }
+.btn.ghost {
+  background: transparent; color: var(--ink-dim);
+  border: 1px solid var(--card-edge); box-shadow: none;
+}
+.btn.ghost:hover { color: var(--ink); border-color: var(--ink-faint); }
+.btn.wide { width: 100%; }
+
+.chip {
+  font-size: .92rem; font-weight: 500;
+  color: var(--ink-dim);
+  background: var(--card);
+  border: 1px solid var(--card-edge);
+  border-radius: 999px;
+  padding: 11px 18px;
+  cursor: pointer;
+  transition: all .3s ease;
+}
+.chip:hover { color: var(--ink); border-color: var(--ink-faint); }
+.chip.on {
+  color: var(--c1); background: var(--accent);
+  border-color: var(--accent);
+}
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* ---------- sliders ---------- */
+input[type="range"] {
+  width: 100%; appearance: none; -webkit-appearance: none;
+  height: 6px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent) var(--fill, 50%), rgba(255,255,255,.12) var(--fill, 50%));
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--ink); border: none;
+  box-shadow: 0 2px 14px rgba(0,0,0,.4);
+  cursor: pointer;
+}
+
+/* ---------- companion portrait ---------- */
+.portrait-wrap {
+  position: relative;
+  width: min(72vw, 300px);
+  margin: 0 auto;
+}
+.portrait-glow {
+  position: absolute; inset: -12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--glow) 0%, transparent 68%);
+  opacity: calc(.45 + var(--breath) * .55);
+  transform: scale(calc(.94 + var(--breath) * .12));
+  z-index: 0;
+  transition: opacity .2s linear;
+}
+.portrait {
+  position: relative; z-index: 1;
+  width: 100%; aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 26px;
+  border: 1px solid var(--card-edge);
+  box-shadow: 0 24px 60px -24px rgba(0,0,0,.7);
+  transform: scale(calc(1 + var(--breath) * .022));
+  transition: transform .15s linear;
+  display: block;
+}
+.portrait.ambient { animation: ambientBreath 7s ease-in-out infinite; transform: none; }
+@keyframes ambientBreath {
+  0%, 100% { transform: scale(1); filter: brightness(.97); }
+  40%      { transform: scale(1.018); filter: brightness(1.04); }
+  60%      { transform: scale(1.018); filter: brightness(1.04); }
+}
+.portrait-sm {
+  width: 74px; height: 96px; object-fit: cover;
+  border-radius: 16px; border: 1px solid var(--card-edge);
+  flex-shrink: 0;
+}
+
+/* portrait fallback when image missing */
+.portrait-fallback {
+  width: 100%; aspect-ratio: 3/4;
+  border-radius: 26px;
+  border: 1px solid var(--card-edge);
+  background: linear-gradient(160deg, var(--c2), var(--c3));
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--serif); font-size: 4rem; color: var(--accent);
+}
+.portrait-fallback.portrait-sm { width: 74px; height: 96px; font-size: 1.7rem; border-radius: 16px; }
+
+/* ---------- speech bubble ---------- */
+.bubble {
+  background: var(--card);
+  border: 1px solid var(--card-edge);
+  border-radius: 20px;
+  padding: 18px 22px;
+  font-size: 1.06rem;
+  line-height: 1.7;
+  min-height: 64px;
+  backdrop-filter: blur(14px);
+}
+.bubble .cursor {
+  display: inline-block; width: 8px; height: 1.1em;
+  background: var(--accent); vertical-align: text-bottom;
+  margin-left: 2px; border-radius: 2px;
+  animation: blink 1.1s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ---------- breath ring ---------- */
+.breath-stage { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.ring-wrap { position: relative; width: 230px; height: 230px; }
+.ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-track { fill: none; stroke: rgba(255,255,255,.10); stroke-width: 3; }
+.ring-fill  {
+  fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round;
+  filter: drop-shadow(0 0 10px var(--glow));
+}
+.ring-core {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 4px;
+}
+.ring-core .phase-name { font-family: var(--serif); font-size: 1.5rem; }
+.ring-core .phase-count { color: var(--ink-faint); font-size: .85rem; letter-spacing: .12em; text-transform: uppercase; }
+.ring-orb {
+  position: absolute; left: 50%; top: 50%;
+  width: 130px; height: 130px;
+  margin: -65px 0 0 -65px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, var(--accent-soft), transparent 70%),
+              radial-gradient(circle, var(--glow), transparent 72%);
+  transform: scale(calc(.55 + var(--breath) * .5));
+  transition: transform .15s linear;
+  z-index: -1;
+}
+
+/* ---------- stats ---------- */
+.stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.stat {
+  background: var(--card); border: 1px solid var(--card-edge);
+  border-radius: 18px; padding: 16px 18px;
+}
+.stat .num { font-family: var(--serif); font-size: 1.9rem; color: var(--accent); line-height: 1.2; }
+.stat .lbl { color: var(--ink-faint); font-size: .82rem; margin-top: 2px; }
+
+.bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; padding-top: 8px; }
+.bars .bar {
+  flex: 1; border-radius: 6px 6px 3px 3px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-soft));
+  min-height: 4px; opacity: .85;
+  position: relative;
+}
+.bars .bar.neg { background: linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,.06)); }
+
+/* ---------- SOS button ---------- */
+.sos-btn {
+  position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+  z-index: 50;
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(20, 16, 30, .82);
+  color: var(--ink);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 14px 26px;
+  font-size: .98rem; font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 40px -10px var(--glow);
+  transition: transform .3s ease;
+}
+.sos-btn:hover { transform: translateX(-50%) translateY(-2px); }
+.sos-wave {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--accent);
+  animation: sosPulse 2.6s ease-in-out infinite;
+}
+@keyframes sosPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--glow); }
+  50%      { box-shadow: 0 0 0 10px transparent; }
+}
+
+/* ---------- urge wave animation ---------- */
+.wave-stage {
+  position: relative; height: 140px; overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--card); border: 1px solid var(--card-edge);
+}
+.wave-stage svg { position: absolute; bottom: 0; left: 0; width: 200%; height: 80%; }
+.wave-stage .w1 { animation: waveSlide 9s linear infinite; opacity: .5; }
+.wave-stage .w2 { animation: waveSlide 13s linear infinite reverse; opacity: .3; }
+@keyframes waveSlide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.wave-timer {
+  position: absolute; top: 14px; left: 0; right: 0; text-align: center;
+  font-family: var(--serif); font-size: 1.6rem; color: var(--ink);
+}
+
+/* ---------- misc ---------- */
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+.brand { font-family: var(--serif); font-size: 1.25rem; letter-spacing: .04em; }
+.brand em { color: var(--accent); font-style: normal; }
+.linklike {
+  background: none; border: none; color: var(--ink-faint);
+  font-size: .9rem; cursor: pointer; padding: 6px 4px;
+}
+.linklike:hover { color: var(--ink); }
+
+.divider { border: none; border-top: 1px solid var(--card-edge); margin: 8px 0; }
+
+.notice {
+  border-left: 3px solid var(--accent);
+  padding: 12px 16px;
+  background: var(--accent-soft);
+  border-radius: 0 14px 14px 0;
+  font-size: .92rem; line-height: 1.6; color: var(--ink-dim);
+}
+
+.fade-slow { animation: fadeUp 1.6s ease both; }
+
+@media (max-width: 480px) {
+  main { padding: 20px 14px 130px; }
+  h1 { font-size: 1.7rem; }
+  .stat .num { font-size: 1.5rem; }
+}
+
+</style>
+</head>
+<body>
+
+  <!-- ambient background layers -->
+  <div class="bg-gradient" id="bgGradient"></div>
+  <div class="bg-particles" id="bgParticles" aria-hidden="true"></div>
+
+  <main id="app" aria-live="polite"></main>
+
+  <!-- always-available SOS button -->
+  <button id="sosBtn" class="sos-btn hidden" title="Feeling the pull? Ride it out here.">
+    <span class="sos-wave" aria-hidden="true"></span>
+    <span class="sos-label">I'm feeling the pull</span>
+  </button>
+<script>
+/* ---- js/data.js ---- */
+/* =========================================================
+   Haven — companions, practices, and guided scripts
+   All dialogue is written to downregulate: slow pacing,
+   long exhales, attention pulled out of rumination (DMN)
+   and into the body. No hooks, no scarcity, no "miss you".
+   ========================================================= */
+
+const COMPANIONS = {
+  sera: {
+    id: 'sera',
+    name: 'Sera',
+    role: 'Warmth · breath-led calm',
+    portrait: 'assets/sera.png',
+    portraitRemote: 'https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260702_181043_fd67e02d-4a1c-4029-897c-6a1c63e504e1_min.webp',
+    video: 'assets/sera.mp4',
+    videoRemote: 'https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260702_184419_dbfabd7f-8bf9-4183-8bb0-47630cbf1e96.mp4',
+    accent: '#e8a87c',
+    accentSoft: 'rgba(232, 168, 124, 0.16)',
+    glow: 'rgba(242, 181, 140, 0.35)',
+    palette: ['#1a1320', '#2b1d26', '#3a2530'],
+    bio: 'Gentle and unhurried. Sera leads with the breath — long exhales, soft attention, the feeling of your shoulders finally coming down.',
+    greetings: {
+      morning: "Morning. Before the day gets its hands on you — one slow breath with me?",
+      afternoon: "Hey, you. Middle of the day is when the body starts holding on. Want to put some of it down?",
+      evening: "Evening. Whatever today was, it's mostly over now. Let's let your body get the message.",
+      night: "It's late. No advice from me — just a long exhale or two, and then sleep. Deal?"
+    },
+    farewells: [
+      "That's enough of me for now. Go be somewhere real — I'll be here if the day gets heavy again.",
+      "Good. Now close this and go feel that calm somewhere that matters.",
+      "You did the work; the app part is over. Go on. I mean it, warmly."
+    ]
+  },
+  noa: {
+    id: 'noa',
+    name: 'Noa',
+    role: 'Stillness · body-led quiet',
+    portrait: 'assets/noa.png',
+    portraitRemote: 'https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260702_181046_453520db-45e2-420c-9dd7-9602f7021420_min.webp',
+    video: 'assets/noa.mp4',
+    videoRemote: 'https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260702_184422_dceb591c-1892-4bc4-a0b4-cfdfb17d9fd6.mp4',
+    accent: '#a99df2',
+    accentSoft: 'rgba(169, 157, 242, 0.16)',
+    glow: 'rgba(183, 166, 240, 0.35)',
+    palette: ['#0e1024', '#181a35', '#232042'],
+    bio: 'Quiet and precise. Noa says less and points more — at the jaw you’re clenching, the breath you’re holding, the stillness underneath all of it.',
+    greetings: {
+      morning: "You're here. Good. Notice your jaw before we do anything else.",
+      afternoon: "Pause. Right now, where are your shoulders? That's where we start.",
+      evening: "The day is done arguing with you. Sit down. Let it lose.",
+      night: "Late. The mind is loud at this hour. The body knows better — let's listen to it instead."
+    },
+    farewells: [
+      "Enough. The calm you feel is yours, not mine. Take it with you.",
+      "We're done here. The practice continues without the screen.",
+      "Go. Stillness doesn't need an app once you know where it lives."
+    ]
+  },
+  kai: {
+    id: 'kai',
+    name: 'Kai',
+    role: 'Ground · steady coaching',
+    portrait: 'assets/kai.png',
+    portraitRemote: 'https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260702_181049_d71cab0b-51b0-44f4-91f0-8c7ae7f31df3_min.webp',
+    video: 'assets/kai.mp4',
+    videoRemote: 'https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260702_184424_55d4a78c-d2ea-4e6b-9783-b99b913da34a.mp4',
+    accent: '#8fbf8a',
+    accentSoft: 'rgba(143, 191, 138, 0.16)',
+    glow: 'rgba(159, 199, 154, 0.35)',
+    palette: ['#0d1712', '#16241c', '#1f3026'],
+    bio: 'Steady and direct. Kai coaches like a good friend spots you at the gym — no fluff, no shame, just the next rep of letting go.',
+    greetings: {
+      morning: "Morning. Two minutes of breath now saves you two hours of tension later. Worth it?",
+      afternoon: "Good time for a reset. Nervous systems don't do marathons — they do rounds. Let's do one.",
+      evening: "End of day. Time to actually clock out — body included.",
+      night: "Late one, huh. No judgment. Let's downshift so sleep has something to work with."
+    },
+    farewells: [
+      "Solid work. Now log off — that's the actual rep.",
+      "Done. The win isn't in here, it's how you feel out there. Go check.",
+      "That's the session. Screen down, chin up."
+    ]
+  }
+};
+
+/* ---------------------------------------------------------
+   Breath patterns
+   Each phase: { name, kind: 'in'|'hold'|'out', secs, cue }
+   --------------------------------------------------------- */
+const PATTERNS = {
+  sigh: {
+    label: 'Physiological sigh',
+    phases: [
+      { name: 'Inhale', kind: 'in', secs: 2.5, cue: 'Breathe in through the nose…' },
+      { name: 'Top-up', kind: 'in', secs: 1.2, cue: '…and a short second sip of air.' },
+      { name: 'Exhale', kind: 'out', secs: 6.5, cue: 'Long, slow exhale through the mouth.' }
+    ]
+  },
+  longExhale: {
+    label: 'Long exhale (4·8)',
+    phases: [
+      { name: 'Inhale', kind: 'in', secs: 4, cue: 'In through the nose, low into the belly.' },
+      { name: 'Exhale', kind: 'out', secs: 8, cue: 'Out slowly — twice as long as in.' }
+    ]
+  },
+  coherent: {
+    label: 'Coherent breathing',
+    phases: [
+      { name: 'Inhale', kind: 'in', secs: 5.5, cue: 'Smooth inhale…' },
+      { name: 'Exhale', kind: 'out', secs: 5.5, cue: '…smooth exhale. No edges.' }
+    ]
+  },
+  hum: {
+    label: 'Humming breath',
+    phases: [
+      { name: 'Inhale', kind: 'in', secs: 4, cue: 'Inhale through the nose.' },
+      { name: 'Hum', kind: 'out', secs: 8, cue: 'Exhale on a low hum — feel it in your chest.' }
+    ]
+  },
+  surf: {
+    label: 'Urge-surfing breath',
+    phases: [
+      { name: 'Inhale', kind: 'in', secs: 4, cue: 'In — toward the feeling, not away.' },
+      { name: 'Exhale', kind: 'out', secs: 8, cue: 'Out — let the wave pass through you.' }
+    ]
+  }
+};
+
+/* ---------------------------------------------------------
+   Practices
+   Script steps:
+   { t:'say',    text: string | {sera,noa,kai}, hold?: ms }
+   { t:'breath', pattern, cycles, coach?: [strings shown between cycles] }
+   { t:'still',  secs, text }        — silent timed rest
+   { t:'scan',   regions: [...] }    — body-scan sequence
+   --------------------------------------------------------- */
+const PRACTICES = [
+  {
+    id: 'reset',
+    title: 'The Reset',
+    subtitle: 'Physiological sigh · ~2 min',
+    minutes: 2,
+    kind: 'breath',
+    blurb: 'The fastest known voluntary way to calm down: a double inhale and a long exhale, repeated. Shown in a 2023 Stanford study (Balban et al., Cell Reports Medicine) to lower anxiety and improve mood more than meditation of the same length.',
+    script: [
+      { t: 'say', text: {
+        sera: "Okay. This one's my favorite because it works even when you don't believe it will.",
+        noa: "This is the body's own reset switch. We're just pressing it on purpose.",
+        kai: "Quick and effective. Double inhale, long exhale. Your heart rate has no choice but to come down." } },
+      { t: 'say', text: "Two breaths in through the nose — one big, one small on top — then everything out through the mouth, slow." },
+      { t: 'breath', pattern: 'sigh', cycles: 8, coach: [
+        "Good. Let the exhale be lazy.",
+        "Drop the shoulders on the way out.",
+        "If your mind wanders, that's fine — come back on the next inhale.",
+        "Notice: the exhale is where the calm lives.",
+        "Halfway. It should feel easier already.",
+        "Let the belly go soft.",
+        "Last two. Make these exhales the longest yet."
+      ] },
+      { t: 'still', secs: 10, text: "Don't breathe on purpose now. Just watch what your body does with the quiet." },
+      { t: 'say', text: {
+        sera: "Feel that? That's not me. That's your own nervous system remembering how.",
+        noa: "The stillness after is the point. Everything else was just the door.",
+        kai: "That's the downshift. Two minutes, real physiology. Remember you can do this anywhere — no app required." } }
+    ]
+  },
+  {
+    id: 'unwind',
+    title: 'The Unwind',
+    subtitle: 'Long exhale 4·8 · ~4 min',
+    minutes: 4,
+    kind: 'breath',
+    blurb: 'Exhaling longer than you inhale activates the parasympathetic ("rest and digest") system via the vagus nerve, slowing heart rate and dialing down the stress response.',
+    script: [
+      { t: 'say', text: {
+        sera: "Let's take the long way down. In for four, out for eight — the exhale does all the work, you just stop interrupting it.",
+        noa: "Four in. Eight out. The math is the whole teaching.",
+        kai: "Simple protocol: exhale twice as long as you inhale. It tells the vagus nerve the fight is over." } },
+      { t: 'breath', pattern: 'longExhale', cycles: 16, coach: [
+        "In through the nose, low and quiet.",
+        "The exhale isn't pushed. It's released.",
+        "Unclench the jaw. It's holding a conversation that's over.",
+        "Let the hands open.",
+        "Nothing to solve for the next few minutes.",
+        "If a thought pulls at you, put it on the exhale and let it walk.",
+        "Softer belly.",
+        "Halfway. Your heartbeat is already slower — that's measurable, not poetry.",
+        "Face soft. Especially between the eyebrows.",
+        "Let the chair or floor hold your full weight.",
+        "In… and looooong out.",
+        "Notice the small pause after the exhale. Rest there.",
+        "Three more. Make them unhurried.",
+        "Two more.",
+        "Last one. The best one."
+      ] },
+      { t: 'still', secs: 15, text: "Sit in it. Nothing is asked of you right now." },
+      { t: 'say', text: {
+        sera: "There you are. Softer eyes, longer breath. Take that version of you back into the day.",
+        noa: "This state is not rare. It's just underneath the noise, always.",
+        kai: "Good session. That heaviness in the limbs? That's the tension leaving, not tiredness arriving." } }
+    ]
+  },
+  {
+    id: 'tide',
+    title: 'Even Tide',
+    subtitle: 'Coherent breathing · ~4 min',
+    minutes: 4,
+    kind: 'breath',
+    blurb: 'Breathing at ~5.5 breaths per minute maximizes heart-rate variability — the rhythm where heart, breath, and blood pressure synchronize. Used in HRV biofeedback for anxiety and rumination.',
+    script: [
+      { t: 'say', text: {
+        sera: "This one is like rocking a boat until the water goes flat. Five and a half seconds in, five and a half out.",
+        noa: "One rhythm. In and out the same length. The body entrains to it like a tide.",
+        kai: "Coherent breathing — the pace where your heart-rate variability peaks. Athletes use it. So do people at 2 a.m. It works for both." } },
+      { t: 'breath', pattern: 'coherent', cycles: 20, coach: [
+        "Match me. No effort, just rhythm.",
+        "Smooth at the turn — no grabbing at the top.",
+        "Smooth at the bottom too.",
+        "Your only job is the rhythm. Everything else is optional.",
+        "Mind wandering is not failure. Returning is the exercise.",
+        "Feel the chest and belly move together.",
+        "Quarter done. Settle deeper into your seat.",
+        "Imagine the breath as a tide. It goes out as easily as it comes in.",
+        "Nothing to improve. Just continue.",
+        "Halfway. This rhythm is where the heart likes to live.",
+        "Let the breath breathe itself now — you're just watching.",
+        "Eyes soft or closed, either is fine.",
+        "The thoughts are traffic. You're on the porch, not in the road.",
+        "Five left. Stay lazy.",
+        "Four.",
+        "Three. Long and even.",
+        "Two.",
+        "Last one, and make it beautiful."
+      ] },
+      { t: 'still', secs: 15, text: "Let the rhythm continue on its own, quieter." },
+      { t: 'say', text: {
+        sera: "Mm. That's the good tide. Come back to it whenever the water gets choppy.",
+        noa: "You can find this pace without me. That was always the plan.",
+        kai: "That's a trained skill now. Every rep makes the calm easier to reach." } }
+    ]
+  },
+  {
+    id: 'drop',
+    title: 'Let It Drop',
+    subtitle: 'Body scan & release · ~6 min',
+    minutes: 6,
+    kind: 'scan',
+    blurb: 'Moving attention slowly through the body pulls activity out of the default-mode network — the brain’s rumination circuit — and releases muscle tension you didn’t know you were paying for.',
+    script: [
+      { t: 'say', text: {
+        sera: "We're going to walk through your body slowly and put down everything it's been carrying. You don't have to relax on command — just visit each place and feel what's there.",
+        noa: "Attention is the tool. Where it rests, tension notices itself — and what notices itself lets go.",
+        kai: "Body scan. This is the DMN killer — the wandering, looping, replaying part of your brain can't run while your attention is in your left hand. Let's go." } },
+      { t: 'scan', regions: [
+        { name: 'Forehead & eyes', secs: 28, text: "Bring your attention to your forehead. The space between the eyebrows — let it widen. Eyes heavy in their sockets, like they're resting on cushions." },
+        { name: 'Jaw & tongue', secs: 28, text: "The jaw. Let the teeth part slightly. Let the tongue fall from the roof of the mouth. This alone changes the signal your brain receives." },
+        { name: 'Neck & shoulders', secs: 30, text: "Neck and shoulders. Whatever they're braced for isn't happening right now. Let the shoulders melt away from the ears. An inch is a victory." },
+        { name: 'Arms & hands', secs: 28, text: "Down the arms. Elbows, wrists, and into the hands. Let the fingers curl however they want. Feel them tingle — that's attention arriving." },
+        { name: 'Chest & breath', secs: 30, text: "The chest. Don't change the breath, just feel it move. Notice the breath is already pleasant when nothing is squeezing it. It can feel like slow honey." },
+        { name: 'Belly', secs: 28, text: "The belly. This is where everyone hides their bracing. Let it be round and soft. You are allowed to take up space." },
+        { name: 'Hips & legs', secs: 28, text: "Hips, thighs, knees. Let the legs be heavy — furniture, not machinery. The ground is doing the work of holding you." },
+        { name: 'Feet', secs: 26, text: "The feet. Soles, toes, the weight pressing down. Warm, heavy, done for the day." },
+        { name: 'Whole body', secs: 34, text: "Now the whole body at once — one warm, heavy, breathing shape. If you focused on it long enough, every last bit of tension could drain out through the floor. Some of it just did." }
+      ] },
+      { t: 'say', text: {
+        sera: "That heaviness? That's what safety feels like from the inside. You made that.",
+        noa: "The body was never the problem. It was waiting for you to come back.",
+        kai: "Notice how quiet the mental chatter got. That's not a coincidence — that's attention doing its job." } }
+    ]
+  },
+  {
+    id: 'hum',
+    title: 'The Hum',
+    subtitle: 'Vagal humming · ~3 min',
+    minutes: 3,
+    kind: 'breath',
+    blurb: 'Humming vibrates the larynx where the vagus nerve passes, extends the exhale naturally, and boosts nasal nitric oxide. It’s the cheapest vagal-tone exercise there is.',
+    script: [
+      { t: 'say', text: {
+        sera: "This one feels silly for about twenty seconds and then wonderful. We inhale through the nose and exhale on a low hum.",
+        noa: "Sound is breath you can feel. Hum low, and listen with the chest instead of the ears.",
+        kai: "Humming stimulates the vagus nerve directly — vibration where it runs past the throat. Low note, long exhale. Let's work." } },
+      { t: 'say', text: "Find a low, comfortable note. Nothing musical required — a fridge hum is perfect." },
+      { t: 'breath', pattern: 'hum', cycles: 10, coach: [
+        "Feel the vibration in the chest.",
+        "Lower note, looser jaw.",
+        "Let the hum get quieter — it works even at a whisper.",
+        "Notice the buzz lingering after the sound stops.",
+        "Halfway. Face soft.",
+        "Let the vibration reach the belly if it wants.",
+        "Nothing to perform. You're the only audience.",
+        "Two more, low and slow.",
+        "Last one — let it fade out completely."
+      ] },
+      { t: 'still', secs: 12, text: "Breathe normally. Feel the quiet ring." },
+      { t: 'say', text: {
+        sera: "See? Silly, then wonderful. Your whole chest is humming at a lower frequency now.",
+        noa: "The sound ended. The stillness it made did not.",
+        kai: "That buzzing calm is vagal tone doing its thing. Free, portable, yours." } }
+    ]
+  },
+  {
+    id: 'gold',
+    title: 'The Golden Minute',
+    subtitle: 'Savoring practice · ~3 min',
+    minutes: 3,
+    kind: 'scan',
+    blurb: 'Deliberately holding attention on a pleasant experience for 20–30 seconds helps encode it — the practice behind "taking in the good." Savoring practices are linked to improved mood and counteract the brain’s negativity bias.',
+    script: [
+      { t: 'say', text: {
+        sera: "Your brain is velcro for the bad stuff and teflon for the good — unless you hold the good long enough to stick. So that's what we'll practice.",
+        noa: "Pleasure is information the mind usually skims. We are going to read it slowly.",
+        kai: "Training block: savoring. Dopamine spikes and vanishes; this builds the slower, warmer stuff. Attention on something good, held long enough to count." } },
+      { t: 'scan', regions: [
+        { name: 'Find one good thing', secs: 30, text: "Think of one genuinely pleasant thing from today or yesterday. Small is perfect — coffee, a song, sunlight on a wall, a text that made you smile. Pick one and hold it." },
+        { name: 'Make it vivid', secs: 30, text: "Rebuild the moment. Where were you? What did it look like, sound like, feel like on your skin? Stay in the scene, not the summary." },
+        { name: 'Feel it in the body', secs: 30, text: "Find where the pleasantness lives in your body right now — warmth in the chest, softness in the face, a small lift. Breathe into that exact spot." },
+        { name: 'Let it spread', secs: 30, text: "Let the feeling spread a little with each exhale, like warmth through cold hands. You're not faking anything — you're finishing an experience your brain skipped." },
+        { name: 'Keep it', secs: 20, text: "One more breath with it. Tell yourself: this counts. This is mine. This happened." }
+      ] },
+      { t: 'say', text: {
+        sera: "That glow is renewable. The world hands you a dozen of these a day — now you know how to actually receive one.",
+        noa: "You just proved something: the good feeling required no purchase, no screen, no one's permission.",
+        kai: "That's the serotonin workout. Do this daily and the baseline rises — quietly, for free." } }
+    ]
+  }
+];
+
+/* Urge-surf targets shown as chips in the SOS flow */
+const URGE_TYPES = [
+  { id: 'spend',  label: 'Spending on her / them', spend: true },
+  { id: 'scroll', label: 'Endless scrolling',      spend: false },
+  { id: 'message',label: 'Messaging / checking',   spend: true },
+  { id: 'porn',   label: 'Porn / OnlyFans',        spend: true },
+  { id: 'other',  label: 'Something else',         spend: false }
+];
+
+const BODY_SPOTS = ['Chest', 'Throat', 'Stomach', 'Hands', 'Face', 'Everywhere'];
+
+const SURF_LINES = [
+  "An urge is a wave. It rises, it peaks, and — if you don't feed it — it breaks. Ninety seconds is usually all a peak lasts.",
+  "You don't have to make it go away. You just have to not obey it while it's loud.",
+  "Feel it exactly where you said it was. Don't fight it — watch it, like weather.",
+  "Notice it's already changing shape. Urges can't hold still under direct attention.",
+  "The person on the other side of that screen is paid to manufacture this feeling. The exit is in your body, and you're standing in it.",
+  "Still here. Still breathing. The wave is doing the breaking, not you.",
+  "Almost through the peak. Whatever you feel now, you can feel it and still not act.",
+  "Look at that. It's smaller. You just did the hardest thing in behavior change — you let a wave break."
+];
+
+/* Honest science notes for the Why panel */
+const SCIENCE = [
+  {
+    title: 'Long exhales calm the heart',
+    body: 'Your heart naturally slows on every exhale (respiratory sinus arrhythmia). Making exhales longer than inhales — sighs, 4·8 breathing, humming — leans on that reflex through the vagus nerve, lowering heart rate and stress arousal within minutes. The physiological sigh outperformed meditation for mood and anxiety in a 2023 randomized study (Balban et al., Cell Reports Medicine).'
+  },
+  {
+    title: 'Attention starves rumination',
+    body: 'The default-mode network (DMN) is the brain circuitry behind self-referential looping — replaying, craving, comparing. Tasks that anchor attention in present-moment body sensation (breath focus, body scans) reliably reduce DMN activity. You can’t think your way out of a loop, but you can feel your way out.'
+  },
+  {
+    title: 'Savoring raises the floor',
+    body: 'Parasocial apps run on dopamine spikes: unpredictable rewards, scarcity, "she replied!" Savoring practice works the opposite axis — holding attention on real, already-present pleasant experience — which supports mood and counteracts negativity bias. Spikes rent you a feeling; the floor is where you live.'
+  },
+  {
+    title: 'Urges are waves, not orders',
+    body: 'Urge surfing comes from relapse-prevention research (Marlatt & colleagues): cravings peak and subside in minutes when observed without acting. Each surfed wave weakens the loop; each obeyed one strengthens it. The skill is boring, repeatable, and it compounds.'
+  }
+];
+
+/* The promises — the anti-dark-pattern manifesto, shown in-app */
+const PROMISES = [
+  { title: 'Sessions end.', body: 'Every practice has a last line, and it points at the door. There is no feed underneath.' },
+  { title: 'Affection is not paywalled.', body: 'No tiers of intimacy, no "unlock her attention." Nothing here withholds warmth for money.' },
+  { title: 'No punishment mechanics.', body: 'Miss a week and nothing breaks, burns, or guilt-trips you. Your streak counts days you showed up — it never counts against you.' },
+  { title: 'Your data stays here.', body: 'Everything lives in your browser’s local storage. No account, no server, no one reading your check-ins.' },
+  { title: 'The goal is graduation.', body: 'Success is you needing this less. The companions will tell you to close the app. Believe them.' }
+];
+
+/* Soft session budget per day, in minutes — the anti-engagement cap */
+const DAILY_SOFT_CAP_MIN = 20;
+
+
+/* ---- js/state.js ---- */
+/* =========================================================
+   Haven — local-only state. No accounts, no servers.
+   ========================================================= */
+
+const STORE_KEY = 'haven.v1';
+
+const State = {
+  data: null,
+
+  defaults() {
+    return {
+      profile: {
+        companion: null,        // 'sera' | 'noa' | 'kai'
+        startPoint: null,       // onboarding self-assessment id
+        monthlySpend: 0,        // what they told us they spend / month
+        createdAt: Date.now()
+      },
+      settings: { voice: false },
+      sessions: [],             // {ts, practiceId, minutes, before, after}
+      urges: [],                // {ts, type, spotName, before, after, avoided}
+      checkins: []              // {ts, tension}
+    };
+  },
+
+  load() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      this.data = raw ? Object.assign(this.defaults(), JSON.parse(raw)) : this.defaults();
+    } catch (e) {
+      this.data = this.defaults();
+    }
+    return this.data;
+  },
+
+  save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(this.data)); } catch (e) { /* private mode */ }
+  },
+
+  reset() {
+    localStorage.removeItem(STORE_KEY);
+    this.data = this.defaults();
+  },
+
+  get profile()  { return this.data.profile; },
+  get companion(){ return COMPANIONS[this.data.profile.companion] || null; },
+
+  logSession(practiceId, minutes, before, after) {
+    this.data.sessions.push({ ts: Date.now(), practiceId, minutes, before, after });
+    this.save();
+  },
+
+  logUrge(entry) {
+    this.data.urges.push(Object.assign({ ts: Date.now() }, entry));
+    this.save();
+  },
+
+  /* ---------- derived stats ---------- */
+
+  minutesToday() {
+    const start = new Date(); start.setHours(0, 0, 0, 0);
+    return this.data.sessions
+      .filter(s => s.ts >= start.getTime())
+      .reduce((sum, s) => sum + s.minutes, 0);
+  },
+
+  totalMinutes() {
+    return this.data.sessions.reduce((sum, s) => sum + s.minutes, 0);
+  },
+
+  daysShownUp() {
+    const days = new Set();
+    this.data.sessions.forEach(s => days.add(new Date(s.ts).toDateString()));
+    this.data.urges.forEach(u => days.add(new Date(u.ts).toDateString()));
+    return days.size;
+  },
+
+  urgesSurfed() { return this.data.urges.length; },
+
+  moneyRedirected() {
+    return this.data.urges.reduce((sum, u) => sum + (u.avoided || 0), 0);
+  },
+
+  /* average tension drop across sessions that recorded both ends */
+  avgRelease() {
+    const pairs = this.data.sessions.filter(s => s.before != null && s.after != null);
+    if (!pairs.length) return null;
+    const total = pairs.reduce((sum, s) => sum + (s.before - s.after), 0);
+    return total / pairs.length;
+  },
+
+  recentSessions(n) {
+    return this.data.sessions.slice(-n);
+  }
+};
+
+
+/* ---- js/breath.js ---- */
+/* =========================================================
+   Haven — breath engine
+   Drives a timed phase loop and reports progress so the UI
+   (ring, character glow, cues) can move with the breath.
+   ========================================================= */
+
+class BreathEngine {
+  /**
+   * @param {object} pattern   entry from PATTERNS
+   * @param {number} cycles    how many full cycles to run
+   * @param {object} cbs       { onPhase(phase, cycle, cycles), onProgress(phaseFrac, phase), onCycle(i), onDone() }
+   */
+  constructor(pattern, cycles, cbs) {
+    this.pattern = pattern;
+    this.cycles = cycles;
+    this.cbs = cbs || {};
+    this._raf = null;
+    this._running = false;
+    this._stopped = false;
+  }
+
+  start() {
+    this._running = true;
+    this._cycle = 0;
+    this._phaseIx = -1;
+    this._phaseStart = 0;
+    this._nextPhase(performance.now());
+    this._tick = this._tick.bind(this);
+    this._raf = requestAnimationFrame(this._tick);
+  }
+
+  stop() {
+    this._stopped = true;
+    this._running = false;
+    if (this._raf) cancelAnimationFrame(this._raf);
+  }
+
+  _nextPhase(now) {
+    this._phaseIx++;
+    if (this._phaseIx >= this.pattern.phases.length) {
+      this._phaseIx = 0;
+      this._cycle++;
+      if (this.cbs.onCycle) this.cbs.onCycle(this._cycle);
+      if (this._cycle >= this.cycles) {
+        this._running = false;
+        if (this.cbs.onDone) this.cbs.onDone();
+        return;
+      }
+    }
+    this._phaseStart = now;
+    const phase = this.pattern.phases[this._phaseIx];
+    if (this.cbs.onPhase) this.cbs.onPhase(phase, this._cycle, this.cycles);
+  }
+
+  _tick(now) {
+    if (!this._running || this._stopped) return;
+    const phase = this.pattern.phases[this._phaseIx];
+    const frac = Math.min(1, (now - this._phaseStart) / (phase.secs * 1000));
+    if (this.cbs.onProgress) this.cbs.onProgress(frac, phase);
+    if (frac >= 1) {
+      this._nextPhase(now);
+      if (!this._running) return;
+    }
+    this._raf = requestAnimationFrame(this._tick);
+  }
+}
+
+/* Maps breath phase progress to a 0..1 "fullness" for ring & character.
+   Inhale ramps up, hold keeps level, exhale ramps down with an ease. */
+function breathFullness(frac, phase, prevFullness) {
+  const easeInOut = t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  if (phase.kind === 'in')  {
+    // top-up inhales start from where the last inhale left off
+    const base = phase.name === 'Top-up' ? 0.72 : 0.08;
+    const top  = phase.name === 'Top-up' ? 1.0  : 0.72;
+    return base + (top - base) * easeInOut(frac);
+  }
+  if (phase.kind === 'hold') return prevFullness != null ? prevFullness : 1;
+  return 1.0 - 0.92 * easeInOut(frac); // out
+}
+
+
+/* ---- js/session.js ---- */
+/* =========================================================
+   Haven — session player & urge-surfing (SOS) flow
+   ========================================================= */
+
+/* ---------- tiny DOM + speech helpers (shared with app.js) ---------- */
+
+function el(html) {
+  const t = document.createElement('template');
+  t.innerHTML = html.trim();
+  return t.content.firstElementChild;
+}
+
+function pick(textOrMap) {
+  if (typeof textOrMap === 'string') return textOrMap;
+  const c = State.profile.companion || 'sera';
+  return textOrMap[c] || textOrMap.sera;
+}
+
+function speak(text) {
+  if (!State.data.settings.voice || !window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 0.86; u.pitch = 1.0; u.volume = 0.9;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+function typewrite(node, text, msPerChar, done) {
+  node.textContent = '';
+  const cursor = el('<span class="cursor"></span>');
+  node.appendChild(cursor);
+  let i = 0;
+  const step = () => {
+    if (!node.isConnected) return;                 // screen was torn down
+    if (i < text.length) {
+      cursor.before(document.createTextNode(text[i++]));
+      setTimeout(step, msPerChar);
+    } else {
+      cursor.remove();
+      if (done) done();
+    }
+  };
+  step();
+}
+
+function setBreathVar(v) {
+  document.documentElement.style.setProperty('--breath', String(Math.max(0, Math.min(1, v))));
+}
+
+function fmtMoney(n) {
+  return '$' + (Math.round(n * 100) / 100).toLocaleString();
+}
+
+/* ---------- tension slider component ---------- */
+
+function tensionSlider(label, initial, onChange) {
+  const wrap = el(`
+    <div class="card stack">
+      <div class="spread">
+        <h3>${label}</h3>
+        <span class="accent" style="font-family:var(--serif);font-size:1.5rem" data-val>${initial}</span>
+      </div>
+      <input type="range" min="0" max="10" step="1" value="${initial}">
+      <div class="spread faint"><span>loose · calm</span><span>wound tight</span></div>
+    </div>`);
+  const input = wrap.querySelector('input');
+  const val = wrap.querySelector('[data-val]');
+  const paint = () => {
+    input.style.setProperty('--fill', (input.value / 10 * 100) + '%');
+    val.textContent = input.value;
+    if (onChange) onChange(Number(input.value));
+  };
+  input.addEventListener('input', paint);
+  paint();
+  return wrap;
+}
+
+/* =========================================================
+   Session player
+   ========================================================= */
+
+const Session = {
+  active: null,
+
+  start(practice) {
+    const c = State.companion;
+    this.active = { practice, before: null, after: null, cancelled: false, engine: null };
+    const app = document.getElementById('app');
+    app.innerHTML = '';
+    document.getElementById('sosBtn').classList.add('hidden');
+
+    /* --- pre check-in --- */
+    let tension = 5;
+    const pre = el(`
+      <div class="screen stack">
+        <div class="topbar">
+          <span class="brand">${practice.title}</span>
+          <button class="linklike" data-x>close</button>
+        </div>
+        <p class="dim">${pick(c.greetings[App.timeOfDay()])}</p>
+      </div>`);
+    pre.appendChild(tensionSlider('How wound up are you right now?', tension, v => tension = v));
+    const go = el('<button class="btn wide">Begin</button>');
+    pre.appendChild(go);
+    pre.querySelector('[data-x]').onclick = () => this.abort();
+    go.onclick = () => { this.active.before = tension; this._run(); };
+    app.appendChild(pre);
+  },
+
+  abort() {
+    if (this.active && this.active.engine) this.active.engine.stop();
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    this.active = null;
+    setBreathVar(0);
+    App.home();
+  },
+
+  _stage() {
+    const c = State.companion;
+    const app = document.getElementById('app');
+    app.innerHTML = '';
+    const stage = el(`
+      <div class="screen stack" style="align-items:center; text-align:center;">
+        <div class="topbar" style="width:100%; text-align:left;">
+          <span class="brand">${this.active.practice.title}</span>
+          <span class="row" style="gap:14px">
+            <button class="linklike" data-voice>${State.data.settings.voice ? 'voice on' : 'voice off'}</button>
+            <button class="linklike" data-x>end</button>
+          </span>
+        </div>
+        <div class="portrait-wrap" style="width:min(50vw,190px)">
+          <div class="portrait-glow"></div>
+          ${App.portraitImg(c, 'portrait')}
+        </div>
+        <div class="bubble" data-bubble style="width:100%"></div>
+        <div data-zone style="width:100%"></div>
+      </div>`);
+    stage.querySelector('[data-x]').onclick = () => this.abort();
+    const vbtn = stage.querySelector('[data-voice]');
+    vbtn.onclick = () => {
+      State.data.settings.voice = !State.data.settings.voice;
+      State.save();
+      vbtn.textContent = State.data.settings.voice ? 'voice on' : 'voice off';
+      if (!State.data.settings.voice && window.speechSynthesis) speechSynthesis.cancel();
+    };
+    app.appendChild(stage);
+    return {
+      bubble: stage.querySelector('[data-bubble]'),
+      zone: stage.querySelector('[data-zone]')
+    };
+  },
+
+  _run() {
+    const steps = this.active.practice.script;
+    const ui = this._stage();
+    let ix = 0;
+
+    const next = () => {
+      if (!this.active) return;
+      if (ix >= steps.length) return this._finish();
+      const step = steps[ix++];
+      if (step.t === 'say')    return this._say(ui, step, next);
+      if (step.t === 'breath') return this._breath(ui, step, next);
+      if (step.t === 'still')  return this._still(ui, step, next);
+      if (step.t === 'scan')   return this._scan(ui, step, next);
+      next();
+    };
+    next();
+  },
+
+  _say(ui, step, next) {
+    ui.zone.innerHTML = '';
+    const text = pick(step.text);
+    speak(text);
+    typewrite(ui.bubble, text, 34, () => {
+      const hold = step.hold != null ? step.hold : Math.max(2200, text.length * 42);
+      setTimeout(() => { if (this.active) next(); }, hold);
+    });
+  },
+
+  _still(ui, step, next) {
+    ui.zone.innerHTML = '';
+    ui.bubble.textContent = step.text;
+    speak(step.text);
+    const bar = el(`<div class="card"><div class="faint" style="text-align:center" data-t></div></div>`);
+    ui.zone.appendChild(bar);
+    let left = step.secs;
+    const t = bar.querySelector('[data-t]');
+    const tick = () => {
+      if (!this.active) return;
+      t.textContent = left > 0 ? `${left}s of quiet` : '';
+      if (left-- > 0) setTimeout(tick, 1000); else next();
+    };
+    tick();
+  },
+
+  _breath(ui, step, next) {
+    const pattern = PATTERNS[step.pattern];
+    ui.zone.innerHTML = '';
+    ui.bubble.textContent = pattern.phases[0].cue;
+
+    const R = 108, CIRC = 2 * Math.PI * R;
+    const ring = el(`
+      <div class="breath-stage">
+        <div class="ring-wrap">
+          <div class="ring-orb"></div>
+          <svg viewBox="0 0 230 230">
+            <circle class="ring-track" cx="115" cy="115" r="${R}"></circle>
+            <circle class="ring-fill" cx="115" cy="115" r="${R}"
+                    stroke-dasharray="${CIRC}" stroke-dashoffset="${CIRC}"></circle>
+          </svg>
+          <div class="ring-core">
+            <div class="phase-name" data-phase>Ready</div>
+            <div class="phase-count" data-count></div>
+          </div>
+        </div>
+      </div>`);
+    ui.zone.appendChild(ring);
+
+    const fill = ring.querySelector('.ring-fill');
+    const phaseEl = ring.querySelector('[data-phase]');
+    const countEl = ring.querySelector('[data-count]');
+    let coachIx = 0;
+    let lastFullness = 0;
+
+    const engine = new BreathEngine(pattern, step.cycles, {
+      onPhase: (phase, cycle, cycles) => {
+        phaseEl.textContent = phase.name;
+        countEl.textContent = `breath ${cycle + 1} of ${cycles}`;
+      },
+      onProgress: (frac, phase) => {
+        lastFullness = breathFullness(frac, phase, lastFullness);
+        setBreathVar(lastFullness);
+        fill.style.strokeDashoffset = String(CIRC * (1 - lastFullness));
+      },
+      onCycle: () => {
+        if (step.coach && coachIx < step.coach.length) {
+          const line = step.coach[coachIx++];
+          ui.bubble.textContent = line;
+          speak(line);
+        }
+      },
+      onDone: () => { setBreathVar(0); if (this.active) next(); }
+    });
+    this.active.engine = engine;
+    engine.start();
+  },
+
+  _scan(ui, step, next) {
+    ui.zone.innerHTML = '';
+    const prog = el(`
+      <div class="card stack">
+        <div class="spread">
+          <h3 data-region></h3>
+          <span class="faint" data-ix></span>
+        </div>
+        <div style="height:5px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden">
+          <div data-bar style="height:100%;width:0;background:var(--accent);transition:width 1s linear"></div>
+        </div>
+      </div>`);
+    ui.zone.appendChild(prog);
+    const regionEl = prog.querySelector('[data-region]');
+    const ixEl = prog.querySelector('[data-ix]');
+    const barEl = prog.querySelector('[data-bar]');
+
+    let r = 0;
+    const runRegion = () => {
+      if (!this.active) return;
+      if (r >= step.regions.length) return next();
+      const region = step.regions[r];
+      regionEl.textContent = region.name;
+      ixEl.textContent = `${r + 1} / ${step.regions.length}`;
+      speak(region.text);
+      typewrite(ui.bubble, region.text, 30, null);
+      barEl.style.width = '0%';
+      let elapsed = 0;
+      const tick = () => {
+        if (!this.active) return;
+        elapsed++;
+        barEl.style.width = Math.min(100, elapsed / region.secs * 100) + '%';
+        if (elapsed < region.secs) setTimeout(tick, 1000);
+        else { r++; runRegion(); }
+      };
+      setTimeout(tick, 1000);
+    };
+    runRegion();
+  },
+
+  _finish() {
+    const c = State.companion;
+    const p = this.active.practice;
+    const before = this.active.before;
+    const app = document.getElementById('app');
+    app.innerHTML = '';
+
+    let after = Math.max(0, (before != null ? before : 5) - 2);
+    const doneScreen = el(`
+      <div class="screen stack">
+        <h2>And… back.</h2>
+        <p class="dim">Before you go — same question, honest answer.</p>
+      </div>`);
+    doneScreen.appendChild(tensionSlider('How wound up are you now?', after, v => after = v));
+    const save = el('<button class="btn wide">Done</button>');
+    doneScreen.appendChild(save);
+    app.appendChild(doneScreen);
+
+    save.onclick = () => {
+      State.logSession(p.id, p.minutes, before, after);
+      const delta = before - after;
+      const farewell = c.farewells[Math.floor((State.data.sessions.length - 1) % c.farewells.length)];
+      app.innerHTML = '';
+      const out = el(`
+        <div class="screen stack" style="text-align:center; align-items:center;">
+          <div class="portrait-wrap" style="width:min(46vw,170px)">
+            <div class="portrait-glow" style="--breath:.35"></div>
+            ${App.portraitImg(c, 'portrait ambient')}
+          </div>
+          <h2>${delta > 0 ? `Tension down ${delta} point${delta === 1 ? '' : 's'}.` : delta === 0 ? 'You showed up. That counts.' : 'Some days are like that. Showing up still counts.'}</h2>
+          <div class="bubble" style="width:100%" data-bye></div>
+          <button class="btn wide" data-home>Close &amp; go live your life</button>
+        </div>`);
+      app.appendChild(out);
+      speak(farewell);
+      typewrite(out.querySelector('[data-bye]'), farewell, 34, null);
+      out.querySelector('[data-home]').onclick = () => { this.active = null; App.home(); };
+    };
+  }
+};
+
+/* =========================================================
+   SOS — urge surfing
+   ========================================================= */
+
+const Surf = {
+  start() {
+    const c = State.companion;
+    const app = document.getElementById('app');
+    document.getElementById('sosBtn').classList.add('hidden');
+    app.innerHTML = '';
+    const log = { type: null, spot: null, before: 7, after: null, avoided: 0 };
+
+    /* step 1: acknowledge + name it */
+    const s1 = el(`
+      <div class="screen stack">
+        <div class="topbar"><span class="brand">The Pull</span><button class="linklike" data-x>close</button></div>
+        <div class="bubble" data-b></div>
+        <div class="stack">
+          <h3>What is it pulling you toward?</h3>
+          <div class="chips" data-chips></div>
+        </div>
+      </div>`);
+    s1.querySelector('[data-x]').onclick = () => App.home();
+    const opener = pick({
+      sera: "Hey. You pressed the button instead of obeying the pull — that's already the win. Stay with me for ninety seconds.",
+      noa: "Good. You noticed it. Most people never even see the wave — you're already standing on the shore.",
+      kai: "Smart move. An urge peaks for about ninety seconds. We're going to stand in it, not run from it. First — name it."
+    });
+    typewrite(s1.querySelector('[data-b]'), opener, 30, null);
+    speak(opener);
+    const chips = s1.querySelector('[data-chips]');
+    URGE_TYPES.forEach(u => {
+      const ch = el(`<button class="chip">${u.label}</button>`);
+      ch.onclick = () => { log.type = u.id; this._step2(log); };
+      chips.appendChild(ch);
+    });
+    app.appendChild(s1);
+  },
+
+  _step2(log) {
+    const app = document.getElementById('app');
+    app.innerHTML = '';
+    let intensity = 7;
+    const s2 = el(`
+      <div class="screen stack">
+        <div class="topbar"><span class="brand">The Pull</span><button class="linklike" data-x>close</button></div>
+        <div class="stack">
+          <h3>Where do you feel it in your body?</h3>
+          <p class="dim">Urges are physical. Finding the sensation is how you get upstream of it.</p>
+          <div class="chips" data-spots></div>
+        </div>
+      </div>`);
+    s2.querySelector('[data-x]').onclick = () => App.home();
+    s2.appendChild(tensionSlider('How strong is it?', intensity, v => intensity = v));
+    const go = el('<button class="btn wide" disabled>Ride the wave</button>');
+    const spots = s2.querySelector('[data-spots]');
+    BODY_SPOTS.forEach(name => {
+      const ch = el(`<button class="chip">${name}</button>`);
+      ch.onclick = () => {
+        spots.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+        ch.classList.add('on');
+        log.spot = name;
+        go.disabled = false;
+      };
+      spots.appendChild(ch);
+    });
+    s2.appendChild(go);
+    go.onclick = () => { log.before = intensity; this._wave(log); };
+    app.appendChild(s2);
+  },
+
+  _wave(log) {
+    const app = document.getElementById('app');
+    app.innerHTML = '';
+    const TOTAL = 96;   // 8 breaths at 12s
+    const s3 = el(`
+      <div class="screen stack">
+        <div class="topbar"><span class="brand">Riding it out</span><span class="faint">don't switch apps — that's the wave talking</span></div>
+        <div class="wave-stage">
+          <div class="wave-timer" data-t>90</div>
+          <svg class="w1" viewBox="0 0 1200 100" preserveAspectRatio="none">
+            <path d="M0 60 Q 75 20 150 60 T 300 60 T 450 60 T 600 60 T 750 60 T 900 60 T 1050 60 T 1200 60 V100 H0 Z" fill="var(--accent)"/>
+          </svg>
+          <svg class="w2" viewBox="0 0 1200 100" preserveAspectRatio="none">
+            <path d="M0 65 Q 100 35 200 65 T 400 65 T 600 65 T 800 65 T 1000 65 T 1200 65 V100 H0 Z" fill="var(--accent)"/>
+          </svg>
+        </div>
+        <div class="bubble" data-b></div>
+        <div class="breath-stage">
+          <div class="ring-wrap" style="width:170px;height:170px">
+            <div class="ring-orb" style="width:96px;height:96px;margin:-48px 0 0 -48px"></div>
+            <svg viewBox="0 0 230 230">
+              <circle class="ring-track" cx="115" cy="115" r="108"></circle>
+              <circle class="ring-fill" cx="115" cy="115" r="108"
+                      stroke-dasharray="${2 * Math.PI * 108}" stroke-dashoffset="${2 * Math.PI * 108}"></circle>
+            </svg>
+            <div class="ring-core"><div class="phase-name" data-phase style="font-size:1.1rem">In</div></div>
+          </div>
+        </div>
+      </div>`);
+    app.appendChild(s3);
+
+    const bubble = s3.querySelector('[data-b]');
+    const timerEl = s3.querySelector('[data-t]');
+    const fill = s3.querySelector('.ring-fill');
+    const phaseEl = s3.querySelector('[data-phase]');
+    const CIRC = 2 * Math.PI * 108;
+
+    let lineIx = 0, lastFullness = 0, left = TOTAL, alive = true;
+
+    const showLine = () => {
+      if (!alive || lineIx >= SURF_LINES.length) return;
+      const line = SURF_LINES[lineIx++];
+      bubble.textContent = line;
+      speak(line);
+    };
+    showLine();
+
+    const engine = new BreathEngine(PATTERNS.surf, 8, {
+      onPhase: p => { phaseEl.textContent = p.name; },
+      onProgress: (frac, phase) => {
+        lastFullness = breathFullness(frac, phase, lastFullness);
+        setBreathVar(lastFullness);
+        fill.style.strokeDashoffset = String(CIRC * (1 - lastFullness));
+      },
+      onCycle: showLine,
+      onDone: () => { alive = false; setBreathVar(0); this._after(log); }
+    });
+
+    const countdown = () => {
+      if (!alive) return;
+      timerEl.textContent = String(Math.max(0, left--));
+      if (left >= 0) setTimeout(countdown, 1000);
+    };
+    countdown();
+    engine.start();
+  },
+
+  _after(log) {
+    const app = document.getElementById('app');
+    app.innerHTML = '';
+    let after = Math.max(0, log.before - 3);
+    const s4 = el(`
+      <div class="screen stack">
+        <h2>The wave broke.</h2>
+        <p class="dim">You just watched an urge peak without obeying it. That circuit is now slightly weaker. Rate it again:</p>
+      </div>`);
+    s4.appendChild(tensionSlider('How strong is the pull now?', after, v => after = v));
+
+    const type = URGE_TYPES.find(u => u.id === log.type);
+    let moneyRow = null;
+    if (type && type.spend) {
+      moneyRow = el(`
+        <div class="card stack">
+          <h3>What would that have cost you?</h3>
+          <p class="faint">Honest guess. This money is now redirected to your actual life.</p>
+          <div class="chips" data-m>
+            <button class="chip" data-v="5">$5</button>
+            <button class="chip" data-v="20">$20</button>
+            <button class="chip" data-v="50">$50</button>
+            <button class="chip" data-v="100">$100</button>
+            <button class="chip on" data-v="0">Nothing</button>
+          </div>
+        </div>`);
+      moneyRow.querySelectorAll('.chip').forEach(ch => {
+        ch.onclick = () => {
+          moneyRow.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+          ch.classList.add('on');
+          log.avoided = Number(ch.dataset.v);
+        };
+      });
+      s4.appendChild(moneyRow);
+    }
+
+    const done = el('<button class="btn wide">Log it &amp; close</button>');
+    s4.appendChild(done);
+    done.onclick = () => {
+      log.after = after;
+      State.logUrge(log);
+      const c = State.companion;
+      app.innerHTML = '';
+      const closeLine = pick({
+        sera: "Proud of you. Genuinely. Now do one kind, real-world thing for yourself — water, a walk, a window. Off you go.",
+        noa: "Logged. Notice what you feel now versus five minutes ago. That difference is yours to keep.",
+        kai: "Rep completed. Every surfed wave makes the next one smaller. Now get out of the app — that's an order, warmly."
+      });
+      const out = el(`
+        <div class="screen stack" style="text-align:center;align-items:center;">
+          <div class="stat" style="min-width:200px">
+            <div class="num">${State.urgesSurfed()}</div>
+            <div class="lbl">waves surfed, total</div>
+          </div>
+          ${log.avoided ? `<div class="stat" style="min-width:200px"><div class="num">${fmtMoney(State.moneyRedirected())}</div><div class="lbl">redirected to your real life, total</div></div>` : ''}
+          <div class="bubble" style="width:100%" data-b></div>
+          <button class="btn wide" data-h>Close &amp; go live your life</button>
+        </div>`);
+      app.appendChild(out);
+      speak(closeLine);
+      typewrite(out.querySelector('[data-b]'), closeLine, 32, null);
+      out.querySelector('[data-h]').onclick = () => App.home();
+    };
+    app.appendChild(s4);
+  }
+};
+
+
+/* ---- js/app.js ---- */
+/* =========================================================
+   Haven — screens, onboarding, home, journey
+   ========================================================= */
+
+const App = {
+
+  /* ---------- boot ---------- */
+  init() {
+    State.load();
+    this._particles();
+    document.getElementById('sosBtn').onclick = () => Surf.start();
+    if (!State.profile.companion) this.onboard();
+    else { this.applyTheme(); this.home(); }
+  },
+
+  timeOfDay() {
+    const h = new Date().getHours();
+    if (h < 5)  return 'night';
+    if (h < 12) return 'morning';
+    if (h < 18) return 'afternoon';
+    if (h < 23) return 'evening';
+    return 'night';
+  },
+
+  applyTheme() {
+    const c = State.companion;
+    if (!c) return;
+    const r = document.documentElement.style;
+    r.setProperty('--accent', c.accent);
+    r.setProperty('--accent-soft', c.accentSoft);
+    r.setProperty('--glow', c.glow);
+    r.setProperty('--c1', c.palette[0]);
+    r.setProperty('--c2', c.palette[1]);
+    r.setProperty('--c3', c.palette[2]);
+  },
+
+  _particles() {
+    const holder = document.getElementById('bgParticles');
+    for (let i = 0; i < 18; i++) {
+      const s = document.createElement('span');
+      s.style.left = (Math.random() * 100) + 'vw';
+      s.style.bottom = (Math.random() * -10) + 'vh';
+      s.style.animationDuration = (14 + Math.random() * 22) + 's';
+      s.style.animationDelay = (Math.random() * 20) + 's';
+      s.style.width = s.style.height = (2 + Math.random() * 4) + 'px';
+      holder.appendChild(s);
+    }
+  },
+
+  /* Companion media: breathing video loop → local/hosted portrait → styled monogram.
+     Videos carry their own motion, so the 'ambient' CSS breath animation is dropped. */
+  portraitImg(c, cls) {
+    if (c.videoRemote || c.video) {
+      const vcls = cls.replace(/\bambient\b/, '').trim();
+      return `<video class="${vcls}" autoplay muted loop playsinline disablepictureinpicture
+        poster="${c.portrait}" data-id="${c.id}" data-cls="${cls}"
+        onerror="App.videoFallback(this)">
+        ${c.video ? `<source src="${c.video}" type="video/mp4">` : ''}
+        ${c.videoRemote ? `<source src="${c.videoRemote}" type="video/mp4" onerror="App.videoFallback(this.parentNode)">` : ''}
+      </video>`;
+    }
+    return this._imgTag(c.portrait, c.portraitRemote, c.name[0], cls);
+  },
+
+  _imgTag(src, remote, initial, cls) {
+    return `<img class="${cls}" src="${src}" alt=""
+      data-remote="${remote || ''}" data-initial="${initial}"
+      onerror="App.portraitFallback(this)">`;
+  },
+
+  videoFallback(video) {
+    if (!video || video.tagName !== 'VIDEO' || !video.isConnected) return;
+    const c = COMPANIONS[video.dataset.id];
+    const cls = video.dataset.cls || video.className;
+    video.replaceWith(el(this._imgTag(c.portrait, c.portraitRemote, c.name[0], cls)));
+  },
+
+  portraitFallback(img) {
+    if (img.dataset.remote) {
+      const remote = img.dataset.remote;
+      img.dataset.remote = '';
+      img.src = remote;
+      return;
+    }
+    const fb = el(`<div class="portrait-fallback ${img.className}">${img.dataset.initial || '·'}</div>`);
+    img.replaceWith(fb);
+  },
+
+  /* ---------- onboarding ---------- */
+  onboard() {
+    const app = document.getElementById('app');
+    document.getElementById('sosBtn').classList.add('hidden');
+    app.innerHTML = '';
+
+    const s1 = el(`
+      <div class="screen stack" style="padding-top:6vh">
+        <h1>You've seen the ads.<br><span class="accent">This is the antidote.</span></h1>
+        <p class="dim">The apps with the beautiful faces are built to keep you paying and coming back —
+        dopamine spikes, manufactured scarcity, affection by the token.</p>
+        <p class="dim"><strong style="color:var(--ink)">Haven</strong> looks like them on purpose, and does the opposite.
+        The companions here are trained on one job: downregulating your nervous system —
+        longer exhales, lower cortisol, a quieter mind — and then telling you to log off.</p>
+        <div class="notice">No account. No feed. No paywalled affection. Everything stays on this device.</div>
+        <button class="btn wide">Start</button>
+      </div>`);
+    s1.querySelector('.btn').onclick = () => step2();
+    app.appendChild(s1);
+
+    const step2 = () => {
+      app.innerHTML = '';
+      const s2 = el(`
+        <div class="screen stack">
+          <h2>Where are you right now?</h2>
+          <p class="dim">Honest answer — it only changes what we emphasize. Nobody sees this but you.</p>
+          <div class="stack" data-opts></div>
+        </div>`);
+      const opts = [
+        { id: 'deep',   label: 'In deep', body: 'Paying for OnlyFans / AI girlfriends / parasocial content and it doesn’t feel like a choice anymore.' },
+        { id: 'edge',   label: 'On the edge', body: 'Not paying (much) yet, but the scrolling and the pull are getting louder.' },
+        { id: 'tense',  label: 'Just wound up', body: 'Here for the nervous-system side: stress, tension, a mind that won’t shut up.' },
+        { id: 'curious',label: 'Curious', body: 'Just want to see what a companion app with a conscience looks like.' }
+      ];
+      const holder = s2.querySelector('[data-opts]');
+      opts.forEach(o => {
+        const cardEl = el(`<div class="card click stack" style="gap:6px"><h3>${o.label}</h3><p class="dim" style="font-size:.94rem">${o.body}</p></div>`);
+        cardEl.onclick = () => { State.profile.startPoint = o.id; State.save(); step3(o.id); };
+        holder.appendChild(cardEl);
+      });
+      app.appendChild(s2);
+    };
+
+    const step3 = (startPoint) => {
+      app.innerHTML = '';
+      if (startPoint !== 'deep' && startPoint !== 'edge') { State.profile.monthlySpend = 0; State.save(); return step4(); }
+      let spend = 50;
+      const s3 = el(`
+        <div class="screen stack">
+          <h2>What does it cost you a month?</h2>
+          <p class="dim">Subscriptions, tips, tokens, "just this once." Rough guess. We’ll count what you keep.</p>
+        </div>`);
+      const cardEl = el(`
+        <div class="card stack">
+          <div class="spread"><h3>Monthly spend</h3><span class="accent" style="font-family:var(--serif);font-size:1.6rem" data-v>$50</span></div>
+          <input type="range" min="0" max="500" step="10" value="50">
+        </div>`);
+      const input = cardEl.querySelector('input');
+      const v = cardEl.querySelector('[data-v]');
+      const paint = () => {
+        spend = Number(input.value);
+        v.textContent = spend >= 500 ? '$500+' : '$' + spend;
+        input.style.setProperty('--fill', (spend / 500 * 100) + '%');
+      };
+      input.addEventListener('input', paint); paint();
+      s3.appendChild(cardEl);
+      const go = el('<button class="btn wide">Next</button>');
+      go.onclick = () => { State.profile.monthlySpend = spend; State.save(); step4(); };
+      s3.appendChild(go);
+      app.appendChild(s3);
+    };
+
+    const step4 = () => {
+      app.innerHTML = '';
+      const s4 = el(`
+        <div class="screen stack">
+          <h2>Choose your companion</h2>
+          <p class="dim">All three know the same practices. Pick the voice you'll actually listen to. You can switch anytime.</p>
+          <div class="stack" data-list></div>
+        </div>`);
+      const list = s4.querySelector('[data-list]');
+      Object.values(COMPANIONS).forEach(c => {
+        const cardEl = el(`
+          <div class="card click row" style="align-items:flex-start">
+            ${this.portraitImg(c, 'portrait-sm')}
+            <div class="stack" style="gap:4px">
+              <div class="row" style="gap:10px"><h3>${c.name}</h3><span class="faint">${c.role}</span></div>
+              <p class="dim" style="font-size:.93rem">${c.bio}</p>
+            </div>
+          </div>`);
+        cardEl.onclick = () => {
+          State.profile.companion = c.id;
+          State.save();
+          this.applyTheme();
+          this._welcome(c);
+        };
+        list.appendChild(cardEl);
+      });
+      app.appendChild(s4);
+    };
+  },
+
+  _welcome(c) {
+    const app = document.getElementById('app');
+    app.innerHTML = '';
+    const line = pick({
+      sera: "Hi. I'm Sera. I'm not going to miss you when you leave, and that's exactly why you can trust me. Ready to breathe?",
+      noa: "Noa. One thing before anything else: nothing I say is behind a paywall, and nothing I say is designed to keep you here. Sit down.",
+      kai: "Kai. Here's the deal — I coach, you breathe, and when we're done I tell you to leave. Everything else is details. Let's start."
+    });
+    const w = el(`
+      <div class="screen stack" style="text-align:center; align-items:center; padding-top:4vh">
+        <div class="portrait-wrap">
+          <div class="portrait-glow" style="--breath:.4"></div>
+          ${this.portraitImg(c, 'portrait ambient')}
+        </div>
+        <div class="bubble" style="width:100%" data-b></div>
+        <button class="btn wide">Take the first breath</button>
+      </div>`);
+    app.appendChild(w);
+    typewrite(w.querySelector('[data-b]'), line, 32, null);
+    speak(line);
+    w.querySelector('.btn').onclick = () => Session.start(PRACTICES[0]);
+  },
+
+  /* ---------- home ---------- */
+  home() {
+    const c = State.companion;
+    if (!c) return this.onboard();
+    this.applyTheme();
+    const app = document.getElementById('app');
+    document.getElementById('sosBtn').classList.remove('hidden');
+    app.innerHTML = '';
+
+    const minsToday = State.minutesToday();
+    const overCap = minsToday >= DAILY_SOFT_CAP_MIN;
+    const greeting = overCap
+      ? pick({
+          sera: "You've already done plenty in here today. The calm works better out there — I'll see you tomorrow.",
+          noa: "Enough practice for one day. Go let it settle. The app can't do that part.",
+          kai: "You've hit today's training volume. More isn't better — recovery is out there, not in here."
+        })
+      : pick(c.greetings[this.timeOfDay()]);
+
+    const home = el(`
+      <div class="screen stack">
+        <div class="topbar">
+          <span class="brand">ha<em>v</em>en</span>
+          <span class="row" style="gap:14px">
+            <button class="linklike" data-nav="journey">journey</button>
+            <button class="linklike" data-nav="why">why this works</button>
+          </span>
+        </div>
+        <div class="row" style="align-items:flex-start; gap:16px">
+          <div class="portrait-wrap" style="width:112px; margin:0; flex-shrink:0">
+            <div class="portrait-glow" style="--breath:.3"></div>
+            ${this.portraitImg(c, 'portrait ambient')}
+          </div>
+          <div class="stack" style="gap:10px; flex:1">
+            <h2 style="font-size:1.2rem">${c.name}</h2>
+            <div class="bubble" style="font-size:.98rem; padding:14px 16px" data-greet></div>
+          </div>
+        </div>
+        ${overCap ? '<div class="notice">Soft cap reached — ' + minsToday + ' min today. Practices still work, but ' + c.name + ' would rather you take the calm outside.</div>' : ''}
+        <h3 class="dim" style="margin-top:6px">Practices</h3>
+        <div class="stack" data-practices style="gap:10px"></div>
+        <div class="faint" style="text-align:center; padding-top:8px">
+          Feeling the pull toward the old stuff? The button below is the whole reason this app exists.
+        </div>
+      </div>`);
+
+    typewrite(home.querySelector('[data-greet]'), greeting, 26, null);
+    home.querySelectorAll('[data-nav]').forEach(b => {
+      b.onclick = () => b.dataset.nav === 'journey' ? this.journey() : this.why();
+    });
+
+    const list = home.querySelector('[data-practices]');
+    PRACTICES.forEach(p => {
+      const item = el(`
+        <div class="card click spread">
+          <div>
+            <h3>${p.title}</h3>
+            <div class="faint">${p.subtitle}</div>
+          </div>
+          <span class="accent" style="font-size:1.4rem">›</span>
+        </div>`);
+      item.onclick = () => Session.start(p);
+      list.appendChild(item);
+    });
+
+    app.appendChild(home);
+  },
+
+  /* ---------- journey / dashboard ---------- */
+  journey() {
+    const app = document.getElementById('app');
+    document.getElementById('sosBtn').classList.remove('hidden');
+    app.innerHTML = '';
+
+    const rel = State.avgRelease();
+    const monthly = State.profile.monthlySpend;
+    const j = el(`
+      <div class="screen stack">
+        <div class="topbar">
+          <button class="linklike" data-back>‹ back</button>
+          <span class="brand">your journey</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="num">${State.totalMinutes()}</div><div class="lbl">minutes regulated</div></div>
+          <div class="stat"><div class="num">${State.urgesSurfed()}</div><div class="lbl">waves surfed</div></div>
+          <div class="stat"><div class="num">${fmtMoney(State.moneyRedirected())}</div><div class="lbl">redirected to real life</div></div>
+          <div class="stat"><div class="num">${State.daysShownUp()}</div><div class="lbl">days you showed up</div></div>
+        </div>
+        ${rel != null ? `<div class="notice">On average, a session drops your tension by <strong>${rel.toFixed(1)} points</strong>. Your nervous system is learning the way down.</div>` : ''}
+        ${monthly > 0 ? `<div class="card"><h3>The old cost</h3><p class="dim" style="font-size:.95rem;margin-top:6px">You said the old habit ran about <strong style="color:var(--accent)">${fmtMoney(monthly)}/month</strong> — ${fmtMoney(monthly * 12)} a year. Every wave you surf keeps a piece of that yours.</p></div>` : ''}
+        <div class="card stack" data-chart-card>
+          <h3>Tension: walked in → walked out</h3>
+          <p class="faint">Each pair is one session. Left bar before, right bar after.</p>
+          <div class="bars" data-chart></div>
+        </div>
+        <div class="card stack">
+          <h3>Our promises</h3>
+          <div class="stack" data-promises style="gap:12px"></div>
+        </div>
+        <div class="card stack">
+          <h3>If it's bigger than an app</h3>
+          <p class="dim" style="font-size:.93rem">If spending or porn use feels genuinely out of control, that's not a willpower failure — it's a loop that deserves real support. SMART Recovery (smartrecovery.org) and Sex Addicts Anonymous (saa-recovery.org) are free and anonymous. Haven is a tool, not treatment.</p>
+        </div>
+        <button class="linklike" data-reset style="align-self:center">start over (erases everything)</button>
+      </div>`);
+
+    j.querySelector('[data-back]').onclick = () => this.home();
+    j.querySelector('[data-reset]').onclick = () => {
+      if (confirm('Erase all local data and start over?')) { State.reset(); location.reload(); }
+    };
+
+    const chart = j.querySelector('[data-chart]');
+    const recent = State.recentSessions(7).filter(s => s.before != null && s.after != null);
+    if (!recent.length) {
+      j.querySelector('[data-chart-card]').innerHTML =
+        '<h3>Tension: walked in → walked out</h3><p class="faint" style="margin-top:6px">Finish a practice and your before/after will show here.</p>';
+    } else {
+      recent.forEach(s => {
+        const b = el(`<div class="bar neg" style="height:${Math.max(6, s.before / 10 * 100)}%"></div>`);
+        const a = el(`<div class="bar" style="height:${Math.max(6, s.after / 10 * 100)}%; margin-right:6px"></div>`);
+        chart.appendChild(b); chart.appendChild(a);
+      });
+    }
+
+    const ph = j.querySelector('[data-promises]');
+    PROMISES.forEach(p => {
+      ph.appendChild(el(`<div><strong style="font-size:.95rem">${p.title}</strong><p class="dim" style="font-size:.9rem">${p.body}</p></div>`));
+    });
+
+    app.appendChild(j);
+  },
+
+  /* ---------- why this works ---------- */
+  why() {
+    const app = document.getElementById('app');
+    app.innerHTML = '';
+    const w = el(`
+      <div class="screen stack">
+        <div class="topbar">
+          <button class="linklike" data-back>‹ back</button>
+          <span class="brand">why this works</span>
+        </div>
+        <p class="dim">No magic, no woo — the practices here are the boring, replicated parts of stress physiology. The honest version:</p>
+        <div class="stack" data-sci></div>
+        <div class="notice">Haven is a self-regulation tool, not medical or psychological care. If you're struggling, a real human professional beats any app — including this one.</div>
+      </div>`);
+    w.querySelector('[data-back]').onclick = () => this.home();
+    const holder = w.querySelector('[data-sci]');
+    SCIENCE.forEach(s => {
+      holder.appendChild(el(`<div class="card stack" style="gap:8px"><h3>${s.title}</h3><p class="dim" style="font-size:.94rem">${s.body}</p></div>`));
+    });
+    app.appendChild(w);
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => App.init());
+
+</script>
+
+</body>
+</html>
