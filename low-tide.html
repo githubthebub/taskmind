@@ -38,19 +38,25 @@
     background:none;border:none;color:var(--mist);cursor:pointer;
   }
   button:focus-visible{outline:1px solid var(--ember);outline-offset:4px;border-radius:2px;}
+  .pill{
+    padding:.55rem 1.05rem;border-radius:999px;
+    border:1px solid #2a3a30;color:var(--sage);font-size:.9rem;
+    transition:color .3s,border-color .3s,background .3s;
+  }
+  .pill[aria-pressed="true"]{color:var(--ground);background:var(--ember);border-color:var(--ember);font-weight:600;}
 
   /* ---------- intro ---------- */
   #intro{
     position:fixed;inset:0;z-index:30;
-    display:flex;align-items:center;justify-content:center;
+    display:flex;align-items:flex-start;justify-content:center;
     background:radial-gradient(120% 120% at 50% 110%, #1a2820 0%, var(--ground) 60%);
     transition:opacity 1.6s ease;
     overflow-y:auto;
   }
   #intro.gone{opacity:0;pointer-events:none;}
   .intro-inner{
-    max-width:34rem;padding:9vh 28px 8vh;
-    display:flex;flex-direction:column;gap:2.1rem;
+    max-width:36rem;padding:7vh 28px 8vh;
+    display:flex;flex-direction:column;gap:1.9rem;
   }
   h1{
     font-family:var(--serif);font-weight:400;font-style:italic;
@@ -58,24 +64,25 @@
     color:var(--ember);text-wrap:balance;
   }
   .lede{
-    font-family:var(--serif);font-size:1.06rem;line-height:1.65;
-    color:var(--mist);margin:0;max-width:32rem;
+    font-family:var(--serif);font-size:1.03rem;line-height:1.62;
+    color:var(--mist);margin:0;max-width:33rem;
   }
   .lede em{color:var(--ember);font-style:italic;}
-  .phases{display:flex;flex-direction:column;gap:.9rem;margin:0;padding:0;list-style:none;}
-  .phases li{
-    display:grid;grid-template-columns:2.4rem 1fr;gap:.4rem;align-items:baseline;
-    font-size:.92rem;line-height:1.5;color:var(--sage);
+  #remember{font-family:var(--serif);font-style:italic;font-size:.92rem;color:var(--sage);margin:0;display:none;}
+
+  .paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:.7rem;}
+  .path{
+    text-align:left;border:1px solid #24332a;border-radius:14px;
+    padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.35rem;
+    transition:border-color .3s,background .3s;
   }
-  .phases .n{font-family:var(--serif);font-style:italic;color:var(--ember-deep);font-size:1rem;}
-  .phases b{color:var(--mist);font-weight:600;}
+  .path:hover{border-color:#3a5244;}
+  .path[aria-pressed="true"]{border-color:var(--ember);background:rgba(232,162,107,.07);}
+  .path .p-name{font-family:var(--serif);font-style:italic;font-size:1.2rem;color:var(--ember);}
+  .path .p-sub{font-size:.82rem;line-height:1.5;color:var(--sage);}
+  .path .p-string{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#5b6f63;margin-top:.2rem;}
+
   .len-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;}
-  .len{
-    padding:.55rem 1.05rem;border-radius:999px;
-    border:1px solid #2a3a30;color:var(--sage);font-size:.9rem;
-    transition:color .3s,border-color .3s,background .3s;
-  }
-  .len[aria-pressed="true"]{color:var(--ground);background:var(--ember);border-color:var(--ember);font-weight:600;}
   #begin{
     align-self:flex-start;
     font-family:var(--serif);font-style:italic;font-size:1.25rem;
@@ -85,28 +92,35 @@
   }
   #begin:hover{background:#f2b98a;transform:translateY(-1px);}
   .fine{font-size:.8rem;color:var(--sage);line-height:1.6;margin:0;}
+  .fine b{color:var(--mist);font-weight:600;}
 
   /* ---------- live session ---------- */
   #phaseLabel{
-    position:fixed;top:6.5vh;left:0;right:0;text-align:center;z-index:10;
+    position:fixed;top:6vh;left:0;right:0;text-align:center;z-index:10;
     opacity:0;transition:opacity 1.2s ease;
   }
   #guidance{
-    position:fixed;left:50%;bottom:20vh;transform:translateX(-50%);
-    width:min(30ch,86vw);text-align:center;z-index:10;
+    position:fixed;left:50%;bottom:19vh;transform:translateX(-50%);
+    width:min(34ch,86vw);text-align:center;z-index:10;
     font-family:var(--serif);font-style:italic;
-    font-size:clamp(1.25rem,3.4vw,1.7rem);line-height:1.5;
+    font-size:clamp(1.2rem,3.2vw,1.6rem);line-height:1.5;
     color:var(--mist);
     opacity:0;transition:opacity .5s ease;
-    text-wrap:balance;
+    text-wrap:balance;white-space:pre-line;
     text-shadow:0 2px 24px rgba(13,20,17,.9);
   }
-  #hint{
-    position:fixed;left:50%;bottom:13.5vh;transform:translateX(-50%);
-    width:min(40ch,86vw);text-align:center;z-index:10;
-    font-size:.8rem;letter-spacing:.04em;color:var(--sage);
-    opacity:0;transition:opacity 1.5s ease;
+  #guidance .src{
+    display:block;margin-top:.9rem;
+    font-family:var(--sans);font-style:normal;
+    font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sage);
   }
+  #mudra{
+    position:fixed;left:50%;bottom:12.5vh;transform:translateX(-50%);
+    width:min(46ch,88vw);text-align:center;z-index:10;
+    font-size:.78rem;letter-spacing:.03em;line-height:1.6;color:var(--sage);
+    opacity:0;transition:opacity 1.4s ease;
+  }
+  #mudra b{color:var(--ember);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:.7rem;margin-right:.5em;}
   #tide{
     position:fixed;left:50%;bottom:6vh;transform:translateX(-50%);
     height:1px;background:var(--sage);opacity:.4;z-index:10;
@@ -124,6 +138,23 @@
   body.live #phaseLabel,body.live #guidance,body.live .corner{opacity:1;}
   body.live #guidance.fading{opacity:0;}
 
+  /* ---------- ask (the tide asks) ---------- */
+  #ask{
+    position:fixed;left:50%;bottom:16vh;transform:translateX(-50%) translateY(12px);
+    z-index:22;width:min(30rem,88vw);text-align:center;
+    display:flex;flex-direction:column;gap:1.1rem;align-items:center;
+    opacity:0;pointer-events:none;transition:opacity .9s ease,transform .9s ease;
+  }
+  #ask.here{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+  #askQ{
+    font-family:var(--serif);font-style:italic;
+    font-size:clamp(1.15rem,3vw,1.45rem);line-height:1.45;color:var(--mist);
+    text-wrap:balance;
+  }
+  .ask-opts{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;}
+  .ask-opts .pill{color:var(--mist);border-color:#3a5244;}
+  .ask-opts .pill:hover{border-color:var(--ember);color:var(--ember);}
+
   /* ---------- end ---------- */
   #end{
     position:fixed;inset:0;z-index:25;
@@ -131,12 +162,14 @@
     opacity:0;pointer-events:none;transition:opacity 2.5s ease;
   }
   #end.here{opacity:1;pointer-events:auto;}
-  .end-inner{max-width:30rem;padding:0 28px;display:flex;flex-direction:column;gap:1.6rem;align-items:center;}
+  .end-inner{max-width:31rem;padding:0 28px;display:flex;flex-direction:column;gap:1.5rem;align-items:center;}
   #end h2{
     font-family:var(--serif);font-style:italic;font-weight:400;
     font-size:clamp(2.2rem,6vw,3.2rem);margin:0;color:var(--ember);
   }
   #end p{font-family:var(--serif);font-size:1rem;line-height:1.7;color:var(--mist);margin:0;}
+  #learnRow{display:flex;flex-direction:column;gap:.7rem;align-items:center;}
+  #learnRow .eyebrow{font-size:10px;}
   #again{
     font-family:var(--serif);font-style:italic;font-size:1.05rem;
     color:var(--ember);border:1px solid var(--ember-deep);
@@ -145,7 +178,7 @@
   #again:hover{background:var(--ember);color:var(--ground);}
 
   @media (prefers-reduced-motion:reduce){
-    #intro,#end{transition-duration:.3s;}
+    #intro,#end,#ask{transition-duration:.3s;}
   }
 </style>
 
@@ -161,49 +194,80 @@
     </div>
     <p class="lede">
       No score. No streak. Nothing to win. You play by breathing.
-      The orb sets a rhythm that lengthens your exhale — the fastest lever your
-      body has for trading cortisol for calm — then walks you toward the
-      warm, self-generated pleasure meditators call <em>pīti</em>.
-      Stay with it and the game slowly turns the lights down in your nervous system.
+      Four tides, drawn from pranayama, tantra and the Pali suttas —
+      each one a different way down from cortisol into the warm,
+      self-generated bliss meditators call <em>pīti</em>.
+      Along the way the tide will ask how it's going, and reshape itself around your answer.
     </p>
-    <ol class="phases">
-      <li><span class="n">i</span><span><b>The Sigh</b> — three physiological sighs to vent the pressure fast.</span></li>
-      <li><span class="n">ii</span><span><b>The Settle</b> — long exhales at ~5 breaths a minute, the HRV sweet spot your ring reads as <b>restored</b>.</span></li>
-      <li><span class="n">iii</span><span><b>The Glow</b> — rest attention on the most pleasant sensation you can find, and let it spread.</span></li>
-      <li><span class="n">iv</span><span><b>Slack Water</b> — nothing to do. Float.</span></li>
-    </ol>
+    <p id="remember"></p>
+    <div>
+      <div class="eyebrow" style="margin-bottom:.7rem">choose tonight's tide</div>
+      <div class="paths">
+        <button class="path" data-path="unwind" aria-pressed="true">
+          <span class="p-name">Unwind</span>
+          <span class="p-sub">Stressed → restored. Vent the pressure, balance the channels, settle into slow coherence.</span>
+          <span class="p-string">sighs · nadi shodhana · resonance · glow</span>
+        </button>
+        <button class="path" data-path="bliss" aria-pressed="false">
+          <span class="p-name">Bliss</span>
+          <span class="p-sub">The jhāna road. Steady the mind, hum the body open, then rest on pleasure until it blooms.</span>
+          <span class="p-string">sighs · resonance · bhramarī hum · pīti · jhāna</span>
+        </button>
+        <button class="path" data-path="rise" aria-pressed="false">
+          <span class="p-name">Rise</span>
+          <span class="p-sub">Gentle kundalinī. Breath drawn up the spine, agni stoked soft, ājñā touched lightly — then fully grounded. No forcing, ever.</span>
+          <span class="p-string">sighs · spinal breath · bindu · glow · grounding</span>
+        </button>
+        <button class="path" data-path="sleep" aria-pressed="false">
+          <span class="p-name">Sleep</span>
+          <span class="p-sub">Down and out. 4-7-8 to drop the heart rate, long exhales, then a slow melt toward the pillow.</span>
+          <span class="p-string">sighs · 4-7-8 · long exhale · body melt</span>
+        </button>
+      </div>
+    </div>
     <div class="len-row">
       <span class="eyebrow" style="margin-right:.4rem">length</span>
-      <button class="len" data-min="4" aria-pressed="false">4 min</button>
-      <button class="len" data-min="8" aria-pressed="true">8 min</button>
-      <button class="len" data-min="12" aria-pressed="false">12 min</button>
+      <button class="pill len" data-min="4" aria-pressed="false">4 min</button>
+      <button class="pill len" data-min="8" aria-pressed="true">8 min</button>
+      <button class="pill len" data-min="12" aria-pressed="false">12 min</button>
     </div>
     <button id="begin">begin the descent</button>
     <p class="fine">
-      Headphones help — the drone carries a slow 6&nbsp;Hz shimmer between your ears.
-      Sit or lie somewhere you won't be needed. Nose-breathe when you can.
+      Headphones help — the drone carries a slow 6&nbsp;Hz shimmer between your ears,
+      and the hum phase gives you a note to hum against.
+      <b>Rise is gentle by design</b>: short pauses, exhale-heavy, and it always banks the energy
+      back into the body at the end. If anything ever feels sharp or buzzy, just breathe normally —
+      the game follows you, never the other way round. Skip any hold that strains.
     </p>
   </div>
 </div>
 
 <div id="phaseLabel" class="eyebrow"></div>
 <div id="guidance" aria-live="polite"></div>
-<div id="hint"></div>
+<div id="mudra"></div>
 <div id="tide"></div>
 <button id="soundBtn" class="corner">sound · on</button>
 <button id="skipBtn" class="corner">skip →</button>
 
+<div id="ask" role="group">
+  <div id="askQ"></div>
+  <div class="ask-opts" id="askOpts"></div>
+</div>
+
 <div id="end">
   <div class="end-inner">
-    <div class="eyebrow">iv · slack water</div>
-    <h2>Restored.</h2>
-    <p>
-      What you just did — long exhales, five breaths a minute, attention resting
-      on pleasant sensation — is the physiological shape of <em>restored</em>:
-      high HRV, low pulse, parasympathetic tone. If you wore your ring,
-      it was listening. Do this daily, same hour, and the graph will start
-      saying what you already feel.
-    </p>
+    <div class="eyebrow" id="endEyebrow">slack water</div>
+    <h2 id="endTitle">Restored.</h2>
+    <p id="endCopy"></p>
+    <div id="learnRow">
+      <span class="eyebrow">what should the tide learn for next time?</span>
+      <div class="ask-opts">
+        <button class="pill learn" data-fb="warmer">more warmth</button>
+        <button class="pill learn" data-fb="stiller">more stillness</button>
+        <button class="pill learn" data-fb="lift">more lift</button>
+        <button class="pill learn" data-fb="shorter">shorter</button>
+      </div>
+    </div>
     <button id="again">sit again</button>
   </div>
 </div>
@@ -212,9 +276,23 @@
 (() => {
 'use strict';
 
-/* ================= configuration ================= */
-
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const lerp = (a, b, k) => a + (b - a) * k;
+const easeIO = p => 0.5 - 0.5 * Math.cos(Math.PI * p);
+
+/* ================= memory ================= */
+
+let MEM = { path:'unwind', mins:8, visits:0, fb:null };
+try {
+  const m = JSON.parse(localStorage.getItem('lowtide') || 'null');
+  if (m) MEM = Object.assign(MEM, m);
+} catch (e) {}
+function remember() {
+  try { localStorage.setItem('lowtide', JSON.stringify(MEM)); } catch (e) {}
+}
+
+/* ================= patterns ================= */
+/* seg: k(kind) d(seconds) b(breath target) t(guidance) side?('L'|'R') hum? */
 
 const SIGH = [
   {k:'in',  d:2.6, b:0.80, t:'breathe in through the nose…'},
@@ -227,73 +305,274 @@ const SETTLE = [
   {k:'out', d:7.0, b:0.08, t:'out — long, unhurried'},
   {k:'rest',d:0.8, b:0.08, t:''},
 ];
+const NADI = [
+  {k:'in',  d:4.0, b:0.90, side:'L', t:'thumb closes the right nostril — in through the left'},
+  {k:'hold',d:2.0, b:0.95, t:'a soft pause at the top — no straining'},
+  {k:'out', d:6.0, b:0.10, side:'R', t:'ring finger swaps sides — out through the right, long'},
+  {k:'in',  d:4.0, b:0.90, side:'R', t:'in through the right'},
+  {k:'hold',d:2.0, b:0.95, t:'pause — notice the stillness between the breaths'},
+  {k:'out', d:6.0, b:0.10, side:'L', t:'and out through the left, slower than feels necessary'},
+];
+const HUM = [
+  {k:'in',  d:4.0, b:0.92, t:'in through the nose, down into the belly'},
+  {k:'out', d:8.0, b:0.08, hum:true, t:'lips closed — hum low, like a bee.\nfeel it buzz in the skull and chest'},
+];
 const GLOW = [
   {k:'in',  d:5.5, b:0.90, t:null},
   {k:'out', d:5.5, b:0.10, t:null},
 ];
+const SPINAL = [
+  {k:'in',  d:5.0, b:0.92, t:'draw the breath up the spine — root to crown, like sipping through a straw'},
+  {k:'out', d:7.0, b:0.08, t:'and pour it back down the front, all the way to the floor of you'},
+];
+const FOUR78 = [
+  {k:'in',  d:4.0, b:0.92, t:'in through the nose, quietly'},
+  {k:'hold',d:7.0, b:0.97, t:'hold — soft jaw, soft eyes. skip this if it strains'},
+  {k:'out', d:8.0, b:0.06, t:'out through the mouth, a slow whoosh'},
+];
+const GROUNDB = [
+  {k:'in',  d:4.0, b:0.85, t:'in — feel the weight of the sit bones'},
+  {k:'out', d:8.0, b:0.06, t:'out — send the warmth down, like roots into dark earth'},
+  {k:'rest',d:1.0, b:0.06, t:''},
+];
+
+/* ================= prompts ================= */
 
 const GLOW_PROMPTS = [
-  'keep this easy rhythm.\nfind the most pleasant sensation anywhere in your body — warmth, tingling, the soft weight of your hands.',
-  'rest your attention on that pleasantness the way you’d watch a fire. no gripping. just stay.',
+  'the breath is steadier now. somewhere in the body there is already a pleasant sensation — the hands, the chest, the lips. find it.',
+  'move in and rest there. from here your only job is to do nothing.\nenjoying it is the practice.',
+  'no gripping, no chasing. let attention keep rolling back to the pleasantness like a ball to the low point of a bowl.',
   'let a faint smile arrive.\nnotice how the pleasantness answers it.',
-  'on each exhale, let the feeling spread — like warm water finding its level.',
-  'if it blooms, let it bloom.\nif it doesn’t, staying is enough.',
+  'if warmth swells, if shivers run, if waves want to move up your back — let them run. don’t brake, don’t steer. this is pīti.',
+  'and underneath the fizz, something quieter: sukha — contentment like warm honey.\nsettle into that layer.',
 ];
-const BLISS_PROMPTS = [
+const JHANA_PROMPTS = [
+  'one-pointed on the pleasure now. the watcher can go off duty.',
+  'nothing to maintain. the state holds itself, like a struck bell still ringing.',
+  'if it fades, smile again — the door reopens from the inside.',
+];
+const SPINAL_PROMPTS = [
+  'behind the navel sits a small sun — agni. each pass of the breath feeds it a little brighter.',
+  'a featherweight lift at the root as the breath rises. full release as it falls. the current answers softness, never force.',
+  'warmth at the sacrum, fizz along the back — that’s the current saying hello. anything sharp: lengthen the exhale, and it settles.',
+];
+const BINDU_PROMPTS = [
+  'let the closed eyes drift gently upward, toward the space between the brows — ājñā.',
+  'a single point of light. rest near it without pushing toward it.',
+  'if the gaze strains, let it sink down to the heart instead. same door, softer handle.',
+];
+const GROUND_PROMPTS = [
+  'now bank the fire. attention into the palms, the heels, the floor of the pelvis.',
+  'whatever rose, let it pour back down and soak in. you keep what you ground.',
+];
+const MELT_PROMPTS = [
+  'let the jaw hang from its hinges. the tongue heavy in the mouth.',
+  'the eyes melting back into their sockets. the shoulders sliding off the shelf.',
+  'each exhale, the bed holds a little more of your weight. you don’t have to finish this session.',
+];
+const SLACK_PROMPTS = [
   'nothing to do now. nowhere to be.',
   'let the breath breathe itself.',
   'you are an animal at rest in a safe place.',
   'stay as long as you like.',
 ];
 
-const segSum = p => p.reduce((s, x) => s + x.d, 0);
+const QUOTES = {
+  vbt:   {t:'“When the breath is all out, and stopped of itself — in that universal pause, the small self vanishes.”', s:'vijñāna bhairava tantra'},
+  hyp:   {t:'“When the breath wanders, the mind is unsteady. When the breath is still, the mind is still.”', s:'haṭha yoga pradīpikā · 2.2'},
+  anap:  {t:'“Breathing in, he experiences rapture. Breathing out, he calms the whole body.”', s:'ānāpānasati sutta'},
+  chand: {t:'“As vast as the space outside is the space within the lotus of the heart.”', s:'chāndogya upaniṣad · 8.1'},
+  dham:  {t:'“There is no fire like passion. There is no happiness higher than peace.”', s:'dhammapada'},
+};
 
-function buildSession(mins) {
-  const settleC = Math.round(mins * 1.1);
-  const glowC   = Math.round(mins * 1.6);
-  const used = 3 * segSum(SIGH) + settleC * segSum(SETTLE) + glowC * segSum(GLOW);
-  const blissDur = Math.max(45, mins * 60 - used);
-  return [
-    {key:'sigh',   label:'i · the sigh',    pattern:SIGH,   cycles:3},
-    {key:'settle', label:'ii · the settle', pattern:SETTLE, cycles:settleC},
-    {key:'glow',   label:'iii · the glow',  pattern:GLOW,   cycles:glowC, prompts:GLOW_PROMPTS},
-    {key:'bliss',  label:'iv · slack water',duration:blissDur, prompts:BLISS_PROMPTS},
-  ];
+const MUDRAS = {
+  gyan:   'gyān mudrā — index fingertips to thumb tips, hands resting heavy on the thighs',
+  dhyana: 'dhyāna mudrā — right hand cradled in the left in your lap, thumb tips touching. tongue resting lightly on the roof of the mouth',
+  vishnu: 'viṣṇu mudrā — right hand: fold index and middle finger to the palm. thumb closes the right nostril, ring finger the left',
+  shan:   'if you like — thumbs resting lightly over the ear openings while you hum (ṣaṇmukhī)',
+  root:   'gyān mudrā, spine tall — and on each inhale, a featherweight lift of the pelvic floor. release completely on the exhale',
+  sham:   'śāmbhavī — the closed-eye gaze floats gently up toward the brow. never strain it',
+  earth:  'palms down on the thighs — the earth-touching gesture',
+};
+
+/* ================= step builders ================= */
+
+const cyc = p => p.reduce((s, x) => s + x.d, 0);
+
+const B = {
+  sigh:   n => ({type:'breath', key:'sigh',   name:'the sigh',        pattern:SIGH,   cycles:n, visual:'orb'}),
+  settle: n => ({type:'breath', key:'settle', name:'the settle',      pattern:SETTLE, cycles:n, visual:'orb', mudra:MUDRAS.gyan}),
+  nadi:   n => ({type:'breath', key:'nadi',   name:'nadi shodhana',   pattern:NADI,   cycles:n, visual:'nostril', mudra:MUDRAS.vishnu}),
+  hum:    n => ({type:'breath', key:'hum',    name:'bhramarī',        pattern:HUM,    cycles:n, visual:'orb', audio:'hum', mudra:MUDRAS.shan}),
+  glow:   n => ({type:'breath', key:'glow',   name:'the glow',        pattern:GLOW,   cycles:n, visual:'orb', audio:'glow', mudra:MUDRAS.dhyana, prompts:GLOW_PROMPTS, promptEvery:2}),
+  spinal: n => ({type:'breath', key:'spinal', name:'the rising breath', pattern:SPINAL, cycles:n, visual:'channel', audio:'rise', mudra:MUDRAS.root, prompts:SPINAL_PROMPTS, promptEvery:3}),
+  four78: n => ({type:'breath', key:'four78', name:'4 · 7 · 8',       pattern:FOUR78, cycles:n, visual:'orb', mudra:MUDRAS.dhyana}),
+  ground: n => ({type:'breath', key:'ground', name:'grounding',       pattern:GROUNDB,cycles:n, visual:'ground', audio:'ground', mudra:MUDRAS.earth, prompts:GROUND_PROMPTS, promptEvery:3}),
+  bindu:  d => ({type:'free',   key:'bindu',  name:'bindu · ājñā',    duration:d, visual:'bindu', audio:'glow', mudra:MUDRAS.sham, prompts:BINDU_PROMPTS, promptEvery:16}),
+  jhana:  d => ({type:'free',   key:'jhana',  name:'jhāna',           duration:d, visual:'orb', audio:'glow', prompts:JHANA_PROMPTS, promptEvery:24}),
+  melt:   d => ({type:'free',   key:'melt',   name:'the melt',        duration:d, visual:'orb', audio:'sleep', prompts:MELT_PROMPTS, promptEvery:20}),
+  slack:  d => ({type:'free',   key:'slack',  name:'slack water',     duration:d, visual:'orb', audio:'slack', prompts:SLACK_PROMPTS, promptEvery:22}),
+  quote:  q => ({type:'quote',  dur:13, ...QUOTES[q]}),
+  ask:    (q, opts, def) => ({type:'ask', q, opts, def:def||0}),
+};
+
+function stepDur(s) {
+  if (s.type === 'breath') return cyc(s.pattern) * s.cycles;
+  if (s.type === 'free')   return s.duration;
+  if (s.type === 'quote')  return s.dur;
+  return 0; // asks pause the clock
 }
+
+/* ---- shared check-in after the sighs ---- */
+function askWater() {
+  return B.ask('the sighs are done.\nhow’s the water in there?', [
+    {label:'still churning', fx:(plan, i) => {
+      plan.splice(i + 1, 0, B.sigh(2));
+      S.exhaleBias = 1.15;
+    }},
+    {label:'settling', fx:null},
+    {label:'already soft', fx:(plan, i) => {
+      const nx = plan.slice(i + 1).find(s => s.type === 'breath');
+      if (nx) nx.cycles = Math.max(3, Math.round(nx.cycles * 0.7));
+    }},
+  ], 1);
+}
+
+/* ---- plan builders per path ---- */
+
+function buildPlan(path, m, fb) {
+  const glowMul   = fb === 'warmer'  ? 1.3 : 1;
+  const stillMul  = fb === 'stiller' ? 1.3 : 1;
+  const riseMul   = fb === 'lift'    ? 1.25 : 1;
+  let plan;
+
+  if (path === 'unwind') plan = [
+    B.sigh(3), askWater(),
+    B.nadi(Math.max(3, Math.round(m * 0.5))),
+    B.quote('hyp'),
+    B.settle(Math.max(4, Math.round(m * 1.0 * stillMul))),
+    B.glow(Math.max(4, Math.round(m * 0.8 * glowMul))),
+  ];
+
+  else if (path === 'bliss') plan = [
+    B.sigh(3), askWater(),
+    B.settle(Math.max(4, Math.round(m * 0.7 * stillMul))),
+    B.hum(Math.max(4, Math.round(m * 0.5))),
+    B.quote('anap'),
+    B.glow(Math.max(6, Math.round(m * 1.2 * glowMul))),
+    B.ask('before the door opens: what’s actually here?', [
+      {label:'warm tingling — it’s blooming', fx:(plan, i) => {
+        plan.splice(i + 1, 0, B.jhana(Math.round(m * 14)));
+      }},
+      {label:'pleasant, but faint', fx:(plan, i) => {
+        plan.splice(i + 1, 0, B.glow(3), B.jhana(Math.round(m * 8)));
+      }},
+      {label:'mostly thoughts', fx:(plan, i) => {
+        plan.splice(i + 1, 0, B.settle(4), B.jhana(Math.round(m * 6)));
+      }},
+    ], 1),
+  ];
+
+  else if (path === 'rise') plan = [
+    B.sigh(3), askWater(),
+    B.settle(Math.max(3, Math.round(m * 0.55))),
+    B.spinal(Math.max(6, Math.round(m * 1.1 * riseMul))),
+    B.ask('how strong is the current?', [
+      {label:'gentle warmth — keep going', fx:null},
+      {label:'strong — buzzing', fx:(plan, i) => {
+        // route around ājñā, straight to earth — the classical remedy
+        for (let j = plan.length - 1; j > i; j--)
+          if (plan[j].key === 'bindu' || plan[j].key === 'glow') plan.splice(j, 1);
+        const g = plan.slice(i + 1).find(s => s.key === 'ground');
+        if (g) g.cycles += 3;
+        S.exhaleBias = 1.2;
+      }},
+      {label:'nothing yet', fx:(plan, i) => {
+        plan.splice(i + 1, 0, B.spinal(3)); // that’s normal — the channel opens with repetition
+      }},
+    ], 0),
+    B.bindu(Math.max(40, Math.round(m * 7))),
+    B.quote('vbt'),
+    B.glow(Math.max(3, Math.round(m * 0.5 * glowMul))),
+    B.ground(5),
+  ];
+
+  else plan = [ // sleep
+    B.sigh(3), askWater(),
+    B.four78(4),
+    B.settle(Math.max(4, Math.round(m * 0.9 * stillMul))),
+    B.quote('chand'),
+    B.melt(Math.max(60, Math.round(m * 12))),
+  ];
+
+  // slack water fills whatever the chosen length has left
+  const used = plan.reduce((s, x) => s + stepDur(x), 0);
+  plan.push(B.slack(Math.max(40, m * 60 - used)));
+  return plan;
+}
+
+const END_COPY = {
+  unwind: {title:'Restored.', copy:'Long exhales, balanced channels, five breaths a minute — that is the physiological shape of “restored”: high HRV, low pulse, parasympathetic tone. If you wore your ring, it was listening. Same hour tomorrow, and the graph starts agreeing with you.'},
+  bliss:  {title:'Still ringing.', copy:'You set up the conditions and got out of the way — that’s all jhāna ever asks. Whatever bloomed tonight blooms easier tomorrow; the pathway remembers. Don’t chase it during the day. Just notice, once in a while, that pleasantness is available.'},
+  rise:   {title:'Banked.', copy:'The current you raised is soaked back into the body, which is exactly where it belongs — you keep what you ground. If you feel bright or buzzy later: feet on the earth, warm food, long exhales. The channel opens with gentle repetition, never with force.'},
+  sleep:  {title:'Adrift.', copy:'Leave this tab. Don’t review the day, don’t check anything. The 4-7-8 keeps lowering your heart rate for a while after you stop — let it carry you the rest of the way down.'},
+};
 
 /* ================= state ================= */
 
 const S = {
-  running:false, done:false,
-  mins:8, phases:null, total:0, elapsed:0,
-  pi:0, si:0, segT:0,
+  running:false, path:'unwind', mins:8,
+  plan:null, total:0, elapsed:0,
+  si:0,            // step index
+  segI:0, segT:0, cycles:0,
   breath:0.06, bFrom:0.06, bTo:0.06,
-  cycles:0, warm:0, holding:false,
-  promptIdx:-1, blissT:0, hintShown:false,
+  freeT:0, promptIdx:-1,
+  exhaleBias:1,
+  warm:0, holding:false,
+  asking:false, askTimer:null,
+  hintShown:false, humNow:false, nodeAwake:0,
 };
 
 /* ================= dom ================= */
 
 const $ = id => document.getElementById(id);
 const intro = $('intro'), phaseLabel = $('phaseLabel'), guidance = $('guidance'),
-      hint = $('hint'), tide = $('tide'), endPanel = $('end');
+      mudraEl = $('mudra'), tide = $('tide'), endPanel = $('end'),
+      askEl = $('ask'), askQ = $('askQ'), askOpts = $('askOpts');
 
 let guidanceText = '', guidanceTimer = null;
-function setGuidance(t) {
-  if (t === guidanceText) return;
-  guidanceText = t;
+function setGuidance(t, src) {
+  const key = t + (src || '');
+  if (key === guidanceText) return;
+  guidanceText = key;
   guidance.classList.add('fading');
   clearTimeout(guidanceTimer);
   guidanceTimer = setTimeout(() => {
     guidance.textContent = t;
+    if (src) {
+      const s = document.createElement('span');
+      s.className = 'src'; s.textContent = src;
+      guidance.appendChild(s);
+    }
     guidance.classList.remove('fading');
   }, 380);
+}
+
+let mudraTimer = null;
+function setMudra(t) {
+  clearTimeout(mudraTimer);
+  if (!t) { mudraEl.style.opacity = 0; return; }
+  mudraEl.innerHTML = '';
+  const b = document.createElement('b'); b.textContent = 'hands';
+  mudraEl.appendChild(b); mudraEl.appendChild(document.createTextNode(t));
+  mudraEl.style.opacity = 1;
+  mudraTimer = setTimeout(() => { mudraEl.style.opacity = 0; }, 18000);
 }
 
 /* ================= audio ================= */
 
 const AU = {
-  ctx:null, master:null, pad:null, filter:null, shimmer:null, noise:null,
+  ctx:null, master:null, pad:null, filter:null, shimmer:null, noise:null, humOsc:null, hum:null,
   on:true, lastB:-1, lastSet:0,
 
   init() {
@@ -306,7 +585,6 @@ const AU = {
     this.master.gain.exponentialRampToValueAtTime(1, t + 3);
     this.master.connect(C.destination);
 
-    // warm pad: detuned sines, split L/R for a 6 Hz theta beat
     this.filter = C.createBiquadFilter();
     this.filter.type = 'lowpass';
     this.filter.frequency.value = 360;
@@ -315,39 +593,38 @@ const AU = {
     this.pad.gain.value = 0.0001;
     this.filter.connect(this.pad).connect(this.master);
 
-    const voice = (freq, pan, level) => {
+    const voice = (freq, pan, level, dest) => {
       const o = C.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
       const g = C.createGain(); g.gain.value = level;
       const p = C.createStereoPanner ? C.createStereoPanner() : null;
-      if (p) { p.pan.value = pan; o.connect(g).connect(p).connect(this.filter); }
-      else o.connect(g).connect(this.filter);
+      if (p) { p.pan.value = pan; o.connect(g).connect(p).connect(dest); }
+      else o.connect(g).connect(dest);
       o.start();
       return o;
     };
-    voice(110, -0.65, 0.50);
-    voice(116,  0.65, 0.50);   // 6 Hz binaural beat
-    voice(55,   0.00, 0.30);
-    voice(165,  0.00, 0.12);
+    voice(110, -0.65, 0.50, this.filter);
+    voice(116,  0.65, 0.50, this.filter);   // 6 Hz theta binaural beat
+    voice(55,   0.00, 0.30, this.filter);
+    voice(165,  0.00, 0.12, this.filter);
 
-    // shimmer for the glow phase: slow-beating high pair
     this.shimmer = C.createGain(); this.shimmer.gain.value = 0.0001;
     this.shimmer.connect(this.master);
-    [[528, -0.4], [531.5, 0.4]].forEach(([f, pan]) => {
-      const o = C.createOscillator(); o.type = 'sine'; o.frequency.value = f;
-      const g = C.createGain(); g.gain.value = 0.5;
-      const p = C.createStereoPanner ? C.createStereoPanner() : null;
-      if (p) { p.pan.value = pan; o.connect(g).connect(p).connect(this.shimmer); }
-      else o.connect(g).connect(this.shimmer);
-      o.start();
-    });
+    voice(528, -0.4, 0.5, this.shimmer);
+    voice(531.5, 0.4, 0.5, this.shimmer);
 
-    // surf: looped soft noise, slow swell
+    // hummable C3 for bhramarī
+    this.hum = C.createGain(); this.hum.gain.value = 0.0001;
+    this.hum.connect(this.master);
+    voice(130.81, -0.2, 0.5, this.hum);
+    voice(131.3,   0.2, 0.5, this.hum);
+
+    // surf
     const len = 2 * C.sampleRate;
     const buf = C.createBuffer(1, len, C.sampleRate);
     const ch = buf.getChannelData(0);
     let last = 0;
     for (let i = 0; i < len; i++) {
-      last = last * 0.97 + (Math.random() * 2 - 1) * 0.03; // cheap pink-ish
+      last = last * 0.97 + (Math.random() * 2 - 1) * 0.03;
       ch[i] = last * 8;
     }
     const src = C.createBufferSource(); src.buffer = buf; src.loop = true;
@@ -361,7 +638,7 @@ const AU = {
     lfo.start();
   },
 
-  setBreath(b, warm) {
+  setBreath(b, warm, humNow) {
     if (!this.ctx) return;
     const now = performance.now();
     if (now - this.lastSet < 90 && Math.abs(b - this.lastB) < 0.02) return;
@@ -369,28 +646,33 @@ const AU = {
     const t = this.ctx.currentTime;
     this.pad.gain.setTargetAtTime(0.05 + 0.10 * b + 0.02 * warm, t, 0.25);
     this.filter.frequency.setTargetAtTime(300 + 180 * b + 120 * warm, t, 0.4);
+    this.hum.gain.setTargetAtTime(humNow ? 0.006 + 0.024 * (1 - b) : 0.0001, t, 0.5);
   },
 
-  setPhase(key) {
+  setMode(mode) {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
-    const shimmerLvl = key === 'glow' ? 0.016 : key === 'bliss' ? 0.008 : 0.0001;
-    this.shimmer.gain.setTargetAtTime(shimmerLvl, t, 4);
-    this.noise.gain.setTargetAtTime(key === 'bliss' ? 0.05 : 0.035, t, 3);
+    const sh = {glow:0.016, rise:0.006, slack:0.008}[mode] || 0.0001;
+    this.shimmer.gain.setTargetAtTime(sh, t, 4);
+    this.noise.gain.setTargetAtTime(mode === 'slack' || mode === 'ground' ? 0.05 : 0.035, t, 3);
+    if (mode === 'sleep') this.master.gain.setTargetAtTime(0.55, t, 20);
+  },
+
+  tone(freq, level, dur) {
+    if (!this.ctx || !this.on) return;
+    const C = this.ctx, t = C.currentTime;
+    const o = C.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
+    const g = C.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(level, t + 0.1);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(this.master);
+    o.start(t); o.stop(t + dur + 0.2);
   },
 
   chime() {
-    if (!this.ctx || !this.on) return;
-    const C = this.ctx, t = C.currentTime;
-    [523.25, 784].forEach((f, i) => {
-      const o = C.createOscillator(); o.type = 'triangle'; o.frequency.value = f;
-      const g = C.createGain();
-      g.gain.setValueAtTime(0.0001, t + i * 0.35);
-      g.gain.exponentialRampToValueAtTime(0.02, t + i * 0.35 + 0.08);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.35 + 4);
-      o.connect(g).connect(this.master);
-      o.start(t + i * 0.35); o.stop(t + i * 0.35 + 4.2);
-    });
+    this.tone(523.25, 0.02, 4);
+    setTimeout(() => this.tone(784, 0.018, 4), 350);
   },
 
   toggle() {
@@ -399,6 +681,9 @@ const AU = {
     this.master.gain.setTargetAtTime(this.on ? 1 : 0.0001, this.ctx.currentTime, 0.3);
   },
 };
+
+// pentatonic-ish ladder for the seven wheels, root to crown
+const NODE_TONES = [196, 220, 261.63, 293.66, 329.63, 392, 440];
 
 /* ================= canvas ================= */
 
@@ -412,51 +697,105 @@ function resize() {
 }
 addEventListener('resize', resize); resize();
 
-const rings = [];      // {r, a}
-const motes = [];      // {x, y, vy, sway, phase, size, a}
+const rings = [];
+const motes = [];
+function spawnRing(x, y, base) { if (!REDUCED) rings.push({ x, y, r: base, a: 0.28 }); }
 
-function spawnRing(base) { if (!REDUCED) rings.push({ r: base, a: 0.28 }); }
-
-function lerp(a, b, k) { return a + (b - a) * k; }
-const easeIO = p => 0.5 - 0.5 * Math.cos(Math.PI * p);
-
-function phaseWarmTarget() {
-  const key = S.phases ? S.phases[S.pi].key : 'sigh';
-  return key === 'glow' ? 1 : key === 'bliss' ? 0.75 : 0;
+/* eased visual params */
+const VIS = {
+  orbScale:1, orbY:0.44, channel:0, bindu:0, groundSink:0, side:0, warmth:0,
+  t:{orbScale:1, orbY:0.44, channel:0, bindu:0, groundSink:0, side:0, warmth:0},
+};
+function visFor(key) {
+  const v = {orbScale:1, orbY:0.44, channel:0, bindu:0, groundSink:0, warmth:0};
+  if (key === 'glow' || key === 'jhana') v.warmth = 1;
+  if (key === 'slack' || key === 'melt') v.warmth = 0.7;
+  if (key === 'hum') v.warmth = 0.45;
+  if (key === 'channel') { v.channel = 1; v.orbScale = 0.4; v.warmth = 0.5; }
+  if (key === 'bindu') { v.bindu = 1; v.orbScale = 0.16; v.orbY = 0.30; v.warmth = 0.9; }
+  if (key === 'ground') { v.groundSink = 1; v.orbY = 0.56; v.orbScale = 0.85; v.warmth = 0.35; }
+  return v;
 }
-let pw = 0; // phase warmth, eased
+function setVisual(stepKey, visual) {
+  const v = visFor(visual === 'channel' ? 'channel' : visual === 'bindu' ? 'bindu' :
+                   visual === 'ground' ? 'ground' : stepKey);
+  Object.assign(VIS.t, v);
+}
+
+function drawChannel(t) {
+  const a = VIS.channel;
+  if (a < 0.01) return;
+  const cxp = W / 2;
+  const yBot = H * 0.78, yTop = H * 0.16;
+  cx.strokeStyle = `rgba(232,162,107,${0.10 * a})`;
+  cx.lineWidth = 1;
+  cx.beginPath(); cx.moveTo(cxp, yBot); cx.lineTo(cxp, yTop); cx.stroke();
+
+  for (let i = 0; i < 7; i++) {
+    const y = lerp(yBot, yTop, i / 6);
+    const awake = i < S.nodeAwake ? 1 : 0.18;
+    const isAgni = i === 2;
+    const pulse = 0.75 + 0.25 * Math.sin(t * 0.001 + i);
+    const r = (isAgni ? 5.5 : 4) * (0.8 + 0.4 * awake);
+    const g = cx.createRadialGradient(cxp, y, 0, cxp, y, r * 4);
+    const col = isAgni ? '244,178,96' : '232,162,107';
+    g.addColorStop(0, `rgba(${col},${0.55 * awake * pulse * a})`);
+    g.addColorStop(1, `rgba(${col},0)`);
+    cx.fillStyle = g;
+    cx.fillRect(cxp - r * 4, y - r * 4, r * 8, r * 8);
+  }
+  // the pearl rides the breath
+  const py = lerp(yBot, yTop, S.breath);
+  const pg = cx.createRadialGradient(cxp, py, 0, cxp, py, 14);
+  pg.addColorStop(0, `rgba(252,226,178,${0.9 * a})`);
+  pg.addColorStop(1, 'rgba(252,226,178,0)');
+  cx.fillStyle = pg;
+  cx.fillRect(cxp - 14, py - 14, 28, 28);
+}
 
 function draw(dt, t) {
   cx.clearRect(0, 0, W, H);
-
-  // ground wash
   const bg = cx.createLinearGradient(0, 0, 0, H);
   bg.addColorStop(0, '#0d1411');
-  bg.addColorStop(1, '#121d16');
+  bg.addColorStop(1, VIS.groundSink > 0.5 ? '#17190f' : '#121d16');
   cx.fillStyle = bg; cx.fillRect(0, 0, W, H);
 
-  pw = lerp(pw, phaseWarmTarget(), 1 - Math.exp(-dt * 0.4));
-  const warm = Math.max(pw, S.warm * 0.5);
+  const k = 1 - Math.exp(-dt * 0.9);
+  for (const key in VIS.t) VIS[key] = lerp(VIS[key], VIS.t[key], k);
 
-  const cxp = W / 2, cyp = H * 0.44;
+  const warm = Math.max(VIS.warmth, S.warm * 0.5);
+  const cxp = W / 2, cyp = H * VIS.orbY;
   const minD = Math.min(W, H);
   const amp = REDUCED ? 0.10 : 0.30;
-  const R = minD * 0.16 * (0.82 + amp * S.breath);
+  const R = minD * 0.16 * VIS.orbScale * (0.82 + amp * S.breath);
 
-  // memory rings
+  drawChannel(t);
+
   for (let i = rings.length - 1; i >= 0; i--) {
     const g = rings[i];
     g.r += dt * minD * 0.015;
     g.a -= dt * 0.02;
     if (g.a <= 0.005) { rings.splice(i, 1); continue; }
     cx.beginPath();
-    cx.arc(cxp, cyp, g.r, 0, 7);
+    cx.arc(g.x, g.y, g.r, 0, 7);
     cx.strokeStyle = `rgba(${lerp(126,232,warm)|0},${lerp(148,178,warm)|0},${lerp(138,120,warm)|0},${g.a})`;
     cx.lineWidth = 1;
     cx.stroke();
   }
 
-  // halo
+  // nostril lobes for nadi shodhana: VIS.side eases -1(L)..1(R)
+  if (Math.abs(VIS.side) > 0.03) {
+    for (const s of [-1, 1]) {
+      const act = Math.max(0, s * VIS.side);
+      const lx = cxp + s * R * 2.3;
+      const lg = cx.createRadialGradient(lx, cyp, 0, lx, cyp, R * 1.1);
+      lg.addColorStop(0, `rgba(232,162,107,${0.05 + 0.22 * act})`);
+      lg.addColorStop(1, 'rgba(232,162,107,0)');
+      cx.fillStyle = lg;
+      cx.fillRect(lx - R * 1.1, cyp - R * 1.1, R * 2.2, R * 2.2);
+    }
+  }
+
   const haloR = R * 3.4;
   const halo = cx.createRadialGradient(cxp, cyp, R * 0.2, cxp, cyp, haloR);
   const ha = 0.10 + 0.10 * S.breath + 0.08 * warm;
@@ -465,16 +804,13 @@ function draw(dt, t) {
   cx.fillStyle = halo;
   cx.fillRect(cxp - haloR, cyp - haloR, haloR * 2, haloR * 2);
 
-  // orb body
   const core = cx.createRadialGradient(cxp, cyp - R * 0.15, R * 0.05, cxp, cyp, R);
-  const goldK = warm; // shift ember -> gold as warmth rises
-  core.addColorStop(0, `rgba(${lerp(244,252,goldK)|0},${lerp(205,226,goldK)|0},${lerp(160,178,goldK)|0},0.95)`);
-  core.addColorStop(0.55, `rgba(${lerp(232,242,goldK)|0},${lerp(162,196,goldK)|0},${lerp(107,128,goldK)|0},0.55)`);
+  core.addColorStop(0, `rgba(${lerp(244,252,warm)|0},${lerp(205,226,warm)|0},${lerp(160,178,warm)|0},0.95)`);
+  core.addColorStop(0.55, `rgba(${lerp(232,242,warm)|0},${lerp(162,196,warm)|0},${lerp(107,128,warm)|0},0.55)`);
   core.addColorStop(1, 'rgba(185,107,63,0)');
   cx.fillStyle = core;
   cx.beginPath(); cx.arc(cxp, cyp, R, 0, 7); cx.fill();
 
-  // hold ring — tightens while user holds the exhale
   if (S.warm > 0.02) {
     cx.beginPath();
     cx.arc(cxp, cyp, R * (1.25 - 0.1 * S.warm), 0, 7);
@@ -483,8 +819,7 @@ function draw(dt, t) {
     cx.stroke();
   }
 
-  // motes in the glow
-  if (!REDUCED && pw > 0.25 && motes.length < 42 && Math.random() < dt * 14 * pw) {
+  if (!REDUCED && VIS.warmth > 0.25 && motes.length < 42 && Math.random() < dt * 14 * VIS.warmth) {
     motes.push({
       x: cxp + (Math.random() * 2 - 1) * R * 2.4,
       y: cyp + R * (0.6 + Math.random() * 1.6),
@@ -492,16 +827,15 @@ function draw(dt, t) {
       sway: 6 + Math.random() * 14,
       phase: Math.random() * 7,
       size: 0.7 + Math.random() * 1.5,
-      a: 0,
-      life: 0,
+      life: 0, a: 0,
     });
   }
   for (let i = motes.length - 1; i >= 0; i--) {
     const m = motes[i];
     m.life += dt;
-    m.y -= m.vy * dt;
-    const fade = Math.min(1, m.life * 0.5) * Math.max(0, 1 - (cyp - m.y) / (H * 0.5));
-    m.a = 0.5 * fade * pw;
+    m.y -= m.vy * dt * (VIS.groundSink > 0.5 ? -0.6 : 1); // grounding: motes sink
+    const fade = Math.min(1, m.life * 0.5) * Math.max(0, 1 - Math.abs(cyp - m.y) / (H * 0.5));
+    m.a = 0.5 * fade * VIS.warmth;
     if (m.a <= 0.004 && m.life > 2) { motes.splice(i, 1); continue; }
     const mx = m.x + Math.sin(t * 0.0006 * m.sway + m.phase) * 8;
     cx.beginPath();
@@ -510,98 +844,189 @@ function draw(dt, t) {
     cx.fill();
   }
 
-  // vignette
   const vg = cx.createRadialGradient(cxp, H * 0.5, minD * 0.35, cxp, H * 0.5, Math.max(W, H) * 0.75);
   vg.addColorStop(0, 'rgba(13,20,17,0)');
   vg.addColorStop(1, 'rgba(9,14,11,0.75)');
   cx.fillStyle = vg; cx.fillRect(0, 0, W, H);
 }
 
-/* ================= session engine ================= */
+/* ================= engine ================= */
 
-function startPhase(i) {
-  S.pi = i; S.si = 0; S.segT = 0; S.cycles = 0;
-  S.promptIdx = -1; S.blissT = 0;
-  const ph = S.phases[i];
-  phaseLabel.textContent = ph.label;
-  AU.setPhase(ph.key);
+function romanize() {
+  const nums = ['i','ii','iii','iv','v','vi','vii','viii','ix','x'];
+  let n = 0;
+  for (const s of S.plan) if (s.type === 'breath' || s.type === 'free') s.roman = nums[n++] || '·';
+}
+
+function startStep(i) {
+  if (i >= S.plan.length) { finishSession(); return; }
+  S.si = i;
+  const st = S.plan[i];
+
+  if (st.type === 'ask') { openAsk(st); return; }
+
+  if (st.type === 'quote') {
+    phaseLabel.textContent = 'the old instruction';
+    setMudra(null);
+    setGuidance(st.t, st.s);
+    S.freeT = 0;
+    Object.assign(VIS.t, {side:0});
+    return;
+  }
+
+  phaseLabel.textContent = st.roman + ' · ' + st.name;
+  setMudra(st.mudra || null);
+  setVisual(st.key, st.visual);
+  AU.setMode(st.audio || 'default');
   if (i > 0) AU.chime();
-  if (ph.pattern) beginSegment();
-  else nextPrompt(ph); // bliss
+  S.cycles = 0; S.segI = 0; S.promptIdx = -1;
+  S.freeT = 0; S.nodeAwake = 0;
+  VIS.t.side = 0;
+
+  if (st.type === 'breath') beginSegment();
+  else nextPrompt(st);
 }
 
 function beginSegment() {
-  const ph = S.phases[S.pi];
-  const seg = ph.pattern[S.si];
+  const st = S.plan[S.si];
+  const seg = st.pattern[S.segI];
   S.segT = 0;
   S.bFrom = S.breath;
   S.bTo = seg.b;
-  if (ph.key === 'glow') {
-    // guidance comes from prompts; refresh every 2 cycles on the inhale
-    if (seg.k === 'in' && S.cycles % 2 === 0) nextPrompt(ph);
-  } else if (seg.t !== null && seg.t !== '') {
+  S.humNow = !!seg.hum;
+  if (seg.side) VIS.t.side = seg.side === 'L' ? -1 : 1;
+  else if (st.key !== 'nadi') VIS.t.side = 0;
+
+  if (st.prompts) {
+    if (seg === st.pattern[0] && S.cycles % st.promptEvery === 0) nextPrompt(st);
+  } else if (seg.t !== null && seg.t !== undefined && seg.t !== '') {
     setGuidance(seg.t);
   }
-  // one-time hold hint, mid-settle
-  if (ph.key === 'settle' && S.cycles === 2 && seg.k === 'in' && !S.hintShown) {
+
+  if (st.key === 'settle' && S.cycles === 2 && S.segI === 0 && !S.hintShown) {
     S.hintShown = true;
-    hint.textContent = 'if you like — press and hold anywhere during the exhale, let go when it ends';
-    hint.style.opacity = 1;
-    setTimeout(() => { hint.style.opacity = 0; }, 26000);
+    setMudra('or simply — press and hold anywhere during the exhale, let go when it ends');
   }
 }
 
-function nextPrompt(ph) {
-  S.promptIdx = Math.min(S.promptIdx + 1, ph.prompts.length - 1);
-  setGuidance(ph.prompts[S.promptIdx]);
+function nextPrompt(st) {
+  S.promptIdx = Math.min(S.promptIdx + 1, st.prompts.length - 1);
+  setGuidance(st.prompts[S.promptIdx]);
 }
 
-function finishSession() {
-  S.done = true; S.running = false;
-  AU.chime();
+function segDur(seg) {
+  return seg.k === 'out' ? seg.d * S.exhaleBias : seg.d;
+}
+
+function tickStep(dt) {
+  const st = S.plan[S.si];
+  if (!st || st.type === 'ask') return;
+  S.elapsed += dt;
+  tide.style.width = Math.max(0, 38 * (1 - S.elapsed / S.total)) + 'vw';
+
+  if (st.type === 'quote') {
+    S.freeT += dt;
+    S.breath = 0.3 + 0.2 * Math.sin(S.freeT * Math.PI * 2 / 10);
+    if (S.freeT >= st.dur) startStep(S.si + 1);
+    return;
+  }
+
+  if (st.type === 'free') {
+    S.freeT += dt;
+    S.breath = 0.35 + 0.25 * Math.sin(S.freeT * Math.PI * 2 / 12);
+    const pi = Math.floor(S.freeT / st.promptEvery);
+    if (pi !== S.promptIdx && pi < st.prompts.length) {
+      S.promptIdx = pi; setGuidance(st.prompts[pi]);
+    }
+    if (S.freeT >= st.duration) startStep(S.si + 1);
+    return;
+  }
+
+  // breath module
+  const seg = st.pattern[S.segI];
+  S.segT += dt;
+  const d = segDur(seg);
+  const p = Math.min(1, S.segT / d);
+  S.breath = lerp(S.bFrom, S.bTo, easeIO(p));
+
+  // channel nodes wake as the practice deepens
+  if (st.key === 'spinal') {
+    const target = Math.min(7, 1 + Math.floor(S.cycles * 7 / Math.max(1, st.cycles - 1)));
+    if (target > S.nodeAwake && seg.k === 'in' && p > 0.8) {
+      AU.tone(NODE_TONES[S.nodeAwake], 0.012, 3);
+      const yBot = H * 0.78, yTop = H * 0.16;
+      spawnRing(W / 2, lerp(yBot, yTop, S.nodeAwake / 6), 10);
+      S.nodeAwake = target;
+    }
+  }
+
+  if (S.segT >= d) {
+    S.segI++;
+    if (S.segI >= st.pattern.length) {
+      S.segI = 0; S.cycles++;
+      spawnRing(W / 2, H * VIS.orbY, Math.min(W, H) * 0.18 * VIS.orbScale);
+      if (S.cycles >= st.cycles) { startStep(S.si + 1); return; }
+    }
+    beginSegment();
+  }
+}
+
+/* ---- asks ---- */
+
+function openAsk(st) {
+  S.asking = true;
+  setMudra(null);
   setGuidance('');
+  phaseLabel.textContent = 'the tide asks';
+  askQ.textContent = st.q;
+  askOpts.innerHTML = '';
+  st.opts.forEach((o, idx) => {
+    const b = document.createElement('button');
+    b.className = 'pill';
+    b.textContent = o.label;
+    b.addEventListener('click', () => answerAsk(idx));
+    askOpts.appendChild(b);
+  });
+  askEl.classList.add('here');
+  clearTimeout(S.askTimer);
+  S.askTimer = setTimeout(() => answerAsk(st.def), 22000);
+}
+
+function answerAsk(idx) {
+  if (!S.asking) return;
+  S.asking = false;
+  clearTimeout(S.askTimer);
+  askEl.classList.remove('here');
+  const st = S.plan[S.si];
+  const opt = st.opts[idx];
+  if (opt && opt.fx) {
+    opt.fx(S.plan, S.si);
+    romanize();
+    S.total = S.plan.reduce((s, x) => s + stepDur(x), 0);
+  }
+  startStep(S.si + 1);
+}
+
+/* ---- finish ---- */
+
+function finishSession() {
+  S.running = false;
+  const quiet = S.path === 'sleep';
+  if (!quiet) AU.chime();
+  setGuidance(''); setMudra(null);
   document.body.classList.remove('live');
+  askEl.classList.remove('here');
+  const e = END_COPY[S.path];
+  $('endTitle').textContent = e.title;
+  $('endCopy').textContent = e.copy;
+  $('endEyebrow').textContent = 'slack water · ' + S.path;
   endPanel.classList.add('here');
   if (AU.ctx) {
     AU.pad.gain.setTargetAtTime(0.02, AU.ctx.currentTime, 6);
     AU.shimmer.gain.setTargetAtTime(0.0001, AU.ctx.currentTime, 6);
+    if (quiet) AU.master.gain.setTargetAtTime(0.12, AU.ctx.currentTime, 15);
   }
-}
-
-function tickSession(dt) {
-  S.elapsed += dt;
-  tide.style.width = Math.max(0, 38 * (1 - S.elapsed / S.total)) + 'vw';
-
-  const ph = S.phases[S.pi];
-
-  if (!ph.pattern) { // slack water: breath drifts on its own
-    S.blissT += dt;
-    S.breath = 0.35 + 0.25 * Math.sin(S.blissT * Math.PI * 2 / 12);
-    const pi = Math.floor(S.blissT / 22);
-    if (pi !== S.promptIdx && pi < ph.prompts.length) {
-      S.promptIdx = pi; setGuidance(ph.prompts[pi]);
-    }
-    if (S.blissT >= ph.duration) finishSession();
-    return;
-  }
-
-  const seg = ph.pattern[S.si];
-  S.segT += dt;
-  const p = Math.min(1, S.segT / seg.d);
-  S.breath = lerp(S.bFrom, S.bTo, easeIO(p));
-
-  if (S.segT >= seg.d) {
-    S.si++;
-    if (S.si >= ph.pattern.length) {
-      S.si = 0; S.cycles++;
-      spawnRing(Math.min(W, H) * 0.18);
-      if (S.cycles >= ph.cycles) {
-        if (S.pi + 1 < S.phases.length) { startPhase(S.pi + 1); return; }
-        finishSession(); return;
-      }
-    }
-    beginSegment();
-  }
+  MEM.visits++; remember();
 }
 
 /* ================= main loop ================= */
@@ -610,12 +1035,10 @@ let lastT = 0;
 function frame(t) {
   const dt = Math.min(0.1, (t - lastT) / 1000 || 0);
   lastT = t;
-
-  // hold warmth eases toward held state
   S.warm = lerp(S.warm, S.holding ? 1 : 0, 1 - Math.exp(-dt * 3));
-
-  if (S.running) tickSession(dt);
-  AU.setBreath(S.breath, S.warm);
+  if (S.running && !S.asking) tickStep(dt);
+  if (S.asking) S.breath = 0.3 + 0.2 * Math.sin(t * 0.0006);
+  AU.setBreath(S.breath, S.warm, S.humNow && S.running);
   draw(dt, t);
   requestAnimationFrame(frame);
 }
@@ -623,35 +1046,59 @@ requestAnimationFrame(frame);
 
 /* ================= wiring ================= */
 
-document.querySelectorAll('.len').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.len').forEach(b => b.setAttribute('aria-pressed', 'false'));
-    btn.setAttribute('aria-pressed', 'true');
-    S.mins = +btn.dataset.min;
-  });
-});
+function selectPill(sel, attr, val) {
+  document.querySelectorAll(sel).forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset[attr] === String(val))));
+}
 
-$('begin').addEventListener('click', () => {
-  S.phases = buildSession(S.mins);
-  S.total = S.mins * 60;
-  S.elapsed = 0; S.done = false; S.hintShown = false;
-  try { AU.init(); } catch (e) { /* keep it silent */ }
-  intro.classList.add('gone');
+document.querySelectorAll('.len').forEach(btn =>
+  btn.addEventListener('click', () => { S.mins = +btn.dataset.min; selectPill('.len', 'min', S.mins); }));
+document.querySelectorAll('.path').forEach(btn =>
+  btn.addEventListener('click', () => { S.path = btn.dataset.path; selectPill('.path', 'path', S.path); }));
+
+/* restore memory into the intro */
+if (MEM.visits > 0) {
+  S.path = MEM.path; S.mins = MEM.mins;
+  if (MEM.fb === 'shorter') S.mins = Math.max(4, S.mins === 12 ? 8 : 4);
+  if (MEM.fb === 'lift') S.path = 'rise';
+  selectPill('.path', 'path', S.path);
+  selectPill('.len', 'min', S.mins);
+  const r = $('remember');
+  r.style.display = 'block';
+  r.textContent = 'welcome back — sit ' + (MEM.visits + 1) + '. the tide remembered your last shape' +
+    (MEM.fb ? ' and made it ' + {warmer:'warmer', stiller:'stiller', lift:'higher', shorter:'shorter'}[MEM.fb] + '.' : '.');
+}
+
+function startSession() {
+  S.plan = buildPlan(S.path, S.mins, MEM.fb);
+  romanize();
+  S.total = S.plan.reduce((s, x) => s + stepDur(x), 0);
+  S.elapsed = 0; S.exhaleBias = 1; S.hintShown = false;
+  MEM.path = S.path; MEM.mins = S.mins; remember();
+  rings.length = 0; motes.length = 0;
   document.body.classList.add('live');
   S.running = true;
-  startPhase(0);
+  startStep(0);
+}
+
+$('begin').addEventListener('click', () => {
+  try { AU.init(); } catch (e) {}
+  intro.classList.add('gone');
+  startSession();
 });
 
 $('again').addEventListener('click', () => {
   endPanel.classList.remove('here');
-  rings.length = 0; motes.length = 0;
-  S.elapsed = 0; S.done = false;
-  S.phases = buildSession(S.mins);
-  document.body.classList.add('live');
-  S.running = true;
+  document.querySelectorAll('.learn').forEach(b => b.setAttribute('aria-pressed', 'false'));
   if (AU.ctx) AU.master.gain.setTargetAtTime(AU.on ? 1 : 0.0001, AU.ctx.currentTime, 1);
-  startPhase(0);
+  startSession();
 });
+
+document.querySelectorAll('.learn').forEach(btn =>
+  btn.addEventListener('click', () => {
+    MEM.fb = btn.dataset.fb; remember();
+    document.querySelectorAll('.learn').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+  }));
 
 $('soundBtn').addEventListener('click', () => {
   AU.toggle();
@@ -660,11 +1107,10 @@ $('soundBtn').addEventListener('click', () => {
 
 $('skipBtn').addEventListener('click', () => {
   if (!S.running) return;
-  if (S.pi + 1 < S.phases.length) startPhase(S.pi + 1);
-  else finishSession();
+  if (S.asking) { S.asking = false; clearTimeout(S.askTimer); askEl.classList.remove('here'); }
+  startStep(S.si + 1);
 });
 
-// press-and-hold: the exhale anchor
 const holdOn  = e => { if (S.running && !e.target.closest('button')) S.holding = true; };
 const holdOff = () => { S.holding = false; };
 addEventListener('pointerdown', holdOn);
