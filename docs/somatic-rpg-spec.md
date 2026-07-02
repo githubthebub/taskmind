@@ -239,7 +239,37 @@ Before any efficacy language ("reduces stress") appears anywhere:
 
 ---
 
-## 7. Open design questions
+## 7. Second iteration — design-review additions
+
+A design-review pass drew on themes from the public work of four commentators (Judy Ho; Alok Kanojia / HealthyGamerGG; Jordan Peterson; Steven "Destiny" Bonnell — none affiliated with or endorsing this project) and translated each into an evidence-checked mechanic:
+
+### 7.1 Pre/post check-in (measurement-first clinical psychology)
+
+An optional one-tap 0–10 "how tight does today feel?" question before Room 1 and again in Room 6, with the delta shown neutrally ("arrived at 7 · leaving at 3") and stored locally (last ~40 visits, no network, no streaks, no reminders). This implements Section 6's primary outcome measure *inside* the artifact — every session self-tests. Copy for a non-improving delta is explicitly non-judgmental ("that's information, not failure"). Declining the question ("rather not say") skips both ends.
+
+**Evidence flag:** measurement, not mechanism — no claim attached.
+
+### 7.2 Affect labeling — "name the pack" (precision-of-speech + labeling research)
+
+Room 4 opens with an optional one-word naming of what's being carried ("if this pack had a name — one word is enough — what would it be? Be precise if you can"). The word, if given, is woven into the rejoin line and the closing beat. **Evidence flag: moderately supported** — affect labeling (putting precise words on an emotional state) reduces self-reported distress and amygdala reactivity in lab studies; a single word in a 5-minute app is a light dose, so no outcome claim.
+
+### 7.3 Mind-wandering normalization (meditation-teaching psychiatry)
+
+The Hearth adds one line: wandering is what minds do, and returning to the ember "is the practice, not staying." Standard mindfulness instruction; reduces the failure-feeling that makes novices abandon breath practices. **Evidence flag: well-supported as instructional framing** (it's how the practices that carry the evidence are actually taught).
+
+### 7.4 Voluntary carry — "choose one strap" (voluntary-burden framing + implementation intentions)
+
+Room 6 adds a reflective prompt: choose *one* small thing from the pack to carry on purpose tomorrow, "with a when and a where," instead of picking everything back up by default. No typing, no commitment mechanism — purely reflective. **Evidence flag: split.** Specific if-then planning is well supported for follow-through (implementation-intention literature); the claim that a *chosen* burden reduces tonight's stress is a reframe, plausible but unproven, and the copy claims nothing.
+
+### 7.5 Plain mode (the skeptic's door)
+
+A second telling selectable at the start: **"keep it plain"** — same six techniques, same pacing and branches, but no fiction; each room instead opens with one honest sentence about the mechanism and the strength of its evidence (including the hedge on self-touch: "promising, not proven"). Serves users for whom narrative framing reads as woo and *increases* resistance. Bonus: plain mode is exactly the "prompts-only variant" Section 8's open question asked for, so mode choice becomes a natural comparison arm in the pilot (compare pre/post deltas by mode, self-selected — note the selection confound; randomize in a formal test).
+
+### 7.6 The honesty ledger ("how this works")
+
+After the end screen, a faint optional link reveals a plain-language version of Section 6's claim ledger — each technique labeled *well studied / decent evidence / early evidence / thin evidence / practice-not-proof*, and the 0–10 question labeled "not a technique — it's measurement, so you don't have to take our word for it." Radical transparency as a trust mechanic; also inoculates against overclaiming.
+
+## 8. Open design questions
 
 - Should Room 2's breath count adapt (offer 4-in/6-out vs. "breathe at whatever slow pace feels easy") based on a first-run question? Simpler is likely better; test both.
 - Whether Room 4's branch question ("buzzy vs. heavy") is answerable by most users, or needs example language. Pilot with think-aloud sessions.

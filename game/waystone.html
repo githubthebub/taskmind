@@ -125,7 +125,8 @@
     text-align: left;
   }
   .cont:hover { border-bottom-color: var(--ember); }
-  .cont:focus-visible, .skip:focus-visible, .choice:focus-visible {
+  .cont:focus-visible, .skip:focus-visible, .choice:focus-visible,
+  .chip:focus-visible, .nameline input:focus-visible {
     outline: 1px solid var(--ember);
     outline-offset: 4px;
   }
@@ -147,6 +148,49 @@
   .choice:hover { border-color: var(--ember); background: var(--dusk); }
   .choice .k-label { display: block; font-style: italic; font-size: 1.3rem; line-height: 1.4; }
   .choice .k-desc  { display: block; color: var(--faded); font-size: 1.1rem; line-height: 1.5; margin-top: .15rem; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: .55rem; padding-top: .4rem; align-items: center; }
+  .chip {
+    min-width: 2.4rem;
+    height: 2.4rem;
+    background: none;
+    border: 1px solid var(--ash);
+    border-radius: 2px;
+    color: var(--moth);
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: .85rem;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: border-color .3s ease, background-color .3s ease;
+  }
+  .chip:hover { border-color: var(--ember); background: var(--dusk); }
+  .chip.pass {
+    border: none;
+    border-bottom: 1px dotted var(--faded);
+    border-radius: 0;
+    color: var(--faded);
+    font-family: inherit;
+    font-style: italic;
+    font-size: 1.05rem;
+    min-width: 0;
+    height: auto;
+    padding: 0 .1rem .2rem;
+    margin-left: .5rem;
+  }
+
+  .nameline { display: flex; flex-wrap: wrap; gap: 1rem 1.4rem; align-items: baseline; padding-top: .3rem; }
+  .nameline input {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--ash);
+    color: var(--moth);
+    font-family: inherit;
+    font-style: italic;
+    font-size: 1.35rem;
+    padding: .1rem .15rem .25rem;
+    width: 12ch;
+  }
+  .nameline input:focus { border-bottom-color: var(--ember); outline: none; }
 
   .pacer { text-align: center; padding: 1.6rem 0 .4rem; }
   .halo {
@@ -210,6 +254,24 @@
     min-height: 1.3em;
   }
 
+  .delta {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    text-transform: uppercase;
+    font-size: .8rem;
+    letter-spacing: .28em;
+    color: var(--ember);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lastvisit {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    text-transform: uppercase;
+    font-size: .66rem;
+    letter-spacing: .25em;
+    color: var(--faded);
+    font-variant-numeric: tabular-nums;
+  }
+
   .ending {
     text-align: center;
     font-style: italic;
@@ -224,6 +286,19 @@
     letter-spacing: .35em;
     color: var(--faded);
     padding-top: 2rem;
+  }
+  .howwrap { text-align: center; padding-top: 1.5rem; }
+
+  .notes { display: flex; flex-direction: column; gap: 1.1rem; padding-top: 1rem; }
+  .notes p { color: var(--faded); font-size: 1.12rem; line-height: 1.6; margin: 0; }
+  .notes .lvl {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    text-transform: uppercase;
+    font-size: .62rem;
+    letter-spacing: .2em;
+    color: var(--ember);
+    display: block;
+    margin-bottom: .2rem;
   }
 
   #waymarks {
@@ -250,7 +325,7 @@
     .fade { transition: none; transform: none; }
     .room { transition: none; }
     .core { transition: none !important; }
-    .choice { transition: none; }
+    .choice, .chip { transition: none; }
     #waymarks { transition: none; }
     #waymarks span { transition: none; }
   }
@@ -270,11 +345,20 @@
   var waymarks = document.getElementById('waymarks');
   var current = null;
 
+  var mode = 'tale';        // 'tale' | 'plain'
+  var packName = null;      // the one-word name, if given
+  var pre = null, post = null;
+
   function el(tag, cls, html) {
     var n = document.createElement(tag);
     if (cls) n.className = cls;
     if (html != null) n.innerHTML = html;
     return n;
+  }
+  function esc(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
   }
   function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
   function reveal(n) {
@@ -284,6 +368,24 @@
   }
   function bringIn(n) {
     n.scrollIntoView({ behavior: motionOK ? 'smooth' : 'auto', block: 'nearest' });
+  }
+
+  /* pick the copy for the current mode; null means "skip this line here" */
+  function T(tale, plain) {
+    if (arguments.length < 2) plain = tale;
+    return mode === 'tale' ? tale : plain;
+  }
+
+  function loadVisits() {
+    try { return JSON.parse(localStorage.getItem('waystone-visits') || '[]'); }
+    catch (e) { return []; }
+  }
+  function saveVisit(v) {
+    try {
+      var vs = loadVisits();
+      vs.push(v);
+      localStorage.setItem('waystone-visits', JSON.stringify(vs.slice(-40)));
+    } catch (e) { /* private mode etc. — the visit still counts */ }
   }
 
   async function room(label) {
@@ -304,6 +406,7 @@
   }
 
   async function para(text, cls) {
+    if (text == null) return null;
     var p = el('p', (cls || 'fiction') + ' fade', text);
     current.appendChild(p);
     reveal(p);
@@ -313,7 +416,7 @@
   }
 
   async function sep() {
-    var s = el('div', 'sep fade', '·   ·   ·');
+    var s = el('div', 'sep fade', '·   ·   ·');
     current.appendChild(s);
     reveal(s);
     await sleep(motionOK ? 500 : 40);
@@ -344,9 +447,11 @@
         if (opt.desc) b.appendChild(el('span', 'k-desc', opt.desc));
         b.addEventListener('click', function () {
           box.remove();
-          var echo = el('p', 'echo fade', '— ' + opt.echo);
-          current.appendChild(echo);
-          reveal(echo);
+          if (opt.echo) {
+            var echo = el('p', 'echo fade', '— ' + opt.echo);
+            current.appendChild(echo);
+            reveal(echo);
+          }
           res(opt.key);
         });
         box.appendChild(b);
@@ -358,14 +463,72 @@
     });
   }
 
-  function setMark(i) {
-    waymarks.classList.add('visible');
-    var dots = waymarks.children;
-    for (var d = 0; d < dots.length; d++) dots[d].classList.toggle('on', d === i);
+  /* 0–10 check-in chips. Resolves to a number or null ("rather not say"). */
+  function rating() {
+    return new Promise(function (res) {
+      var box = el('div', 'chips fade');
+      function pick(v, label) {
+        box.remove();
+        var echo = el('p', 'echo fade', '— ' + label);
+        current.appendChild(echo);
+        reveal(echo);
+        res(v);
+      }
+      for (var i = 0; i <= 10; i++) (function (v) {
+        var b = el('button', 'chip', String(v));
+        b.addEventListener('click', function () { pick(v, String(v) + ' out of 10'); });
+        box.appendChild(b);
+      })(i);
+      var pass = el('button', 'chip pass', 'rather not say');
+      pass.addEventListener('click', function () { pick(null, 'you keep the number to yourself'); });
+      box.appendChild(pass);
+      current.appendChild(box);
+      reveal(box);
+      bringIn(box);
+    });
   }
 
-  /* A slow line of dots — used for holds and the shake-out. Never a countdown
-     against the player; just company while they do the thing. */
+  /* one-word naming — affect labeling, entirely optional */
+  function nameInput() {
+    return new Promise(function (res) {
+      var line = el('div', 'nameline fade');
+      var input = el('input');
+      input.maxLength = 24;
+      input.setAttribute('aria-label', 'one word for the pack');
+      input.setAttribute('autocomplete', 'off');
+      input.setAttribute('spellcheck', 'false');
+      var ok = el('button', 'cont', 'name it →');
+      var no = el('button', 'chip pass', 'leave it unnamed');
+      function done(v) {
+        line.remove();
+        if (v) {
+          var echo = el('p', 'echo fade');
+          echo.textContent = '— you call it “' + v + '”';
+          current.appendChild(echo);
+          reveal(echo);
+        } else {
+          var e2 = el('p', 'echo fade', '— it stays unnamed, and that’s allowed');
+          current.appendChild(e2);
+          reveal(e2);
+        }
+        res(v || null);
+      }
+      ok.addEventListener('click', function () { done(input.value.trim()); });
+      input.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') done(input.value.trim());
+      });
+      no.addEventListener('click', function () { done(null); });
+      line.appendChild(input);
+      line.appendChild(ok);
+      line.appendChild(no);
+      current.appendChild(line);
+      reveal(line);
+      bringIn(line);
+      setTimeout(function () { input.focus({ preventScroll: true }); }, 50);
+    });
+  }
+
+  /* A slow line of dots — company, never a countdown against the player. */
   async function pacedDots(prefix, n, secsPer) {
     var p = el('p', 'count fade', prefix);
     current.appendChild(p);
@@ -378,15 +541,15 @@
     await sleep(400);
   }
 
-  /* The hearth's breathing ember: 4 counts in, 6 counts out. */
+  /* The breathing ember: 4 counts in, 6 counts out. */
   async function breathSet(rounds) {
     var skipped = false;
     var pacer = el('div', 'pacer fade');
     var halo = el('div', 'halo');
     var core = el('span', 'core');
     halo.appendChild(core);
-    var phase = el('p', 'phase', ' ');
-    var round = el('p', 'round', ' ');
+    var phase = el('p', 'phase', ' ');
+    var round = el('p', 'round', ' ');
     var skip = el('button', 'skip', 'skip ahead');
     pacer.appendChild(halo);
     pacer.appendChild(phase);
@@ -422,11 +585,15 @@
       core.style.transitionDuration = '2s';
       core.classList.remove('in');
     }
-    phase.textContent = ' ';
-    round.textContent = skipped ? ' ' : 'done';
+    phase.textContent = ' ';
+    round.textContent = skipped ? ' ' : 'done';
     skip.remove();
     await sleep(motionOK ? 900 : 100);
   }
+
+  var settleWord = function () {
+    return packName ? '“' + esc(packName) + '”' : T('the pack', 'the weight');
+  };
 
   async function run() {
 
@@ -444,56 +611,108 @@
       'invitation — you can skip anything, keep your eyes open, and leave whenever ' +
       'you like. This isn’t therapy, or a substitute for it. It’s a short guided pause.',
       'quiet');
-    await cont('set out');
 
-    /* ---- I · the path at dusk ------------------------------------- */
-    await room('I · the path at dusk');
-    setMark(0);
-    await para(
-      'You’ve been walking a long time. The pack is heavy — you stopped noticing ' +
-      'it miles ago, which is how the heavy ones work.');
-    await para(
-      'Ahead, a low stone shelter with a light in the window. A waystone. ' +
-      'You stop at the edge of its clearing.');
+    var visits = loadVisits();
+    var lastRated = null;
+    for (var vi = visits.length - 1; vi >= 0; vi--) {
+      if (visits[vi] && visits[vi].pre != null && visits[vi].post != null) { lastRated = visits[vi]; break; }
+    }
+    if (lastRated) {
+      await para('last visit · ' + lastRated.pre + ' → ' + lastRated.post, 'lastvisit');
+    }
+
     await sep();
     await para(
+      'One question before you set out, so you can see for yourself whether any of ' +
+      'this does anything: how tight does today feel, right now — 0 is loose, 10 is ' +
+      'wound to the last thread?', 'prompt');
+    pre = await rating();
+
+    await para(
+      'And choose how you’d like the road told. Same five minutes, same steps either way.',
+      'prompt');
+    mode = await choice([
+      {
+        key: 'tale', label: 'set out into the tale',
+        desc: 'a traveler, a shelter at dusk, a pack that needs setting down'
+      },
+      {
+        key: 'plain', label: 'keep it plain',
+        desc: 'no story — just what to do, and honestly, why it might work'
+      }
+    ]);
+
+    /* ---- I -------------------------------------------------------- */
+    await room(T('I · the path at dusk', 'I · look around'));
+    setMark(0);
+    await para(T(
+      'You’ve been walking a long time. The pack is heavy — you stopped noticing ' +
+      'it miles ago, which is how the heavy ones work.', null));
+    await para(T(
+      'Ahead, a low stone shelter with a light in the window. A waystone. ' +
+      'You stop at the edge of its clearing.', null));
+    await para(T(null,
+      'A stressed system scans for trouble, and the scanning itself keeps the ' +
+      'stress going. Letting your eyes move slowly, with nothing to find, is a ' +
+      'quiet way of telling it the coast is clear.'), 'quiet');
+    await sep();
+    await para(T(
       'Before you go in: let your eyes wander around the room you’re actually in. ' +
       'Slowly, the way the traveler takes in the clearing. Find three things you ' +
       'hadn’t noticed today — a color, a shadow, the way light lands on something. ' +
-      'There’s no hurry here.', 'prompt');
+      'There’s no hurry here.',
+      'Let your eyes wander around the room. Slowly — slower than feels useful. ' +
+      'Find three things you hadn’t noticed today: a color, a shadow, the way ' +
+      'light lands on something. There’s no hurry.'), 'prompt');
     await cont('when your eyes have had a look around');
 
-    /* ---- II · the hearth ------------------------------------------ */
-    await room('II · the hearth');
+    /* ---- II ------------------------------------------------------- */
+    await room(T('II · the hearth', 'II · breathe slower out than in'));
     setMark(1);
-    await para(
+    await para(T(
       'Inside, a small fire. The keeper is out, but the kettle is warm and the bench ' +
-      'is near. The fire seems to breathe — brightening gently, then settling.');
+      'is near. The fire seems to breathe — brightening gently, then settling.', null));
+    await para(T(null,
+      'This is the best-evidenced thing in here. Your heart naturally slows a ' +
+      'little on every exhale; stretching the exhale leans on that lever. Four ' +
+      'counts in, six counts out, six rounds.'), 'quiet');
     await sep();
-    await para(
+    await para(T(
       'Breathe with it. In through your nose while the ember brightens — about four ' +
       'counts. Out slowly, like you’re cooling tea, while it settles — about six. ' +
       'If those counts feel wrong for your body, use your own. Six rounds, together.',
-      'prompt');
+      'Breathe with the ember. In through your nose while it brightens — about four ' +
+      'counts. Out slowly, like you’re cooling tea, while it settles — about six. ' +
+      'If those counts feel wrong for your body, use your own.'), 'prompt');
+    await para(
+      'Your mind will wander off down the road at some point. That’s what minds do — ' +
+      'it isn’t a mistake. Coming back to the ember is the practice, not staying.',
+      'quiet');
     await breathSet(6);
-    await para('The fire holds its glow a little steadier now.', 'quiet');
+    await para(T('The fire holds its glow a little steadier now.',
+      'Six rounds down. If it felt awkward, that’s normal on the first few visits.'), 'quiet');
     var again = await choice([
-      { key: 'on', label: 'carry on', echo: 'you carry on', desc: '' },
-      { key: 'more', label: 'once more', desc: 'six more rounds with the fire', echo: 'you stay with the fire a while longer' }
+      { key: 'on', label: 'carry on', echo: '' },
+      { key: 'more', label: 'once more', desc: 'six more rounds with the ember', echo: 'you stay with the fire a while longer' }
     ]);
     if (again === 'more') {
       await breathSet(6);
       await cont('carry on');
     }
 
-    /* ---- III · the well ------------------------------------------- */
-    await room('III · the well');
+    /* ---- III ------------------------------------------------------ */
+    await room(T('III · the well', 'III · notice, without fixing'));
     setMark(2);
-    await para(
+    await para(T(
       'Behind the shelter there’s a stone well. Travelers pause here to look — not ' +
-      'to draw water, just to see what the water is doing today.');
+      'to draw water, just to see what the water is doing today.', null));
+    await para(T(null,
+      'Attending to a sensation without trying to change it tends to loosen its ' +
+      'grip. If pointing attention inward isn’t good for you today, pointing it at ' +
+      'an object trains the same muscle — both doors count.'), 'quiet');
     await sep();
-    await para('Your turn. You can look inward or outward — both count.', 'prompt');
+    await para(T('Your turn. You can look inward or outward — both count.',
+      'Pick a door.'), 'prompt');
     var well = await choice([
       {
         key: 'in', label: 'look inward', echo: 'you look inward',
@@ -505,27 +724,43 @@
       }
     ]);
     if (well === 'in') {
-      await para(
+      await para(T(
         'Ask: where is today sitting in me? Maybe the jaw. The shoulders. Somewhere ' +
         'in the belly. Find it, and keep it company for a few breaths — the way ' +
-        'you’d sit with a friend who doesn’t need advice. Nothing to fix.', 'prompt');
+        'you’d sit with a friend who doesn’t need advice. Nothing to fix.',
+        'Ask: where is today sitting in me? Jaw, shoulders, belly — wherever it is, ' +
+        'find it and stay with it for a few breaths. Don’t fix it, don’t argue with ' +
+        'it. Just accurate attention.'), 'prompt');
     } else {
-      await para(
+      await para(T(
         'A cup, a key, the edge of your sleeve. Explore it like you’ve never felt it ' +
         'before: its temperature, its weight, where it’s smooth and where it isn’t. ' +
-        'Let your fingers do the looking.', 'prompt');
+        'Let your fingers do the looking.',
+        'A cup, a key, the edge of your sleeve. Temperature, weight, where it’s ' +
+        'smooth and where it isn’t. Let your fingers do the looking for a few breaths.'), 'prompt');
     }
-    await cont('when you’re ready to head back in');
+    await cont(T('when you’re ready to head back in', 'when you’ve had a few breaths there'));
 
-    /* ---- IV · setting down the pack ------------------------------- */
-    await room('IV · setting down the pack');
+    /* ---- IV ------------------------------------------------------- */
+    await room(T('IV · setting down the pack', 'IV · put it down'));
     setMark(3);
-    await para(
+    await para(T(
       'Your pack is still on. You’d forgotten it was there — that’s how long ' +
       'you’ve carried it. The keeper’s bench is wide enough to set it down, one ' +
-      'strap at a time.');
+      'strap at a time.', null));
+    await para(T(null,
+      'Two things here. First: naming a feeling precisely, even in one word, ' +
+      'measurably takes some charge out of it. Second: stress lives in muscle, and ' +
+      'muscle has two exits — movement, or squeeze-and-release.'), 'quiet');
     await sep();
-    await para('How does the weight feel right now?', 'prompt');
+    await para(T(
+      'Before you set it down — if this pack had a name, one word is enough, what ' +
+      'would it be? Be precise if you can. You can also leave it unnamed.',
+      'One word for what you’re carrying today. The more precise, the better it ' +
+      'works. Or leave it unnamed — the next part works either way.'), 'prompt');
+    packName = await nameInput();
+    await para(T('How does the weight feel right now?',
+      'Which is it, right now?'), 'prompt');
     var pack = await choice([
       {
         key: 'buzzy', label: 'buzzy', echo: 'buzzy — it wants to move',
@@ -537,10 +772,13 @@
       }
     ]);
     if (pack === 'buzzy') {
-      await para(
+      await para(T(
         'Stand up if you can — seated works too. Shake out your hands like you’re ' +
         'flicking off water. Looser than feels dignified. About ten seconds — the ' +
-        'dots will keep you company.', 'prompt');
+        'dots will keep you company.',
+        'Stand if you can — seated works. Shake out your hands like you’re flicking ' +
+        'off water, looser than feels dignified, about ten seconds. The dots will ' +
+        'keep you company.'), 'prompt');
       await pacedDots('shake', 10, 1);
       await para(
         'Now let your arms hang. One big breath in — and let it fall out of you, ' +
@@ -548,9 +786,10 @@
       await para('Twice more, at your own pace.', 'prompt');
       await cont('when the last breath has fallen out');
     } else {
-      await para(
+      await para(T(
         'Squeeze both fists — really grip, like the pack straps. Hold while the ' +
-        'dots come.', 'prompt');
+        'dots come.',
+        'Squeeze both fists hard. Hold while the dots come.'), 'prompt');
       await pacedDots('hold', 5, 1);
       await para(
         'And let go, all at once. Feel the difference travel up your arms.', 'prompt');
@@ -563,48 +802,103 @@
       await cont('when your face is soft');
     }
     await sep();
-    await para(
-      'The pack is on the bench. It’ll keep. You don’t have to carry it while ' +
-      'you’re here.');
+    await para(T(
+      packName
+        ? 'The pack — ' + settleWord() + ' now — is on the bench. It’ll keep. You don’t ' +
+          'have to carry it while you’re here.'
+        : 'The pack is on the bench. It’ll keep. You don’t have to carry it while ' +
+          'you’re here.',
+      'Set ' + settleWord() + ' down. It’ll keep. You don’t have to hold it for ' +
+      'the next two minutes.'));
     await cont('leave it there');
 
-    /* ---- V · the warm cloak --------------------------------------- */
-    await room('V · the warm cloak');
+    /* ---- V -------------------------------------------------------- */
+    await room(T('V · the warm cloak', 'V · warmth'));
     setMark(4);
-    await para(
+    await para(T(
       'By the fire hangs a cloak, kept warm for whoever arrives. You pull it around ' +
-      'your shoulders. It smells faintly of woodsmoke.');
+      'your shoulders. It smells faintly of woodsmoke.', null));
+    await para(T(null,
+      'Fair warning: this is the newest science in here — early, small studies ' +
+      'suggest a hand on your own chest can blunt a stress response about as well ' +
+      'as a hug. Promising, not proven. It costs ten seconds to find out what it ' +
+      'does for you.'), 'quiet');
     await sep();
-    await para(
+    await para(T(
       'If it feels okay, place one hand flat on the center of your chest — or one ' +
       'hand on each upper arm, whichever is more natural. Let the hand be heavy and ' +
-      'warm. Notice the rise and fall underneath it.', 'prompt');
+      'warm. Notice the rise and fall underneath it.',
+      'If it feels okay: one hand flat on the center of your chest, or one hand on ' +
+      'each upper arm. Let the hand be heavy and warm. Notice the rise and fall ' +
+      'under it.'), 'prompt');
     await para(
       'If touch isn’t comfortable right now, imagine warmth spreading across your ' +
       'shoulders instead, like sun through a window.', 'prompt');
     await para('Stay for three slow breaths.', 'prompt');
     await cont('when the third breath is done');
 
-    /* ---- VI · the quiet before the stars -------------------------- */
-    await room('VI · the quiet before the stars');
+    /* ---- VI ------------------------------------------------------- */
+    await room(T('VI · the quiet before the stars', 'VI · close it properly'));
     setMark(5);
-    await para(
-      'You step outside. The sky is doing that thing it does between dusk and dark.');
-    await para(
-      'The pack is inside on the bench. You can pick it up again whenever you choose ' +
-      '— and you’ll choose how much of it to carry.');
+    await para(T(
+      'You step outside. The sky is doing that thing it does between dusk and dark.', null));
+    await para(T(null,
+      'Last steps: register any change so it actually lands, then choose tomorrow’s ' +
+      'load on purpose instead of picking all of it back up by default.'), 'quiet');
+    await para(T(
+      packName
+        ? 'The pack — ' + settleWord() + ' — is inside on the bench. You can pick it ' +
+          'up again whenever you choose. And that’s the thing about tomorrow: you’ll choose.'
+        : 'The pack is inside on the bench. You can pick it up again whenever you ' +
+          'choose. And that’s the thing about tomorrow: you’ll choose.',
+      null));
     await sep();
-    await para(
-      'Before you go, take stock, gently. Compared to when you arrived, is anything ' +
-      'even a little different — shoulders, jaw, breath, the space behind your ' +
-      'eyes? Whatever you find, let yourself actually feel it for a few seconds. ' +
-      'Small counts.', 'prompt');
-    await para(
+    await para(T(
+      'Take stock, gently. Compared to when you arrived, is anything even a little ' +
+      'different — shoulders, jaw, breath, the space behind your eyes? Whatever you ' +
+      'find, let yourself actually feel it for a few seconds. Small counts.',
+      'Compared to when you arrived, is anything even a little different — ' +
+      'shoulders, jaw, breath, the space behind your eyes? Whatever you find, stay ' +
+      'with it a few seconds so it registers.'), 'prompt');
+    await para(T(
+      'And before you go: choose one strap for tomorrow. The smallest one. One thing ' +
+      'from the pack you’ll carry on purpose — with a when and a where — instead of ' +
+      'everything by default. You don’t have to decide the rest tonight.',
+      'One more: pick one small thing from the pile you’ll deal with tomorrow — on ' +
+      'purpose, with a when and a where. Chosen on purpose beats carried by default. ' +
+      'The rest can wait until you decide about it.'), 'prompt');
+    await cont('when you’ve picked the one');
+
+    if (pre != null) {
+      await sep();
+      await para(T(
+        'Same question as the road in: how tight is it now, 0 to 10? There’s no ' +
+        'right answer — the number is for you, not for the waystone.',
+        'Same question as the start: how tight, right now, 0 to 10? Honest number — ' +
+        'it’s data, not a grade.'), 'prompt');
+      post = await rating();
+      if (post != null) {
+        await para('arrived at ' + pre + ' · leaving at ' + post, 'delta');
+        if (post < pre) {
+          await para(T(
+            'It moved. Not because you forced it — because you gave it somewhere to go.',
+            'It moved. One data point, not a verdict — but it’s yours.'), 'quiet');
+        } else {
+          await para(
+            'Some days it doesn’t move, or moves the other way. That’s information, ' +
+            'not failure — and the five minutes still count.', 'quiet');
+        }
+      }
+    }
+    saveVisit({ d: new Date().toISOString().slice(0, 10), pre: pre, post: post, mode: mode });
+    await para(T(
       'Then let your eyes wander the real room one more time. When you’re ready, ' +
-      'you’re done. Nothing else is asked of you.', 'prompt');
+      'you’re done. Nothing else is asked of you.',
+      'Let your eyes wander the room once more. When you’re ready, you’re done. ' +
+      'Nothing else is asked of you.'), 'prompt');
     await cont('when you’re ready');
 
-    /* ---- end ------------------------------------------------------- */
+    /* ---- end ------------------------------------------------------ */
     await room(null);
     waymarks.classList.remove('visible');
     await sleep(motionOK ? 800 : 50);
@@ -613,6 +907,43 @@
     var mark = el('p', 'endmark fade', '— end —');
     current.appendChild(mark);
     reveal(mark);
+
+    /* how this works — the honesty ledger, for whoever wants it */
+    await sleep(motionOK ? 1200 : 50);
+    var howWrap = el('div', 'howwrap fade');
+    var how = el('button', 'skip', 'how this works');
+    howWrap.appendChild(how);
+    current.appendChild(howWrap);
+    reveal(howWrap);
+    how.addEventListener('click', async function () {
+      howWrap.remove();
+      var notes = el('div', 'notes fade');
+      [
+        ['well studied', 'Slow breathing with a longer exhale — the most reliable quick way to settle a revved-up system. If you keep only one room, keep the hearth.'],
+        ['well studied', 'Squeeze-and-release — tensing a muscle on purpose and letting go drops it below where it started. Decades of evidence.'],
+        ['decent evidence', 'Naming it in one word — putting precise language on a feeling measurably takes some charge out of it.'],
+        ['decent evidence', 'Noticing without fixing — attention without an agenda tends to loosen a sensation’s grip. For some people, some days, inward attention is too much; that’s why the outward door exists and counts fully.'],
+        ['early evidence', 'A hand on your chest, warmth on your shoulders — small studies suggest self-directed touch can blunt a stress response. Promising, not proven.'],
+        ['thin evidence', 'Shaking it out — the big exhales that follow carry most of the known effect; the shaking itself is under-studied. It stays because restless bodies need a moving option.'],
+        ['practice, not proof', 'Looking slowly around the room — used by body-based therapists everywhere; direct measurements are scarce.'],
+        ['for behavior, not calm', 'Choosing one strap for tomorrow — deciding a specific thing, with a when and a where, is well studied for follow-through. As stress relief tonight, unproven.'],
+        ['not a technique', 'The 0-to-10 question — that’s not treatment, it’s measurement. It exists so you can find out whether any of this works for you, instead of taking our word for it.']
+      ].forEach(function (n) {
+        var p = el('p');
+        p.appendChild(el('span', 'lvl', n[0]));
+        p.appendChild(document.createTextNode(n[1]));
+        notes.appendChild(p);
+      });
+      current.appendChild(notes);
+      reveal(notes);
+      bringIn(notes);
+    });
+  }
+
+  function setMark(i) {
+    waymarks.classList.add('visible');
+    var dots = waymarks.children;
+    for (var d = 0; d < dots.length; d++) dots[d].classList.toggle('on', d === i);
   }
 
   run();
