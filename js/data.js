@@ -285,6 +285,69 @@ const SESSIONS = [
   },
 
   {
+    id: 'morning-kindling',
+    title: 'Morning Kindling',
+    subtitle: 'Light the fire for the day',
+    level: 'Energize',
+    tint: '#d65a45',
+    description:
+      'A bright, rising practice for the first hour of the day: bellows breath ' +
+      'to kindle heat in the belly, then circulation to carry it everywhere. ' +
+      'Finish glowing, awake, and fond of being in a body.',
+    phases: [
+      {
+        name: 'Wake the Breath',
+        dur: 120,
+        breath: { in: 4, holdIn: 0, out: 5, holdOut: 0 },
+        intensity: 0.25,
+        cues: [
+          { t: 2,  text: 'Sit up tall. Let the night drain out of your shoulders.' },
+          { t: 30, text: 'Big easy breaths, low into the belly. Wake it gently.' },
+          { t: 70, text: 'On each exhale, imagine blowing softly on an ember below your navel.' },
+        ],
+      },
+      {
+        name: 'Kindle',
+        dur: 180,
+        breath: { in: 2, holdIn: 0, out: 2, holdOut: 0 },
+        intensity: 0.6,
+        cues: [
+          { t: 2,   text: 'Quicken the breath — short, even, through the nose if you can.' },
+          { t: 30,  text: 'Let the belly do the work, pumping like a bellows. Shoulders stay soft.' },
+          { t: 70,  text: 'Feel the heat gathering low in the body. That’s the kindling catching.' },
+          { t: 110, text: 'Add a light pelvic-floor pulse on each exhale, feeding the fire.' },
+          { t: 150, text: 'Last half minute — steady, bright, unforced.' },
+        ],
+      },
+      {
+        name: 'Rise & Circulate',
+        dur: 240,
+        breath: { in: 4, holdIn: 2, out: 6, holdOut: 0 },
+        intensity: 0.5,
+        cues: [
+          { t: 2,   text: 'Slow right down. One long inhale — draw the heat up the spine.' },
+          { t: 30,  text: 'Hold a moment at the top. Let it pool behind your eyes like sunlight.' },
+          { t: 70,  text: 'Exhale it down the front of the body, warming everything it passes.' },
+          { t: 120, text: 'Keep the loop turning. Warmth up the back, down the front.' },
+          { t: 170, text: 'Sweep your hands from belly to chest to face, spreading the heat.' },
+          { t: 215, text: 'A few more loops, each one lazier than the last.' },
+        ],
+      },
+      {
+        name: 'Radiate',
+        dur: 120,
+        breath: { in: 4, holdIn: 0, out: 6, holdOut: 0 },
+        intensity: 0.3,
+        cues: [
+          { t: 2,  text: 'Let the breath settle. Sit inside the warmth you built.' },
+          { t: 40, text: 'This is your baseline for the day — you can top it up any time.' },
+          { t: 90, text: 'Open your eyes softly. Take the glow with you.' },
+        ],
+      },
+    ],
+  },
+
+  {
     id: 'evening-surrender',
     title: 'Evening Surrender',
     subtitle: 'Downshift into pleasure and sleep',
@@ -358,6 +421,7 @@ const PHASE_LIBRARY = [
   { id: 'wave',     label: 'Pelvic Wave',      desc: 'Rocking wave, warmth rising',  phase: findPhase('full-body-wave', 'Pelvic Wave') },
   { id: 'undulate', label: 'Spinal Undulation', desc: 'A wave through the spine',    phase: findPhase('spinal-current', 'Undulate') },
   { id: 'circular', label: 'Circular Breath',  desc: 'Connected breath, energy builds', phase: findPhase('full-body-wave', 'Circular Breath') },
+  { id: 'kindle',   label: 'Kindle',           desc: 'Bellows breath, belly heat',   phase: findPhase('morning-kindling', 'Kindle') },
   { id: 'current',  label: 'Spinal Current',   desc: 'Run sensation base to crown',  phase: findPhase('spinal-current', 'Raise the Current') },
   { id: 'peak',     label: 'Peak & Spread',    desc: 'Ride the wave to release',     phase: findPhase('full-body-wave', 'Peak & Spread') },
   { id: 'melt',     label: 'Melt',             desc: 'Afterglow and integration',    phase: findPhase('full-body-wave', 'Melt') },

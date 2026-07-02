@@ -673,6 +673,13 @@ input[type="range"] { accent-color: var(--tint); width: 130px; }
 
 /* ---------- misc ---------- */
 
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tint) 70%, #fff);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; }
 }

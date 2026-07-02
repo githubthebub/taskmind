@@ -21,9 +21,13 @@ python3 -m http.server 8000
 
 ## What's inside
 
-- **Five guided sessions** — from a 5-minute *Quick Glow* reset to the
-  25-minute flagship *Full-Body Wave*, each a scripted journey of phases
-  with timed guidance cues.
+- **Six guided sessions** — from a 5-minute *Quick Glow* reset through the
+  energizing *Morning Kindling* to the flagship *Full-Body Wave*, each a
+  scripted journey of phases with timed guidance cues, plus a
+  Shorter/Standard/Longer length selector.
+- **Custom session builder** — compose and name your own practice from the
+  phase library, with per-phase duration control, reordering, edit and
+  delete. Stored as recipes, so library improvements reach saved practices.
 - **Breath pacer** — an animated orb that grows and softens with the phase's
   breath pattern (inhale / hold / exhale / rest), with per-phase pacing that
   builds and releases intensity across the session.
@@ -35,11 +39,15 @@ python3 -m http.server 8000
 - **Haptics** — gentle vibration on breath transitions, on devices that
   support it.
 - **Journal** — every session logs locally with a "glow" rating and notes;
-  streaks and mindful minutes accumulate. Stored in `localStorage` only.
+  streaks, mindful minutes and a glow-trend sparkline accumulate. Stored in
+  `localStorage` only, exportable as JSON, erasable in one tap.
 - **Learn tab** — plain-language explanations of how and why the practices
   work, plus safety guidance.
-- Screen wake-lock during practice, keyboard controls (space to pause,
-  esc to end), reduced-motion mode, safe-area aware mobile layout.
+- **Installable PWA** — offline-capable service worker (network-first
+  navigations, stale-while-revalidate assets) and home-screen icons.
+- Screen wake-lock during practice, Back-button-safe navigation (ending a
+  session via Back still saves to the journal), keyboard controls (space to
+  pause, esc to end), reduced-motion mode, safe-area aware mobile layout.
 
 ## Architecture
 
@@ -55,6 +63,18 @@ js/app.js         screens, practice engine, journal, settings
 
 The practice engine is a single `requestAnimationFrame` state machine:
 phase clock → cue scheduler → breath-cycle segmenter → orb/ring render.
+
+## Tests
+
+An end-to-end Playwright suite drives the real app headlessly — consent,
+practice engine, journal, builder, corrupted-storage tolerance, back-button
+handling, settings:
+
+```bash
+npm install
+npm test                                  # downloads Playwright's Chromium
+CHROMIUM=/path/to/chromium npm test       # or use an existing binary
+```
 
 ## A note on care
 
