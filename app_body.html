@@ -1,0 +1,924 @@
+<style>
+  :root{
+    --ground:#080b12;
+    --ground-2:#0d121d;
+    --panel:rgba(18,24,38,0.72);
+    --edge:rgba(120,150,200,0.14);
+    --ink:#c8d2e4;
+    --ink-dim:#7d8aa3;
+    --calm:#5ad1c4;      /* parasympathetic / vagal */
+    --stress:#e8905a;    /* sympathetic */
+    --focus:#a78bfa;     /* mandala / absorption */
+    --peak:#e8e6d2;      /* peak coherence */
+    --good:#5ad1c4;
+    --warn:#e8c05a;
+    --bad:#e8905a;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  #cje{
+    position:relative;min-height:100vh;background:
+      radial-gradient(1200px 800px at 50% -10%, #121a2b 0%, var(--ground) 60%);
+    color:var(--ink);font-family:var(--sans);overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #cje .wrap{max-width:1100px;margin:0 auto;padding:22px 18px 60px}
+  #cje header.h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  #cje h1{
+    font-size:clamp(20px,3vw,30px);font-weight:600;letter-spacing:-0.02em;margin:0;
+    background:linear-gradient(92deg,var(--calm),var(--focus));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  #cje .sub{font-size:12px;color:var(--ink-dim);letter-spacing:0.04em}
+  #cje .disclaim{
+    font-size:11.5px;color:var(--ink-dim);border:1px solid var(--edge);
+    background:rgba(232,144,90,0.05);border-radius:10px;padding:9px 12px;margin:12px 0 18px;line-height:1.5
+  }
+  #cje .disclaim b{color:#e8b28a;font-weight:600}
+
+  #cje .stage{
+    position:relative;width:100%;aspect-ratio:16/10;max-height:62vh;
+    border:1px solid var(--edge);border-radius:16px;overflow:hidden;
+    background:#05070c;box-shadow:0 20px 60px rgba(0,0,0,0.5), inset 0 0 80px rgba(90,120,200,0.05);
+  }
+  #cje canvas#viz{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #cje video#cam{position:absolute;right:12px;bottom:12px;width:118px;height:88px;object-fit:cover;
+    border-radius:10px;border:1px solid var(--edge);transform:scaleX(-1);opacity:0.9;background:#000;z-index:3}
+  #cje .roi{position:absolute;right:12px;bottom:12px;width:118px;height:88px;z-index:4;pointer-events:none;
+    border-radius:10px;box-shadow:inset 0 0 0 2px rgba(90,209,196,0.0)}
+  #cje .lexicon{
+    position:absolute;left:0;right:0;bottom:0;z-index:2;padding:26px 24px 22px;
+    background:linear-gradient(transparent, rgba(5,7,12,0.85));
+    font-size:clamp(15px,2.4vw,22px);line-height:1.4;font-weight:400;letter-spacing:0.01em;
+    text-wrap:balance;min-height:96px;display:flex;align-items:flex-end;
+    transition:color .8s ease;text-shadow:0 2px 20px rgba(0,0,0,0.8)
+  }
+  #cje .statechip{
+    position:absolute;left:14px;top:14px;z-index:5;display:flex;gap:8px;align-items:center;
+    font:600 11px/1 var(--mono);letter-spacing:0.12em;text-transform:uppercase;
+    padding:7px 11px;border-radius:999px;border:1px solid var(--edge);background:rgba(8,11,18,0.6)
+  }
+  #cje .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-dim);box-shadow:0 0 12px currentColor;transition:.6s}
+
+  #cje .hud{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+  #cje .metric{
+    border:1px solid var(--edge);border-radius:12px;padding:12px 14px;background:var(--panel);
+    backdrop-filter:blur(6px);min-width:0
+  }
+  #cje .metric .lab{font:600 10.5px/1 var(--mono);letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim)}
+  #cje .metric .val{font:600 27px/1.05 var(--sans);font-variant-numeric:tabular-nums;margin-top:7px;letter-spacing:-0.02em}
+  #cje .metric .u{font-size:13px;color:var(--ink-dim);font-weight:400;margin-left:3px}
+  #cje .metric .bar{height:4px;border-radius:2px;background:rgba(120,150,200,0.15);margin-top:9px;overflow:hidden}
+  #cje .metric .bar i{display:block;height:100%;width:0;border-radius:2px;transition:width .5s ease,background .5s}
+
+  #cje .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+  #cje button{
+    font:600 13px/1 var(--sans);letter-spacing:0.01em;color:var(--ink);cursor:pointer;
+    background:linear-gradient(180deg,rgba(90,120,200,0.16),rgba(90,120,200,0.06));
+    border:1px solid var(--edge);border-radius:10px;padding:11px 16px;transition:.18s
+  }
+  #cje button:hover{border-color:rgba(120,160,230,0.5);transform:translateY(-1px)}
+  #cje button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  #cje button.primary{background:linear-gradient(180deg,var(--calm),#3fae9f);color:#04120f;border-color:transparent}
+  #cje button.ghost{background:transparent}
+  #cje button:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+  #cje select{background:var(--ground-2);color:var(--ink);border:1px solid var(--edge);border-radius:10px;padding:10px 12px;font:600 13px var(--sans)}
+  #cje label.sel{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-dim)}
+
+  #cje .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-top:22px}
+  @media(max-width:820px){#cje .grid2{grid-template-columns:1fr}#cje .hud{grid-template-columns:repeat(2,1fr)}}
+  #cje .card{border:1px solid var(--edge);border-radius:14px;background:var(--panel);padding:16px 18px}
+  #cje .card h2{font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-dim);margin:0 0 12px}
+  #cje .kv{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:6px 0;border-bottom:1px dashed var(--edge)}
+  #cje .kv:last-child{border-bottom:0}
+  #cje .kv b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+  #cje .hist{max-height:220px;overflow:auto}
+  #cje .hrow{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;font-size:12px;padding:7px 0;border-bottom:1px dashed var(--edge);font-variant-numeric:tabular-nums}
+  #cje .hrow .t{color:var(--ink-dim)}
+  #cje .empty{color:var(--ink-dim);font-size:12.5px;padding:10px 0}
+
+  #cje .diag{margin-top:22px}
+  #cje .test{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:12.5px;padding:7px 0;border-bottom:1px dashed var(--edge)}
+  #cje .test .badge{font:700 10px/1 var(--mono);padding:4px 7px;border-radius:6px;letter-spacing:.08em}
+  #cje .badge.pass{background:rgba(90,209,196,0.15);color:var(--good)}
+  #cje .badge.fail{background:rgba(232,144,90,0.16);color:var(--bad)}
+  #cje .badge.pend{background:rgba(125,138,163,0.14);color:var(--ink-dim)}
+  #cje .test .d{color:var(--ink-dim)}
+
+  /* completion overlay — exit-driven */
+  #cje .exit{
+    position:absolute;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:30px;gap:16px;background:radial-gradient(circle at 50% 45%, rgba(20,26,40,0.92), rgba(5,7,12,0.98));
+    backdrop-filter:blur(3px)
+  }
+  #cje .exit.show{display:flex;animation:fade 1.1s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  #cje .exit h3{font-size:clamp(20px,3.5vw,30px);font-weight:600;margin:0;letter-spacing:-0.01em;color:var(--peak)}
+  #cje .exit p{max-width:46ch;line-height:1.55;color:var(--ink);font-size:15px;margin:0}
+  #cje .exit .st{font:600 11px/1 var(--mono);letter-spacing:0.14em;text-transform:uppercase;color:var(--calm)}
+  #cje .foot{margin-top:26px;font-size:11.5px;color:var(--ink-dim);line-height:1.6;border-top:1px solid var(--edge);padding-top:16px}
+  @media (prefers-reduced-motion: reduce){#cje *{animation-duration:0.001ms !important}}
+</style>
+
+<div id="cje">
+ <div class="wrap">
+  <header class="h">
+    <h1>Cybernetic Jhāna Engine</h1>
+    <span class="sub">offline · client-side · camera-driven biofeedback</span>
+  </header>
+
+  <div class="disclaim">
+    <b>What this is:</b> a real, working closed-loop biofeedback toy. Your camera estimates pulse from
+    micro-color changes in your skin (rPPG) using an in-browser FFT; the sound, visuals, and on-screen cues
+    adapt to that signal. <b>What it is not:</b> a medical device. Webcam heart-rate — and especially HRV — is a
+    rough estimate, easily thrown off by lighting and motion. Nothing here diagnoses, treats, or measures your
+    nervous system clinically. Nothing leaves your device.
+  </div>
+
+  <div class="stage" id="stage">
+    <canvas id="viz"></canvas>
+    <video id="cam" playsinline muted></video>
+    <div class="roi" id="roi"></div>
+    <div class="statechip"><span class="dot" id="dot"></span><span id="stateName">idle</span></div>
+    <div class="lexicon" id="lexicon">Grant camera access and sit still for ~30 seconds while the engine finds your baseline.</div>
+
+    <div class="exit" id="exit">
+      <div class="st">peak coherence reached</div>
+      <h3 id="exitTitle">Settled.</h3>
+      <p id="exitBody"></p>
+      <button class="ghost" id="exitClose">Return</button>
+    </div>
+  </div>
+
+  <div class="hud">
+    <div class="metric"><div class="lab">Heart rate</div><div class="val"><span id="mHr">–</span><span class="u">bpm</span></div><div class="bar"><i id="bHr" style="background:var(--calm)"></i></div></div>
+    <div class="metric"><div class="lab">HRV · RMSSD*</div><div class="val"><span id="mHrv">–</span><span class="u">ms</span></div><div class="bar"><i id="bHrv" style="background:var(--focus)"></i></div></div>
+    <div class="metric"><div class="lab">Signal coherence</div><div class="val"><span id="mCoh">–</span><span class="u">%</span></div><div class="bar"><i id="bCoh" style="background:var(--warn)"></i></div></div>
+    <div class="metric"><div class="lab">Autonomic balance</div><div class="val" id="mBal">–</div><div class="bar"><i id="bBal" style="background:var(--calm)"></i></div></div>
+  </div>
+
+  <div class="controls">
+    <button class="primary" id="btnStart">Start session</button>
+    <button class="ghost" id="btnStop" disabled>Stop</button>
+    <label class="sel">Signal source
+      <select id="src"><option value="face">Face</option><option value="finger">Fingertip on lens</option></select>
+    </label>
+    <label class="sel"><input type="checkbox" id="chkSound" checked> Sound</label>
+    <label class="sel"><input type="checkbox" id="chkHaptic" checked> Haptics</label>
+    <button class="ghost" id="btnRecal" disabled>Re-baseline</button>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>Loop state — what the engine is doing</h2>
+      <div class="kv"><span>Detected mode</span><b id="dMode">—</b></div>
+      <div class="kv"><span>Carrier tone</span><b id="dTone">—</b></div>
+      <div class="kv"><span>Breath pacer</span><b id="dPace">—</b></div>
+      <div class="kv"><span>Haptic pattern</span><b id="dHap">—</b></div>
+      <div class="kv"><span>Visual field</span><b id="dVis">—</b></div>
+      <div class="kv"><span>Baseline HR</span><b id="dBase">—</b></div>
+      <div class="kv"><span>Time in session</span><b id="dTime">—</b></div>
+      <div class="kv"><span>Shift velocity</span><b id="dVel">—</b></div>
+    </div>
+    <div class="card">
+      <h2>Session history <span style="font-weight:400;text-transform:none;letter-spacing:0">· local only</span></h2>
+      <div class="hist" id="hist"><div class="empty">No sessions stored yet.</div></div>
+      <button class="ghost" id="btnClear" style="margin-top:12px;font-size:12px;padding:8px 12px">Clear local data</button>
+    </div>
+  </div>
+
+  <div class="card diag">
+    <h2>Self-test &amp; validation <span style="font-weight:400;text-transform:none;letter-spacing:0">· runs the DSP + state machine against known inputs</span></h2>
+    <div id="tests"></div>
+    <button class="ghost" id="btnTest" style="margin-top:12px;font-size:12px;padding:8px 12px">Re-run self-tests</button>
+  </div>
+
+  <div class="foot">
+    Storage: <span id="storeMode">detecting…</span>. Camera frames are processed in-memory and never stored or transmitted.
+    The "neuro-lexicon" cues are meditation-style attention prompts (positive reappraisal / savoring), not medical instructions —
+    read them as invitations, ignore any that don't fit. Stop anytime.
+  </div>
+ </div>
+</div>
+
+<script>
+"use strict";
+(function(){
+/* ============================================================================
+   CYBERNETIC JHĀNA ENGINE — single-file, offline, zero external dependency.
+   Pipeline:  getUserMedia → ROI green/red mean → ring buffer → detrend/window
+   → radix-2 FFT → spectral HR + coherence → time-domain peak/IBI → RMSSD
+   → autonomic balance → JSON state machine → {audio, haptics, visuals, text}.
+   ========================================================================== */
+
+  var $ = function(id){ return document.getElementById(id); };
+  var clamp = function(x,a,b){ return x<a?a:(x>b?b:x); };
+  var lerp = function(a,b,t){ return a+(b-a)*t; };
+  var now = function(){ return performance.now(); };
+
+  /* ---------- radix-2 iterative FFT (in-place, complex) --------------------- */
+  function fft(re, im){
+    var n = re.length, i, j, k;
+    for(i=1, j=0; i<n; i++){
+      var bit = n>>1;
+      for(; j & bit; bit>>=1){ j ^= bit; }
+      j ^= bit;
+      if(i < j){ var tr=re[i]; re[i]=re[j]; re[j]=tr; var ti=im[i]; im[i]=im[j]; im[j]=ti; }
+    }
+    for(var len=2; len<=n; len<<=1){
+      var ang = -2*Math.PI/len;
+      var wr = Math.cos(ang), wi = Math.sin(ang);
+      for(i=0; i<n; i+=len){
+        var cr=1, ci=0;
+        for(k=0; k<len/2; k++){
+          var a=i+k, b=i+k+len/2;
+          var tr = cr*re[b] - ci*im[b];
+          var ti = cr*im[b] + ci*re[b];
+          re[b]=re[a]-tr; im[b]=im[a]-ti;
+          re[a]+=tr; im[a]+=ti;
+          var ncr = cr*wr - ci*wi;
+          ci = cr*wi + ci*wr; cr = ncr;
+        }
+      }
+    }
+  }
+  function nextPow2(n){ var p=1; while(p<n) p<<=1; return p; }
+
+  /* ---------- JSON state-transition engine (data, not code) ---------------- */
+  // Autonomic balance A ∈ [-1,1]: +calm(parasympathetic) / -stress(sympathetic)
+  var STATES = {
+    idle:        { name:"idle",          color:"#7d8aa3", enter:-99, exit:-99 },
+    baselining:  { name:"finding baseline", color:"#e8c05a" },
+    sympathetic: { name:"sympathetic",   color:"#e8905a", tone:90,  paceSec:8.0, haptic:"slow double-pulse", visual:"block-matching field", absorption:0.05, dopa:0.0 },
+    neutral:     { name:"neutral",       color:"#8fb0d6", tone:120, paceSec:6.5, haptic:"even pulse",         visual:"settling lattice",     absorption:0.35, dopa:0.2 },
+    parasympathetic:{ name:"parasympathetic", color:"#5ad1c4", tone:150, paceSec:5.5, haptic:"soft heartbeat", visual:"single-point mandala", absorption:0.85, dopa:0.6 },
+    peak:        { name:"peak coherence", color:"#e8e6d2", tone:162, paceSec:5.5, haptic:"whisper", visual:"pure mandala", absorption:1.0, dopa:1.0 }
+  };
+  // transition table w/ hysteresis (enter threshold vs current-hold threshold)
+  var TRANSITIONS = [
+    { to:"sympathetic",    when:function(A){ return A < -0.18; } },
+    { to:"parasympathetic",when:function(A){ return A >  0.40; } },
+    { to:"neutral",        when:function(A){ return A >= -0.10 && A <= 0.34; } }
+  ];
+
+  /* ---------- engine state ------------------------------------------------- */
+  var E = {
+    running:false, source:"face",
+    stream:null, video:null, grab:null, gctx:null,
+    buf:[],                 // {t, v}
+    fs:30, winSec:10,
+    hr:0, hrv:0, coh:0, bal:0, balSmooth:0,
+    baseline:null, baselineSamples:[], baseStart:0,
+    state:"idle", stateSince:0, sessionStart:0, firstCalmAt:0,
+    peakHoldStart:0, sessionSaved:false,
+    // audio
+    ac:null, osc:null, oscGain:null, lp:null, lfo:null, lfoGain:null, subOsc:null, subGain:null,
+    soundOn:true, hapticOn:true,
+    curTone:120, curPace:6.5,
+    hapticTimer:null,
+    // ibi peak detection
+    lastSample:0, ppgFilt:0, ppgPrev:0, rising:false, lastPeakT:0, ibis:[], peakThresh:0,
+    // viz
+    absorption:0, absorptionTarget:0, phase:0, breathPhase:0, hueShift:0,
+    reduced: window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  };
+
+  /* ---------- storage (localStorage w/ in-memory fallback) ------------------ */
+  var Store = (function(){
+    var KEY="cje.v1", mem=null, ok=false;
+    try{ localStorage.setItem(KEY+".t","1"); localStorage.removeItem(KEY+".t"); ok=true; }catch(e){ ok=false; }
+    function read(){
+      if(!ok) return mem || {baselineHR:null, sessions:[]};
+      try{ return JSON.parse(localStorage.getItem(KEY)) || {baselineHR:null, sessions:[]}; }
+      catch(e){ return {baselineHR:null, sessions:[]}; }
+    }
+    function write(o){ if(!ok){ mem=o; return; } try{ localStorage.setItem(KEY, JSON.stringify(o)); }catch(e){ mem=o; } }
+    return {
+      mode: ok? "localStorage (persistent)" : "in-memory (sandboxed — not persisted)",
+      get:read, set:write,
+      addSession:function(s){ var o=read(); o.sessions.unshift(s); o.sessions=o.sessions.slice(0,50); if(s.baselineHR) o.baselineHR=s.baselineHR; write(o); },
+      clear:function(){ if(ok){ try{ localStorage.removeItem(KEY);}catch(e){} } mem=null; }
+    };
+  })();
+
+  /* ============================ CAMERA + rPPG =============================== */
+  function initGrab(){
+    E.grab = document.createElement("canvas");
+    E.grab.width = 80; E.grab.height = 60;
+    E.gctx = E.grab.getContext("2d", { willReadFrequently:true });
+  }
+  function sampleFrame(){
+    if(!E.video || E.video.readyState < 2) return null;
+    var w=E.grab.width, h=E.grab.height;
+    try{ E.gctx.drawImage(E.video, 0,0, w,h); }catch(e){ return null; }
+    // central ROI ~ 46% box
+    var x0=Math.floor(w*0.27), x1=Math.floor(w*0.73), y0=Math.floor(h*0.27), y1=Math.floor(h*0.73);
+    var data;
+    try{ data = E.gctx.getImageData(x0,y0, x1-x0, y1-y0).data; }catch(e){ return null; }
+    var sr=0,sg=0,sb=0,n=0;
+    for(var i=0;i<data.length;i+=4){ sr+=data[i]; sg+=data[i+1]; sb+=data[i+2]; n++; }
+    if(!n) return null;
+    sr/=n; sg/=n; sb/=n;
+    // face → green channel (best rPPG SNR); finger → red channel (strong perfusion)
+    var v = E.source==="finger" ? sr : sg;
+    return { v:v, r:sr, g:sg, b:sb };
+  }
+
+  // uniform-resample buffer to fs over last winSec, linear interp
+  function resample(){
+    var N = Math.round(E.fs*E.winSec);
+    if(E.buf.length < 12) return null;
+    var t1 = E.buf[E.buf.length-1].t;
+    var t0 = t1 - E.winSec*1000;
+    var out = new Float64Array(N), j=0;
+    for(var k=0;k<N;k++){
+      var tt = t0 + (k/(N-1))*(t1-t0);
+      while(j<E.buf.length-1 && E.buf[j+1].t < tt) j++;
+      var a=E.buf[j], b=E.buf[Math.min(j+1,E.buf.length-1)];
+      var span=(b.t-a.t)||1, f=clamp((tt-a.t)/span,0,1);
+      out[k]=lerp(a.v,b.v,f);
+    }
+    return out;
+  }
+  function detrend(x){
+    var n=x.length, mean=0, i;
+    // remove slow drift via moving-average high-pass (~0.8s window), then subtract mean
+    var win=Math.max(3,Math.round(E.fs*0.8)), ma=new Float64Array(n), acc=0;
+    for(i=0;i<n;i++){ acc+=x[i]; if(i>=win) acc-=x[i-win]; ma[i]=acc/Math.min(i+1,win); }
+    var y=new Float64Array(n);
+    for(i=0;i<n;i++){ y[i]=x[i]-ma[i]; mean+=y[i]; }
+    mean/=n;
+    for(i=0;i<n;i++) y[i]-=mean;
+    return y;
+  }
+  function hann(x){
+    var n=x.length, y=new Float64Array(n);
+    for(var i=0;i<n;i++){ var w=0.5*(1-Math.cos(2*Math.PI*i/(n-1))); y[i]=x[i]*w; }
+    return y;
+  }
+  // returns {hr, coh} from spectrum in [0.7,4]Hz
+  function spectralHR(sig){
+    var n=nextPow2(sig.length);
+    var re=new Float64Array(n), im=new Float64Array(n);
+    for(var i=0;i<sig.length;i++) re[i]=sig[i];
+    fft(re,im);
+    var lo=0.7, hi=4.0; // 42–240 bpm
+    var loBin=Math.max(1,Math.floor(lo*n/E.fs)), hiBin=Math.min(n/2,Math.ceil(hi*n/E.fs));
+    var peak=0, peakBin=-1, sum=0;
+    for(var k=loBin;k<=hiBin;k++){
+      var mag=re[k]*re[k]+im[k]*im[k];
+      sum+=mag;
+      if(mag>peak){ peak=mag; peakBin=k; }
+    }
+    if(peakBin<0||sum<=0) return null;
+    // parabolic interpolation for sub-bin freq
+    var y0=Math.sqrt(re[peakBin-1]*re[peakBin-1]+im[peakBin-1]*im[peakBin-1]);
+    var y1=Math.sqrt(peak);
+    var y2=Math.sqrt(re[peakBin+1]*re[peakBin+1]+im[peakBin+1]*im[peakBin+1]);
+    var denom=(y0-2*y1+y2); var d = denom? 0.5*(y0-y2)/denom : 0;
+    var freq=(peakBin+d)*E.fs/n;
+    var hr=freq*60;
+    var coh=peak/sum; // spectral concentration 0..1
+    return { hr:hr, coh:clamp(coh,0,1) };
+  }
+
+  // time-domain: detect beats on filtered signal → IBIs → RMSSD
+  function updateIBI(v){
+    // one-pole bandpass-ish: subtract slow EMA, keep fast component
+    E.slowEMA = (E.slowEMA==null)? v : E.slowEMA + 0.06*(v-E.slowEMA);
+    var f = v - E.slowEMA;
+    E.ppgFilt = E.ppgFilt + 0.35*(f - E.ppgFilt);
+    E.peakThresh = E.peakThresh*0.99 + Math.abs(E.ppgFilt)*0.01;
+    var t=now();
+    var prev=E.ppgPrev; E.ppgPrev=E.ppgFilt;
+    // zero-cross downward after being above threshold ⇒ beat
+    if(prev>E.peakThresh*0.6 && E.ppgFilt<=prev && !E.rising){
+      E.rising=true;
+      if(E.lastPeakT){
+        var ibi=t-E.lastPeakT;
+        if(ibi>300 && ibi<1500){ E.ibis.push(ibi); if(E.ibis.length>12) E.ibis.shift(); }
+      }
+      E.lastPeakT=t;
+    }
+    if(E.ppgFilt < 0) E.rising=false;
+  }
+  function rmssd(){
+    if(E.ibis.length<3) return 0;
+    var s=0,c=0;
+    for(var i=1;i<E.ibis.length;i++){ var d=E.ibis[i]-E.ibis[i-1]; s+=d*d; c++; }
+    return c? Math.sqrt(s/c):0;
+  }
+
+  /* ======================= AUTONOMIC BALANCE + STATE ======================= */
+  function computeBalance(){
+    // components (each ~ -1..1, calm positive)
+    var A_hr = E.baseline? clamp((E.baseline - E.hr)/8, -1, 1) : 0;        // slower-than-baseline = calm
+    var A_coh = clamp((E.coh-0.28)/0.28, -1, 1);                            // sharper spectral peak = calm
+    var A_hrv = clamp((E.hrv-25)/45, -1, 1);                               // higher RMSSD = calm
+    var A = 0.45*A_hr + 0.30*A_coh + 0.25*A_hrv;
+    // weight down when signal is junk
+    A *= clamp(E.coh/0.22, 0, 1);
+    return clamp(A,-1,1);
+  }
+  function stateForBalance(A){
+    if(E.state==="idle"||E.state==="baselining") return E.state;
+    // peak requires sustained very-high balance
+    if(A>0.72){ if(!E.peakHoldStart) E.peakHoldStart=now(); if(now()-E.peakHoldStart>7000) return "peak"; }
+    else E.peakHoldStart=0;
+    // hysteresis: hold current unless clearly crossed
+    var cur=E.state;
+    for(var i=0;i<TRANSITIONS.length;i++){ if(TRANSITIONS[i].when(A)){ return TRANSITIONS[i].to; } }
+    return cur;
+  }
+  function enterState(s){
+    if(s===E.state) return;
+    E.state=s; E.stateSince=now();
+    var cfg=STATES[s];
+    $("stateName").textContent = cfg.name;
+    $("dot").style.background = cfg.color; $("dot").style.color=cfg.color;
+    document.documentElement.style.setProperty("--peakhue", cfg.color);
+    if(cfg.tone!=null){
+      applyAudioTargets(cfg.tone, cfg.paceSec);
+      $("dMode").textContent=cfg.name;
+      $("dTone").textContent=cfg.tone+" Hz "+(s==="sympathetic"?"(deep resonant)":s==="peak"?"(pure)":"");
+      $("dPace").textContent=cfg.paceSec.toFixed(1)+" s/breath ("+(60/cfg.paceSec).toFixed(1)+"/min)";
+      $("dHap").textContent=cfg.haptic;
+      $("dVis").textContent=cfg.visual;
+      setHaptic(cfg.paceSec, s);
+      E.absorptionTarget=cfg.absorption;
+    }
+    if(s==="parasympathetic" && !E.firstCalmAt) E.firstCalmAt=now();
+    if(s==="peak") triggerExit();
+    pushLexicon(true);
+  }
+
+  /* ============================== AUDIO ==================================== */
+  function initAudio(){
+    if(E.ac) return;
+    var AC = window.AudioContext||window.webkitAudioContext;
+    if(!AC){ E.soundOn=false; return; }
+    E.ac=new AC();
+    E.lp=E.ac.createBiquadFilter(); E.lp.type="lowpass"; E.lp.frequency.value=600;
+    E.oscGain=E.ac.createGain(); E.oscGain.gain.value=0.0;
+    E.osc=E.ac.createOscillator(); E.osc.type="sine"; E.osc.frequency.value=E.curTone;
+    E.osc.connect(E.oscGain); E.oscGain.connect(E.lp);
+    // sub layer for depth
+    E.subGain=E.ac.createGain(); E.subGain.gain.value=0.0;
+    E.subOsc=E.ac.createOscillator(); E.subOsc.type="sine"; E.subOsc.frequency.value=E.curTone/2;
+    E.subOsc.connect(E.subGain); E.subGain.connect(E.lp);
+    E.lp.connect(E.ac.destination);
+    // breath-pacer LFO on amplitude
+    E.lfoGain=E.ac.createGain();
+    E.osc.start(); E.subOsc.start();
+    applyAudioTargets(E.curTone, E.curPace);
+  }
+  function applyAudioTargets(tone, paceSec){
+    E.curTone=tone; E.curPace=paceSec;
+    if(!E.ac||!E.soundOn) return;
+    var t=E.ac.currentTime;
+    E.osc.frequency.cancelScheduledValues(t);
+    E.osc.frequency.linearRampToValueAtTime(tone, t+4.0);      // glide, don't jump
+    E.subOsc.frequency.linearRampToValueAtTime(tone/2, t+4.0);
+  }
+  var lastBreath=0;
+  function audioBreath(dt){
+    if(!E.ac||!E.soundOn) return;
+    // amplitude follows a raised-cosine breath envelope at current pace
+    E.breathPhase += dt/(E.curPace*1000);
+    if(E.breathPhase>1) E.breathPhase-=1;
+    var env=0.5-0.5*Math.cos(2*Math.PI*E.breathPhase); // 0..1 inhale/exhale
+    var g=0.02+0.05*env;
+    var t=E.ac.currentTime;
+    E.oscGain.gain.setTargetAtTime(g, t, 0.15);
+    E.subGain.gain.setTargetAtTime(g*0.5, t, 0.15);
+  }
+  function stopAudio(){
+    if(!E.ac) return;
+    try{ E.oscGain.gain.setTargetAtTime(0, E.ac.currentTime, 0.2); E.subGain.gain.setTargetAtTime(0, E.ac.currentTime, 0.2);}catch(e){}
+  }
+
+  /* ============================== HAPTICS ================================== */
+  function setHaptic(paceSec, state){
+    if(E.hapticTimer){ clearInterval(E.hapticTimer); E.hapticTimer=null; }
+    if(!E.hapticOn || !navigator.vibrate) return;
+    var period=paceSec*1000;
+    var pattern = state==="sympathetic" ? [55,120,55] : state==="parasympathetic" ? [30] : [40,90,40];
+    E.hapticTimer=setInterval(function(){ try{ navigator.vibrate(pattern); }catch(e){} }, period);
+  }
+
+  /* ============================ NEURO-LEXICON ============================== */
+  // Generative attention cues conditioned on state + present sensation anchors.
+  // Framed as invitations (positive reappraisal / savoring), never medical claims.
+  var ANCHOR = ["the cool edge of the air at the rim of your nostrils","the faint weight of your hands where they rest",
+    "the light pressure of your fingertip against the lens","the warmth pooling in your palms",
+    "the slow fall of your shoulders","the quiet contact of your back against the chair",
+    "the small tide of your belly rising and falling"];
+  var LEX = {
+    sympathetic: [
+      "Nothing to fix. Let {a} be the only thing you attend to — everything else can wait one breath.",
+      "The tone dropped low on purpose. Ride it downward. Let your exhale grow longer than your inhale.",
+      "You are safe enough, right now, to slow down. Follow {a} and let the pace pull you with it.",
+      "Unclench {a}. There is nowhere to be for the length of this breath."
+    ],
+    neutral: [
+      "Good — the system is settling. Keep your attention loosely on {a}.",
+      "Let {a} become slightly interesting, then slightly pleasant. Stay with the pleasant part.",
+      "Notice {a} without narrating it. Just the raw sensation, arriving and leaving.",
+      "The field is quieting. Let the next exhale be the softest thing in the room."
+    ],
+    parasympathetic: [
+      "Rest in {a}. Let it become the single point the whole mind gathers around.",
+      "Let the calm feel faintly rewarding — savor {a} the way you'd savor warmth after cold.",
+      "Collapse the visual field into one point, and let {a} hold you there.",
+      "This ease is yours. Let it deepen on its own — you don't have to reach for it."
+    ],
+    peak: [
+      "Here. Stay exactly here.",
+      "Nothing to add. The point holds you.",
+      "Let it brighten and steady. This is the note to remember."
+    ]
+  };
+  var lastLexT=0, lastLexIdx=-1;
+  function pushLexicon(force){
+    var s=E.state; if(s==="idle"||s==="baselining") return;
+    if(!force && now()-lastLexT<7000) return;
+    var pool=LEX[s]||LEX.neutral;
+    var idx; do{ idx=Math.floor((E.phase*97+lastLexIdx+1))%pool.length; lastLexIdx=idx; }while(false);
+    var anchor=ANCHOR[Math.floor((E.phase*53))%ANCHOR.length];
+    var txt=pool[idx].replace("{a}", anchor);
+    var el=$("lexicon"); el.style.color = STATES[s].color;
+    el.textContent=txt; lastLexT=now();
+  }
+
+  /* ============================== VISUALS ================================== */
+  var cv=$("viz"), cx=cv.getContext("2d"), DPR=Math.min(2,window.devicePixelRatio||1);
+  function resize(){ var r=cv.getBoundingClientRect(); cv.width=r.width*DPR; cv.height=r.height*DPR; }
+  window.addEventListener("resize", resize);
+
+  function drawViz(dt){
+    var W=cv.width, H=cv.height, cxp=W/2, cyp=H/2;
+    E.phase += dt*0.00018*(1+ (1-E.absorption)*0.6);
+    E.breathScale = 0.5-0.5*Math.cos(2*Math.PI*E.breathPhase);
+    var ab=E.absorption;
+    // background wash shifts with state
+    var col = STATES[E.state]||STATES.neutral;
+    cx.globalCompositeOperation="source-over";
+    var g=cx.createRadialGradient(cxp,cyp,0,cxp,cyp,Math.max(W,H)*0.7);
+    g.addColorStop(0, shade(col.color, lerp(0.10,0.20,ab)));
+    g.addColorStop(1, "rgba(5,7,12,1)");
+    cx.fillStyle=g; cx.fillRect(0,0,W,H);
+
+    // LAYER A: block-matching puzzle field (weight = 1-absorption) — distraction blocking
+    var puz=1-ab;
+    if(puz>0.02 && !E.reduced){
+      var cols=10, rows=6, cw=W/cols, ch=H/rows;
+      cx.globalAlpha=puz*0.5;
+      for(var yy=0;yy<rows;yy++)for(var xx=0;xx<cols;xx++){
+        var seed=(xx*7+yy*13);
+        var jx=Math.sin(E.phase*3+seed)*cw*0.18*puz;
+        var jy=Math.cos(E.phase*2.3+seed*1.7)*ch*0.18*puz;
+        var s=0.4+0.5*Math.abs(Math.sin(E.phase*1.5+seed));
+        cx.fillStyle=shade(col.color, 0.05+0.12*s*puz);
+        var bw=cw*0.6*s, bh=ch*0.6*s;
+        cx.fillRect(xx*cw+cw*0.2+jx, yy*ch+ch*0.2+jy, bw, bh);
+      }
+      cx.globalAlpha=1;
+    }
+
+    // LAYER B: single-point mandala (weight = absorption) — absorption / jhāna
+    if(ab>0.02){
+      cx.save();
+      cx.translate(cxp,cyp);
+      cx.globalAlpha=ab;
+      var baseR=Math.min(W,H)*(0.10+0.02*E.breathScale);
+      var rings=Math.round(lerp(3,7,ab));
+      var rot=E.phase*(E.reduced?0.05:0.35);
+      for(var ring=rings; ring>=1; ring--){
+        var rr=baseR*ring*(1.0+0.06*E.breathScale);
+        var petals=6+ring*2;
+        cx.beginPath();
+        for(var p=0;p<=petals;p++){
+          var a=(p/petals)*Math.PI*2+rot*(ring%2?1:-1);
+          var wob=1+0.12*Math.sin(a*petals*0.5+E.phase*2)*(1-ab*0.6);
+          var x=Math.cos(a)*rr*wob, y=Math.sin(a)*rr*wob;
+          if(p===0) cx.moveTo(x,y); else cx.lineTo(x,y);
+        }
+        cx.closePath();
+        cx.strokeStyle=shade(col.color, lerp(0.18,0.5,ab)*(ring/rings));
+        cx.lineWidth=DPR*(1+ab);
+        cx.stroke();
+      }
+      // luminous single point at center
+      var pr=baseR*(0.5+0.5*E.breathScale)*lerp(0.3,1,ab);
+      var pg=cx.createRadialGradient(0,0,0,0,0,pr*3);
+      pg.addColorStop(0, shade(col.color, lerp(0.5,1,ab)));
+      pg.addColorStop(1, "rgba(0,0,0,0)");
+      cx.fillStyle=pg; cx.beginPath(); cx.arc(0,0,pr*3,0,Math.PI*2); cx.fill();
+      cx.restore();
+    }
+
+    // breathing guide ring (always) — expand=inhale, contract=exhale
+    cx.save(); cx.translate(cxp,cyp);
+    var gr=Math.min(W,H)*(0.30+0.05*E.breathScale);
+    cx.beginPath(); cx.arc(0,0,gr,0,Math.PI*2);
+    cx.strokeStyle="rgba(200,220,255,"+(0.10+0.12*ab)+")"; cx.lineWidth=DPR*1.5; cx.stroke();
+    cx.restore();
+  }
+  function shade(hex, a){
+    var h=hex.replace("#",""); if(h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    var r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+    return "rgba("+r+","+g+","+b+","+a+")";
+  }
+
+  /* ============================== MAIN LOOP ================================ */
+  var lastFrame=0, lastDSP=0;
+  function loop(t){
+    if(!E.running){ return; }
+    var dt = lastFrame? (t-lastFrame):16; lastFrame=t;
+    // sample camera at frame rate
+    var s=sampleFrame();
+    if(s){ E.buf.push({t:now(), v:s.v}); if(E.buf.length>600) E.buf.shift(); updateIBI(s.v); }
+
+    // ease absorption + visuals every frame
+    E.absorption += (E.absorptionTarget - E.absorption)*Math.min(1, dt*0.0009);
+    audioBreath(dt);
+    drawViz(dt);
+
+    // DSP every ~350ms
+    if(t-lastDSP>350){
+      lastDSP=t;
+      runDSP();
+      pushLexicon(false);
+      updateHUD();
+    }
+    E._raf=requestAnimationFrame(loop);
+  }
+
+  function runDSP(){
+    var rs=resample(); if(!rs) return;
+    var sig=hann(detrend(rs));
+    var sp=spectralHR(sig); if(!sp) return;
+    // smooth HR
+    E.hr = E.hr? lerp(E.hr, sp.hr, 0.25) : sp.hr;
+    E.coh = E.coh? lerp(E.coh, sp.coh, 0.3) : sp.coh;
+    E.hrv = lerp(E.hrv, rmssd(), 0.3);
+
+    // baseline capture during first 30s
+    if(E.state==="baselining"){
+      if(E.coh>0.15) E.baselineSamples.push(E.hr);
+      if(now()-E.baseStart>30000 && E.baselineSamples.length>10){
+        E.baselineSamples.sort(function(a,b){return a-b;});
+        E.baseline=E.baselineSamples[Math.floor(E.baselineSamples.length/2)]; // median
+        $("dBase").textContent=Math.round(E.baseline)+" bpm";
+        enterState("neutral");
+      } else if(now()-E.baseStart>30000){
+        E.baseline=E.hr||72; $("dBase").textContent=Math.round(E.baseline)+" bpm (low-confidence)";
+        enterState("neutral");
+      }
+      return;
+    }
+
+    // balance + state machine
+    E.bal=computeBalance();
+    E.balSmooth=lerp(E.balSmooth, E.bal, 0.2);
+    var ns=stateForBalance(E.balSmooth);
+    enterState(ns);
+  }
+
+  /* ============================== HUD ===================================== */
+  function updateHUD(){
+    $("mHr").textContent = E.hr? Math.round(E.hr) : "–";
+    $("mHrv").textContent = E.hrv>1? Math.round(E.hrv) : "–";
+    $("mCoh").textContent = E.coh? Math.round(E.coh*100) : "–";
+    var b=E.balSmooth;
+    $("mBal").textContent = b>0.4?"calm ↑":b>0.1?"settling":b<-0.15?"aroused ↓":"neutral";
+    $("bHr").style.width = clamp((E.hr-45)/(120-45)*100,4,100)+"%";
+    $("bHrv").style.width = clamp(E.hrv/80*100,3,100)+"%";
+    $("bCoh").style.width = clamp(E.coh*100,3,100)+"%";
+    var bp=(b+1)/2*100; $("bBal").style.width=clamp(bp,3,100)+"%";
+    $("bBal").style.background = b>0.1? "var(--calm)" : b<-0.15? "var(--stress)":"var(--warn)";
+    // session panel
+    if(E.sessionStart){
+      var sec=Math.floor((now()-E.sessionStart)/1000);
+      $("dTime").textContent=Math.floor(sec/60)+"m "+(sec%60)+"s";
+      if(E.firstCalmAt){ var v=(E.firstCalmAt-E.sessionStart)/1000; $("dVel").textContent=v.toFixed(0)+"s to first calm"; }
+    }
+  }
+
+  /* ============================ EXIT / COMPLETION ========================== */
+  function triggerExit(){
+    if(E.sessionSaved) return;
+    var el=$("exit");
+    var dur=E.sessionStart? Math.floor((now()-E.sessionStart)/1000):0;
+    var vel=E.firstCalmAt? Math.round((E.firstCalmAt-E.sessionStart)/1000):null;
+    $("exitBody").textContent =
+      "You reached steady coherence in "+Math.floor(dur/60)+"m "+(dur%60)+"s"+
+      (vel!=null? " (first calm at "+vel+"s)":"")+
+      ". This is the state worth remembering. Carry the steadiness with you — take one clear next action while it lasts, then come back when you want it again.";
+    el.classList.add("show");
+    saveSession(true);
+  }
+  function saveSession(peak){
+    if(E.sessionSaved || !E.sessionStart) return;
+    E.sessionSaved=true;
+    var dur=Math.floor((now()-E.sessionStart)/1000);
+    Store.addSession({
+      date:new Date().toISOString(),
+      durationSec:dur,
+      avgHR:E.hr?Math.round(E.hr):null,
+      baselineHR:E.baseline?Math.round(E.baseline):null,
+      peakCoherence:Math.round(E.coh*100),
+      reachedPeak:!!peak,
+      timeToCalmSec:E.firstCalmAt?Math.round((E.firstCalmAt-E.sessionStart)/1000):null
+    });
+    renderHistory();
+  }
+  $("exitClose").addEventListener("click", function(){ $("exit").classList.remove("show"); });
+
+  /* ============================ HISTORY UI ================================= */
+  function renderHistory(){
+    var o=Store.get(), el=$("hist");
+    if(!o.sessions||!o.sessions.length){ el.innerHTML='<div class="empty">No sessions stored yet.</div>'; return; }
+    var html="";
+    o.sessions.forEach(function(s){
+      var d=new Date(s.date);
+      var dd=(d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+      html+='<div class="hrow"><span class="t">'+dd+'</span>'+
+        '<span>'+Math.floor(s.durationSec/60)+'m'+(s.durationSec%60)+'s</span>'+
+        '<span>'+(s.avgHR||"–")+' bpm</span>'+
+        '<span>'+(s.reachedPeak?'★ ':'')+s.peakCoherence+'%</span></div>';
+    });
+    el.innerHTML=html;
+  }
+  $("btnClear").addEventListener("click", function(){ Store.clear(); renderHistory(); });
+
+  /* ============================ CONTROLS ================================== */
+  async function start(){
+    initGrab(); resize();
+    E.video=$("cam");
+    try{
+      E.stream=await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode: E.source==="finger"?"environment":"user", width:320, height:240 }, audio:false
+      });
+    }catch(err){
+      $("lexicon").textContent="Camera unavailable ("+(err&&err.name||"error")+"). Biofeedback needs camera access — the visuals and audio still run in demo mode below.";
+      // run in demo/simulation mode so it's still playable
+      startSim();
+      return;
+    }
+    E.video.srcObject=E.stream; await E.video.play().catch(function(){});
+    if(E.source==="finger"){ try{ applyTorch(); }catch(e){} }
+    E.soundOn=$("chkSound").checked; E.hapticOn=$("chkHaptic").checked;
+    if(E.soundOn) initAudio();
+    E.running=true; E.sessionStart=now(); E.sessionSaved=false; E.firstCalmAt=0; E.baselineSamples=[]; E.baseline=null; E.baseStart=now();
+    enterState("baselining");
+    $("btnStart").disabled=true; $("btnStop").disabled=false; $("btnRecal").disabled=false;
+    $("lexicon").textContent="Finding your baseline. Sit still, breathe normally, keep your face evenly lit for ~30 seconds.";
+    E._raf=requestAnimationFrame(loop);
+  }
+  function applyTorch(){
+    var track=E.stream.getVideoTracks()[0];
+    var caps=track.getCapabilities&&track.getCapabilities();
+    if(caps&&caps.torch){ track.applyConstraints({advanced:[{torch:true}]}); }
+  }
+  function stop(){
+    E.running=false; if(E._raf) cancelAnimationFrame(E._raf);
+    saveSession(false);
+    if(E.stream){ E.stream.getTracks().forEach(function(t){t.stop();}); E.stream=null; }
+    stopAudio(); if(E.hapticTimer) clearInterval(E.hapticTimer);
+    enterState("idle"); $("stateName").textContent="idle";
+    $("btnStart").disabled=false; $("btnStop").disabled=true; $("btnRecal").disabled=true;
+    $("lexicon").textContent="Session ended. Your metrics are saved locally. Start again whenever you like.";
+  }
+  function recal(){ E.baselineSamples=[]; E.baseline=null; E.baseStart=now(); enterState("baselining"); }
+
+  // Simulation fallback (no camera): synthesize a physiologically-plausible signal
+  function startSim(){
+    E.running=true; E.sessionStart=now(); E.sessionSaved=false; E.firstCalmAt=0;
+    E.baseline=74; E.simT=0; E.simHR=82; enterState("baselining");
+    if($("chkSound").checked){ E.soundOn=true; initAudio(); }
+    $("btnStart").disabled=true; $("btnStop").disabled=false;
+    var simLoop=function(t){
+      if(!E.running) return;
+      var dt=lastFrame?(t-lastFrame):16; lastFrame=t;
+      E.simT+=dt;
+      // drift from 82 → 60 bpm over ~90s, add pulse wave into buffer
+      var target=lerp(82,58,clamp(E.simT/90000,0,1));
+      E.simHR=lerp(E.simHR,target,0.002);
+      var f=E.simHR/60;
+      var v=128+18*Math.sin(2*Math.PI*f*(E.simT/1000))+4*Math.sin(2*Math.PI*0.2*(E.simT/1000));
+      E.buf.push({t:now(), v:v}); if(E.buf.length>600) E.buf.shift(); updateIBI(v);
+      E.absorption += (E.absorptionTarget-E.absorption)*Math.min(1,dt*0.0009);
+      audioBreath(dt); drawViz(dt);
+      if(t-lastDSP>350){ lastDSP=t; runDSP(); pushLexicon(false); updateHUD(); }
+      E._raf=requestAnimationFrame(simLoop);
+    };
+    E._raf=requestAnimationFrame(simLoop);
+  }
+
+  $("btnStart").addEventListener("click", start);
+  $("btnStop").addEventListener("click", stop);
+  $("btnRecal").addEventListener("click", recal);
+  $("src").addEventListener("change", function(e){ E.source=e.target.value; });
+  $("chkSound").addEventListener("change", function(e){ E.soundOn=e.target.checked; if(!E.soundOn) stopAudio(); else if(E.running) initAudio(); });
+  $("chkHaptic").addEventListener("change", function(e){ E.hapticOn=e.target.checked; if(!E.hapticOn&&E.hapticTimer) clearInterval(E.hapticTimer); });
+
+  /* ============================ SELF-TESTS ================================= */
+  function runTests(){
+    var tests=[];
+    // 1. FFT recovers a known frequency
+    (function(){
+      var n=256, fs=30, freq=1.25; // 75 bpm
+      var re=new Float64Array(n), im=new Float64Array(n);
+      for(var i=0;i<n;i++) re[i]=Math.sin(2*Math.PI*freq*i/fs);
+      fft(re,im);
+      var peak=0,pb=0; for(var k=1;k<n/2;k++){var m=re[k]*re[k]+im[k]*im[k]; if(m>peak){peak=m;pb=k;}}
+      var got=pb*fs/n;
+      tests.push({name:"FFT recovers 1.25 Hz sine (→75 bpm)", ok:Math.abs(got-freq)<0.15, detail:got.toFixed(2)+" Hz"});
+    })();
+    // 2. spectralHR end-to-end on synthetic PPG
+    (function(){
+      var save=E.fs; E.fs=30; var N=300, arr=new Float64Array(N);
+      for(var i=0;i<N;i++) arr[i]=Math.sin(2*Math.PI*(66/60)*i/30)+0.15*Math.sin(2*Math.PI*0.15*i/30);
+      var r=spectralHR(hann(detrend(arr))); E.fs=save;
+      tests.push({name:"Pipeline detects ~66 bpm from synthetic PPG", ok:r&&Math.abs(r.hr-66)<6, detail:r?r.hr.toFixed(1)+" bpm":"null"});
+    })();
+    // 3. RMSSD math
+    (function(){
+      var sv=E.ibis; E.ibis=[800,820,810,830,815]; var r=rmssd(); E.ibis=sv;
+      tests.push({name:"RMSSD computes on known IBI series", ok:r>10&&r<40, detail:r.toFixed(1)+" ms"});
+    })();
+    // 4. state machine: stress balance → sympathetic
+    (function(){
+      var sv=E.state; E.state="neutral"; var s=stateForBalance(-0.5); E.state=sv;
+      tests.push({name:"Balance −0.5 → sympathetic state", ok:s==="sympathetic", detail:s});
+    })();
+    // 5. state machine: calm balance → parasympathetic
+    (function(){
+      var sv=E.state; E.state="neutral"; var s=stateForBalance(0.6); E.state=sv;
+      tests.push({name:"Balance +0.6 → parasympathetic state", ok:s==="parasympathetic", detail:s});
+    })();
+    // 6. balance responds to HR below baseline
+    (function(){
+      var svb=E.baseline,svh=E.hr,svc=E.coh,svv=E.hrv;
+      E.baseline=75; E.hr=63; E.coh=0.5; E.hrv=55; var a=computeBalance();
+      E.baseline=svb;E.hr=svh;E.coh=svc;E.hrv=svv;
+      tests.push({name:"Lower HR + high HRV → positive balance", ok:a>0.2, detail:a.toFixed(2)});
+    })();
+    // 7. lexicon synthesizes non-empty, anchor-substituted text
+    (function(){
+      var t=LEX.parasympathetic[0].replace("{a}",ANCHOR[0]);
+      tests.push({name:"Lexicon substitutes sensation anchor (no placeholder left)", ok:t.indexOf("{a}")<0&&t.length>20, detail:'"'+t.slice(0,32)+'…"'});
+    })();
+    // 8. storage round-trips
+    (function(){
+      var before=Store.get().sessions.length;
+      Store.addSession({date:new Date().toISOString(),durationSec:1,avgHR:70,peakCoherence:50,reachedPeak:false});
+      var after=Store.get().sessions.length;
+      // roll back the probe
+      var o=Store.get(); o.sessions.shift(); Store.set(o);
+      tests.push({name:"Storage layer persists a session record", ok:after===before+1, detail:Store.mode});
+    })();
+    // 9. resample handles sparse buffer without NaN
+    (function(){
+      var sv=E.buf; E.buf=[]; for(var i=0;i<40;i++) E.buf.push({t:i*33, v:128+Math.sin(i)});
+      var rs=resample(); E.buf=sv;
+      var okv=rs&&rs.length>0; for(var k=0;rs&&k<rs.length;k++){ if(isNaN(rs[k])){okv=false;break;} }
+      tests.push({name:"Resampler produces finite uniform grid", ok:!!okv, detail:rs?rs.length+" samples":"null"});
+    })();
+    // 10. no unresolved template placeholders across all lexicon entries
+    (function(){
+      var bad=0; Object.keys(LEX).forEach(function(k){ LEX[k].forEach(function(s){ if(/\{[a-z]\}/.test(s.replace("{a}","x"))) bad++; }); });
+      tests.push({name:"No stray template placeholders in lexicon corpus", ok:bad===0, detail:bad+" stray"});
+    })();
+
+    var host=$("tests"); host.innerHTML="";
+    var pass=0;
+    tests.forEach(function(tt){
+      if(tt.ok) pass++;
+      var row=document.createElement("div"); row.className="test";
+      row.innerHTML='<span class="badge '+(tt.ok?"pass":"fail")+'">'+(tt.ok?"PASS":"FAIL")+'</span>'+
+        '<span>'+tt.name+'</span><span class="d">'+tt.detail+'</span>';
+      host.appendChild(row);
+    });
+    var sum=document.createElement("div"); sum.className="test";
+    sum.innerHTML='<span class="badge '+(pass===tests.length?"pass":"fail")+'">'+pass+'/'+tests.length+'</span>'+
+      '<span>Validation suite</span><span class="d">'+(pass===tests.length?"all green":"review failures")+'</span>';
+    host.appendChild(sum);
+  }
+  $("btnTest").addEventListener("click", runTests);
+
+  /* ============================== BOOT ==================================== */
+  $("storeMode").textContent=Store.mode;
+  enterState("idle"); resize(); renderHistory(); runTests();
+  // idle ambient canvas so the stage isn't dead before start
+  (function idle(){
+    if(E.running) return;
+    var t=now(); E.phase+=0.004; E.breathPhase=(E.breathPhase+0.0016)%1;
+    drawViz(16);
+    requestAnimationFrame(idle);
+  })();
+
+})();
+</script>
