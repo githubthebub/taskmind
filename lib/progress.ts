@@ -1,5 +1,7 @@
-// Client-side, localStorage-backed progress store. No external deps.
+// Client-side, localStorage-backed progress store. No external deps besides React's built-in hooks.
 // Safe to import from client components only (guards against SSR access).
+
+import { useSyncExternalStore } from "react";
 
 export type SessionLogEntry = {
   techniqueId: string;
@@ -32,6 +34,8 @@ function writeLog(entries: SessionLogEntry[]): void {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
   } catch {
     // ignore quota / privacy-mode errors
+  } finally {
+    invalidateStatsCache();
   }
 }
 
@@ -97,7 +101,15 @@ export function getMostRecentSession(): SessionLogEntry | undefined {
   return getSessionLog()[0];
 }
 
-export function getStats() {
+export type ProgressStats = {
+  streak: number;
+  totalSessions: number;
+  totalMinutes: number;
+  recent: SessionLogEntry[];
+  mostRecent?: SessionLogEntry;
+};
+
+function computeStats(): ProgressStats {
   return {
     streak: getCurrentStreak(),
     totalSessions: getTotalSessions(),
@@ -105,4 +117,45 @@ export function getStats() {
     recent: getSessionLog().slice(0, 10),
     mostRecent: getMostRecentSession(),
   };
+}
+
+// Cached snapshot so repeated calls (e.g. from useSyncExternalStore) return a
+// stable reference until the underlying log actually changes.
+let statsCache: ProgressStats | null = null;
+
+function invalidateStatsCache(): void {
+  statsCache = null;
+}
+
+export function getStats(): ProgressStats {
+  if (!statsCache) statsCache = computeStats();
+  return statsCache;
+}
+
+const EMPTY_STATS: ProgressStats = {
+  streak: 0,
+  totalSessions: 0,
+  totalMinutes: 0,
+  recent: [],
+  mostRecent: undefined,
+};
+
+function subscribeToProgress(callback: () => void): () => void {
+  if (!isBrowser()) return () => {};
+  const handleChange = () => {
+    invalidateStatsCache();
+    callback();
+  };
+  window.addEventListener("storage", handleChange);
+  return () => window.removeEventListener("storage", handleChange);
+}
+
+/**
+ * React hook for reading progress stats as an external store. Using
+ * useSyncExternalStore (rather than useState + useEffect) means the
+ * localStorage-backed snapshot is read without triggering a setState call
+ * from inside an effect body.
+ */
+export function useProgressStats(): ProgressStats {
+  return useSyncExternalStore(subscribeToProgress, getStats, () => EMPTY_STATS);
 }

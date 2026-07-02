@@ -1,0 +1,23 @@
+{
+  "name": "taskmind — piti, jhana & somatic practice",
+  "short_name": "taskmind",
+  "description": "A contemplative practice app for cultivating piti (rapture), jhana absorption, and somatic energy awareness through breath and body-based practice.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#081416",
+  "theme_color": "#0f2027",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
