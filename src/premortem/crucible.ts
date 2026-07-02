@@ -311,15 +311,25 @@ export class CruciblePortal implements ICruciblePortal {
     this.on(button, 'click', () => {
       const titleText = input.value.trim();
       if (titleText.length === 0) return;
-      const milestone: Milestone = {
-        id: makeMilestoneId(titleText),
-        title: titleText,
-        createdAtMs: Date.now(),
-        containments: [],
-        crucibleComplete: false,
-      };
-      this.store.upsertMilestone(milestone);
-      this.mode = { kind: 'scenario', milestone, index: 0 };
+      const id = makeMilestoneId(titleText);
+      const existing = this.store.getMilestones().find((m) => m.id === id);
+      if (existing) {
+        // Re-entering a known milestone resumes it; overwriting would
+        // silently destroy already-logged containment strategies.
+        this.mode = existing.crucibleComplete
+          ? { kind: 'verdict', milestone: existing }
+          : { kind: 'scenario', milestone: existing, index: existing.containments.length };
+      } else {
+        const milestone: Milestone = {
+          id,
+          title: titleText,
+          createdAtMs: Date.now(),
+          containments: [],
+          crucibleComplete: false,
+        };
+        this.store.upsertMilestone(milestone);
+        this.mode = { kind: 'scenario', milestone, index: 0 };
+      }
       this.renderStage();
       this.renderArchive();
     });
@@ -552,8 +562,10 @@ function drawHedonicChart(
   canvas.width = Math.round(CHART_W * dpr);
   canvas.height = Math.round(CHART_H * dpr);
   canvas.style.width = `${CHART_W}px`;
-  canvas.style.height = `${CHART_H}px`;
   canvas.style.maxWidth = '100%';
+  // Height follows width so narrow viewports scale instead of squishing.
+  canvas.style.height = 'auto';
+  canvas.style.aspectRatio = `${CHART_W} / ${CHART_H}`;
 
   const ctx = canvas.getContext('2d');
   if (!ctx) return;

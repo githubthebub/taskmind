@@ -47,6 +47,9 @@ export class App {
   private sessionStartArchetype: ArousalArchetype = 'balanced';
   private lastStats: PuzzleStats | null = null;
   private locked = false;
+  /** Engine's cumulative cleared-cell total at the last quota update. */
+  private lastEngineClearedTotal = 0;
+  private sessionRecorded = false;
 
   private els = {
     tabs: new Map<ViewName, HTMLButtonElement>(),
@@ -81,6 +84,15 @@ export class App {
     this.renderVault();
     this.showView('accelerator');
     window.addEventListener('pagehide', () => this.recordSession());
+    window.addEventListener('pageshow', (ev) => {
+      // Resuming from bfcache continues as a fresh session record so the
+      // pagehide snapshot is not duplicated under the same id.
+      if (ev.persisted && !this.locked) {
+        this.sessionRecorded = false;
+        this.sessionStartMs = Date.now();
+        this.sessionStartArchetype = this.stateEngine.current;
+      }
+    });
   }
 
   /* ---------------------------------------------------------------- */
@@ -202,7 +214,13 @@ export class App {
       {
         onStatsUpdate: (stats) => this.handleStats(stats),
         onBlockCleared: (total) => this.handleBlockCleared(total),
-        onGameOver: (finalStats) => this.handleStats(finalStats),
+        // Not routed through handleStats: the engine's dirty-flag emit
+        // delivers the same sample next frame, and double-feeding it would
+        // skew the state engine's rolling performance window.
+        onGameOver: (finalStats) => {
+          this.lastStats = finalStats;
+          this.renderHud(finalStats);
+        },
       },
     );
     this.puzzle.start();
@@ -219,12 +237,17 @@ export class App {
     this.renderHud(stats);
   }
 
-  private handleBlockCleared(_totalThisRun: number): void {
-    if (!this.lastStats) return;
+  private handleBlockCleared(engineTotal: number): void {
+    // The engine reports its cumulative cleared-cell count once per clear
+    // event (a line clear is 10 cells, a pattern clear 3-5); quota must
+    // advance by the cell delta, not by one per event.
+    const delta = engineTotal - this.lastEngineClearedTotal;
+    this.lastEngineClearedTotal = engineTotal;
+    if (delta <= 0) return;
     const quota = this.store.load().quota;
     const updated = this.store.updateQuota({
-      totalBlocksCleared: quota.totalBlocksCleared + 1,
-      sessionBlocksCleared: quota.sessionBlocksCleared + 1,
+      totalBlocksCleared: quota.totalBlocksCleared + delta,
+      sessionBlocksCleared: quota.sessionBlocksCleared + delta,
     });
     // A fresh tier unlock is a verified quota event: legal path back to balanced.
     if (updated.unlockedTiers.length > quota.unlockedTiers.length) {
@@ -306,8 +329,11 @@ export class App {
     this.puzzle?.setInputLocked(true);
     try {
       await this.breathing.run(document.body);
-    } finally {
       this.stateEngine.notifyBreathingComplete();
+    } catch {
+      // Fail closed: an aborted overlay must not commit the hyper entry.
+      this.stateEngine.cancelPendingGate();
+    } finally {
       this.setInteractablesLocked(false);
       this.puzzle?.setInputLocked(false);
       if (this.view === 'accelerator') this.puzzle?.resume();
@@ -354,8 +380,9 @@ export class App {
   private lockApplication(): void {
     this.recordSession();
     this.locked = true;
-    this.puzzle?.pause();
-    this.puzzle?.setInputLocked(true);
+    this.puzzle?.destroy();
+    this.puzzle = null;
+    this.crucible.unmount();
     this.root.innerHTML = '';
     const lockScreen = el('div', 'fme-lockscreen');
     lockScreen.append(
@@ -371,6 +398,8 @@ export class App {
   }
 
   private recordSession(): void {
+    if (this.sessionRecorded) return;
+    this.sessionRecorded = true;
     const stats = this.lastStats;
     const record: FocusSessionRecord = {
       id: `session-${this.sessionStartMs.toString(36)}`,

@@ -141,9 +141,19 @@ export class StateEngine implements IStateEngine {
   notifyBreathingComplete(): void {
     if (this.pendingGateTarget === null) return;
     const target = this.pendingGateTarget;
+    const source = this.gateSource;
     this.pendingGateTarget = null;
     this.gateSource = null;
+    // If the state moved underneath the gate, the pending transition is
+    // no longer the one that was vetted — drop it rather than commit.
+    if (source !== null && source !== this.state) return;
     this.commit(target);
+  }
+
+  /** Fail-closed path: an aborted breathing overlay must NOT commit hyper. */
+  cancelPendingGate(): void {
+    this.pendingGateTarget = null;
+    this.gateSource = null;
   }
 
   reportPerformance(sample: PerformanceSample): void {

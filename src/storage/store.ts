@@ -172,7 +172,9 @@ export class FocusStore implements IFocusStore {
   }
 
   load(): StoreSchema {
-    this.cache = this.readFromStorage();
+    // The in-memory cache is authoritative after the constructor's single
+    // read; re-reading storage here would clobber progress whenever writes
+    // fail (private mode, quota) while reads still succeed.
     return cloneSchema(this.cache);
   }
 

@@ -102,6 +102,38 @@ src/
     state matrix rejects `quota-verified` with insufficient focus seconds and intercepts
     hyper entry without committing state until `notifyBreathingComplete()`;
     **zero external network requests; zero console/page errors**.
-- **P4 (independent verification) — launched**: adversarial code reviewer (integration
-  seams, gate-bypass hunting), stub/offline-purity auditor, and spec-conformance
-  verifier running as 3 parallel independent subagents.
+- **P4 (independent verification) — complete.** 3 parallel independent verifier
+  subagents (none authored the code they audited):
+  - **Stub/purity auditor — PASS (5/5 checks).** Zero TODOs/stubs/`any` types; all 7
+    interface contracts fully implemented; strict compile clean and dist/ emit
+    byte-current; offline purity confirmed (only "URL" in the codebase is the SVG XML
+    namespace constant); localStorage is the sole persistence mechanism.
+  - **Spec-conformance verifier — PASS (9/9 requirements)** with file:line evidence,
+    verified in both source and the compiled output index.html loads: 4000/7000/8000 ms
+    phases, 2.5x sluggish tempo + max contrast, 0.6x high-precision hyper, exactly 3
+    failure scenarios with 80-char containment enforcement, deterministic 0–12 month
+    hedonic chart, strict quota gating, exit-driven UX, zero cloud hooks.
+  - **Adversarial code reviewer — 8 confirmed findings** (also explicitly cleared:
+    gate-bypass paths, pending-gate wedge, rotation OOB, division-by-zero, quota
+    recomputation, corrupt-JSON fallback).
+
+## 4. Fix Pass (P5) — all 8 findings resolved
+
+| # | Severity | Defect | Fix |
+|---|----------|--------|-----|
+| 1 | HIGH | Quota counted clear *events*, not cells — vault tiers cost 4–10x the advertised blocks | `App.handleBlockCleared` now advances quota by the engine's cumulative-cell delta |
+| 2 | MED/HIGH | `FocusStore.load()` re-read storage each call, clobbering the in-memory fallback when writes fail | cache is authoritative after the constructor's single read |
+| 3 | MED | Crucible intake overwrote an existing milestone's logged containments | intake resumes a known milestone id (at next scenario or verdict) instead of overwriting |
+| 4 | MED-LOW | `recordSession` double-fired (lock + pagehide / bfcache), duplicating ids and zeroing counters | `sessionRecorded` guard; bfcache `pageshow` starts a fresh session record |
+| 5 | LOW | Breathing gate failed *open* on overlay error; commit skipped source re-validation | fail-closed `cancelPendingGate()` on rejection; commit drops if state moved under the gate |
+| 6 | LOW | `lockApplication` leaked the puzzle rAF loop, keydown listener, crucible styles | calls `puzzle.destroy()` and `crucible.unmount()` |
+| 7 | LOW | Hedonic chart squished on <640px viewports | `height: auto` + `aspect-ratio` |
+| 8 | LOW | Game-over sample double-fed the state engine's rolling window | `onGameOver` renders HUD only; dirty-flag emit delivers the sample once |
+
+**Post-fix re-verification:** full strict compile clean; Playwright runtime smoke suite
+re-run: **18/18 PASS**, zero external requests, zero console errors.
+
+## 5. Final Status: BUILD VERIFIED ✅
+
+All four core system directives implemented without placeholders, independently
+reviewed, adversarially verified, and runtime-tested offline.

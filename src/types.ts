@@ -59,6 +59,8 @@ export interface IStateEngine {
   requestTransition(target: ArousalArchetype, trigger: StateTransition['trigger']): boolean;
   /** Called by the breathing overlay when the unskippable cycle finishes. */
   notifyBreathingComplete(): void;
+  /** Aborts a pending gated transition without committing it (fail-closed). */
+  cancelPendingGate(): void;
   /** Feed live puzzle performance so the engine can auto-detect drift. */
   reportPerformance(sample: PerformanceSample): void;
   serialize(): string;
