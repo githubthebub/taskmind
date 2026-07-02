@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0d13">
+<title>Stillpoint — Jhana Practice</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='%23c07f2a' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23c07f2a'/%3E%3C/svg%3E">
+<style>
+/* ---------------------------------------------------------------- tokens */
+:root{
+  --bg:        #0a0d13;
+  --surface:   #11151d;
+  --surface-2: #171c26;
+  --line:      #232a37;
+  --ink:       #e8e4da;
+  --ink-2:     #a8a396;
+  --ink-3:     #6b6759;
+  --amber:     #c07f2a;   /* validated vs dark surface */
+  --amber-soft:#c07f2a33;
+  --teal:      #1f9c8a;   /* validated vs dark surface */
+  --teal-soft: #1f9c8a26;
+  --radius:    18px;
+  --serif: "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.55;overflow-x:hidden;
+}
+body::before{ /* faint ambient vignette */
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(120% 90% at 50% -10%, #16203022 0%, transparent 60%);
+}
+h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:.01em}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+.screen{display:none;position:relative;z-index:1;max-width:640px;margin:0 auto;
+  padding:max(24px,env(safe-area-inset-top)) 22px calc(96px + env(safe-area-inset-bottom))}
+.screen.active{display:block;animation:rise .45s cubic-bezier(.2,.7,.3,1)}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ---------------------------------------------------------------- nav */
+nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;display:flex;justify-content:center;gap:6px;
+  padding:10px 16px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(transparent, #0a0d13cc 30%, #0a0d13);
+}
+nav button{
+  padding:9px 18px;border-radius:999px;color:var(--ink-3);font-size:14px;letter-spacing:.02em;
+  transition:color .25s,background .25s;
+}
+nav button.on{color:var(--ink);background:var(--surface-2)}
+body.in-session nav{display:none}
+
+/* ---------------------------------------------------------------- home */
+.brand{display:flex;align-items:baseline;gap:10px;margin:14px 0 4px}
+.brand h1{font-size:30px}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--amber);align-self:center;box-shadow:0 0 14px var(--amber)}
+.tagline{color:var(--ink-2);font-size:15px;margin-bottom:26px}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px;margin-bottom:16px;
+}
+.card h2{font-size:20px;margin-bottom:4px}
+.card .sub{color:var(--ink-2);font-size:14px;margin-bottom:16px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{
+  flex:1;min-width:64px;padding:12px 0;border-radius:12px;border:1px solid var(--line);
+  color:var(--ink-2);font-size:15px;transition:all .2s;background:var(--surface-2);
+}
+.seg button.on{border-color:var(--amber);color:var(--ink);background:var(--amber-soft)}
+.opt-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:13px 0;border-top:1px solid var(--line)}
+.opt-row .lbl{flex:1}
+.opt-row:first-of-type{border-top:none}
+.opt-row .lbl{font-size:15px}
+.opt-row .hint{display:block;font-size:12.5px;color:var(--ink-3);max-width:34ch}
+.toggle{
+  width:46px;height:27px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);
+  position:relative;flex-shrink:0;transition:background .25s,border-color .25s;
+}
+.toggle::after{
+  content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;
+  background:var(--ink-3);transition:transform .25s,background .25s;
+}
+.toggle.on{background:var(--teal-soft);border-color:var(--teal)}
+.toggle.on::after{transform:translateX(19px);background:var(--teal)}
+select.mini{
+  background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:10px;
+  padding:8px 10px;font-size:14px;
+}
+.begin{
+  display:block;width:100%;margin-top:20px;padding:17px;border-radius:14px;
+  background:var(--amber);color:#120c04;font-size:17px;font-weight:600;letter-spacing:.02em;
+  transition:transform .15s, box-shadow .3s; box-shadow:0 0 0px var(--amber-soft);
+}
+.begin:hover{box-shadow:0 4px 28px -4px #c07f2a66}
+.begin:active{transform:scale(.985)}
+.stat-row{display:flex;gap:12px;margin-bottom:16px}
+.stat{
+  flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;
+}
+.stat .n{font-family:var(--serif);font-size:26px;line-height:1.15}
+.stat .l{font-size:12px;color:var(--ink-3);letter-spacing:.05em;text-transform:uppercase}
+.stage-strip{display:flex;gap:6px;margin-top:14px}
+.stage-strip span{
+  flex:1;text-align:center;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-3);padding-top:8px;border-top:2px solid var(--line);
+}
+.stage-strip span em{display:block;font-style:normal;color:var(--ink-2);font-size:12.5px;text-transform:none;letter-spacing:0}
+
+/* ---------------------------------------------------------------- session */
+#session{
+  display:none;position:fixed;inset:0;z-index:100;background:var(--bg);
+  flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
+}
+#session.active{display:flex}
+#orbWrap{position:relative;width:min(64vw,300px);height:min(64vw,300px);display:flex;align-items:center;justify-content:center}
+#orbGlow{
+  position:absolute;inset:-40%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle, var(--orb-glow,#c07f2a2e) 0%, transparent 62%);
+  transition:opacity 2s;
+}
+#orb{
+  width:58%;height:58%;border-radius:50%;
+  background:radial-gradient(circle at 38% 34%, var(--orb-hi,#e5c791) 0%, var(--orb-lo,#8a5a1c) 78%);
+  box-shadow:0 0 60px -8px var(--orb-glow,#c07f2a55);
+  will-change:transform,opacity;
+}
+#breathCue{
+  position:absolute;bottom:-52px;left:0;right:0;text-align:center;
+  font-size:14px;letter-spacing:.35em;text-transform:uppercase;color:var(--ink-3);
+  transition:opacity 1.2s;
+}
+#stagePrompt{
+  position:absolute;top:12%;left:24px;right:24px;text-align:center;
+  font-family:var(--serif);font-size:clamp(17px,4.6vw,21px);color:var(--ink-2);
+  opacity:0;transition:opacity 2.4s;line-height:1.6;
+}
+#stagePrompt.show{opacity:1}
+#sessionMeta{
+  position:absolute;bottom:calc(30px + env(safe-area-inset-bottom));left:0;right:0;
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  opacity:0;transition:opacity .5s;pointer-events:none;
+}
+#session.controls-visible #sessionMeta{opacity:1;pointer-events:auto}
+#stageDots{display:flex;gap:22px}
+#stageDots .sd{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+#stageDots .sd i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+#stageDots .sd.done i{background:var(--ink-3)}
+#stageDots .sd.now{color:var(--ink-2)}
+#stageDots .sd.now i{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+#sessBtns{display:flex;gap:14px}
+#sessBtns button{
+  padding:11px 26px;border-radius:999px;border:1px solid var(--line);
+  color:var(--ink-2);font-size:14px;background:#0a0d1388;backdrop-filter:blur(6px);
+}
+#timePeek{font-variant-numeric:tabular-nums;font-size:13px;color:var(--ink-3);letter-spacing:.1em}
+#progressBar{
+  position:absolute;top:0;left:0;height:2px;background:var(--amber);width:0%;
+  opacity:.55;transition:width 1s linear;
+}
+#dimmer{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 8s}
+
+/* ---------------------------------------------------------------- reflect */
+.slider-row{padding:14px 0;border-top:1px solid var(--line)}
+.slider-row:first-of-type{border-top:none}
+.slider-row .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.slider-row .name{font-size:15px}
+.slider-row .val{font-family:var(--serif);font-size:19px;color:var(--amber);min-width:2ch;text-align:right}
+.slider-row .desc{font-size:12.5px;color:var(--ink-3);margin-bottom:10px}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;
+}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--amber);
+  margin-top:-9px;box-shadow:0 0 10px #c07f2a55;border:none;
+}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--line)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--amber);border:none}
+.depth-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.depth-seg button{
+  padding:11px 6px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);
+  color:var(--ink-2);font-size:13px;transition:all .2s;line-height:1.3;
+}
+.depth-seg button.on{border-color:var(--teal);background:var(--teal-soft);color:var(--ink)}
+textarea{
+  width:100%;min-height:84px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:12px;color:var(--ink);padding:12px;font:inherit;font-size:14.5px;resize:vertical;
+}
+.btn-quiet{display:block;width:100%;text-align:center;padding:13px;color:var(--ink-3);font-size:14px;margin-top:4px}
+
+/* ---------------------------------------------------------------- journey */
+.spark-row{padding:16px 0;border-top:1px solid var(--line)}
+.spark-row:first-of-type{border-top:none}
+.spark-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.spark-head .name{font-size:14px;color:var(--ink-2)}
+.spark-head .latest{font-family:var(--serif);font-size:18px;color:var(--ink)}
+.spark-head .latest small{font-size:12px;color:var(--ink-3);font-family:var(--sans)}
+.spark{width:100%;height:44px;display:block;touch-action:none}
+#tooltip{
+  position:fixed;z-index:200;pointer-events:none;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:10px;padding:7px 11px;font-size:12.5px;color:var(--ink);opacity:0;transition:opacity .12s;
+  box-shadow:0 6px 24px -6px #0009;white-space:nowrap;
+}
+#tooltip .t-d{color:var(--ink-3)}
+.sess-item{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-top:1px solid var(--line);font-size:14px}
+.sess-item:first-of-type{border-top:none}
+.sess-item .when{color:var(--ink-2)}
+.sess-item .note{color:var(--ink-3);font-size:13px;margin-top:3px;font-style:italic}
+.sess-item .depth-tag{color:var(--teal);font-size:12.5px;white-space:nowrap}
+.empty{color:var(--ink-3);text-align:center;padding:34px 10px;font-size:14.5px}
+
+/* ---------------------------------------------------------------- learn */
+.learn p{color:var(--ink-2);font-size:15px;margin-bottom:14px}
+.learn h3{font-size:17px;margin:22px 0 8px;color:var(--ink)}
+.learn li{color:var(--ink-2);font-size:15px;margin:0 0 10px 20px}
+.learn .src{font-size:13px;color:var(--ink-3);border-left:2px solid var(--line);padding-left:12px;margin-top:20px}
+</style>
+</head>
+<body data-palette="#c07f2a,#1f9c8a">
+
+<!-- ═══════════════════════════ HOME ═══════════════════════════ -->
+<section id="home" class="screen active">
+  <div class="brand"><div class="dot"></div><h1>Stillpoint</h1></div>
+  <p class="tagline">A staged path into meditative absorption.</p>
+
+  <div class="stat-row" id="homeStats" hidden>
+    <div class="stat"><div class="n" id="stSessions">0</div><div class="l">sessions</div></div>
+    <div class="stat"><div class="n" id="stStreak">0</div><div class="l">day streak</div></div>
+    <div class="stat"><div class="n" id="stHours">0</div><div class="l">hours</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Tonight's sit</h2>
+    <p class="sub">Four stages, each doing one job. The app scaffolds early, then gets out of the way.</p>
+    <div class="seg" id="durSeg">
+      <button data-min="20">20 min</button>
+      <button data-min="30">30 min</button>
+      <button data-min="40" class="on">40 min</button>
+      <button data-min="60">60 min</button>
+    </div>
+    <div class="stage-strip" id="stageStrip"></div>
+    <button class="begin" id="beginBtn">Begin</button>
+  </div>
+
+  <div class="card">
+    <h2>Setup</h2>
+    <p class="sub">Everything runs offline, on this device.</p>
+    <div class="opt-row">
+      <span class="lbl">Soundscape
+        <span class="hint">A low om-like drone that swells slowly, like sustained chanting.</span></span>
+      <select class="mini" id="soundSel">
+        <option value="drone">Om drone</option>
+        <option value="theta">Drone + theta beat (experimental)</option>
+        <option value="silence">Silence</option>
+      </select>
+    </div>
+    <div class="opt-row">
+      <span class="lbl">Voice guidance
+        <span class="hint">A few quiet spoken cues at stage changes. Uses your device's voice.</span></span>
+      <button class="toggle" id="tglVoice" role="switch" aria-checked="false" aria-label="Voice guidance"></button>
+    </div>
+    <div class="opt-row">
+      <span class="lbl">Attention bells
+        <span class="hint">Soft chimes during the Anchor stage — a nudge to notice wandering. They space out, then stop.</span></span>
+      <button class="toggle on" id="tglBells" role="switch" aria-checked="true" aria-label="Attention bells"></button>
+    </div>
+    <div class="opt-row">
+      <span class="lbl">Breath pace (Settle stage)
+        <span class="hint">Slow paced breathing with a longer exhale — near the resonance frequency that maximizes calm.</span></span>
+      <select class="mini" id="paceSel">
+        <option value="4,6">4s in · 6s out</option>
+        <option value="5,5">5s in · 5s out</option>
+        <option value="4,8">4s in · 8s out</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ SESSION ═══════════════════════════ -->
+<section id="session">
+  <div id="progressBar"></div>
+  <div id="stagePrompt"></div>
+  <div id="orbWrap">
+    <div id="orbGlow"></div>
+    <div id="orb"></div>
+    <div id="breathCue">in</div>
+  </div>
+  <div id="sessionMeta">
+    <div id="stageDots"></div>
+    <div id="timePeek">--:--</div>
+    <div id="sessBtns">
+      <button id="pauseBtn">Pause</button>
+      <button id="endBtn">End early</button>
+    </div>
+  </div>
+  <div id="dimmer"></div>
+</section>
+
+<!-- ═══════════════════════════ REFLECT ═══════════════════════════ -->
+<section id="reflect" class="screen">
+  <h1 style="font-size:26px;margin:14px 0 4px">How was it?</h1>
+  <p class="tagline">Thirty seconds of honest rating. This feedback is what makes the next sit deeper.</p>
+  <div class="card" id="factorCard"></div>
+  <div class="card">
+    <h2 style="font-size:17px">Deepest point reached</h2>
+    <div class="depth-seg" id="depthSeg"></div>
+  </div>
+  <div class="card">
+    <h2 style="font-size:17px;margin-bottom:10px">Notes</h2>
+    <textarea id="noteBox" placeholder="Where did pleasantness show up? What pulled you out?"></textarea>
+  </div>
+  <button class="begin" id="saveReflect">Save session</button>
+  <button class="btn-quiet" id="skipReflect">Skip</button>
+</section>
+
+<!-- ═══════════════════════════ JOURNEY ═══════════════════════════ -->
+<section id="journey" class="screen">
+  <h1 style="font-size:26px;margin:14px 0 4px">Journey</h1>
+  <p class="tagline">The four jhāna factors, sit by sit.</p>
+  <div class="stat-row">
+    <div class="stat"><div class="n" id="jSessions">0</div><div class="l">sessions</div></div>
+    <div class="stat"><div class="n" id="jStreak">0</div><div class="l">day streak</div></div>
+    <div class="stat"><div class="n" id="jHours">0</div><div class="l">hours</div></div>
+  </div>
+  <div class="card" id="sparkCard"></div>
+  <div class="card"><h2 style="font-size:17px;margin-bottom:6px">Recent sits</h2><div id="sessList"></div></div>
+</section>
+
+<!-- ═══════════════════════════ LEARN ═══════════════════════════ -->
+<section id="learn" class="screen learn">
+  <h1 style="font-size:26px;margin:14px 0 4px">The method</h1>
+  <p class="tagline">Why staged practice beats an unstructured sit.</p>
+
+  <p>Chanting for thirty minutes and attending to the breath's pleasantness is a fine practice — but it asks you to do everything at once, with no feedback. Stillpoint splits the path to absorption (jhāna) into four stages, gives each one exactly one instruction, and then fades its own supports so the state can take over.</p>
+
+  <h3>1 · Settle</h3>
+  <p>Paced breathing at roughly five to six breaths per minute, exhale longer than inhale. Breathing near this "resonance frequency" measurably raises vagal tone and heart-rate variability — it drops the body into parasympathetic calm in minutes, giving you a physiological head start that unpaced chanting doesn't.</p>
+
+  <h3>2 · Anchor</h3>
+  <p>The pacer fades; the breath returns to its own rhythm. You rest attention where the breath is most vivid and simply begin again each time the mind wanders. Occasional soft bells act as attention probes — research on mind-wandering shows people drift for minutes without noticing; an external check shortens that lag while you're still training the skill. The bells space out and stop as the sit deepens.</p>
+
+  <h3>3 · Glow</h3>
+  <p>This is the pivot most self-taught meditators miss, and the heart of Leigh Brasington's jhāna method: once attention is steady, deliberately shift it from the breath to the most <em>pleasant</em> sensation available — warmth, tingling, the smile itself — and give that pleasantness your full attention. Piti (energetic joy) feeds on attention. A slight smile genuinely helps.</p>
+
+  <h3>4 · Absorb</h3>
+  <p>Everything the app was doing stops. The drone recedes, the screen goes dark, and there are no more prompts — because at this point any external cue is an anchor pulling you back out. You let the pleasantness grow until it absorbs attention on its own. That letting-go, not effort, is what tips access concentration into jhāna.</p>
+
+  <h3>After: rate the factors</h3>
+  <p>You rate the four classical jhāna factors — stability of attention, piti, sukha (contented happiness), and effortlessness — plus how deep the sit went. This turns each session into deliberate practice with feedback instead of an unmeasured half hour. Watching the piti line rise over weeks tells you the method is working before the states themselves become obvious.</p>
+
+  <h3>Honest notes</h3>
+  <ul>
+    <li>The optional theta binaural layer is marked experimental because the evidence for brainwave entrainment is genuinely mixed. The drone's value is steadiness, not magic frequencies.</li>
+    <li>No app produces jhāna. Consistency, retreat time, and unbroken attention do. This one just removes the common failure points: starting tense, wandering unnoticed, never pivoting to pleasantness, and getting no feedback.</li>
+  </ul>
+
+  <p class="src">Drawn from: Leigh Brasington, <em>Right Concentration</em> (the pleasantness-pivot protocol) · Lehrer &amp; Gevirtz on resonance-frequency breathing and HRV · Culadasa, <em>The Mind Illuminated</em> (wandering detection, fading supports) · Sacchet et&nbsp;al.'s neuroimaging of advanced jhāna practitioners, which frames jhāna as trainable attention-plus-positive-affect rather than mystery.</p>
+</section>
+
+<nav id="nav">
+  <button data-nav="home" class="on">Sit</button>
+  <button data-nav="journey">Journey</button>
+  <button data-nav="learn">Method</button>
+</nav>
+<div id="tooltip"></div>
+
+<script>
+"use strict";
+/* ═══════════════════════════ store ═══════════════════════════ */
+const Store = {
+  KS:"stillpoint.v1.sessions", KC:"stillpoint.v1.settings",
+  sessions(){ try{ return JSON.parse(localStorage.getItem(this.KS)) || []; }catch{ return []; } },
+  addSession(s){ const a=this.sessions(); a.push(s); try{ localStorage.setItem(this.KS, JSON.stringify(a)); }catch{} },
+  settings(){ try{ return JSON.parse(localStorage.getItem(this.KC)) || {}; }catch{ return {}; } },
+  saveSettings(p){ try{ localStorage.setItem(this.KC, JSON.stringify({...this.settings(), ...p})); }catch{} },
+};
+
+/* ═══════════════════════════ settings state ═══════════════════════════ */
+const S = Object.assign({
+  minutes:40, sound:"drone", voice:false, bells:true, pace:[4,6],
+}, Store.settings());
+
+/* ═══════════════════════════ protocol ═══════════════════════════ */
+const STAGES = [
+  { key:"settle", name:"Settle", frac:.125,
+    enter:"Settle into your posture. Let the breath follow the circle — in as it grows, out as it fades.",
+    mid:"Soften the jaw, the shoulders, the belly." },
+  { key:"anchor", name:"Anchor", frac:.30,
+    enter:"Let the breath find its own rhythm. Rest attention where you feel it most clearly.",
+    mid:"If the mind has wandered, that's fine. Simply begin again." },
+  { key:"glow", name:"Glow", frac:.25,
+    enter:"Now find the most pleasant part of this moment. Let a slight smile form, and give the pleasantness your full attention.",
+    mid:"Don't chase it. Just stay with it, and let it grow on its own." },
+  { key:"absorb", name:"Absorb", frac:.325,
+    enter:"Let go of doing. Let the pleasantness carry you.", mid:null },
+];
+function buildSchedule(totalMin){
+  const total = totalMin*60;
+  let t=0;
+  return STAGES.map((st,i)=>{
+    const dur = i===STAGES.length-1 ? total-t : Math.round(total*st.frac);
+    const seg = { ...st, start:t, end:t+dur, dur };
+    t += dur; return seg;
+  });
+}
+
+/* ═══════════════════════════ audio engine ═══════════════════════════ */
+const Audio = {
+  ctx:null, master:null, drone:null, warm:null, lfo:null,
+  ensure(){
+    if(!this.ctx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AC();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = 0.9;
+      this.master.connect(this.ctx.destination);
+    }
+    if(this.ctx.state==="suspended") this.ctx.resume();
+    return this.ctx;
+  },
+  /* om-like drone: fundamental + harmonics + slow chant-like swell */
+  startDrone(mode){
+    const ctx = this.ensure();
+    const bus = ctx.createGain(); bus.gain.value = 0;
+    const lp = ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=900; lp.Q.value=.3;
+    lp.connect(bus); bus.connect(this.master);
+
+    const voices=[];
+    const addVoice = (freq,gain,pan)=>{
+      const o=ctx.createOscillator(); o.type="sine"; o.frequency.value=freq;
+      const g=ctx.createGain(); g.gain.value=gain;
+      if(pan!==undefined && ctx.createStereoPanner){
+        const p=ctx.createStereoPanner(); p.pan.value=pan; o.connect(g).connect(p).connect(lp);
+      } else o.connect(g).connect(lp);
+      o.start(); voices.push(o);
+      return {osc:o, gain:g};
+    };
+    if(mode==="theta"){
+      addVoice(110,.55,-1); addVoice(116,.55,1);      // 6 Hz interaural beat
+      addVoice(220,.22); addVoice(330,.08);
+    } else {
+      addVoice(110,.55); addVoice(110.7,.30);          // gentle beating richness
+      addVoice(220,.25); addVoice(330,.09);
+    }
+    const warm = addVoice(165,.0);                     // perfect fifth, faded in at Glow
+
+    // slow amplitude swell ~ chant breathing
+    const lfo=ctx.createOscillator(); lfo.frequency.value=.07;
+    const lfoG=ctx.createGain(); lfoG.gain.value=.12;
+    lfo.connect(lfoG).connect(bus.gain); lfo.start();
+
+    bus.gain.setTargetAtTime(.34, ctx.currentTime, 4);
+    this.drone={bus,voices,lfo,warm};
+  },
+  warmUp(){ if(this.drone) this.drone.warm.gain.gain.setTargetAtTime(.14, this.ctx.currentTime, 8); },
+  duck(level,tc){ if(this.drone) this.drone.bus.gain.setTargetAtTime(level, this.ctx.currentTime, tc||6); },
+  stopDrone(fade=3){
+    const d=this.drone; if(!d) return; this.drone=null;
+    d.bus.gain.setTargetAtTime(0, this.ctx.currentTime, fade/3);
+    setTimeout(()=>{ d.voices.forEach(v=>{try{v.stop()}catch{}}); try{d.lfo.stop()}catch{}; try{d.bus.disconnect()}catch{}; }, fade*1000+500);
+  },
+  /* soft rin-gong style bell */
+  bell(vol=.5, base=528){
+    const ctx=this.ensure(), t=ctx.currentTime;
+    [[1,1],[2.756,.38],[5.404,.11]].forEach(([m,g])=>{
+      const o=ctx.createOscillator(); o.type="sine"; o.frequency.value=base*m;
+      const gn=ctx.createGain();
+      gn.gain.setValueAtTime(0,t);
+      gn.gain.linearRampToValueAtTime(vol*g, t+.02);
+      gn.gain.exponentialRampToValueAtTime(.0001, t+5.5/m);
+      o.connect(gn).connect(this.master);
+      o.start(t); o.stop(t+6);
+    });
+  },
+  endBells(){ this.bell(.5); setTimeout(()=>this.bell(.5),4000); setTimeout(()=>this.bell(.55),8000); },
+};
+
+/* ═══════════════════════════ voice ═══════════════════════════ */
+function speak(text){
+  if(!S.voice || !("speechSynthesis" in window) || !text) return;
+  Audio.duck(.16,2);
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate=.82; u.pitch=.9; u.volume=.85;
+  u.onend = ()=> Audio.duck(.34,5);
+  speechSynthesis.speak(u);
+}
+
+/* ═══════════════════════════ session controller ═══════════════════════════ */
+const el = id => document.getElementById(id);
+const Session = {
+  running:false, paused:false, schedule:null, total:0,
+  startedAt:0, pausedAt:0, pausedTotal:0,
+  stageIdx:-1, timer:null, raf:null, wakeLock:null,
+  bellTimes:[], midFired:[], promptTimeout:null,
+
+  async start(){
+    this.schedule = buildSchedule(S.minutes);
+    this.total = S.minutes*60;
+    this.stageIdx = -1;
+    this.startedAt = Date.now();
+    this.pausedTotal = 0; this.paused=false; this.running=true;
+    this.midFired = this.schedule.map(()=>false);
+
+    // attention-probe bells in Anchor: spacing grows, then they stop
+    const a = this.schedule[1];
+    this.bellTimes = [];
+    if(S.bells){
+      let t=a.start+120, gap=120;
+      while(t < a.end-60 && this.bellTimes.length<4){ this.bellTimes.push(t); gap+=60; t+=gap; }
+    }
+    this.bellsFired = 0;
+
+    document.body.classList.add("in-session");
+    el("session").classList.add("active");
+    el("dimmer").style.opacity = 0;
+    this.renderDots();
+    this.showControls();
+
+    if(S.sound!=="silence") Audio.startDrone(S.sound); else Audio.ensure();
+    Audio.bell(.35);
+    try{ this.wakeLock = await navigator.wakeLock?.request("screen"); }catch{}
+
+    this.timer = setInterval(()=>this.tick(), 250);
+    this.animatePacer();
+    this.tick();
+  },
+
+  elapsed(){ return (Date.now()-this.startedAt-this.pausedTotal)/1000; },
+
+  tick(){
+    if(!this.running || this.paused) return;
+    const t = this.elapsed();
+    if(t >= this.total){ this.finish(true); return; }
+
+    el("progressBar").style.width = (t/this.total*100)+"%";
+    const m=Math.floor((this.total-t)/60), s=Math.floor((this.total-t)%60);
+    el("timePeek").textContent = `${m}:${String(s).padStart(2,"0")} remaining`;
+
+    const idx = this.schedule.findIndex(st=> t>=st.start && t<st.end);
+    if(idx !== this.stageIdx && idx>=0){ this.enterStage(idx); }
+
+    const st = this.schedule[this.stageIdx];
+    if(st && st.mid && !this.midFired[this.stageIdx] && t > st.start + st.dur*.45){
+      this.midFired[this.stageIdx]=true;
+      this.prompt(st.mid); speak(st.mid);
+    }
+    if(this.bellsFired < this.bellTimes.length && t >= this.bellTimes[this.bellsFired]){
+      this.bellsFired++; Audio.bell(.22, 660);
+    }
+  },
+
+  enterStage(idx){
+    this.stageIdx = idx;
+    const st = this.schedule[idx];
+    this.renderDots();
+    if(idx>0) Audio.bell(.3);
+    this.prompt(st.enter); speak(st.enter);
+
+    const cue=el("breathCue");
+    cue.style.opacity = st.key==="settle" ? 1 : 0;   // pacer text only while pacing
+    if(st.key==="glow"){
+      // warm the palette + drone: the pleasantness pivot
+      document.documentElement.style.setProperty("--orb-hi","#f2d5a0");
+      document.documentElement.style.setProperty("--orb-lo","#a3661a");
+      document.documentElement.style.setProperty("--orb-glow","#d8923744");
+      Audio.warmUp();
+    }
+    if(st.key==="absorb"){
+      el("dimmer").style.opacity = .82;              // near-dark; faint orb remains
+      Audio.duck(.10, 20);
+    }
+  },
+
+  prompt(text){
+    const p=el("stagePrompt");
+    clearTimeout(this.promptTimeout);
+    p.textContent=text; p.classList.add("show");
+    this.promptTimeout = setTimeout(()=>p.classList.remove("show"), 14000);
+  },
+
+  /* breath pacer — sinusoidal ease, inhale:exhale from settings */
+  animatePacer(){
+    const orb=el("orb"), cue=el("breathCue");
+    const [inS,outS] = S.pace;
+    const cycle=(inS+outS)*1000;
+    const step = ()=>{
+      if(!this.running){ return; }
+      if(!this.paused){
+        const st=this.schedule[this.stageIdx];
+        const t = this.elapsed();
+        let sc=1, op=1;
+        if(st && st.key==="settle"){
+          const ph = ((t*1000)%cycle)/1000;
+          let f;
+          if(ph<inS){ f = ph/inS; cue.textContent="in"; }
+          else { f = 1-(ph-inS)/outS; cue.textContent="out"; }
+          const eased = .5-.5*Math.cos(Math.PI*f);   // smooth turnarounds
+          sc = .72 + .30*eased;
+        } else if(st && st.key==="anchor"){
+          // slow ambient shimmer, decoupled from breath
+          const fade = Math.min(1,(t-st.start)/50);
+          sc = .82 + .05*Math.sin(t*.35);
+          op = 1 - .25*fade;
+        } else if(st && st.key==="glow"){
+          sc = .86 + .06*Math.sin(t*.3);
+        } else if(st && st.key==="absorb"){
+          const fade = Math.min(1,(t-st.start)/90);
+          sc = .84 + .04*Math.sin(t*.25);
+          op = 1 - .55*fade;                          // recede, don't vanish
+        }
+        orb.style.transform = `scale(${sc.toFixed(4)})`;
+        orb.style.opacity = op.toFixed(3);
+      }
+      this.raf = requestAnimationFrame(step);
+    };
+    this.raf = requestAnimationFrame(step);
+  },
+
+  renderDots(){
+    el("stageDots").innerHTML = this.schedule.map((st,i)=>
+      `<div class="sd ${i<this.stageIdx?"done":i===this.stageIdx?"now":""}"><i></i>${st.name}</div>`).join("");
+  },
+
+  showControls(){
+    const s=el("session");
+    s.classList.add("controls-visible");
+    clearTimeout(this._hideT);
+    this._hideT = setTimeout(()=>{ if(!this.paused) s.classList.remove("controls-visible"); }, 4500);
+  },
+
+  togglePause(){
+    if(!this.running) return;
+    this.paused = !this.paused;
+    el("pauseBtn").textContent = this.paused ? "Resume" : "Pause";
+    if(this.paused){ this.pausedAt=Date.now(); Audio.duck(.08,1); this.showControls(); }
+    else { this.pausedTotal += Date.now()-this.pausedAt; Audio.duck(.34,3); }
+  },
+
+  finish(completed){
+    if(!this.running) return;
+    this.running=false;
+    clearInterval(this.timer); cancelAnimationFrame(this.raf);
+    clearTimeout(this.promptTimeout);
+    try{ this.wakeLock?.release(); }catch{}
+    Audio.stopDrone(6);
+    if(completed){
+      Audio.endBells();
+      this.prompt("Slowly widen your awareness. Notice the room. When you're ready, open your eyes.");
+      speak("Slowly widen your awareness. When you're ready, open your eyes.");
+      el("dimmer").style.opacity=0;
+      setTimeout(()=>this.exitToReflect(), 9000);
+    } else {
+      this.exitToReflect();
+    }
+    this._actualMin = Math.max(1, Math.round(this.elapsed()/60));
+  },
+
+  exitToReflect(){
+    el("session").classList.remove("active");
+    document.body.classList.remove("in-session");
+    document.documentElement.style.removeProperty("--orb-hi");
+    document.documentElement.style.removeProperty("--orb-lo");
+    document.documentElement.style.removeProperty("--orb-glow");
+    el("orb").style.opacity=1; el("dimmer").style.opacity=0;
+    try{ speechSynthesis.cancel(); }catch{}
+    Reflect_.open(this._actualMin || S.minutes);
+  },
+};
+
+/* ═══════════════════════════ reflect ═══════════════════════════ */
+const FACTORS = [
+  {k:"stability", n:"Stability of attention", d:"How continuously did attention stay with the object?"},
+  {k:"piti",      n:"Piti — energetic joy",   d:"Tingling, waves, uplift, goosebump energy."},
+  {k:"sukha",     n:"Sukha — happiness",       d:"Quiet contentment and ease suffusing the sit."},
+  {k:"ease",      n:"Effortlessness",          d:"How little pushing did staying present take?"},
+];
+const DEPTHS = ["Restless","Settled","Access — steady & bright","Piti arising","Light absorption","Deep absorption"];
+
+const Reflect_ = {
+  minutes:0, depth:null,
+  open(minutes){
+    this.minutes = minutes; this.depth=null;
+    el("factorCard").innerHTML = FACTORS.map(f=>`
+      <div class="slider-row">
+        <div class="top"><span class="name">${f.n}</span><span class="val" id="v_${f.k}">5</span></div>
+        <div class="desc">${f.d}</div>
+        <input type="range" min="1" max="10" value="5" id="r_${f.k}"
+          oninput="document.getElementById('v_${f.k}').textContent=this.value">
+      </div>`).join("");
+    el("depthSeg").innerHTML = DEPTHS.map((d,i)=>`<button data-d="${i}">${d}</button>`).join("");
+    el("depthSeg").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+      this.depth=+b.dataset.d;
+      el("depthSeg").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+    });
+    el("noteBox").value="";
+    show("reflect");
+  },
+  save(skip){
+    if(!skip){
+      const factors={};
+      FACTORS.forEach(f=> factors[f.k] = +el("r_"+f.k).value);
+      Store.addSession({
+        ts:Date.now(), minutes:this.minutes, factors,
+        depth:this.depth, note:el("noteBox").value.trim(),
+      });
+    }
+    renderHomeStats(); renderJourney(); show(skip?"home":"journey");
+  },
+};
+
+/* ═══════════════════════════ journey / charts ═══════════════════════════ */
+const fmtDate = ts => new Date(ts).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+function streak(sessions){
+  if(!sessions.length) return 0;
+  const days = new Set(sessions.map(s=>new Date(s.ts).toDateString()));
+  let n=0; const d=new Date();
+  if(!days.has(d.toDateString())) d.setDate(d.getDate()-1);   // today not required yet
+  while(days.has(d.toDateString())){ n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+function renderHomeStats(){
+  const ss=Store.sessions();
+  el("homeStats").hidden = ss.length===0;
+  el("stSessions").textContent=ss.length;
+  el("stStreak").textContent=streak(ss);
+  el("stHours").textContent=(ss.reduce((a,s)=>a+s.minutes,0)/60).toFixed(1);
+}
+
+/* sparkline: one factor per row, single validated hue, hover tooltip */
+function sparkline(data, key){
+  const W=560, H=44, PAD=6, n=data.length;
+  if(n<2) return `<svg class="spark" viewBox="0 0 ${W} ${H}"><text x="0" y="26" fill="#6b6759" font-size="13">Two sessions needed for a trend.</text></svg>`;
+  const x=i=> PAD + i*(W-2*PAD)/(n-1);
+  const y=v=> H-PAD - (v-1)/9*(H-2*PAD);
+  const pts=data.map((s,i)=>[x(i), y(s.factors[key]), s]);
+  const line=pts.map(p=>`${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+  const area=`${PAD},${H-PAD} ${line} ${(W-PAD).toFixed(1)},${H-PAD}`;
+  const dots=pts.map((p,i)=>
+    `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${i===n-1?4:2.5}" fill="#c07f2a"
+       stroke="#11151d" stroke-width="2" data-i="${i}"></circle>`).join("");
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" data-key="${key}" preserveAspectRatio="none">
+    <line x1="${PAD}" y1="${H-PAD}" x2="${W-PAD}" y2="${H-PAD}" stroke="#232a37" stroke-width="1"/>
+    <polygon points="${area}" fill="#c07f2a14"/>
+    <polyline points="${line}" fill="none" stroke="#c07f2a" stroke-width="2"
+      stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+  </svg>`;
+}
+function renderJourney(){
+  const all=Store.sessions();
+  el("jSessions").textContent=all.length;
+  el("jStreak").textContent=streak(all);
+  el("jHours").textContent=(all.reduce((a,s)=>a+s.minutes,0)/60).toFixed(1);
+
+  const recent = all.slice(-20);
+  el("sparkCard").innerHTML = all.length===0
+    ? `<div class="empty">Your first sit will start the record.</div>`
+    : FACTORS.map(f=>{
+        const last=recent[recent.length-1].factors[f.k];
+        return `<div class="spark-row">
+          <div class="spark-head"><span class="name">${f.n}</span>
+            <span class="latest">${last}<small> /10 latest</small></span></div>
+          ${sparkline(recent, f.k)}
+        </div>`;
+      }).join("");
+
+  el("sessList").innerHTML = all.length===0
+    ? `<div class="empty">No sessions yet.</div>`
+    : all.slice(-12).reverse().map(s=>`
+      <div class="sess-item">
+        <div>
+          <div class="when">${fmtDate(s.ts)} · ${s.minutes} min</div>
+          ${s.note?`<div class="note">${s.note.replace(/</g,"&lt;")}</div>`:""}
+        </div>
+        ${s.depth!=null?`<div class="depth-tag">${DEPTHS[s.depth]}</div>`:""}
+      </div>`).join("");
+
+  // hover/touch tooltips on sparkline points
+  const tip=el("tooltip");
+  el("sparkCard").querySelectorAll("svg.spark[data-key]").forEach(svg=>{
+    const key=svg.dataset.key;
+    const handle=(ev)=>{
+      const pt = ev.touches? ev.touches[0] : ev;
+      const rect=svg.getBoundingClientRect();
+      const fx=(pt.clientX-rect.left)/rect.width;             // nearest point by x
+      const i=Math.max(0,Math.min(recent.length-1,Math.round(fx*(recent.length-1))));
+      const s=recent[i]; if(!s) return;
+      tip.innerHTML=`<span class="t-d">${fmtDate(s.ts)}</span> &nbsp;${s.factors[key]}/10`;
+      tip.style.opacity=1;
+      tip.style.left=Math.min(window.innerWidth-130, pt.clientX+12)+"px";
+      tip.style.top=(rect.top-36)+"px";
+    };
+    svg.addEventListener("mousemove",handle);
+    svg.addEventListener("touchstart",handle,{passive:true});
+    svg.addEventListener("touchmove",handle,{passive:true});
+    svg.addEventListener("mouseleave",()=>tip.style.opacity=0);
+    svg.addEventListener("touchend",()=>tip.style.opacity=0);
+  });
+}
+
+/* ═══════════════════════════ ui wiring ═══════════════════════════ */
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===id));
+  document.querySelectorAll("nav button").forEach(b=>
+    b.classList.toggle("on", b.dataset.nav===id || (id==="reflect"&&b.dataset.nav==="home")));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll("nav button").forEach(b=> b.onclick=()=>show(b.dataset.nav));
+
+function renderStageStrip(){
+  el("stageStrip").innerHTML = buildSchedule(S.minutes).map(st=>
+    `<span style="flex:${st.dur}">${st.name}<em>${Math.round(st.dur/60)}m</em></span>`).join("");
+}
+document.querySelectorAll("#durSeg button").forEach(b=> b.onclick=()=>{
+  document.querySelectorAll("#durSeg button").forEach(x=>x.classList.toggle("on",x===b));
+  S.minutes=+b.dataset.min; Store.saveSettings({minutes:S.minutes}); renderStageStrip();
+});
+function wireToggle(id,key){
+  const t=el(id);
+  t.classList.toggle("on", S[key]);
+  t.setAttribute("aria-checked", String(S[key]));
+  t.onclick=()=>{ S[key]=!S[key]; t.classList.toggle("on",S[key]);
+    t.setAttribute("aria-checked",String(S[key])); Store.saveSettings({[key]:S[key]}); };
+}
+wireToggle("tglVoice","voice"); wireToggle("tglBells","bells");
+el("soundSel").value=S.sound;
+el("soundSel").onchange=e=>{ S.sound=e.target.value; Store.saveSettings({sound:S.sound}); };
+el("paceSel").value=S.pace.join(",");
+el("paceSel").onchange=e=>{ S.pace=e.target.value.split(",").map(Number); Store.saveSettings({pace:S.pace}); };
+document.querySelectorAll("#durSeg button").forEach(b=> b.classList.toggle("on", +b.dataset.min===S.minutes));
+
+el("beginBtn").onclick=()=>Session.start();
+el("pauseBtn").onclick=()=>Session.togglePause();
+el("endBtn").onclick=()=>Session.finish(false);
+el("session").addEventListener("pointermove",()=>Session.running&&Session.showControls());
+el("session").addEventListener("click",()=>Session.running&&Session.showControls());
+el("saveReflect").onclick=()=>Reflect_.save(false);
+el("skipReflect").onclick=()=>Reflect_.save(true);
+
+renderStageStrip(); renderHomeStats(); renderJourney();
+
+/* debug hook for tests */
+window.__sp = { Session, Store, Audio, S, buildSchedule };
+</script>
+</body>
+</html>
