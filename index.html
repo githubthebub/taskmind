@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Haven — the companion that wants you to leave</title>
+<meta name="description" content="A companion built to downregulate your nervous system, not monetize your loneliness.">
+<link rel="stylesheet" href="css/haven.css">
+</head>
+<body>
+
+  <!-- ambient background layers -->
+  <div class="bg-gradient" id="bgGradient"></div>
+  <div class="bg-particles" id="bgParticles" aria-hidden="true"></div>
+
+  <main id="app" aria-live="polite"></main>
+
+  <!-- always-available SOS button -->
+  <button id="sosBtn" class="sos-btn hidden" title="Feeling the pull? Ride it out here.">
+    <span class="sos-wave" aria-hidden="true"></span>
+    <span class="sos-label">I'm feeling the pull</span>
+  </button>
+
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/breath.js"></script>
+  <script src="js/session.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
