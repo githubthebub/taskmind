@@ -189,12 +189,41 @@ function detailScreen(sess) {
               <span class="phase-dur">${fmtTime(p.dur)}</span></li>`).join('')}
       </ol>
       <div class="detail-actions">
-        <button class="btn primary big" id="begin">Begin</button>
+        <div class="len-row" role="radiogroup" aria-label="Session length">
+          <button class="len-opt" data-f="0.7">Shorter</button>
+          <button class="len-opt on" data-f="1">Standard</button>
+          <button class="len-opt" data-f="1.3">Longer</button>
+        </div>
+        <button class="btn primary big" id="begin">Begin · ${sess.minutes} min</button>
       </div>
     </section>`);
+  let factor = 1;
+  const begin = s.querySelector('#begin');
+  s.querySelectorAll('.len-opt').forEach(b => {
+    b.onclick = () => {
+      factor = Number(b.dataset.f);
+      s.querySelectorAll('.len-opt').forEach(x => x.classList.toggle('on', x === b));
+      begin.textContent = `Begin · ${Math.round(sess.minutes * factor)} min`;
+    };
+  });
   s.querySelector('.back').onclick = homeScreen;
-  s.querySelector('#begin').onclick = () => practiceScreen(sess);
+  begin.onclick = () => practiceScreen(scaleSession(sess, factor));
   show(s);
+}
+
+/* clone a session with phase durations and cue times scaled */
+function scaleSession(sess, f) {
+  if (f === 1) return sess;
+  return {
+    ...sess,
+    phases: sess.phases.map(p => ({
+      ...p,
+      dur: Math.round(p.dur * f),
+      cues: p.cues
+        .map(c => ({ ...c, t: Math.round(c.t * f) }))
+        .filter(c => c.t < Math.round(p.dur * f) - 3),
+    })),
+  };
 }
 
 /* ============================================================
@@ -207,6 +236,7 @@ function practiceScreen(sess) {
   const totalDur = sess.phases.reduce((a, p) => a + p.dur, 0);
   const s = el(`
     <section class="screen practice" style="--tint:${sess.tint}">
+      <canvas class="ambient" aria-hidden="true"></canvas>
       <header class="practice-head">
         <button class="icon-btn" id="p-exit" aria-label="End session">✕</button>
         <div class="phase-label" id="p-phase"></div>
@@ -381,6 +411,10 @@ function practiceScreen(sess) {
     .then(l => { wakeLock = l; })
     .catch(() => {});
 
+  // ambient drifting motes, energy follows phase intensity
+  const ambient = startAmbient(s.querySelector('.ambient'), sess.tint,
+    () => currentPhase()?.intensity ?? 0.2);
+
   function onKey(e) {
     if (e.code === 'Space') {
       e.preventDefault();
@@ -396,6 +430,7 @@ function practiceScreen(sess) {
     state.done = true;
     document.removeEventListener('keydown', onKey);
     wakeLock?.release().catch(() => {});
+    ambient.stop();
     cancelAnimationFrame(state.raf);
     sound.stopSpeech();
     if (completed) sound.chime();
@@ -411,6 +446,57 @@ function practiceScreen(sess) {
   setCue(`${sess.title}. Settle in.`);
   state.last = performance.now();
   state.raf = requestAnimationFrame(tick);
+}
+
+/* slow-drifting glowing motes; energy() (0..1) drives speed and glow */
+function startAmbient(canvas, tint, energy) {
+  if (settings.reduceMotion || !canvas.getContext) return { stop() {} };
+  const ctx = canvas.getContext('2d');
+  let w, h, raf = 0;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  function size() {
+    w = canvas.clientWidth; h = canvas.clientHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  size();
+  window.addEventListener('resize', size);
+
+  const N = 34;
+  const motes = Array.from({ length: N }, (_, i) => ({
+    x: (i * 173.3) % 1, y: (i * 97.7) % 1,
+    r: 1 + (i % 5) * 0.8,
+    vx: ((i % 7) - 3) * 0.008,
+    vy: -0.01 - (i % 4) * 0.006,
+    tw: (i * 0.61) % (Math.PI * 2),
+  }));
+
+  let last = performance.now();
+  function frame(now) {
+    if (!w || !h) size(); // element may not have been laid out at start()
+    const dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+    const e = energy();
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = tint;
+    for (const m of motes) {
+      m.x = (m.x + m.vx * dt * (0.5 + e * 2) + 1) % 1;
+      m.y = (m.y + m.vy * dt * (0.5 + e * 2.5) + 1) % 1;
+      m.tw += dt * (0.4 + e);
+      ctx.globalAlpha = (0.05 + e * 0.22) * (0.55 + 0.45 * Math.sin(m.tw));
+      ctx.beginPath();
+      ctx.arc(m.x * w, m.y * h, m.r * (0.8 + e), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  raf = requestAnimationFrame(frame);
+  return {
+    stop() {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', size);
+    },
+  };
 }
 
 /* ---------- completion + rating ---------- */
@@ -478,6 +564,23 @@ function journalScreen() {
       <div class="entry-list"></div>
     </section>`);
   const list = s.querySelector('.entry-list');
+
+  // glow trend: last 14 rated sessions, oldest → newest
+  const rated = entries.filter(e => e.glow > 0).slice(0, 14).reverse();
+  if (rated.length >= 2) {
+    const W = 280, H = 56, pad = 6;
+    const step = (W - pad * 2) / (rated.length - 1);
+    const pts = rated.map((e, i) =>
+      `${(pad + i * step).toFixed(1)},${(H - pad - (e.glow - 1) / 4 * (H - pad * 2)).toFixed(1)}`);
+    list.before(el(`
+      <div class="trend-card">
+        <div class="trend-label">Glow over your last ${rated.length} rated sessions</div>
+        <svg viewBox="0 0 ${W} ${H}" class="trend" aria-hidden="true">
+          <polyline points="${pts.join(' ')}" class="trend-line"/>
+          ${pts.map(p => `<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="2.6" class="trend-dot"/>`).join('')}
+        </svg>
+      </div>`));
+  }
   if (!entries.length) {
     list.appendChild(el(`<p class="foot-note">Finish any session and it lands here —
       with your glow rating and notes, so you can watch the practice deepen.</p>`));
@@ -592,5 +695,10 @@ window.speechSynthesis?.addEventListener?.('voiceschanged', () => {});
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && engine?.running) engine.pause();
 });
+
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () =>
+    navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
 
 maybeConsent(homeScreen);
