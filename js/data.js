@@ -341,6 +341,27 @@ const SESSIONS = [
   },
 ];
 
+/* ---------- building blocks for custom sessions ----------
+   Each references a canonical phase; duration is user-adjustable
+   and cue times scale with it. */
+
+function findPhase(sessionId, phaseName) {
+  const s = SESSIONS.find(x => x.id === sessionId);
+  return s.phases.find(p => p.name === phaseName);
+}
+
+const PHASE_LIBRARY = [
+  { id: 'arrive',   label: 'Arrive',           desc: 'Settle and soften',            phase: findPhase('full-body-wave', 'Arrive') },
+  { id: 'scan',     label: 'Body Scan',        desc: 'Wake the body with attention', phase: findPhase('full-body-wave', 'Body Scan') },
+  { id: 'pulse',    label: 'Pelvic Pulse',     desc: 'Slow floor pulses with breath', phase: findPhase('pelvic-pulse', 'Pulse Wave') },
+  { id: 'wave',     label: 'Pelvic Wave',      desc: 'Rocking wave, warmth rising',  phase: findPhase('full-body-wave', 'Pelvic Wave') },
+  { id: 'undulate', label: 'Spinal Undulation', desc: 'A wave through the spine',    phase: findPhase('spinal-current', 'Undulate') },
+  { id: 'circular', label: 'Circular Breath',  desc: 'Connected breath, energy builds', phase: findPhase('full-body-wave', 'Circular Breath') },
+  { id: 'current',  label: 'Spinal Current',   desc: 'Run sensation base to crown',  phase: findPhase('spinal-current', 'Raise the Current') },
+  { id: 'peak',     label: 'Peak & Spread',    desc: 'Ride the wave to release',     phase: findPhase('full-body-wave', 'Peak & Spread') },
+  { id: 'melt',     label: 'Melt',             desc: 'Afterglow and integration',    phase: findPhase('full-body-wave', 'Melt') },
+];
+
 /* ---------- Learn content ---------- */
 
 const LEARN = [
@@ -383,4 +404,4 @@ const LEARN = [
   },
 ];
 
-export { SESSIONS, LEARN };
+export { SESSIONS, LEARN, PHASE_LIBRARY };

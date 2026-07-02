@@ -2,7 +2,7 @@
    VELVET — app shell, practice engine, journal
    ============================================================ */
 
-import { SESSIONS, LEARN } from './data.js';
+import { SESSIONS, LEARN, PHASE_LIBRARY } from './data.js';
 import { sound } from './audio.js';
 
 const $ = sel => document.querySelector(sel);
@@ -54,6 +54,33 @@ function streak() {
     cursor.setDate(cursor.getDate() - 1);
   }
   return count;
+}
+
+/* ---------- custom sessions ---------- */
+
+const CUSTOM_TINT = '#c9a86a';
+
+function customSessions() { return store.get('velvet.custom', []); }
+function saveCustom(sess) {
+  const c = customSessions().filter(x => x.id !== sess.id);
+  c.push(sess);
+  store.set('velvet.custom', c);
+}
+function deleteCustom(id) {
+  store.set('velvet.custom', customSessions().filter(x => x.id !== id));
+}
+function allSessions() { return [...SESSIONS, ...customSessions()]; }
+
+/* scale one phase to a new duration, keeping cue rhythm */
+function scalePhase(phase, dur) {
+  const f = dur / phase.dur;
+  return {
+    ...phase,
+    dur,
+    cues: phase.cues
+      .map(c => ({ ...c, t: Math.round(c.t * f) }))
+      .filter(c => c.t < dur - 3),
+  };
 }
 
 /* ---------- tiny view helpers ---------- */
@@ -150,7 +177,7 @@ function homeScreen() {
         'Your body learns these practices the way it learned to swim — by returning.'}</p>
     </section>`);
   const list = s.querySelector('.session-list');
-  for (const sess of SESSIONS) {
+  for (const sess of allSessions()) {
     const card = el(`
       <button class="session-card" style="--tint:${sess.tint}">
         <div class="card-glow" aria-hidden="true"></div>
@@ -165,6 +192,15 @@ function homeScreen() {
     card.onclick = () => detailScreen(sess);
     list.appendChild(card);
   }
+  const create = el(`
+    <button class="session-card create-card" style="--tint:${CUSTOM_TINT}">
+      <div class="card-body">
+        <div class="card-top"><h2>＋ Create your own</h2></div>
+        <p>Compose a practice from the phase library</p>
+      </div>
+    </button>`);
+  create.onclick = () => builderScreen();
+  list.appendChild(create);
   s.appendChild(nav('home'));
   show(s);
 }
@@ -208,7 +244,123 @@ function detailScreen(sess) {
   });
   s.querySelector('.back').onclick = homeScreen;
   begin.onclick = () => practiceScreen(scaleSession(sess, factor));
+  if (sess.custom) {
+    const row = el(`<div class="custom-row">
+      <button class="btn ghost" id="d-edit">Edit</button>
+      <button class="btn ghost danger" id="d-del">Delete</button>
+    </div>`);
+    s.querySelector('.detail-actions').appendChild(row);
+    row.querySelector('#d-edit').onclick = () => builderScreen(sess);
+    row.querySelector('#d-del').onclick = () => {
+      if (confirm(`Delete “${sess.title}”? Journal entries stay.`)) {
+        deleteCustom(sess.id);
+        homeScreen();
+      }
+    };
+  }
   show(s);
+}
+
+/* ---------- custom session builder ---------- */
+
+function builderScreen(existing) {
+  // working copy: [{blockId, minutes}]
+  let seq = existing
+    ? existing.blocks.map(b => ({ ...b }))
+    : [{ blockId: 'arrive', minutes: 2 }, { blockId: 'melt', minutes: 3 }];
+  const name = existing?.title ?? '';
+
+  const s = el(`
+    <section class="screen builder" style="--tint:${CUSTOM_TINT}">
+      <button class="back" aria-label="Back">‹ Back</button>
+      <h1>${existing ? 'Edit practice' : 'Create a practice'}</h1>
+      <p class="sub">Tap phases to add them, then shape the timing.</p>
+      <input id="b-name" type="text" maxlength="40" placeholder="Name your practice"
+        value="${esc(name)}" aria-label="Practice name">
+      <h3 class="phases-h">Your sequence · <span id="b-total"></span></h3>
+      <div class="seq-list" id="b-seq"></div>
+      <h3 class="phases-h">Phase library</h3>
+      <div class="lib-list">
+        ${PHASE_LIBRARY.map(b => `
+          <button class="lib-item" data-id="${b.id}">
+            <strong>${esc(b.label)}</strong>
+            <span>${esc(b.desc)}</span>
+          </button>`).join('')}
+      </div>
+      <div class="detail-actions">
+        <button class="btn primary big" id="b-save">Save practice</button>
+      </div>
+    </section>`);
+
+  const seqEl = s.querySelector('#b-seq');
+  const totalEl = s.querySelector('#b-total');
+
+  function renderSeq() {
+    totalEl.textContent = `${seq.reduce((a, x) => a + x.minutes, 0)} min`;
+    seqEl.replaceChildren(...seq.map((item, i) => {
+      const block = PHASE_LIBRARY.find(b => b.id === item.blockId);
+      const row = el(`
+        <div class="seq-item">
+          <div class="seq-name">
+            <strong>${esc(block.label)}</strong>
+            <span>${item.minutes} min</span>
+          </div>
+          <div class="seq-controls">
+            <button class="mini" data-act="less" aria-label="Shorter">−</button>
+            <button class="mini" data-act="more" aria-label="Longer">+</button>
+            <button class="mini" data-act="up" aria-label="Move up" ${i === 0 ? 'disabled' : ''}>↑</button>
+            <button class="mini" data-act="del" aria-label="Remove">✕</button>
+          </div>
+        </div>`);
+      row.querySelectorAll('.mini').forEach(btn => btn.onclick = () => {
+        const act = btn.dataset.act;
+        if (act === 'less' && item.minutes > 1) item.minutes--;
+        if (act === 'more' && item.minutes < 10) item.minutes++;
+        if (act === 'up' && i > 0) [seq[i - 1], seq[i]] = [seq[i], seq[i - 1]];
+        if (act === 'del') seq.splice(i, 1);
+        renderSeq();
+      });
+      return row;
+    }));
+    if (!seq.length) seqEl.appendChild(
+      el(`<p class="foot-note" style="margin:8px 0">Empty — add phases from the library below.</p>`));
+  }
+  renderSeq();
+
+  s.querySelectorAll('.lib-item').forEach(b => b.onclick = () => {
+    if (seq.length >= 10) return;
+    seq.push({ blockId: b.dataset.id, minutes: 3 });
+    renderSeq();
+  });
+
+  s.querySelector('.back').onclick = existing ? () => detailScreen(buildCustom(existing.id, existing.title, existing.blocks)) : homeScreen;
+  s.querySelector('#b-save').onclick = () => {
+    if (!seq.length) return;
+    const title = s.querySelector('#b-name').value.trim() || 'My practice';
+    const sess = buildCustom(existing?.id ?? 'custom-' + Date.now(), title, seq);
+    saveCustom(sess);
+    detailScreen(sess);
+  };
+  show(s);
+}
+
+/* materialize a stored custom recipe into a full session object */
+function buildCustom(id, title, blocks) {
+  const phases = blocks.map(b => {
+    const lib = PHASE_LIBRARY.find(x => x.id === b.blockId);
+    return scalePhase(lib.phase, b.minutes * 60);
+  });
+  return {
+    id, title, blocks,
+    custom: true,
+    subtitle: 'Your own practice',
+    minutes: blocks.reduce((a, b) => a + b.minutes, 0),
+    level: 'Custom',
+    tint: CUSTOM_TINT,
+    description: 'A practice you composed from the phase library. ' +
+      'Edit it any time from this screen.',
+    phases,
+  };
 }
 
 /* clone a session with phase durations and cue times scaled */
@@ -590,7 +742,7 @@ function journalScreen() {
     const when = d.toLocaleDateString(undefined,
       { weekday: 'short', month: 'short', day: 'numeric' }) +
       ' · ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-    const sess = SESSIONS.find(x => x.id === e.sessionId);
+    const sess = allSessions().find(x => x.id === e.sessionId);
     list.appendChild(el(`
       <div class="entry" style="--tint:${sess?.tint ?? '#e0637c'}">
         <div class="entry-head">
@@ -649,9 +801,36 @@ function settingsScreen() {
             value="${settings.volume}" aria-label="Volume">
         </div>
       </div>
+      <div class="settings-list" style="margin-top:10px">
+        <div class="setting-row">
+          <div><strong>Export journal</strong><p>Download your entries as JSON</p></div>
+          <button class="btn ghost small" id="set-export">Export</button>
+        </div>
+        <div class="setting-row">
+          <div><strong>Erase all data</strong><p>Journal, custom practices, settings</p></div>
+          <button class="btn ghost small danger" id="set-erase">Erase</button>
+        </div>
+      </div>
       <p class="foot-note">Velvet stores everything on this device only.
         No accounts, no tracking, nothing leaves your browser.</p>
     </section>`);
+  s.querySelector('#set-export').onclick = () => {
+    const blob = new Blob(
+      [JSON.stringify({ exported: new Date().toISOString(), journal: journal() }, null, 2)],
+      { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'velvet-journal.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  s.querySelector('#set-erase').onclick = () => {
+    if (confirm('Erase everything Velvet has stored on this device?')) {
+      ['velvet.journal', 'velvet.custom', 'velvet.settings', 'velvet.consented']
+        .forEach(k => localStorage.removeItem(k));
+      location.reload();
+    }
+  };
   function toggleRow(key, label, desc) {
     return `<div class="setting-row">
       <div><strong>${label}</strong><p>${desc}</p></div>
