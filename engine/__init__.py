@@ -1,0 +1,1 @@
+"""Greyfall narrative simulation engine."""
