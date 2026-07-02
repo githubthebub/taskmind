@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stillpoint — Breathwork &amp; Somatic Wellness</title>
+<meta name="description" content="Evidence-based breathwork, body-scan and grounding sessions with progress tracking. No accounts, no ads, runs entirely in your browser.">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%230d9488'/></svg>">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand">
+    <span class="brand-dot" aria-hidden="true"></span>
+    <span class="brand-name">Stillpoint</span>
+  </div>
+  <nav class="nav" aria-label="Main">
+    <button class="nav-btn active" data-view="home">Home</button>
+    <button class="nav-btn" data-view="breathe">Breathe</button>
+    <button class="nav-btn" data-view="bodyscan">Body scan</button>
+    <button class="nav-btn" data-view="ground">Ground</button>
+    <button class="nav-btn" data-view="progress">Progress</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ============ HOME ============ -->
+  <section id="view-home" class="view active">
+    <div class="hero">
+      <h1>Substance over spectacle.</h1>
+      <p class="lede">
+        No avatars, no upsells, no pseudoscience. Stillpoint is a small, free toolkit of
+        practices with real evidence behind them — paced breathing, body-scan meditation,
+        and sensory grounding — delivered plainly, tracked privately in your browser.
+      </p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" data-goto="breathe">Start a breath session</button>
+        <button class="btn btn-ghost" data-goto="progress">See your progress</button>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <article class="card">
+        <h2>Paced breathing</h2>
+        <p>Slow, structured breathing engages the parasympathetic nervous system.
+        A 2023 Stanford trial found brief daily "cyclic sighing" (double inhale, long exhale)
+        improved mood and lowered resting respiratory rate more than mindfulness meditation.</p>
+        <button class="btn btn-small" data-goto="breathe">Open the studio</button>
+      </article>
+      <article class="card">
+        <h2>Body-scan awareness</h2>
+        <p>Systematically moving attention through the body builds interoception —
+        the ability to notice internal signals early, before they become overwhelm.
+        It's a core component of MBSR, one of the best-studied mindfulness programs.</p>
+        <button class="btn btn-small" data-goto="bodyscan">Begin a scan</button>
+      </article>
+      <article class="card">
+        <h2>5–4–3–2–1 grounding</h2>
+        <p>When thoughts spiral, anchoring attention to five senses interrupts the loop.
+        A simple, portable technique widely used in anxiety management and therapy.</p>
+        <button class="btn btn-small" data-goto="ground">Ground yourself</button>
+      </article>
+    </div>
+
+    <p class="disclaimer">
+      Stillpoint is a self-care tool, not medical care. If you're struggling with your
+      mental or physical health, please talk to a qualified professional.
+    </p>
+  </section>
+
+  <!-- ============ BREATHE ============ -->
+  <section id="view-breathe" class="view">
+    <h1>Breathing studio</h1>
+
+    <div id="breathe-setup">
+      <h2 class="setup-label">Technique</h2>
+      <div class="option-row" id="technique-row" role="radiogroup" aria-label="Breathing technique"></div>
+
+      <h2 class="setup-label">Length</h2>
+      <div class="option-row" id="duration-row" role="radiogroup" aria-label="Session length">
+        <button class="option" data-mins="2">2 min</button>
+        <button class="option active" data-mins="5">5 min</button>
+        <button class="option" data-mins="10">10 min</button>
+      </div>
+
+      <label class="toggle">
+        <input type="checkbox" id="sound-toggle" checked>
+        Soft tone at each phase change
+      </label>
+
+      <p id="technique-desc" class="technique-desc"></p>
+
+      <button class="btn btn-primary btn-big" id="breathe-start">Begin</button>
+    </div>
+
+    <div id="breathe-session" hidden>
+      <div class="pacer-wrap">
+        <div class="pacer-ring" aria-hidden="true">
+          <div class="pacer-circle" id="pacer-circle"></div>
+        </div>
+        <div class="pacer-text">
+          <div id="phase-label" role="status" aria-live="polite">Ready</div>
+          <div id="phase-count"></div>
+        </div>
+      </div>
+      <div class="session-meta">
+        <span id="time-left"></span>
+        <button class="btn btn-ghost btn-small" id="breathe-stop">End session</button>
+      </div>
+    </div>
+
+    <div id="breathe-done" class="done-panel" hidden>
+      <h2>Session complete</h2>
+      <p id="breathe-done-text"></p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="breathe-again">Go again</button>
+        <button class="btn btn-ghost" data-goto="progress">View progress</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BODY SCAN ============ -->
+  <section id="view-bodyscan" class="view">
+    <h1>Body scan</h1>
+
+    <div id="scan-setup">
+      <p class="lede">A guided pass of attention from feet to crown. Find a comfortable
+      position, seated or lying down. Each region holds for about 30 seconds —
+      roughly six minutes in total. There is nothing to achieve; just notice.</p>
+      <button class="btn btn-primary btn-big" id="scan-start">Begin the scan</button>
+    </div>
+
+    <div id="scan-session" hidden>
+      <div class="scan-region" id="scan-region" role="status" aria-live="polite"></div>
+      <p class="scan-prompt" id="scan-prompt"></p>
+      <div class="scan-progress">
+        <div class="scan-progress-fill" id="scan-progress-fill"></div>
+      </div>
+      <div class="session-meta">
+        <span id="scan-step-label"></span>
+        <button class="btn btn-ghost btn-small" id="scan-stop">End early</button>
+      </div>
+    </div>
+
+    <div id="scan-done" class="done-panel" hidden>
+      <h2>Scan complete</h2>
+      <p>Take one more slow breath and notice how the body feels as a whole.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="scan-again">Scan again</button>
+        <button class="btn btn-ghost" data-goto="progress">View progress</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GROUND ============ -->
+  <section id="view-ground" class="view">
+    <h1>5–4–3–2–1 grounding</h1>
+
+    <div id="ground-setup">
+      <p class="lede">An anchor for racing thoughts. Move through your senses one at a time,
+      naming what you find — out loud or silently. Take it slowly; the naming is the point.</p>
+      <button class="btn btn-primary btn-big" id="ground-start">Start</button>
+    </div>
+
+    <div id="ground-session" hidden>
+      <div class="ground-count" id="ground-count" aria-hidden="true"></div>
+      <h2 class="ground-sense" id="ground-sense" role="status" aria-live="polite"></h2>
+      <p class="ground-hint" id="ground-hint"></p>
+      <button class="btn btn-primary btn-big" id="ground-next">Done — next sense</button>
+    </div>
+
+    <div id="ground-done" class="done-panel" hidden>
+      <h2>Grounded</h2>
+      <p>You walked your attention through all five senses. Notice whether the noise
+      in your head is a little quieter than when you started.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="ground-again">Once more</button>
+        <button class="btn btn-ghost" data-goto="progress">View progress</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROGRESS ============ -->
+  <section id="view-progress" class="view">
+    <h1>Your progress</h1>
+    <p class="lede">Stored only in this browser. No account, no server, no tracking.</p>
+
+    <div class="stat-row">
+      <div class="stat-tile">
+        <div class="stat-value" id="stat-streak">0</div>
+        <div class="stat-label">day streak</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value" id="stat-week">0</div>
+        <div class="stat-label">sessions this week</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-value" id="stat-minutes">0</div>
+        <div class="stat-label">total minutes</div>
+      </div>
+    </div>
+
+    <figure class="chart-card">
+      <figcaption class="chart-title">Practice minutes, last 7 days</figcaption>
+      <div class="week-chart" id="week-chart"></div>
+      <div class="chart-tooltip" id="chart-tooltip" hidden></div>
+      <details class="chart-table-details">
+        <summary>View as table</summary>
+        <table class="chart-table" id="week-table">
+          <thead><tr><th scope="col">Day</th><th scope="col">Minutes</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </details>
+    </figure>
+
+    <div class="history-card">
+      <h2>Recent sessions</h2>
+      <ul class="history-list" id="history-list"></ul>
+      <button class="btn btn-ghost btn-small" id="clear-data">Clear all data</button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>Stillpoint · free, open, local-first. Built to be better than the algorithmic wellness feed.</p>
+</footer>
+
+<script src="js/app.js"></script>
+</body>
+</html>
