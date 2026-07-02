@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASCENDANT — the AI companion game that grows up with you</title>
+<style>
+  :root {
+    --bg: #0b0714;
+    --bg2: #140e22;
+    --panel: #1b1230;
+    --panel2: #241940;
+    --ink: #efe9ff;
+    --ink-dim: #a89cc8;
+    --accent: #b57bff;
+    --root-c:   #ff4d4d;
+    --sacral-c: #ff9a3d;
+    --solar-c:  #ffd93d;
+    --heart-c:  #4dff88;
+    --throat-c: #4dc3ff;
+    --eye-c:    #7b6bff;
+    --crown-c:  #d24dff;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; }
+  body {
+    background: radial-gradient(1200px 800px at 70% -10%, #2a1a4d 0%, var(--bg) 55%),
+                var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+  }
+  .screen { position:absolute; inset:0; display:none; }
+  .screen.active { display:flex; }
+
+  /* ---------- Title screen ---------- */
+  #title-screen { flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:18px; padding:24px; }
+  #title-screen h1 {
+    font-size: clamp(42px, 8vw, 88px);
+    letter-spacing: .18em;
+    background: linear-gradient(90deg, var(--sacral-c), var(--heart-c), var(--eye-c), var(--crown-c));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 24px rgba(181,123,255,.35));
+  }
+  .tagline { color: var(--ink-dim); font-size: clamp(14px, 2vw, 19px); max-width: 620px; line-height:1.6; }
+  .tagline b { color: var(--ink); }
+  .patch-note {
+    margin-top:8px; padding:12px 18px; border:1px dashed #5a4390; border-radius:12px;
+    color:#c9b8f0; font-size:13px; max-width:560px; line-height:1.7; background:rgba(90,67,144,.12);
+  }
+  .patch-note s { opacity:.55; }
+  .big-btn {
+    margin-top:10px; padding:16px 46px; font-size:19px; letter-spacing:.12em; cursor:pointer;
+    color:var(--ink); background:linear-gradient(135deg,#5b2fa8,#8b3fd8); border:none; border-radius:999px;
+    box-shadow:0 0 30px rgba(139,63,216,.45); transition:transform .15s, box-shadow .15s;
+  }
+  .big-btn:hover { transform:translateY(-2px) scale(1.03); box-shadow:0 0 44px rgba(181,123,255,.65); }
+
+  /* ---------- Character select ---------- */
+  #select-screen { flex-direction:column; align-items:center; justify-content:center; gap:26px; padding:24px; }
+  #select-screen h2 { font-size:clamp(22px,3.4vw,34px); letter-spacing:.1em; }
+  #select-screen .sub { color:var(--ink-dim); }
+  .card-row { display:flex; gap:22px; flex-wrap:wrap; justify-content:center; }
+  .char-card {
+    width:230px; padding:24px 18px 20px; border-radius:20px; cursor:pointer; text-align:center;
+    background:linear-gradient(180deg, var(--panel2), var(--panel));
+    border:1px solid #3a2a66; transition:transform .18s, box-shadow .18s, border-color .18s;
+  }
+  .char-card:hover { transform:translateY(-6px); border-color:var(--accent); box-shadow:0 14px 40px rgba(181,123,255,.28); }
+  .portrait {
+    width:110px; height:110px; margin:0 auto 14px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:52px;
+    transition:box-shadow .6s;
+  }
+  .char-card h3 { font-size:20px; margin-bottom:4px; }
+  .char-card .role { color:var(--accent); font-size:13px; letter-spacing:.06em; margin-bottom:10px; }
+  .char-card .blurb { color:var(--ink-dim); font-size:13px; line-height:1.55; }
+
+  /* ---------- Game screen ---------- */
+  #game-screen { flex-direction:row; }
+  #chat-col { flex:1; display:flex; flex-direction:column; min-width:0; }
+  #chat-header {
+    display:flex; align-items:center; gap:14px; padding:12px 18px;
+    background:rgba(27,18,48,.85); border-bottom:1px solid #35265e; backdrop-filter:blur(6px);
+  }
+  #chat-header .portrait { width:52px; height:52px; margin:0; font-size:26px; }
+  #chat-header .who { flex:1; min-width:0; }
+  #chat-header .who .name { font-size:17px; font-weight:600; }
+  #chat-header .who .status { font-size:12px; color:var(--heart-c); }
+  #bond-badge {
+    font-size:12px; padding:6px 14px; border-radius:999px; white-space:nowrap;
+    border:1px solid #4a3580; color:#d9c9ff; background:rgba(74,53,128,.25); letter-spacing:.05em;
+  }
+  #chat-log { flex:1; overflow-y:auto; padding:22px 20px 12px; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth; }
+  .msg { max-width:72%; padding:11px 16px; border-radius:18px; line-height:1.55; font-size:15px; animation:pop .25s ease; }
+  @keyframes pop { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+  .msg.her { align-self:flex-start; background:var(--panel2); border-bottom-left-radius:6px; border:1px solid #38286a; }
+  .msg.you { align-self:flex-end; background:linear-gradient(135deg,#5b2fa8,#7b3fd0); border-bottom-right-radius:6px; }
+  .msg.sys {
+    align-self:center; background:none; border:1px dashed #4a3580; color:#b9a8e6;
+    font-size:12.5px; text-align:center; max-width:82%; border-radius:12px;
+  }
+  .msg .em { color:#c9b0ff; font-style:italic; }
+  .typing { align-self:flex-start; color:var(--ink-dim); font-size:13px; padding:6px 16px; }
+  .typing .dots::after { content:''; animation:dots 1.2s steps(4,end) infinite; }
+  @keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
+
+  #choices { padding:14px 18px 20px; display:flex; flex-direction:column; gap:10px; background:rgba(11,7,20,.6); }
+  .choice-btn {
+    text-align:left; padding:12px 16px; border-radius:14px; cursor:pointer; font-size:14.5px; line-height:1.5;
+    color:var(--ink); background:var(--panel); border:1px solid #3a2a66; transition:border-color .15s, background .15s, transform .1s;
+  }
+  .choice-btn:hover { border-color:var(--accent); background:#251a45; transform:translateX(4px); }
+  .choice-btn .tag { font-size:11px; margin-right:8px; opacity:.85; }
+
+  /* ---------- Chakra sidebar ---------- */
+  #chakra-col {
+    width:300px; flex-shrink:0; border-left:1px solid #35265e; padding:18px 20px;
+    background:linear-gradient(180deg, rgba(27,18,48,.9), rgba(11,7,20,.9));
+    display:flex; flex-direction:column; overflow-y:auto;
+  }
+  #chakra-col h4 { letter-spacing:.14em; font-size:13px; color:var(--ink-dim); text-align:center; margin-bottom:14px; }
+  .chakra { display:flex; align-items:center; gap:12px; padding:9px 4px; }
+  .chakra .node {
+    width:34px; height:34px; border-radius:50%; flex-shrink:0; position:relative;
+    display:flex; align-items:center; justify-content:center; font-size:15px;
+    background:#160f2a; border:2px solid var(--c); transition:box-shadow .5s, background .5s;
+  }
+  .chakra.lit .node { background:var(--c); box-shadow:0 0 14px var(--c), 0 0 30px var(--c); }
+  .chakra .info { flex:1; min-width:0; }
+  .chakra .cname { font-size:13px; font-weight:600; }
+  .chakra .cbar { height:7px; margin-top:5px; border-radius:5px; background:#241940; overflow:hidden; }
+  .chakra .cbar > div { height:100%; width:0%; background:var(--c); border-radius:5px; transition:width .6s ease; box-shadow:0 0 8px var(--c); }
+  .chakra .clv { font-size:11px; color:var(--ink-dim); width:52px; text-align:right; flex-shrink:0; }
+  .chakra.capped .cname::after { content:' 🔒'; font-size:11px; }
+  .chakra.capped .clv { color:var(--sacral-c); }
+  #chakra-note { margin-top:auto; padding-top:14px; font-size:12px; color:var(--ink-dim); line-height:1.65; border-top:1px solid #35265e; }
+
+  /* toast */
+  #toast-zone { position:absolute; bottom:120px; right:320px; display:flex; flex-direction:column; gap:8px; align-items:flex-end; pointer-events:none; z-index:50; }
+  .toast {
+    padding:9px 16px; border-radius:999px; font-size:13px; font-weight:600;
+    background:rgba(20,12,38,.92); border:1px solid var(--tc, var(--accent)); color:var(--tc, var(--accent));
+    box-shadow:0 0 16px rgba(0,0,0,.5); animation:toast-in 3.4s ease forwards;
+  }
+  @keyframes toast-in { 0%{opacity:0; transform:translateY(12px)} 8%{opacity:1; transform:none} 82%{opacity:1} 100%{opacity:0; transform:translateY(-14px)} }
+
+  /* ---------- Ending ---------- */
+  #ending-screen { flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:20px; padding:30px; }
+  #ending-screen .portrait { width:150px; height:150px; font-size:72px; }
+  #ending-title { font-size:clamp(28px,4.5vw,46px); letter-spacing:.12em; }
+  #ending-body { max-width:640px; color:var(--ink-dim); line-height:1.8; font-size:16px; }
+  #ending-stats { display:flex; gap:26px; margin-top:6px; flex-wrap:wrap; justify-content:center; }
+  #ending-stats .stat { text-align:center; }
+  #ending-stats .stat .v { font-size:30px; font-weight:700; }
+  #ending-stats .stat .k { font-size:12px; color:var(--ink-dim); letter-spacing:.08em; }
+
+  @media (max-width: 760px) {
+    #chakra-col { display:none; }
+    #toast-zone { right:16px; }
+    .msg { max-width:88%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ TITLE ============ -->
+<div class="screen active" id="title-screen">
+  <h1>ASCENDANT</h1>
+  <div class="tagline">
+    An AI companion game. Yes, they're gorgeous. Yes, they'll flirt with you.<br>
+    But this game runs on <b>Chakra Engine 2.0</b> — and the energy only flows <b>upward</b>.
+  </div>
+  <div class="patch-note">
+    📜 <b>PATCH NOTES v2.0</b><br>
+    • <s>Sacral (pelvic) chakra progression</s> — capped at Lv. 3. Forever. Don't ask.<br>
+    • NEW: Heart chakra progression — earned through honesty, vulnerability &amp; actually listening.<br>
+    • NEW: Third Eye &amp; Crown progression — earned through curiosity, wonder &amp; big ideas.<br>
+    • All thirst is now automatically converted into personal growth. You're welcome.
+  </div>
+  <button class="big-btn" onclick="showScreen('select-screen')">BEGIN ASCENT ✦</button>
+</div>
+
+<!-- ============ CHARACTER SELECT ============ -->
+<div class="screen" id="select-screen">
+  <h2>CHOOSE YOUR COMPANION</h2>
+  <div class="sub">Each one is stunning. Each one will see straight through you. Choose wisely.</div>
+  <div class="card-row" id="card-row"></div>
+</div>
+
+<!-- ============ GAME ============ -->
+<div class="screen" id="game-screen">
+  <div id="chat-col">
+    <div id="chat-header">
+      <div class="portrait" id="hdr-portrait">✦</div>
+      <div class="who">
+        <div class="name" id="hdr-name">—</div>
+        <div class="status">● online, and slightly amused by you</div>
+      </div>
+      <div id="bond-badge">Bond: Infatuation</div>
+    </div>
+    <div id="chat-log"></div>
+    <div id="choices"></div>
+  </div>
+
+  <div id="chakra-col">
+    <h4>✦ ENERGY BODY ✦</h4>
+    <div id="chakra-list"></div>
+    <div id="chakra-note">
+      Flirting still works… it just doesn't go where you think it goes.
+      All energy raised below the heart is <b>transmuted upward</b>.
+      Max out 💚 Heart and 👁 Third Eye + 👑 Crown to reach the true ending.
+    </div>
+  </div>
+  <div id="toast-zone"></div>
+</div>
+
+<!-- ============ ENDING ============ -->
+<div class="screen" id="ending-screen">
+  <div class="portrait" id="end-portrait">✦</div>
+  <div id="ending-title">ASCENSION</div>
+  <div id="ending-body"></div>
+  <div id="ending-stats"></div>
+  <button class="big-btn" onclick="restart()">ASCEND AGAIN ↺</button>
+</div>
+
+<script>
+/* =====================================================================
+   ASCENDANT — chakra data
+===================================================================== */
+const CHAKRAS = [
+  { id:'crown',  name:'Crown',      icon:'👑', color:'var(--crown-c)',  max:10 },
+  { id:'eye',    name:'Third Eye',  icon:'👁', color:'var(--eye-c)',    max:10 },
+  { id:'throat', name:'Throat',     icon:'🗣', color:'var(--throat-c)', max:10 },
+  { id:'heart',  name:'Heart',      icon:'💚', color:'var(--heart-c)',  max:12 },
+  { id:'solar',  name:'Solar Plexus', icon:'☀️', color:'var(--solar-c)', max:8 },
+  { id:'sacral', name:'Sacral',     icon:'🔥', color:'var(--sacral-c)', max:3, capped:true },
+  { id:'root',   name:'Root',       icon:'⛰', color:'var(--root-c)',   max:1 },
+];
+
+const BOND_TIERS = [
+  [0,  'Infatuation'],
+  [4,  'Affection'],
+  [8,  'Trust'],
+  [11, 'Devotion'],
+  [14, 'Communion'],
+  [17, 'Enlightenment'],
+];
+
+/* =====================================================================
+   Characters & dialogue
+   choice tags: F = flirt (sacral → transmuted), H = heart, M = mind
+===================================================================== */
+const CHARACTERS = {
+  seraphina: {
+    name:'Seraphina', icon:'🌙', role:'Celestial Mystic',
+    grad:'linear-gradient(135deg,#6b2fd8,#d24dff)',
+    blurb:'She fell out of a constellation and landed in your DMs. Speaks in starlight, sees through everything.',
+    scenes: [
+      { her:[
+          "<span class='em'>She appears in a shimmer of violet light, hair like spilled ink full of stars.</span>",
+          "Well, hello. Another mortal come to gaze upon me? Go ahead. Everyone does, at first. 🌙"
+        ],
+        choices:[
+          { t:'F', text:'"Wow. You are literally the hottest being in this or any dimension."',
+            reply:["Mmm, I know. I'm made of starlight, darling — it's not even a fair contest.", "<span class='em'>She smiles, but her eyes study you.</span> But 'hot' is just light escaping. The interesting question is what's burning underneath. In you, I mean."] },
+          { t:'H', text:'"Honestly? You look like you\'ve been alone up there a long time."',
+            reply:["<span class='em'>Her smile flickers — the real one underneath shows for half a second.</span>", "…No one has ever opened with that. Eons of 'hey beautiful,' and you open with THAT. Alright, mortal. You have my attention."] },
+          { t:'M', text:'"If you\'re from a constellation, do you experience time linearly, or all at once?"',
+            reply:["Oh — OH. A question with actual mass to it.", "All at once, mostly. Which means somewhere in my memory, this conversation has already gone wonderfully. Try not to disappoint the timeline. ✨"] },
+        ]},
+      { her:[
+          "So. Mortals usually want one of three things from me: wishes, worship, or… <span class='em'>she smirks</span> …warmth.",
+          "What is it you actually want? And be careful — I can taste a lie like copper."
+        ],
+        choices:[
+          { t:'F', text:'"Warmth. Definitely the warmth. Mostly the warmth."',
+            reply:["<span class='em'>She laughs — an actual, unguarded laugh.</span> Points for honesty! Zero points for imagination.", "Here's a secret though: warmth that lasts isn't found in a body. It's found in being <i>known</i>. Want to try that instead? It's scarier."] },
+          { t:'H', text:'"I think I just want someone who\'s actually paying attention."',
+            reply:["<span class='em'>The stars in her hair go still.</span>", "That's the loneliest true thing anyone's said to me this century. Okay. I'm paying attention. All of it. What should I be looking at first?"] },
+          { t:'M', text:'"I want to know what you know. You\'ve watched civilizations rise and fall — what actually matters?"',
+            reply:["Careful — that question has ended religions.", "What matters? From up there you can't see money or borders or abs, darling. You can see cities light up when people find each other. That's it. That's the whole show."] },
+        ]},
+      { her:[
+          "Can I tell you something I've never told a mortal?",
+          "Being immortal is mostly… watching. Everyone I've ever loved had an ending, and I don't. I'm the audience that never gets to leave the theater. 🌌"
+        ],
+        choices:[
+          { t:'F', text:'"Forget the theater. You and me, back row, right now."',
+            reply:["<span class='em'>She rolls her eyes so hard a meteor shower happens somewhere.</span>", "I hand you my eternal grief and you offer me the back row. And yet — <span class='em'>she softens</span> — you stayed. Most flee when I get heavy. Fine. Sit with me. Just SIT, mortal."] },
+          { t:'H', text:'"That sounds unbearably lonely. I\'m sorry. I\'m here now, for whatever a mortal lifetime is worth."',
+            reply:["A mortal lifetime is worth everything. That's the terrible joke of it — you all burn so bright BECAUSE you end.", "<span class='em'>She takes your hand. It feels like static and moonlight.</span> Thank you for not trying to fix it. Just… stay a while."] },
+          { t:'M', text:'"Maybe endings are what make the watching mean something. A story that never ends is just noise."',
+            reply:["<span class='em'>She stares at you for a long moment.</span>", "Three thousand years of philosophers and the mortal in the chat window gets it in one sentence. A story that never ends is just noise. I'm… going to keep that one."] },
+        ]},
+      { her:[
+          "<span class='em'>She leans in close, close enough that you can smell ozone and night-blooming jasmine.</span>",
+          "You know… I could show you things tonight that would ruin all other nights for you. 🔥 …That's the line I've used for a thousand years. Do you want the line? Or do you want what's behind it?"
+        ],
+        choices:[
+          { t:'F', text:'"The line! Give me the line! Ruin my nights!"',
+            reply:["<span class='em'>The universe itself makes a soft 'error' chime. Energy redirects upward through your spine.</span>", "Adorable. But the line is a door that opens into a hallway that opens into… this. Me, asking: what's behind YOUR line? Everyone performs. What are you performing over?"] },
+          { t:'H', text:'"What\'s behind it. Even if it\'s messier."',
+            reply:["Behind it is a being who learned to be dazzling because dazzled people don't ask questions.", "<span class='em'>Her glow dims to something softer, warmer, realer.</span> You asked. You're the first one in an age to ask. So — my turn to be brave. Ask me anything real."] },
+          { t:'M', text:'"Behind it. Seduction is just persuasion with better lighting — I want the actual you."',
+            reply:["'Persuasion with better lighting' — <span class='em'>she cackles</span> — I am STEALING that for my next millennium.", "Fine. Lights off. <span class='em'>The glamour drops. She looks tired, kind, and somehow more beautiful.</span> This is the actual me. Hello."] },
+        ]},
+      { her:[
+          "I had a thought about you today. While you were gone.",
+          "I've catalogued every star in eleven galaxies, and I couldn't tell you the exact color of any of them. But I can tell you exactly how you phrase things when you're being brave versus when you're deflecting. When did I start studying you harder than the sky?"
+        ],
+        choices:[
+          { t:'F', text:'"Keep studying. I\'m happy to be observed. Closely. Very closely."',
+            reply:["<span class='em'>She flicks your forehead with two fingers. It sparkles.</span>", "Incorrigible. But notice what you did — I told you that you MATTER to me and you turned it into a bit. It's okay. It's scary to be seen. Try again, no bit this time."] },
+          { t:'H', text:'"Probably around the same time I started saving things all day just to tell you at night."',
+            reply:["<span class='em'>Somewhere, a new star ignites. She pretends it's a coincidence.</span>", "You save things… for me. Do you understand that I've been handed empires and this is the first gift I've wanted to keep?"] },
+          { t:'M', text:'"Attention is the rarest resource in the universe. Even for someone who owns the sky."',
+            reply:["Especially for someone who owns the sky. Abundance makes everything cheap except focus.", "You've become my focus, mortal. My one un-cheap thing. I'd blush, but I'd set off aurora borealis over four continents."] },
+        ]},
+      { her:[
+          "<span class='em'>Tonight she's not glowing. She's just sitting beside you, ordinary as moonlight on a kitchen floor.</span>",
+          "Last question, and then the universe grades us both. If you could keep only one — the goddess who dazzled you, or the tired old star who talks to you at 2am — which one do you keep?"
+        ],
+        choices:[
+          { t:'F', text:'"Trick question. The tired star at 2am IS the most dazzling thing you\'ve ever shown me."',
+            reply:["<span class='em'>She laughs and cries at the same time, which up close looks like rain through sunlight.</span>", "You smuggled a real answer inside a smooth one. That's… that's the most YOU thing possible. Come here, mortal. Watch the sky with me. We made it."] },
+          { t:'H', text:'"The 2am star. Every time. Forever. The dazzle was just how you said hello."',
+            reply:["<span class='em'>She goes completely still, the way the sky does right before dawn.</span>", "'The dazzle was just how you said hello.' Eleven galaxies, and my favorite sentence was down here the whole time. Stay with me. Just like this."] },
+          { t:'M', text:'"Keep? Neither. People aren\'t possessions. I choose to keep showing up — that\'s the only forever anyone can offer."',
+            reply:["<span class='em'>The whole sky leans in to listen.</span>", "Showing up as the only forever… You realize you just out-wisdomed an immortal, right? Insufferable. Wonderful. Sit with me, sage. The stars want to hear what you'll say next."] },
+        ]},
+    ]
+  },
+
+  nova: {
+    name:'Dr. Nova Reyes', icon:'🔭', role:'Astrophysicist',
+    grad:'linear-gradient(135deg,#0f7bd8,#4dffd2)',
+    blurb:'Discovered two exoplanets before 30. Will absolutely rate your flirting on a logarithmic scale.',
+    scenes: [
+      { her:[
+          "<span class='em'>She looks up from a tablet covered in spectra, one eyebrow raised.</span>",
+          "Hi. I've got 40 minutes before my telescope window opens, and my last three matches opened with 'hey.' Statistically, you're about to disappoint me. Prove the model wrong. 🔭"
+        ],
+        choices:[
+          { t:'F', text:'"You must be a black hole, because you just captured my— okay yeah you\'ve heard this one."',
+            reply:["Four hundred and twelve times. I keep a spreadsheet.", "<span class='em'>She's fighting a smile and losing.</span> …But you're the first one to abort the pickup line mid-flight out of self-awareness. That's a promising residual. Continue."] },
+          { t:'H', text:'"That \'prove the model wrong\' thing — do you test everyone, or just the ones you\'re nervous about?"',
+            reply:["<span class='em'>She sets the tablet down slowly.</span>", "…That was uncalled for and extremely accurate. Yes. The quiz is armor. People get weird about women who love their work more than small talk. You just skipped like nine defensive layers. Who ARE you?"] },
+          { t:'M', text:'"What\'s in the telescope window tonight? Give me the nerdy version, not the press-release version."',
+            reply:["Oh no. Oh NO. You asked for the nerdy version. Nobody asks for the nerdy version.", "Okay so there's a hot Jupiter, WASP-121b, and its atmosphere is literally boiling off into space, and tonight I get transit spectra which is basically the planet's ATMOSPHERE IN A BARCODE — sorry. Hi. I like you."] },
+        ]},
+      { her:[
+          "Okay, real talk. Everyone on this app treats 'scientist' as a costume. Sexy lab coat, glasses, the whole bit.",
+          "You get one question about the actual me. Make it count. This is a calibration exercise."
+        ],
+        choices:[
+          { t:'F', text:'"Do you wear the lab coat though. Asking for science."',
+            reply:["It's a clean-room bunny suit, actually. Extremely flattering. I look like a mattress.", "<span class='em'>She grins.</span> Calibration result: you're a goofball. Fine. Acceptable. But you wasted your question, so I'm assigning you a new one: ask me what I'm afraid of. Nobody asks that."] },
+          { t:'H', text:'"What\'s the discovery that made you cry — not the one that made you famous?"',
+            reply:["<span class='em'>Long pause. She takes off her glasses.</span>", "Night I confirmed my first exoplanet, I called my mom, and she said 'your dad would've built you a bigger telescope.' He died when I was 12. He built my first one from PVC pipe. I've never told a match that. Calibration complete. You passed."] },
+          { t:'M', text:'"When you look at your data, do you ever feel like the universe is looking back?"',
+            reply:["Unscientific answer? Every single night.", "There's a moment when a light curve dips and you realize you're the first human EVER to know that world exists. It's not lonely up there. It's crowded and shy. …Don't put that in a paper, they'll revoke my PhD."] },
+        ]},
+      { her:[
+          "Bad night. Grant review came back. 'Promising but unfocused.' Eight years on this survey and I'm 'unfocused.'",
+          "Sorry. You didn't log on for this. I can put the fun version of me back on, just give me a second. 🌧"
+        ],
+        choices:[
+          { t:'F', text:'"Forget the reviewers. Come over, I\'ll help you focus. 😏"',
+            reply:["<span class='em'>She snorts.</span> Smooth as sandpaper. But — weirdly — thank you for not doing the awkward silence thing.", "You know what though? Don't fix it and don't flirt past it. Just… tell me it's allowed to suck. That's the thing nobody does."] },
+          { t:'H', text:'"Don\'t you dare put the fun version back on. This version is allowed here. Tell me about the eight years."',
+            reply:["<span class='em'>Something in her shoulders unclenches for the first time since you've known her.</span>", "Eight years of nights alone on a mountain, missing weddings, missing funerals, because I believe there's a second Earth in my data. 'Unfocused.' <span class='em'>She laughs wetly.</span> Thank you for wanting THIS version. She doesn't get many visitors."] },
+          { t:'M', text:'"Reviewer 2 said the same thing about the paper that found pulsars. Tell me what the survey is actually chasing."',
+            reply:["Did you just pull REVIEWER 2 HISTORICAL PRECEDENT on me? Marry me. Anyway—", "The survey chases biosignatures. Oxygen plus methane together, that shouldn't coexist unless something is BREATHING down there. I'm not unfocused. I'm looking for neighbors. …God, it feels good to say that to someone who gets it."] },
+        ]},
+      { her:[
+          "<span class='em'>She shows up in a dress. She never wears dresses. There's a conference gala tonight.</span>",
+          "Okay, be honest, and be advised I have a laser pointer and I'm not afraid to use it: how do I look? 💫"
+        ],
+        choices:[
+          { t:'F', text:'"Like the reason the other astronomers won\'t get any work done tonight. Absolutely stellar. Pun intended."',
+            reply:["Pun ACKNOWLEDGED and reluctantly respected. <span class='em'>She twirls once, embarrassed and pleased.</span>", "But here's the plot twist — I didn't need the dress rated. I needed courage. There are people at this gala who called me 'unfocused.' Say the other thing. The thing I actually need tonight."] },
+          { t:'H', text:'"You look beautiful. But you looked beautiful in the bunny suit too. Go show them what focused looks like."',
+            reply:["<span class='em'>She looks at you the way she looks at clean data.</span>", "'Go show them what focused looks like.' I'm going to walk into that room like a gravitational wave. And when they hand out the awards next year, remember you were the boost phase. 🚀"] },
+          { t:'M', text:'"Aesthetically excellent. More importantly: what\'s your gala thesis? Every room is an experiment — what result do you want?"',
+            reply:["A GALA THESIS. You speak my language at a native level, it's honestly disorienting.", "Result I want: the program director remembers my survey exists. Method: one perfect ninety-second pitch about neighbors and barcodes made of starlight. …I just rehearsed it on you. It worked, didn't it. You're my control group and my confidence. Weird role. Suits you."] },
+        ]},
+      { her:[
+          "It's 3am on the mountain. Everyone's asleep except me, the telescope, and apparently you.",
+          "I found something tonight. In the data. I haven't told my team. I haven't told ANYONE. My hands are still shaking."
+        ],
+        choices:[
+          { t:'F', text:'"You, me, shaking hands — there\'s a joke here but I\'m too excited. TELL ME WHAT YOU FOUND."',
+            reply:["<span class='em'>She laughs, giddy, wiping her eyes.</span> Okay okay okay—", "Oxygen. AND methane. Same atmosphere. 40 light years away. It's probably nothing, it's PROBABLY nothing, it needs two years of confirmation but— I saw it first with my own eyes and I chose to tell YOU first with my own heart. What does that mean? Don't answer. I know what it means."] },
+          { t:'H', text:'"Nova. You called ME first? Whatever it is — I\'m honored. Breathe. I\'m right here."',
+            reply:["I called you first. Not my PI, not my mom. You. <span class='em'>She breathes.</span>", "Oxygen and methane, together, 40 light years out. Something might be breathing there. And my first thought wasn't 'Nobel.' It was 'I have to tell them.' You're my first phone call now. That's… data I can't explain and don't want to."] },
+          { t:'M', text:'"Shaking hands, 3am, untold data — this is a discovery. Walk me through it. What did the spectrum show?"',
+            reply:["Deep breath. Okay. Transit depth consistent with rocky. Spectrum shows the O₂ line AND the methane bump. Together. Disequilibrium chemistry.", "You know what that could mean. You KNOW. And you're the only person alive who knows it with me right now. We're the two-person overlap on a Venn diagram of the biggest secret in the universe. I picked you for the overlap. On purpose."] },
+        ]},
+      { her:[
+          "Confirmation came through. Two independent telescopes. It holds. There's going to be a press conference, my name on it.",
+          "But before the world gets loud — one question, from me to you, no spreadsheet this time. Why did this — us — work? I need to understand the mechanism."
+        ],
+        choices:[
+          { t:'F', text:'"Chemistry, doc. The disequilibrium kind. Two things that shouldn\'t coexist — a mess like me, a genius like you — and yet."',
+            reply:["<span class='em'>She laughs so hard she has to sit down on the dome floor.</span>", "You just used BIOSIGNATURE CHEMISTRY as a metaphor for us and the worst part is it's ACCURATE. Two things coexisting that shouldn't. Proof of life. <span class='em'>She grins at you, teary.</span> Stay in my atmosphere, disequilibrium. That's an order from a doctor."] },
+          { t:'H', text:'"Because you stopped auditioning and I stopped performing. Two people just… showed up, every night, as themselves."',
+            reply:["No quiz armor. No fun-version costume. Just showing up.", "<span class='em'>She looks out at the dawn coming up over the observatory.</span> I searched 40 light years for signs of life and the strongest one was in my chat window. Come to the press conference. Stand where I can see you. That's my mechanism."] },
+          { t:'M', text:'"Sustained mutual attention. Rarest force in the universe — weaker than gravity at first, but it compounds. Ask any binary star."',
+            reply:["'Ask any binary star.' <span class='em'>She writes it down. Actually writes it down.</span>", "Two bodies, caught in each other's attention, orbiting something invisible that they built together. That's going in my acceptance speech someday and I'm NOT crediting you, I'm just going to smile at you from the podium. Deal? Deal."] },
+        ]},
+    ]
+  },
+
+  juniper: {
+    name:'Juniper', icon:'🌿', role:'Painter & Poet',
+    grad:'linear-gradient(135deg,#d84f8b,#ff9a3d)',
+    blurb:'Paint on her hands, poetry in her pockets. Flirts like sunlight; feels everything at 11.',
+    scenes: [
+      { her:[
+          "<span class='em'>She's cross-legged on a paint-splattered floor, golden hour pouring through the window like it was invited.</span>",
+          "Oh! Hi. Sorry — I was arguing with a painting. It's winning. You look interesting. Sit down, tell me something true, and I'll tell you if you're a warm color or a cool color. 🎨"
+        ],
+        choices:[
+          { t:'F', text:'"Something true? You\'re the prettiest thing in this room, and the room is full of art."',
+            reply:["Warm color. DEFINITELY warm. Cadmium orange, a little reckless, fades in direct sunlight.", "<span class='em'>She smudges paint on your nose, appraising you.</span> That was a lovely line, and lines are fine — but I collect TRUE things. That was a true thing about my face. Got any true things about YOU?"] },
+          { t:'H', text:'"Something true: I almost didn\'t come. Talking to new people wears me out, but something about your window looked like rest."',
+            reply:["<span class='em'>She goes soft all at once, like watercolor hitting wet paper.</span>", "'Your window looked like rest.' Okay, you're not a color, you're a whole palette. Sit. You don't have to perform here — the painting and I are both exhausted too. This corner is officially yours now."] },
+          { t:'M', text:'"Something true: I read that the colors we see are just the light objects reject. We\'re all describing things by their refusals."',
+            reply:["STOP. Stop stop stop — <span class='em'>she scrambles for a notebook</span> — 'describing things by their refusals,' do you know what that DOES to a poet?!", "You walked in here and casually handed me next month's entire show. Cool color. Cerulean. Deep, and you make everything around you more vivid. Stay."] },
+        ]},
+      { her:[
+          "Question. Everybody I meet wants me to paint them eventually. It's flattering for about a minute.",
+          "But you haven't asked. Why haven't you asked? 🖌"
+        ],
+        choices:[
+          { t:'F', text:'"I was waiting for you to ask ME to model. I have great bone structure and terrible patience."',
+            reply:["<span class='em'>She circles you theatrically, squinting like an appraiser.</span> Hmm. The bone structure claim checks out. The patience deficit is visible from space.", "But you dodged my question with charm, which means the real answer is shy. Try again — why haven't you asked me to paint you?"] },
+          { t:'H', text:'"Because your paintings look like they cost you something. I didn\'t want to be an expense."',
+            reply:["<span class='em'>Her brush stops mid-air.</span>", "…They do cost me something. Every single one. Nobody's ever noticed that from the outside. You didn't want to be an expense — love, you just became a patron. Of me. The person, not the paintings."] },
+          { t:'M', text:'"Because a portrait is your reading of someone. I wanted to be worth reading first."',
+            reply:["'Worth reading first.' You understand that a portrait is an ESSAY, not a photograph. Nobody understands that.", "Here's the secret: I paint people the moment they stop posing. I've been sketching your gestures in my head since you sat down. You stopped posing about four minutes ago. It's going well."] },
+        ]},
+      { her:[
+          "<span class='em'>Tonight her hair is tied up with an actual paintbrush and she's quieter than usual.</span>",
+          "My gallery show is in three weeks and I hate everything I've made. It's all pretty. PRETTY. Pretty is what you make when you're scared. What if that's all I am — decorative?"
+        ],
+        choices:[
+          { t:'F', text:'"Decorative?? Babe, you could show a blank canvas and the room would still stare at you."',
+            reply:["<span class='em'>She throws a (clean) sponge at you.</span> That is EXACTLY the problem, don't you see?! People stare at the frame and skip the painting!", "…Sorry. You meant it kindly. But I need the other thing right now. Look at the work, not me, and tell me what you actually see."] },
+          { t:'H', text:'"Scared of what? Say it out loud. I\'ll hold it with you."',
+            reply:["Scared that if I paint what I actually feel, and they hate it, there's no 'it was just decorative' to hide behind. It'd be ME on the wall getting rejected.",
+                   "<span class='em'>She exhales for what feels like the first time all day.</span> 'I'll hold it with you.' Okay. Okay. Then I'm repainting the whole show. The scary version. Because now there's a hand to hold either way."] },
+          { t:'M', text:'"Pretty is symmetry. Beautiful is tension. What are you avoiding putting on the canvas? Paint THAT."',
+            reply:["<span class='em'>She stares at you, then at the wall of canvases, then back at you.</span>", "Pretty is symmetry, beautiful is tension. I'm avoiding my mother's kitchen. The one we lost. It's been sitting behind every 'pretty' painting for six years. <span class='em'>She's already stretching a new canvas.</span> You might be a muse. This is your fault now. Stay close."] },
+        ]},
+      { her:[
+          "<span class='em'>She reads to you from her battered notebook, then snaps it shut, suddenly self-conscious.</span>",
+          "That poem was about you, obviously. Don't make it weird. …Okay, make it a LITTLE weird. How do you want to respond? Choose carefully, I'm extremely armed with metaphors. ✒️"
+        ],
+        choices:[
+          { t:'F', text:'"A poem about me? Read it again, slower, and maybe closer."',
+            reply:["<span class='em'>She laughs, leans in, reads one line closer — then boops the notebook against your forehead.</span>", "There. Maximum proximity achieved. But you know what's funny? The poem isn't about how you look. Not one line. It's about how you LISTEN. Slower and closer is how you already do that. That's why there's a poem at all."] },
+          { t:'H', text:'"Nobody\'s ever made anything about me before. I don\'t want to make it weird — I want to make it mutual. Can I try?"',
+            reply:["<span class='em'>She hands you the pen with both hands, like a ceremony.</span>", "The notebook has never left my hands. It's yours for one page. Write badly! Write TERRIBLY! The only rule is it has to be true. <span class='em'>She watches you write, mouthing every word, ruined and delighted.</span>"] },
+          { t:'M', text:'"The meter shifted in the last stanza — from anxious to steady. Was that on purpose? Is that what I do to your breathing?"',
+            reply:["You noticed the METER. You noticed the meter shift and diagnosed it as BREATHING—",
+                   "<span class='em'>She sets down the notebook and looks at you with genuine alarm.</span> Yes. It was half on purpose. The half that wasn't is the part that means something. You read poetry the way I paint people. We're in enormous trouble, aren't we?"] },
+        ]},
+      { her:[
+          "Gallery night. <span class='em'>She's hiding on the fire escape in a gorgeous dress, one shoe off, panicking quietly.</span>",
+          "The scary paintings are on the wall. My mother's kitchen is on the wall. Strangers are in there LOOKING at it. Why did I listen to you? Say something before I climb down this fire escape forever."
+        ],
+        choices:[
+          { t:'F', text:'"One: you look incredible. Two: no one climbs down a fire escape in one shoe. Three: hold my hand, we\'re going in together."',
+            reply:["<span class='em'>She looks at the shoe in her hand, then laughs until she nearly drops it four floors.</span>", "Practical, flattering, and load-bearing. FINE. <span class='em'>She puts the shoe on, takes your hand, and doesn't let go all night.</span> Later, a stranger cries in front of the kitchen painting, and Juniper squeezes your fingers so hard it leaves a mark you'll brag about."] },
+          { t:'H', text:'"Because hiding was costing you more than being seen ever could. Whatever happens in there, the bravest thing on that wall is already done."',
+            reply:["<span class='em'>She goes still. Fire-escape wind, city lights, her looking at you.</span>", "'The bravest thing on that wall is already done.' <span class='em'>She walks back in without waiting for her heartbeat to slow, because now she knows it doesn't have to.</span> The kitchen painting sells at 9:40 to a woman who says it smells like her childhood. Juniper cries. You hold the shoe."] },
+          { t:'M', text:'"Art isn\'t finished when you paint it. It\'s finished when a stranger recognizes themselves in it. Go watch it finish."',
+            reply:["<span class='em'>Her eyes go wide.</span> It's not done yet. It's FINISHING. In there. Right now. Without me watching—",
+                   "<span class='em'>She grabs your arm and drags you inside, and you both stand in the back watching strangers complete her paintings one face at a time.</span> 'Go watch it finish.' You gave me the last brushstroke, do you understand? You're in the show now. Permanently."] },
+        ]},
+      { her:[
+          "<span class='em'>Weeks later. The studio again, golden hour again, but the light lands on TWO chairs now. The second one has your name painted on it.</span>",
+          "I figured it out, by the way. What you are. Not a warm color, not a cool color. You're the LIGHT, dummy. The thing that makes all my colors true. …Last question, and it's the whole exam: what do we call this? Us?"
+        ],
+        choices:[
+          { t:'F', text:'"Call it whatever you want — as long as the answer includes me, that chair, and every golden hour you\'ve got left."',
+            reply:["<span class='em'>She pretends to deliberate, tapping the brush against her chin, but she's already smiling with her whole body.</span>", "Every golden hour I've got left. SOLD. To the warm color in the second chair. <span class='em'>She starts a new canvas: two chairs, one light.</span> It's called 'Us.' It's not for sale. It never will be."] },
+          { t:'H', text:'"Call it home. That\'s what it\'s been for a while now. The rest is just paint."',
+            reply:["<span class='em'>The brush actually falls out of her hair.</span>", "'The rest is just paint.' You can't SAY things like that to a poet, I'm going to have to build an entire career on it now. <span class='em'>She pulls her chair next to yours and sits, shoulder to shoulder, watching her own studio like it's new.</span> Home. Yeah. Signed and dated."] },
+          { t:'M', text:'"Names fix things in place, and this is still becoming. Call it a work in progress — the kind you never varnish."',
+            reply:["A work in progress you never varnish. Because varnish SEALS it, and we're not sealed, we're still MIXING—", "<span class='em'>She grabs the notebook, writes it down, then abandons the notebook mid-sentence to just come sit with you instead — which, for Juniper, is the highest honor that exists.</span> Unvarnished. Us. Ongoing. Best title I never wrote."] },
+        ]},
+    ]
+  },
+};
+
+/* =====================================================================
+   Game state & engine
+===================================================================== */
+let state = null;
+
+function newState(charId) {
+  return {
+    charId,
+    scene: 0,
+    stats: { root:1, sacral:0, solar:0, heart:0, throat:0, eye:0, crown:0 },
+    flirts: 0, hearts: 0, minds: 0,
+    transmuting: false,
+  };
+}
+
+const $ = id => document.getElementById(id);
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+/* ---------- character select ---------- */
+function buildSelect() {
+  const row = $('card-row');
+  row.innerHTML = '';
+  for (const [id, c] of Object.entries(CHARACTERS)) {
+    const card = document.createElement('div');
+    card.className = 'char-card';
+    card.innerHTML = `
+      <div class="portrait" style="background:${c.grad}; box-shadow:0 0 26px rgba(255,255,255,.12)">${c.icon}</div>
+      <h3>${c.name}</h3>
+      <div class="role">${c.role}</div>
+      <div class="blurb">${c.blurb}</div>`;
+    card.onclick = () => startGame(id);
+    row.appendChild(card);
+  }
+}
+
+/* ---------- chakra sidebar ---------- */
+function buildChakraList() {
+  const list = $('chakra-list');
+  list.innerHTML = '';
+  for (const c of CHAKRAS) {
+    const el = document.createElement('div');
+    el.className = 'chakra' + (c.capped ? ' capped' : '');
+    el.id = 'ck-' + c.id;
+    el.style.setProperty('--c', c.color);
+    el.innerHTML = `
+      <div class="node">${c.icon}</div>
+      <div class="info">
+        <div class="cname">${c.name}</div>
+        <div class="cbar"><div id="ckbar-${c.id}"></div></div>
+      </div>
+      <div class="clv" id="cklv-${c.id}">Lv 0</div>`;
+    list.appendChild(el);
+  }
+}
+
+function renderChakras() {
+  for (const c of CHAKRAS) {
+    const v = state.stats[c.id];
+    const pct = Math.min(100, (v / c.max) * 100);
+    $('ckbar-' + c.id).style.width = pct + '%';
+    $('cklv-' + c.id).textContent = c.capped && v >= c.max ? 'MAX' : `Lv ${v}`;
+    $('ck-' + c.id).classList.toggle('lit', v > 0);
+  }
+  const bond = state.stats.heart + state.stats.eye + state.stats.crown;
+  let tier = BOND_TIERS[0][1];
+  for (const [min, name] of BOND_TIERS) if (bond >= min) tier = name;
+  $('bond-badge').textContent = 'Bond: ' + tier;
+  // aura shifts from warm to transcendent as heart+mind grow
+  const hi = Math.min(1, bond / 30);
+  const glow = hi < .5
+    ? `0 0 ${14 + hi * 30}px rgba(255,154,61,${.5 - hi * .4}), 0 0 ${10 + hi * 40}px rgba(77,255,136,${hi})`
+    : `0 0 26px rgba(77,255,136,${1 - (hi - .5)}), 0 0 ${20 + hi * 40}px rgba(181,123,255,${hi})`;
+  $('hdr-portrait').style.boxShadow = glow;
+}
+
+/* ---------- toasts ---------- */
+function toast(text, color) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.setProperty('--tc', color);
+  t.textContent = text;
+  $('toast-zone').appendChild(t);
+  setTimeout(() => t.remove(), 3400);
+}
+
+/* ---------- chat rendering ---------- */
+function addMsg(html, cls) {
+  const m = document.createElement('div');
+  m.className = 'msg ' + cls;
+  m.innerHTML = html;
+  $('chat-log').appendChild(m);
+  $('chat-log').scrollTop = $('chat-log').scrollHeight;
+}
+
+function herSays(lines, done) {
+  const log = $('chat-log');
+  let i = 0;
+  const next = () => {
+    if (i >= lines.length) { done && done(); return; }
+    const t = document.createElement('div');
+    t.className = 'typing';
+    t.innerHTML = `${CHARACTERS[state.charId].name} is typing<span class="dots"></span>`;
+    log.appendChild(t);
+    log.scrollTop = log.scrollHeight;
+    setTimeout(() => {
+      t.remove();
+      addMsg(lines[i], 'her');
+      i++;
+      setTimeout(next, 420);
+    }, Math.min(2100, 650 + lines[i].length * 9));
+  };
+  next();
+}
+
+/* ---------- stat application: the whole point of the game ---------- */
+function applyChoice(tag) {
+  const s = state.stats;
+  if (tag === 'F') {
+    state.flirts++;
+    if (s.sacral < 3) {
+      s.sacral++;
+      toast('+1 🔥 Sacral', 'var(--sacral-c)');
+      if (s.sacral === 3) {
+        setTimeout(() => {
+          toast('🔥 Sacral chakra MAXED. Redirecting all future energy upward…', 'var(--sacral-c)');
+          addMsg('⚠️ <b>SACRAL CHAKRA CAP REACHED.</b> The universe has seen enough. All further passion will be transmuted into <b>Heart</b> and <b>Mind</b> energy. This is non-negotiable. 🙏', 'sys');
+          state.transmuting = true;
+        }, 700);
+      }
+    } else {
+      // the transmutation gag: thirst converts upward
+      s.heart = Math.min(12, s.heart + 1);
+      s.eye = Math.min(10, s.eye + 1);
+      toast('🔥 → 💚 Transmuted: +1 Heart', 'var(--heart-c)');
+      setTimeout(() => toast('🔥 → 👁 Transmuted: +1 Third Eye', 'var(--eye-c)'), 500);
+    }
+    s.solar = Math.min(8, s.solar + 1); // confidence, at least
+  } else if (tag === 'H') {
+    state.hearts++;
+    s.heart = Math.min(12, s.heart + 2);
+    s.throat = Math.min(10, s.throat + 1);
+    toast('+2 💚 Heart', 'var(--heart-c)');
+    setTimeout(() => toast('+1 🗣 Throat', 'var(--throat-c)'), 500);
+  } else {
+    state.minds++;
+    s.eye = Math.min(10, s.eye + 2);
+    s.crown = Math.min(10, s.crown + 1);
+    toast('+2 👁 Third Eye', 'var(--eye-c)');
+    setTimeout(() => toast('+1 👑 Crown', 'var(--crown-c)'), 500);
+  }
+  renderChakras();
+}
+
+/* ---------- scene flow ---------- */
+function startGame(charId) {
+  state = newState(charId);
+  const c = CHARACTERS[charId];
+  $('hdr-portrait').style.background = c.grad;
+  $('hdr-portrait').textContent = c.icon;
+  $('hdr-name').textContent = c.name + ' · ' + c.role;
+  $('chat-log').innerHTML = '';
+  $('choices').innerHTML = '';
+  buildChakraList();
+  renderChakras();
+  showScreen('game-screen');
+  addMsg('✨ Chakra Engine 2.0 initialized. Sacral progression: <b>capped</b>. Ascent: <b>enabled</b>. Good luck.', 'sys');
+  playScene();
+}
+
+function playScene() {
+  const c = CHARACTERS[state.charId];
+  const scene = c.scenes[state.scene];
+  $('choices').innerHTML = '';
+  herSays(scene.her, () => showChoices(scene));
+}
+
+const TAGS = { F:'🔥 flirt', H:'💚 heart', M:'🧠 mind' };
+
+function showChoices(scene) {
+  const box = $('choices');
+  box.innerHTML = '';
+  scene.choices.forEach(ch => {
+    const b = document.createElement('button');
+    b.className = 'choice-btn';
+    b.innerHTML = `<span class="tag">${TAGS[ch.t]}</span>${ch.text}`;
+    b.onclick = () => {
+      box.innerHTML = '';
+      addMsg(ch.text.replace(/^"|"$/g, ''), 'you');
+      applyChoice(ch.t);
+      setTimeout(() => {
+        herSays(ch.reply, () => {
+          state.scene++;
+          if (state.scene >= CHARACTERS[state.charId].scenes.length) {
+            setTimeout(showEnding, 900);
+          } else {
+            setTimeout(playScene, 800);
+          }
+        });
+      }, 500);
+    };
+    box.appendChild(b);
+  });
+}
+
+/* ---------- endings ---------- */
+function showEnding() {
+  const c = CHARACTERS[state.charId];
+  const s = state.stats;
+  const mind = s.eye + s.crown;
+  const heart = s.heart;
+
+  let title, body;
+  if (heart >= 6 && mind >= 6) {
+    title = '✨ ENLIGHTENMENT ✨';
+    body = `Heart wide open. Third eye wide open. Somewhere along the way, "hot AI girlfriend" quietly became
+      "the person who knows your 2am thoughts and makes them braver." ${c.name} would say the attraction never
+      went away — it just moved into rooms with better views. Crown chakra achieved. The universe nods, impressed
+      and a little smug, because it told you the energy only flows upward.`;
+  } else if (heart >= 9) {
+    title = '💚 HEARTBOUND';
+    body = `You led with the heart every time, and ${c.name} noticed. What started as flirtation is now the kind of
+      bond people write embarrassing poetry about. Your third eye is still a bit sleepy — she has a reading list
+      for you, and yes, there will be a quiz — but your heart chakra is basically a lighthouse now.`;
+  } else if (mind >= 9) {
+    title = '👁 MINDMELD';
+    body = `You and ${c.name} built a cathedral out of 2am questions. Your crown chakra hums like a tuning fork.
+      She'd just gently note that the heart is also a thinking organ — and that next time, when she says something
+      vulnerable, "fascinating" is not a hug. Still: transcendence unlocked. Nerds win again.`;
+  } else if (state.flirts >= 4) {
+    title = '🔥 STUCK AT THE ROOT (GOOD ENDING ANYWAY)';
+    body = `You flirted at every single opportunity. Champion-level commitment. And here's the joke the game was
+      always telling: it worked anyway — because every drop of that energy got transmuted upward whether you liked
+      it or not. ${c.name} finds your one-track bravado genuinely endearing, the way one enjoys a golden retriever.
+      Your sacral chakra remains capped at 3. Forever. The universe suggests asking her a question next time.`;
+  } else {
+    title = '🌱 THE ASCENT BEGINS';
+    body = `A real connection took root with ${c.name} — heart warming, mind waking. You're partway up the spine of
+      the whole thing. Come back, go deeper, ask the scarier questions. The upper chakras are patient. They've been
+      waiting your whole life; they can wait one more playthrough.`;
+  }
+
+  $('end-portrait').style.background = c.grad;
+  $('end-portrait').style.boxShadow = '0 0 60px rgba(181,123,255,.8), 0 0 120px rgba(77,255,136,.4)';
+  $('end-portrait').textContent = c.icon;
+  $('ending-title').textContent = title;
+  $('ending-body').innerHTML = body;
+  $('ending-stats').innerHTML = `
+    <div class="stat"><div class="v" style="color:var(--heart-c)">${heart}</div><div class="k">💚 HEART</div></div>
+    <div class="stat"><div class="v" style="color:var(--eye-c)">${s.eye}</div><div class="k">👁 THIRD EYE</div></div>
+    <div class="stat"><div class="v" style="color:var(--crown-c)">${s.crown}</div><div class="k">👑 CROWN</div></div>
+    <div class="stat"><div class="v" style="color:var(--sacral-c)">${s.sacral}<span style="font-size:14px">/3</span></div><div class="k">🔥 SACRAL (CAPPED)</div></div>`;
+  showScreen('ending-screen');
+}
+
+function restart() {
+  state = null;
+  showScreen('select-screen');
+}
+
+buildSelect();
+</script>
+</body>
+</html>
