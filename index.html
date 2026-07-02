@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Stillpoint — Somatic Descent</title>
+<style>
+  :root{
+    --bg:#07090f;
+    --bg2:#0b0f1a;
+    --ink:#dfe6f2;
+    --ink-dim:#8b96ad;
+    --glow:#7fb4ff;
+    --glow-soft:rgba(127,180,255,.16);
+    --warm:#ffc98a;
+    --warm-soft:rgba(255,201,138,.14);
+    --ease:#9be8c8;
+    --card:#101625;
+    --card-edge:rgba(255,255,255,.06);
+    --danger:#ff9d9d;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(120% 90% at 50% 0%, var(--bg2) 0%, var(--bg) 60%);
+    color:var(--ink);
+    font-family:ui-rounded,-apple-system,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;
+    overflow:hidden;
+    user-select:none;
+  }
+  #app{height:100%;display:flex;flex-direction:column;position:relative}
+
+  /* ---------- shared ---------- */
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 1.1s ease}
+  .screen.on{opacity:1;pointer-events:auto}
+  .btn{
+    background:var(--card);border:1px solid var(--card-edge);color:var(--ink);
+    border-radius:18px;padding:16px 22px;font-size:16px;cursor:pointer;
+    transition:transform .25s ease, border-color .25s ease, background .25s ease;
+    font-family:inherit;text-align:left;width:100%;max-width:420px;
+  }
+  .btn:hover{transform:translateY(-2px);border-color:rgba(127,180,255,.35)}
+  .btn:active{transform:scale(.98)}
+  .btn .t{display:block;font-size:17px;font-weight:600;letter-spacing:.2px}
+  .btn .d{display:block;font-size:13px;color:var(--ink-dim);margin-top:4px;line-height:1.45}
+  .btn .m{float:right;font-size:12px;color:var(--ink-dim);background:rgba(255,255,255,.05);
+    padding:3px 9px;border-radius:20px;margin-left:8px}
+  .ghost{
+    background:none;border:none;color:var(--ink-dim);font-size:14px;cursor:pointer;
+    padding:10px 18px;font-family:inherit;letter-spacing:.3px;border-radius:12px;
+    transition:color .3s;
+  }
+  .ghost:hover{color:var(--ink)}
+
+  /* ---------- home ---------- */
+  #home h1{font-size:34px;font-weight:700;letter-spacing:.5px;margin-bottom:6px;text-align:center}
+  #home .sub{color:var(--ink-dim);font-size:14px;text-align:center;max-width:420px;line-height:1.6;margin-bottom:30px}
+  #home .menu{display:flex;flex-direction:column;gap:12px;width:100%;max-width:420px}
+  .stats{display:flex;gap:12px;margin-top:28px}
+  .stat{background:rgba(255,255,255,.035);border:1px solid var(--card-edge);border-radius:14px;
+    padding:10px 18px;text-align:center;min-width:104px}
+  .stat b{display:block;font-size:22px;color:var(--glow);font-weight:700}
+  .stat span{font-size:11px;color:var(--ink-dim);letter-spacing:.5px;text-transform:uppercase}
+  .foot{position:absolute;bottom:18px;font-size:11px;color:rgba(139,150,173,.55);text-align:center;
+    max-width:520px;line-height:1.6;padding:0 20px}
+
+  /* ---------- session ---------- */
+  #stage{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  #orbWrap{position:relative;width:min(64vmin,340px);height:min(64vmin,340px);
+    display:flex;align-items:center;justify-content:center}
+  #orb{
+    width:38%;height:38%;border-radius:50%;
+    background:radial-gradient(circle at 38% 32%, rgba(220,238,255,.95), var(--glow) 45%, rgba(30,70,140,.9));
+    box-shadow:0 0 60px 18px var(--glow-soft), 0 0 140px 60px rgba(127,180,255,.08);
+    will-change:transform,filter;
+  }
+  .halo{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(127,180,255,.14);
+    will-change:transform,opacity}
+  #breathLabel{margin-top:8px;height:28px;font-size:15px;letter-spacing:4px;
+    color:var(--ink-dim);text-transform:uppercase;transition:opacity .6s;text-align:center}
+  #cue{
+    min-height:86px;max-width:560px;text-align:center;font-size:19px;line-height:1.65;
+    color:var(--ink);padding:0 26px;transition:opacity 1.2s ease;font-weight:400;
+  }
+  #cue.hidden{opacity:0}
+  #phaseTag{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--ink-dim);
+    margin-bottom:14px;transition:opacity 1s;height:14px}
+  #progress{position:absolute;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--glow),var(--ease));
+    width:0%;transition:width 1s linear;opacity:.7}
+  #sessionBar{display:flex;gap:6px;padding:14px;justify-content:center;align-items:center}
+
+  /* body figure */
+  #bodyFig{position:absolute;right:max(12px,3vw);bottom:70px;width:74px;opacity:0;transition:opacity 1.4s}
+  #bodyFig.show{opacity:.9}
+  #bodyFig .region{fill:rgba(139,150,173,.18);transition:fill 1.6s ease}
+  #bodyFig .region.lit{fill:var(--warm)}
+  #bodyFig .region.done{fill:rgba(155,232,200,.35)}
+
+  /* ---------- urge surf ---------- */
+  #wave{position:absolute;left:0;right:0;bottom:0;height:46%;pointer-events:none;opacity:.85}
+  #surfCue{max-width:520px;text-align:center;font-size:19px;line-height:1.65;padding:0 26px;
+    transition:opacity 1s;z-index:2}
+  #surfTimer{font-size:13px;letter-spacing:3px;color:var(--ink-dim);margin-top:22px;z-index:2}
+
+  /* ---------- done ---------- */
+  #done .big{font-size:26px;font-weight:600;margin-bottom:10px;text-align:center}
+  #done p{color:var(--ink-dim);text-align:center;max-width:420px;line-height:1.7;font-size:15px;margin-bottom:6px}
+  #done .earn{color:var(--ease);font-size:15px;margin:16px 0 26px;text-align:center}
+
+  .fadeSlow{animation:fadeIn 2.2s ease both}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* stars */
+  #sky{position:absolute;inset:0;pointer-events:none;opacity:.5}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="sky"></canvas>
+
+  <!-- HOME -->
+  <div class="screen on" id="home">
+    <h1>Stillpoint</h1>
+    <div class="sub">A somatic descent. Release the body layer by layer, let the breath become the only object, and settle into a stillness deeper than anything a feed can offer.</div>
+    <div class="menu">
+      <button class="btn" data-session="descent">
+        <span class="m">~14 min</span><span class="t">The Full Descent</span>
+        <span class="d">Ground → release the body → breath absorption → stillness. The complete path toward fourth-jhana-like equanimity.</span>
+      </button>
+      <button class="btn" data-session="release">
+        <span class="m">~7 min</span><span class="t">Body Release</span>
+        <span class="d">Progressive tension release only — tense, hold, let go, region by region until the body is heavy and warm.</span>
+      </button>
+      <button class="btn" data-session="surf">
+        <span class="m">90 sec</span><span class="t">Urge Surf 🌊</span>
+        <span class="d">Feeling the pull to scroll? Ride the craving like a wave. It peaks and passes in about a minute — every time.</span>
+      </button>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="stStreak">0</b><span>day streak</span></div>
+      <div class="stat"><b id="stMin">0</b><span>still minutes</span></div>
+      <div class="stat"><b id="stSurf">0</b><span>urges surfed</span></div>
+    </div>
+    <div class="foot">Built on evidence-based practice: progressive muscle relaxation (Jacobson), resonance-frequency breathing (~5.5 breaths/min), body-scan interoception, urge surfing (Marlatt), and classical jhana factors. Not medical advice — a training tool for attention.</div>
+  </div>
+
+  <!-- SESSION -->
+  <div class="screen" id="session">
+    <div id="progress"></div>
+    <div id="stage">
+      <div id="phaseTag"></div>
+      <div id="orbWrap">
+        <div class="halo" id="halo1"></div>
+        <div class="halo" id="halo2"></div>
+        <div id="orb"></div>
+      </div>
+      <div id="breathLabel"></div>
+      <div id="cue" class="hidden"></div>
+      <svg id="bodyFig" viewBox="0 0 60 150" aria-hidden="true">
+        <ellipse class="region" data-r="head"      cx="30" cy="13" rx="9"  ry="11"/>
+        <rect    class="region" data-r="jaw"       x="25"  y="21" width="10" height="5" rx="2.5"/>
+        <rect    class="region" data-r="shoulders" x="12"  y="29" width="36" height="9" rx="4.5"/>
+        <rect    class="region" data-r="arms"      x="6"   y="38" width="8" height="38" rx="4"/>
+        <rect    class="region" data-r="arms2"     x="46"  y="38" width="8" height="38" rx="4"/>
+        <rect    class="region" data-r="hands"     x="5"   y="78" width="10" height="10" rx="5"/>
+        <rect    class="region" data-r="hands2"    x="45"  y="78" width="10" height="10" rx="5"/>
+        <rect    class="region" data-r="chest"     x="17"  y="38" width="26" height="20" rx="6"/>
+        <rect    class="region" data-r="belly"     x="18"  y="60" width="24" height="16" rx="6"/>
+        <rect    class="region" data-r="hips"      x="17"  y="78" width="26" height="12" rx="6"/>
+        <rect    class="region" data-r="legs"      x="19"  y="92" width="9" height="40" rx="4.5"/>
+        <rect    class="region" data-r="legs2"     x="32"  y="92" width="9" height="40" rx="4.5"/>
+        <rect    class="region" data-r="feet"      x="17"  y="134" width="12" height="8" rx="4"/>
+        <rect    class="region" data-r="feet2"     x="31"  y="134" width="12" height="8" rx="4"/>
+      </svg>
+    </div>
+    <div id="sessionBar">
+      <button class="ghost" id="btnPause">pause</button>
+      <button class="ghost" id="btnSound">sound: on</button>
+      <button class="ghost" id="btnExit">end</button>
+    </div>
+  </div>
+
+  <!-- URGE SURF -->
+  <div class="screen" id="surf">
+    <div id="surfCue"></div>
+    <div id="surfTimer"></div>
+    <canvas id="wave"></canvas>
+    <div style="z-index:2;margin-top:26px"><button class="ghost" id="btnSurfExit">end</button></div>
+  </div>
+
+  <!-- DONE -->
+  <div class="screen" id="done">
+    <div class="big fadeSlow" id="doneTitle">The body remembers this.</div>
+    <p class="fadeSlow" id="doneText"></p>
+    <div class="earn fadeSlow" id="doneEarn"></div>
+    <button class="btn fadeSlow" id="btnHome" style="text-align:center"><span class="t" style="text-align:center">Return</span></button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   STILLPOINT — somatic descent toward jhana-like absorption
+   ========================================================= */
+"use strict";
+
+/* ---------- persistence ---------- */
+const store = {
+  read(){ try{ return JSON.parse(localStorage.getItem("stillpoint")||"{}") }catch(e){ return {} } },
+  write(d){ try{ localStorage.setItem("stillpoint", JSON.stringify(d)) }catch(e){} }
+};
+function today(){ return new Date().toISOString().slice(0,10) }
+function logSession(minutes, surfed){
+  const d = store.read();
+  d.minutes = (d.minutes||0) + minutes;
+  d.surfs   = (d.surfs||0) + (surfed?1:0);
+  const t = today();
+  if(d.lastDay !== t){
+    const y = new Date(Date.now()-864e5).toISOString().slice(0,10);
+    d.streak = (d.lastDay === y) ? (d.streak||0)+1 : 1;
+    d.lastDay = t;
+  }
+  store.write(d);
+}
+function renderStats(){
+  const d = store.read();
+  stStreak.textContent = d.streak||0;
+  stMin.textContent    = Math.round(d.minutes||0);
+  stSurf.textContent   = d.surfs||0;
+}
+
+/* ---------- audio engine (generative, no assets) ---------- */
+const Sound = {
+  ctx:null, master:null, on:true, nodes:[],
+  init(){
+    if(this.ctx) return;
+    const C = window.AudioContext||window.webkitAudioContext;
+    if(!C) { this.on=false; return; }
+    this.ctx = new C();
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 0;
+    this.master.connect(this.ctx.destination);
+  },
+  startDrone(){
+    if(!this.ctx || !this.on) return;
+    this.ctx.resume();
+    this.stopDrone();
+    const t = this.ctx.currentTime;
+    // two low sines, slightly detuned -> gentle ~4 Hz beating (theta-range amplitude flutter)
+    const make = (f, pan) => {
+      const o = this.ctx.createOscillator(); o.type="sine"; o.frequency.value=f;
+      const g = this.ctx.createGain(); g.gain.value=.5;
+      let p = null;
+      if(this.ctx.createStereoPanner){ p=this.ctx.createStereoPanner(); p.pan.value=pan; o.connect(g); g.connect(p); p.connect(this.master); }
+      else { o.connect(g); g.connect(this.master); }
+      o.start();
+      return [o,g,p];
+    };
+    this.nodes.push(...make(110, -.6), ...make(114, .6));
+    // filtered noise wash, very quiet
+    const len = 2*this.ctx.sampleRate;
+    const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const ch = buf.getChannelData(0);
+    for(let i=0;i<len;i++) ch[i]=Math.random()*2-1;
+    const noise = this.ctx.createBufferSource(); noise.buffer=buf; noise.loop=true;
+    const lp = this.ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=420; lp.Q.value=.4;
+    const ng = this.ctx.createGain(); ng.gain.value=.05;
+    noise.connect(lp); lp.connect(ng); ng.connect(this.master);
+    noise.start();
+    this.nodes.push(noise, lp, ng);
+    this.master.gain.cancelScheduledValues(t);
+    this.master.gain.setValueAtTime(this.master.gain.value, t);
+    this.master.gain.linearRampToValueAtTime(.14, t+4);
+  },
+  stopDrone(fade=1.5){
+    if(!this.ctx) return;
+    const t=this.ctx.currentTime;
+    this.master.gain.cancelScheduledValues(t);
+    this.master.gain.setValueAtTime(this.master.gain.value, t);
+    this.master.gain.linearRampToValueAtTime(0, t+fade);
+    const old=this.nodes; this.nodes=[];
+    setTimeout(()=>old.forEach(n=>{ try{ n.stop&&n.stop() }catch(e){} try{ n.disconnect() }catch(e){} }), fade*1000+100);
+  },
+  bell(pitch=520){
+    if(!this.ctx || !this.on) return;
+    this.ctx.resume();
+    const t=this.ctx.currentTime;
+    const o=this.ctx.createOscillator(); o.type="sine"; o.frequency.value=pitch;
+    const o2=this.ctx.createOscillator(); o2.type="sine"; o2.frequency.value=pitch*2.76; // bell partial
+    const g=this.ctx.createGain(); const g2=this.ctx.createGain();
+    g.gain.setValueAtTime(.001,t); g.gain.exponentialRampToValueAtTime(.22,t+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,t+5);
+    g2.gain.setValueAtTime(.001,t); g2.gain.exponentialRampToValueAtTime(.06,t+.02);
+    g2.gain.exponentialRampToValueAtTime(.0001,t+2.4);
+    o.connect(g); o2.connect(g2); g.connect(this.ctx.destination); g2.connect(this.ctx.destination);
+    o.start(t); o2.start(t); o.stop(t+5.2); o2.stop(t+2.6);
+  },
+  deepen(hz){ // lower the drone as absorption deepens
+    if(!this.ctx || !this.nodes.length) return;
+    const t=this.ctx.currentTime;
+    this.nodes.forEach(n=>{
+      if(n.frequency && n.type==="sine" && n.frequency.value>60)
+        n.frequency.linearRampToValueAtTime(n.frequency.value*hz, t+8);
+    });
+  },
+  toggle(){ this.on=!this.on; if(!this.on) this.stopDrone(.6); else this.startDrone(); return this.on; }
+};
+
+/* ---------- session scripts ----------
+   step: { text, dur(s), phase, breath:{in,h1,out,h2}|null|"free", region, bell }
+   breath "free" = orb drifts gently, no counted pacing            */
+const B_SETTLE = {in:4,h1:0,out:6,h2:0};     // extended exhale: vagal downshift
+const B_RES    = {in:5.5,h1:0,out:5.5,h2:0}; // resonance frequency ~5.5/min
+const B_DEEP   = {in:6,h1:2,out:8,h2:2};     // slow box-ish, for absorption
+const PHASES = { ground:"Grounding", release:"First Jhana · Release", breath:"Second Jhana · Absorption",
+                 sweet:"Third Jhana · Contentment", still:"Fourth Jhana · Equanimity", surf:"Urge Surfing" };
+
+function releaseSteps(shortForm){
+  const regions = [
+    ["feet",      "Curl your toes tight. Squeeze the whole foot… hold it… and let go completely. Feel the warmth flood in."],
+    ["legs",      "Tense your calves and thighs — press them together, hard… hold… and release. Let the legs become heavy, sinking."],
+    ["hips",      "Squeeze the hips and glutes… hold the tension… now let it drain away, like water leaving a sponge."],
+    ["belly",     "Draw the belly in tight… hold… and soften. Let the belly be round, loose, undefended."],
+    ["chest",     "Take a big breath and hold it, chest tight… hold… now let it fall out with a long sigh. The chest opens."],
+    ["hands",     "Make two fists. Squeeze until they tremble slightly… hold… and open the hands. Fingers heavy, warm, alive."],
+    ["arms",      "Tense both arms like you're carrying something heavy… hold… and drop the weight. Arms limp at your sides."],
+    ["shoulders", "Pull your shoulders up to your ears. Higher… hold… and let them plummet. This is where the day lives — let the day fall."],
+    ["jaw",       "Clench the jaw, press the tongue to the roof of the mouth… hold… release. Lips barely touching. Tongue soft."],
+    ["head",      "Scrunch the whole face — eyes, brow, everything… hold… and smooth it out. Forehead wide and flat like calm water."]
+  ];
+  const steps = [];
+  const list = shortForm ? regions : regions;
+  for(const [r, text] of list){
+    steps.push({phase:"release", region:r, text, dur:22, breath:"free"});
+  }
+  steps.push({phase:"release", text:"Now the whole body at once. Scan from feet to crown. If anything re-tightened, just notice it — noticing is enough. It releases on its own.", dur:20, breath:"free"});
+  return steps;
+}
+
+const SCRIPTS = {
+  descent: [
+    {phase:"ground", text:"Sit or lie down. Put the phone where you can't reach it without moving your whole body.", dur:10, breath:null, bell:true},
+    {phase:"ground", text:"Feel the points where your body meets the surface beneath you. You are held. Nothing is required of you for the next fourteen minutes.", dur:14, breath:null},
+    {phase:"ground", text:"Breathe with the light. In through the nose… out long and slow through the mouth. The exhale is where the nervous system lets go.", dur:40, breath:B_SETTLE},
+    ...releaseSteps(false),
+    {phase:"breath", text:"The body is heavy now. Let the breath become the only thing in the world. Ride the light — nothing to force, just follow.", dur:20, breath:B_RES, bell:true},
+    {phase:"breath", text:"", dur:66, breath:B_RES},
+    {phase:"breath", text:"Thoughts will come — plans, feeds, unfinished things. Let each one be a cloud crossing. You are the sky, not the weather.", dur:44, breath:B_RES},
+    {phase:"breath", text:"", dur:44, breath:B_RES},
+    {phase:"sweet", text:"Notice: somewhere in the body there is a spot of pleasantness. Warmth in the hands. Softness in the chest. Find it. Let attention rest there and let it spread.", dur:36, breath:B_DEEP, bell:true},
+    {phase:"sweet", text:"", dur:54, breath:B_DEEP},
+    {phase:"sweet", text:"This contentment needs nothing added. No notification improves it. Let even the effort of watching soften.", dur:36, breath:B_DEEP},
+    {phase:"still", text:"Now release the breath itself as an object. Stop following. Just be the stillness that was underneath the whole time.", dur:20, breath:"free", bell:true},
+    {phase:"still", text:"", dur:80, breath:"free"},
+    {phase:"still", text:"Neither pleasure nor pain. Neither grasping nor pushing away. Just this — bright, quiet, complete.", dur:40, breath:"free"},
+    {phase:"still", text:"", dur:40, breath:"free"},
+    {phase:"still", text:"In a moment, a bell. Carry this with you. Your goals are waiting — and now, so is your attention.", dur:16, breath:"free", bell:true}
+  ],
+  release: [
+    {phase:"ground", text:"Sit comfortably. Three long exhales to arrive — in through the nose, out slow through the mouth.", dur:26, breath:B_SETTLE, bell:true},
+    ...releaseSteps(true),
+    {phase:"sweet", text:"Heavy, warm, done. Sit inside this body for a minute — this is the feeling scrolling promises and never delivers.", dur:60, breath:B_RES, bell:true},
+    {phase:"sweet", text:"A bell will close the practice. Take this body with you into whatever you do next.", dur:14, breath:B_RES, bell:true}
+  ]
+};
+
+const SURF_SCRIPT = [
+  {t:"Don't fight the urge. Turn toward it. Where do you feel it in your body, right now?", dur:12},
+  {t:"Maybe a buzz in the chest. Restless hands. A leaning-forward in the face. Just find it and watch it.", dur:14},
+  {t:"Now breathe into that exact spot. The urge is a wave — it is rising, and every wave that rises must crest.", dur:14},
+  {t:"You are not the wave. You are the ocean it moves through. Keep watching. It's already changing shape.", dur:14},
+  {t:"Cresting now. Notice: it never actually forced you to do anything. It's only weather.", dur:14},
+  {t:"Falling. Softening. The hands can relax. The face can relax. It passed — and you didn't feed it.", dur:14},
+  {t:"Every surfed urge weakens the loop. Every fed urge strengthens it. You just voted for the person you're becoming.", dur:8}
+];
+
+/* ---------- DOM refs ---------- */
+const $ = id => document.getElementById(id);
+const screens = {home:$("home"), session:$("session"), surf:$("surf"), done:$("done")};
+const orb=$("orb"), halo1=$("halo1"), halo2=$("halo2"), cue=$("cue"),
+      breathLabel=$("breathLabel"), phaseTag=$("phaseTag"), progress=$("progress"),
+      bodyFig=$("bodyFig");
+
+function show(name){
+  Object.values(screens).forEach(s=>s.classList.remove("on"));
+  screens[name].classList.add("on");
+}
+
+/* ---------- starfield ---------- */
+(function(){
+  const c=$("sky"), x=c.getContext("2d");
+  let stars=[];
+  function size(){ c.width=innerWidth; c.height=innerHeight;
+    stars=Array.from({length:90},()=>({x:Math.random()*c.width,y:Math.random()*c.height,
+      r:Math.random()*1.1+.2, p:Math.random()*Math.PI*2, s:.3+Math.random()*.7}));
+  }
+  addEventListener("resize",size); size();
+  (function tick(t){
+    x.clearRect(0,0,c.width,c.height);
+    for(const s of stars){
+      const a=.25+.35*(0.5+0.5*Math.sin(t/1400*s.s+s.p));
+      x.globalAlpha=a; x.fillStyle="#cfe0ff";
+      x.beginPath(); x.arc(s.x,s.y,s.r,0,7); x.fill();
+    }
+    requestAnimationFrame(tick);
+  })(0);
+})();
+
+/* ---------- breath animator ---------- */
+const Breath = {
+  mode:null, t0:0, paused:false, pausedAt:0,
+  set(mode){ if(JSON.stringify(mode)!==JSON.stringify(this.mode)){ this.mode=mode; this.t0=performance.now(); } },
+  pause(){ this.paused=true; this.pausedAt=performance.now(); },
+  resume(){ this.t0 += performance.now()-this.pausedAt; this.paused=false; },
+  frame(now){
+    if(this.paused) return;
+    let scale=1, label="", haloA=0;
+    const m=this.mode;
+    if(m && m!=="free"){
+      const total=(m.in+m.h1+m.out+m.h2)*1000;
+      const t=((now-this.t0)%total)/1000;
+      let phase, p;
+      if(t<m.in){ phase="breathe in"; p=t/m.in; scale=1+1.5*ease(p); }
+      else if(t<m.in+m.h1){ phase="hold"; scale=2.5; }
+      else if(t<m.in+m.h1+m.out){ phase="breathe out"; p=(t-m.in-m.h1)/m.out; scale=2.5-1.5*ease(p); }
+      else { phase="rest"; scale=1; }
+      label=phase; haloA=(scale-1)/1.5;
+    } else if(m==="free"){
+      const t=(now-this.t0)/1000;
+      scale=1.55+.25*Math.sin(t*2*Math.PI/10);   // slow autonomous drift, no instruction
+      haloA=.35+.2*Math.sin(t*2*Math.PI/10);
+      label="";
+    } else { scale=1.15; label=""; }
+    orb.style.transform=`scale(${scale.toFixed(3)})`;
+    orb.style.filter=`brightness(${(0.85+0.35*(scale-1)/1.5).toFixed(3)})`;
+    halo1.style.transform=`scale(${(0.4+0.55*scale).toFixed(3)})`;
+    halo1.style.opacity=(haloA*.7).toFixed(2);
+    halo2.style.transform=`scale(${(0.55+0.75*scale).toFixed(3)})`;
+    halo2.style.opacity=(haloA*.35).toFixed(2);
+    if(breathLabel.textContent!==label) breathLabel.textContent=label;
+  }
+};
+function ease(p){ return p<.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2 } // easeInOutQuad
+(function loop(now){ Breath.frame(now); requestAnimationFrame(loop) })(0);
+
+/* ---------- session runner ---------- */
+const Runner = {
+  steps:[], i:-1, timer:null, stepStart:0, remaining:0, paused:false,
+  totalDur:0, elapsedBefore:0, kind:null,
+
+  start(kind){
+    this.kind=kind;
+    this.steps=SCRIPTS[kind];
+    this.totalDur=this.steps.reduce((a,s)=>a+s.dur,0);
+    this.elapsedBefore=0; this.i=-1; this.paused=false;
+    document.querySelectorAll("#bodyFig .region").forEach(r=>r.classList.remove("lit","done"));
+    bodyFig.classList.remove("show");
+    Sound.init(); Sound.startDrone();
+    show("session");
+    this.next();
+  },
+  next(){
+    this.i++;
+    if(this.i>0) this.elapsedBefore += this.steps[this.i-1].dur;
+    if(this.i>=this.steps.length) return this.finish();
+    const s=this.steps[this.i];
+
+    phaseTag.textContent = PHASES[s.phase]||"";
+    if(s.bell) Sound.bell(s.phase==="still"?392:520);
+    if(s.phase==="still") Sound.deepen(.85);
+
+    // body figure
+    if(s.region){
+      bodyFig.classList.add("show");
+      document.querySelectorAll("#bodyFig .region.lit").forEach(r=>{r.classList.remove("lit");r.classList.add("done")});
+      document.querySelectorAll(`#bodyFig .region[data-r="${s.region}"],#bodyFig .region[data-r="${s.region}2"]`)
+        .forEach(r=>r.classList.add("lit"));
+    } else if(s.phase!=="release"){
+      document.querySelectorAll("#bodyFig .region.lit").forEach(r=>{r.classList.remove("lit");r.classList.add("done")});
+      if(s.phase==="breath"||s.phase==="sweet"||s.phase==="still") bodyFig.classList.remove("show");
+    }
+
+    // cue text
+    if(s.text){ cue.classList.add("hidden");
+      setTimeout(()=>{ cue.textContent=s.text; cue.classList.remove("hidden") }, 600);
+    } else cue.classList.add("hidden");
+
+    Breath.set(s.breath);
+
+    this.stepStart=performance.now(); this.remaining=s.dur*1000;
+    clearTimeout(this.timer);
+    this.timer=setTimeout(()=>this.next(), this.remaining);
+    this.tickProgress();
+  },
+  tickProgress(){
+    const done=this.elapsedBefore + Math.min((performance.now()-this.stepStart)/1000, this.steps[this.i]?.dur||0);
+    progress.style.width=(100*done/this.totalDur).toFixed(2)+"%";
+    if(this.i<this.steps.length && !this.paused){
+      clearTimeout(this._pt); this._pt=setTimeout(()=>this.tickProgress(), 1000);
+    }
+  },
+  pause(){
+    if(this.paused) return;
+    this.paused=true;
+    this.remaining -= performance.now()-this.stepStart;
+    clearTimeout(this.timer); clearTimeout(this._pt);
+    Breath.pause();
+    $("btnPause").textContent="resume";
+  },
+  resume(){
+    if(!this.paused) return;
+    this.paused=false; this.stepStart=performance.now();
+    this.timer=setTimeout(()=>this.next(), this.remaining);
+    Breath.resume(); this.tickProgress();
+    $("btnPause").textContent="pause";
+  },
+  stop(){
+    clearTimeout(this.timer); clearTimeout(this._pt);
+    Sound.stopDrone();
+    Breath.set(null); this.paused=false; $("btnPause").textContent="pause";
+  },
+  finish(){
+    this.stop();
+    Sound.bell(392); setTimeout(()=>Sound.bell(392),1800); setTimeout(()=>Sound.bell(330),3600);
+    const mins=Math.round(this.totalDur/60);
+    logSession(mins,false);
+    $("doneTitle").textContent = this.kind==="descent" ? "You touched the still point." : "The body is unwound.";
+    $("doneText").textContent = this.kind==="descent"
+      ? "That brightness with no object — that's what was always underneath the noise. The feeds can't compete with it; they can only distract from it."
+      : "Tension you release on purpose stays released longer. Notice how decisions feel from inside a soft body.";
+    $("doneEarn").textContent = `+${mins} still minutes · streak alive 🔥`;
+    show("done"); renderStats();
+  }
+};
+
+/* ---------- urge surf ---------- */
+const Surf = {
+  timer:null, i:0, running:false, t0:0, raf:null,
+  start(){
+    this.i=0; this.running=true;
+    Sound.init(); Sound.startDrone();
+    show("surf");
+    this.t0=performance.now();
+    this.step();
+    this.drawWave();
+    this.tick();
+  },
+  step(){
+    if(this.i>=SURF_SCRIPT.length) return this.finish();
+    const s=SURF_SCRIPT[this.i];
+    const el=$("surfCue");
+    el.style.opacity=0;
+    setTimeout(()=>{ el.textContent=s.t; el.style.opacity=1 },500);
+    this.timer=setTimeout(()=>{ this.i++; this.step() }, s.dur*1000);
+  },
+  tick(){
+    if(!this.running) return;
+    const total=SURF_SCRIPT.reduce((a,s)=>a+s.dur,0);
+    const left=Math.max(0, total-(performance.now()-this.t0)/1000);
+    $("surfTimer").textContent=Math.ceil(left)+"s — the wave always passes";
+    setTimeout(()=>this.tick(),500);
+  },
+  drawWave(){
+    const c=$("wave"), x=c.getContext("2d");
+    const resize=()=>{ c.width=c.clientWidth; c.height=c.clientHeight };
+    resize();
+    const total=SURF_SCRIPT.reduce((a,s)=>a+s.dur,0)*1000;
+    const draw=(now)=>{
+      if(!this.running) return;
+      const p=Math.min(1,(now-this.t0)/total);
+      // urge intensity: rises, peaks ~45%, falls — the classic craving curve
+      const intensity=Math.sin(Math.min(p/.45,1)*Math.PI/2) * (p<.45?1:Math.cos((p-.45)/.55*Math.PI/2));
+      x.clearRect(0,0,c.width,c.height);
+      for(let layer=0;layer<3;layer++){
+        x.beginPath();
+        const amp=(12+34*intensity)*(1-layer*.25);
+        const base=c.height*(.55+layer*.14);
+        for(let px=0;px<=c.width;px+=4){
+          const y=base+Math.sin(px*.011+now*.0011*(1+layer*.3))*amp
+                      +Math.sin(px*.004-now*.0007)*amp*.5;
+          px===0?x.moveTo(px,y):x.lineTo(px,y);
+        }
+        x.lineTo(c.width,c.height); x.lineTo(0,c.height); x.closePath();
+        x.fillStyle=`rgba(127,180,255,${(.10-layer*.025)+intensity*.06})`;
+        x.fill();
+      }
+      this.raf=requestAnimationFrame(draw);
+    };
+    this.raf=requestAnimationFrame(draw);
+  },
+  stop(){ this.running=false; clearTimeout(this.timer); cancelAnimationFrame(this.raf); Sound.stopDrone(); },
+  finish(){
+    this.stop();
+    Sound.bell(520);
+    logSession(1.5,true);
+    $("doneTitle").textContent="Urge surfed. 🌊";
+    $("doneText").textContent="It rose, it crested, it passed — and you were still here. Each time you watch a craving instead of obeying it, the circuit that drives compulsive checking gets a little quieter.";
+    const d=store.read();
+    $("doneEarn").textContent=`${d.surfs||1} urges surfed all-time`;
+    show("done"); renderStats();
+  }
+};
+
+/* ---------- wiring ---------- */
+document.querySelectorAll("[data-session]").forEach(b=>{
+  b.addEventListener("click",()=>{
+    const k=b.dataset.session;
+    if(k==="surf") Surf.start(); else Runner.start(k);
+  });
+});
+$("btnPause").addEventListener("click",()=>Runner.paused?Runner.resume():Runner.pause());
+$("btnExit").addEventListener("click",()=>{ Runner.stop(); show("home"); renderStats(); });
+$("btnSurfExit").addEventListener("click",()=>{ Surf.stop(); show("home"); renderStats(); });
+$("btnSound").addEventListener("click",e=>{ e.target.textContent="sound: "+(Sound.toggle()?"on":"off"); });
+$("btnHome").addEventListener("click",()=>{ show("home"); renderStats(); });
+document.addEventListener("visibilitychange",()=>{ if(document.hidden && !Runner.paused && screens.session.classList.contains("on")) Runner.pause(); });
+
+renderStats();
+</script>
+</body>
+</html>
