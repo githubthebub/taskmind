@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chakra Shift</title>
+<style>
+  :root{
+    --bg:#0b0817;
+    --panel:#161028;
+    --panel-2:#1e1738;
+    --line:#2e2452;
+    --text:#efeaff;
+    --muted:#a89fc9;
+    --accent:#b48cff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(1200px 800px at 50% -10%, #1b1233 0%, var(--bg) 60%);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+  }
+  header{
+    text-align:center;
+    padding:22px 16px 6px;
+  }
+  header h1{
+    font-size:26px;
+    font-weight:600;
+    letter-spacing:.12em;
+    background:linear-gradient(90deg,#ff5c4d,#ffa938,#ffe03d,#4dd47a,#4db8ff,#7a6cff,#c46bff);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  header p{color:var(--muted);font-size:13px;margin-top:6px}
+
+  .steps{
+    display:flex;justify-content:center;gap:8px;padding:14px 16px 4px;flex-wrap:wrap;
+  }
+  .step-btn{
+    background:var(--panel);border:1px solid var(--line);color:var(--muted);
+    border-radius:999px;padding:9px 18px;font-size:14px;cursor:pointer;
+    transition:all .2s;
+  }
+  .step-btn .num{
+    display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;
+    border-radius:50%;background:var(--line);font-size:11px;margin-right:7px;color:var(--text);
+  }
+  .step-btn.active{
+    background:var(--panel-2);color:var(--text);border-color:var(--accent);
+    box-shadow:0 0 18px rgba(180,140,255,.25);
+  }
+  .step-btn.active .num{background:var(--accent);color:#170f2e}
+
+  main{
+    display:flex;gap:18px;justify-content:center;align-items:flex-start;
+    padding:14px 18px 40px;flex-wrap:wrap;
+  }
+  #stage-wrap{
+    background:linear-gradient(180deg,#140e29 0%,#0e0a1e 100%);
+    border:1px solid var(--line);border-radius:20px;padding:8px;
+    position:relative;overflow:hidden;
+  }
+  #stage-wrap .stars{position:absolute;inset:0;pointer-events:none;opacity:.7}
+  svg#stage{display:block;touch-action:none;user-select:none;position:relative}
+
+  aside{
+    width:330px;max-width:94vw;display:flex;flex-direction:column;gap:14px;
+  }
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;
+  }
+  .card h2{font-size:15px;font-weight:600;margin-bottom:8px}
+  .card p{font-size:13px;color:var(--muted);line-height:1.55}
+  .card p b{color:var(--text);font-weight:600}
+
+  #selected-card .swatch{
+    display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;vertical-align:-1px;
+  }
+  #selected-card .sanskrit{color:var(--muted);font-size:12px;font-style:italic;margin-left:6px}
+  .slider-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+  .slider-row label{font-size:12px;color:var(--muted);width:64px}
+  input[type=range]{flex:1;accent-color:var(--accent)}
+  .slider-row output{font-size:12px;width:34px;text-align:right;color:var(--muted)}
+
+  .chakra-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .chakra-row{
+    display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;
+    background:var(--panel-2);cursor:pointer;border:1px solid transparent;transition:border-color .15s;
+  }
+  .chakra-row:hover{border-color:var(--line)}
+  .chakra-row.selected{border-color:var(--accent)}
+  .chakra-row .dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+  .chakra-row .cname{font-size:13px;width:92px;flex-shrink:0}
+  .chakra-row .bar{
+    flex:1;height:6px;border-radius:3px;background:#0d0a1c;overflow:hidden;
+  }
+  .chakra-row .bar i{display:block;height:100%;border-radius:3px;transition:width .5s}
+  .chakra-row .pct{font-size:11px;color:var(--muted);width:36px;text-align:right}
+
+  .btn{
+    background:linear-gradient(135deg,#6d4dd4,#9a6cff);color:#fff;border:none;
+    border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;cursor:pointer;
+    width:100%;transition:filter .15s, transform .1s;
+  }
+  .btn:hover{filter:brightness(1.12)}
+  .btn:active{transform:scale(.98)}
+  .btn.secondary{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);font-weight:500}
+  .btn:disabled{opacity:.45;cursor:default}
+  .btn-row{display:flex;gap:8px;margin-top:10px}
+
+  #harmony-big{font-size:34px;font-weight:700;text-align:center;margin:6px 0 2px;
+    background:linear-gradient(90deg,#c46bff,#4db8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  #harmony-label{text-align:center;color:var(--muted);font-size:12px;margin-bottom:8px}
+  #sync-line{font-size:12px;color:var(--muted);text-align:center;margin-top:10px;min-height:16px}
+  #breath-word{
+    text-align:center;font-size:18px;letter-spacing:.35em;color:var(--text);
+    margin-top:8px;min-height:24px;text-transform:uppercase;font-weight:600;
+  }
+  .hint{font-size:11px;color:#7d739f;margin-top:10px;line-height:1.5}
+  #celebrate{
+    display:none;text-align:center;padding:10px;border-radius:12px;margin-top:10px;
+    background:linear-gradient(135deg,rgba(196,107,255,.18),rgba(77,184,255,.18));
+    border:1px solid rgba(196,107,255,.5);font-size:14px;
+  }
+  footer{text-align:center;color:#5d5480;font-size:11px;padding:0 16px 26px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>CHAKRA SHIFT</h1>
+  <p>Sense where your energy sits &nbsp;·&nbsp; set where you want it &nbsp;·&nbsp; breathe it into place</p>
+</header>
+
+<div class="steps">
+  <button class="step-btn active" data-mode="sense"><span class="num">1</span>Sense</button>
+  <button class="step-btn" data-mode="intend"><span class="num">2</span>Intend</button>
+  <button class="step-btn" data-mode="shift"><span class="num">3</span>Shift</button>
+</div>
+
+<main>
+  <div id="stage-wrap">
+    <svg class="stars" width="440" height="720" aria-hidden="true"></svg>
+    <svg id="stage" width="440" height="720" viewBox="0 0 440 720" role="application"
+         aria-label="Body with seven chakra circles. Drag circles to reposition them.">
+      <defs>
+        <radialGradient id="bodyGrad" cx="50%" cy="35%" r="80%">
+          <stop offset="0%" stop-color="#3a2f63"/>
+          <stop offset="100%" stop-color="#221a42"/>
+        </radialGradient>
+        <filter id="softGlow" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="8" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <!-- per-chakra radial gradients injected by JS -->
+      </defs>
+      <rect x="0" y="0" width="440" height="720" fill="transparent"/>
+      <g id="body-layer"></g>
+      <g id="aura-layer"></g>
+      <g id="target-layer"></g>
+      <g id="particle-layer"></g>
+      <g id="chakra-layer"></g>
+      <g id="label-layer"></g>
+    </svg>
+  </div>
+
+  <aside>
+    <div class="card" id="instructions-card">
+      <h2 id="instr-title">Step 1 — Sense your chakras</h2>
+      <p id="instr-body">
+        Close your eyes for a moment and notice where each energy center actually feels like it sits
+        in your body today. Then <b>drag each circle</b> to that spot and use the size slider
+        (or scroll over a circle) to make it as <b>large or small</b> as it feels.
+      </p>
+    </div>
+
+    <div class="card" id="selected-card">
+      <h2>Selected chakra</h2>
+      <p id="sel-name" style="margin-top:2px">Tap a circle on the body to select it.</p>
+      <div class="slider-row" id="size-row" style="display:none">
+        <label id="size-label">Felt size</label>
+        <input type="range" id="size-slider" min="8" max="52" step="1" value="22">
+        <output id="size-out">22</output>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Alignment</h2>
+      <div id="harmony-big">0%</div>
+      <div id="harmony-label">overall harmony with your intention</div>
+      <div class="chakra-list" id="chakra-list"></div>
+    </div>
+
+    <div class="card" id="shift-card" style="display:none">
+      <h2>Breath attunement</h2>
+      <div id="breath-word">&nbsp;</div>
+      <div id="sync-line">&nbsp;</div>
+      <div class="btn-row">
+        <button class="btn" id="begin-btn">Begin attunement</button>
+      </div>
+      <p class="hint">Press and <b>hold</b> anywhere on the body during <b>inhale</b>, release for
+      <b>exhale</b>. Each well-timed breath shifts every chakra a step toward where you intend it to be.</p>
+      <div id="celebrate">✨ Harmonized — your chakras have arrived where you intended. ✨</div>
+    </div>
+
+    <div class="card" id="intend-card" style="display:none">
+      <h2>Intention targets</h2>
+      <p>Dashed rings are your <b>targets</b>. Drag them where you want each chakra to end up,
+      and size them with the slider. The classic alignment runs straight up the spine.</p>
+      <div class="btn-row">
+        <button class="btn secondary" id="align-btn">Reset targets to classic alignment</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="btn-row" style="margin-top:0">
+        <button class="btn secondary" id="reset-btn">Start over</button>
+      </div>
+      <p class="hint">Your layout is saved on this device automatically.</p>
+    </div>
+  </aside>
+</main>
+
+<footer>A reflective visualization for intention-setting — not medical or therapeutic advice.</footer>
+
+<script>
+(() => {
+"use strict";
+
+// ---------- chakra model ----------
+const CHAKRAS = [
+  {id:"crown",  name:"Crown",        sanskrit:"Sahasrara",  color:"#c46bff", homeX:220, homeY: 74, homeR:20},
+  {id:"third",  name:"Third Eye",    sanskrit:"Ajna",       color:"#7a6cff", homeX:220, homeY:120, homeR:19},
+  {id:"throat", name:"Throat",       sanskrit:"Vishuddha",  color:"#4db8ff", homeX:220, homeY:186, homeR:19},
+  {id:"heart",  name:"Heart",        sanskrit:"Anahata",    color:"#4dd47a", homeX:220, homeY:268, homeR:22},
+  {id:"solar",  name:"Solar Plexus", sanskrit:"Manipura",   color:"#ffe03d", homeX:220, homeY:344, homeR:21},
+  {id:"sacral", name:"Sacral",       sanskrit:"Svadhisthana",color:"#ffa938",homeX:220, homeY:414, homeR:21},
+  {id:"root",   name:"Root",         sanskrit:"Muladhara",  color:"#ff5c4d", homeX:220, homeY:478, homeR:22},
+];
+const STAGE_W = 440, STAGE_H = 720;
+const STORE_KEY = "chakra-shift-v1";
+
+// state: per chakra current (x,y,r) and target (tx,ty,tr)
+let state = load() || freshState();
+function freshState(){
+  return {
+    mode:"sense",
+    chakras: CHAKRAS.map(c => ({
+      id:c.id,
+      // scatter the "felt" positions a little so step 1 has something to correct
+      x:c.homeX, y:c.homeY, r:c.homeR,
+      tx:c.homeX, ty:c.homeY, tr:c.homeR,
+    })),
+  };
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!s || !Array.isArray(s.chakras) || s.chakras.length !== CHAKRAS.length) return null;
+    return s;
+  }catch(e){ return null; }
+}
+let saveTimer = null;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+  }, 250);
+}
+
+// ---------- svg scaffolding ----------
+const svg = document.getElementById("stage");
+const defs = svg.querySelector("defs");
+const bodyLayer = document.getElementById("body-layer");
+const auraLayer = document.getElementById("aura-layer");
+const targetLayer = document.getElementById("target-layer");
+const particleLayer = document.getElementById("particle-layer");
+const chakraLayer = document.getElementById("chakra-layer");
+const labelLayer = document.getElementById("label-layer");
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent){
+  const n = document.createElementNS(NS, tag);
+  for(const k in attrs) n.setAttribute(k, attrs[k]);
+  if(parent) parent.appendChild(n);
+  return n;
+}
+
+// starfield backdrop
+(function stars(){
+  const s = document.querySelector(".stars");
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for(let i=0;i<70;i++){
+    el("circle", {cx:(rnd()*440).toFixed(1), cy:(rnd()*720).toFixed(1),
+      r:(rnd()*1.3+0.3).toFixed(2), fill:"#cfc4ff", opacity:(rnd()*0.5+0.1).toFixed(2)}, s);
+  }
+})();
+
+// meditating body silhouette
+(function drawBody(){
+  const g = el("g", {fill:"url(#bodyGrad)", stroke:"#4a3d80", "stroke-width":"1.5", opacity:"0.95"}, bodyLayer);
+  // head
+  el("circle", {cx:220, cy:88, r:42}, g);
+  // neck + torso
+  el("path", {d:`M 204 126 L 204 142
+                 C 168 150 150 178 146 216
+                 C 142 258 150 320 156 362
+                 C 160 392 168 420 176 440
+                 L 264 440
+                 C 272 420 280 392 284 362
+                 C 290 320 298 258 294 216
+                 C 290 178 272 150 236 142
+                 L 236 126 Z`}, g);
+  // arms resting on knees
+  el("path", {d:`M 150 210 C 118 244 100 300 96 356 C 94 386 102 412 118 428
+                 L 148 414 C 136 396 132 372 136 340 C 140 300 150 260 158 232 Z`}, g);
+  el("path", {d:`M 290 210 C 322 244 340 300 344 356 C 346 386 338 412 322 428
+                 L 292 414 C 304 396 308 372 304 340 C 300 300 290 260 282 232 Z`}, g);
+  // crossed legs (lotus)
+  el("path", {d:`M 176 436
+                 C 140 444 106 462 92 486
+                 C 78 510 86 532 118 540
+                 C 158 550 196 552 220 552
+                 C 244 552 282 550 322 540
+                 C 354 532 362 510 348 486
+                 C 334 462 300 444 264 436 Z`}, g);
+  // subtle spine guide
+  el("line", {x1:220, y1:130, x2:220, y2:500, stroke:"#4a3d80", "stroke-width":"1",
+              "stroke-dasharray":"2 6", opacity:"0.6"}, bodyLayer);
+})();
+
+// per-chakra gradient + nodes
+const nodes = {}; // id -> {aura, ring, core, target, targetDot, label, listRow, bar, pct}
+CHAKRAS.forEach((c, i) => {
+  const grad = el("radialGradient", {id:"grad-"+c.id}, defs);
+  el("stop", {offset:"0%",  "stop-color":"#ffffff", "stop-opacity":"0.95"}, grad);
+  el("stop", {offset:"38%", "stop-color":c.color,   "stop-opacity":"0.9"}, grad);
+  el("stop", {offset:"100%","stop-color":c.color,   "stop-opacity":"0.15"}, grad);
+
+  const aura = el("circle", {fill:c.color, opacity:"0.10", filter:"url(#softGlow)"}, auraLayer);
+
+  const target = el("circle", {fill:"none", stroke:c.color, "stroke-width":"2",
+    "stroke-dasharray":"6 6", opacity:"0", "data-id":c.id, "data-kind":"target",
+    style:"cursor:grab"}, targetLayer);
+  const targetDot = el("circle", {r:"3", fill:c.color, opacity:"0", "pointer-events":"none"}, targetLayer);
+
+  const core = el("circle", {fill:"url(#grad-"+c.id+")", stroke:c.color, "stroke-width":"2",
+    filter:"url(#softGlow)", "data-id":c.id, "data-kind":"chakra",
+    style:"cursor:grab", tabindex:"0"}, chakraLayer);
+
+  const label = el("text", {fill:"#cfc4ff", "font-size":"11", "text-anchor":"start",
+    "pointer-events":"none", opacity:"0.85"}, labelLayer);
+  label.textContent = c.name;
+
+  nodes[c.id] = {aura, ring:null, core, target, targetDot, label};
+});
+
+// side-panel chakra list
+const listWrap = document.getElementById("chakra-list");
+CHAKRAS.forEach(c => {
+  const row = document.createElement("div");
+  row.className = "chakra-row";
+  row.dataset.id = c.id;
+  row.innerHTML = `<span class="dot" style="background:${c.color}"></span>
+    <span class="cname">${c.name}</span>
+    <span class="bar"><i style="background:${c.color};width:0%"></i></span>
+    <span class="pct">0%</span>`;
+  row.addEventListener("click", () => selectChakra(c.id));
+  listWrap.appendChild(row);
+  nodes[c.id].listRow = row;
+  nodes[c.id].bar = row.querySelector(".bar i");
+  nodes[c.id].pct = row.querySelector(".pct");
+});
+
+// ---------- selection & modes ----------
+let selectedId = null;
+let mode = state.mode || "sense";
+
+const instrTitle = document.getElementById("instr-title");
+const instrBody  = document.getElementById("instr-body");
+const shiftCard  = document.getElementById("shift-card");
+const intendCard = document.getElementById("intend-card");
+const sizeRow    = document.getElementById("size-row");
+const sizeLabel  = document.getElementById("size-label");
+const sizeSlider = document.getElementById("size-slider");
+const sizeOut    = document.getElementById("size-out");
+const selName    = document.getElementById("sel-name");
+
+const INSTRUCTIONS = {
+  sense: ["Step 1 — Sense your chakras",
+    `Close your eyes for a moment and notice where each energy center actually feels like it sits in your body today. Then <b>drag each circle</b> to that spot and <b>enlarge or shrink</b> it (slider, or scroll over a circle) to match how strongly it feels.`],
+  intend: ["Step 2 — Say where you want them",
+    `Now set your intention. <b>Drag the dashed rings</b> to where you <b>want</b> each chakra to be, and size them to how open you'd like each one to feel. Use the button below to snap all targets to the classic spinal alignment.`],
+  shift: ["Step 3 — Shift with the breath",
+    `The game guides your breath while the chakras drift from where you <b>feel</b> them toward where you <b>want</b> them. Better breath timing = stronger shift. Reach 100% harmony to complete the attunement.`],
+};
+
+function setMode(m){
+  mode = m; state.mode = m; save();
+  stopBreath();
+  document.querySelectorAll(".step-btn").forEach(b => b.classList.toggle("active", b.dataset.mode===m));
+  instrTitle.textContent = INSTRUCTIONS[m][0];
+  instrBody.innerHTML = INSTRUCTIONS[m][1];
+  shiftCard.style.display  = m==="shift"  ? "" : "none";
+  intendCard.style.display = m==="intend" ? "" : "none";
+  render();
+  updateSelectedCard();
+}
+document.querySelectorAll(".step-btn").forEach(b =>
+  b.addEventListener("click", () => setMode(b.dataset.mode)));
+
+function selectChakra(id){
+  selectedId = id;
+  updateSelectedCard();
+  render();
+}
+function updateSelectedCard(){
+  Object.values(nodes).forEach(n => n.listRow.classList.remove("selected"));
+  if(!selectedId){
+    selName.innerHTML = "Tap a circle on the body to select it.";
+    sizeRow.style.display = "none";
+    return;
+  }
+  const meta = CHAKRAS.find(c => c.id===selectedId);
+  const st = state.chakras.find(c => c.id===selectedId);
+  nodes[selectedId].listRow.classList.add("selected");
+  selName.innerHTML = `<span class="swatch" style="background:${meta.color}"></span><b>${meta.name}</b><span class="sanskrit">${meta.sanskrit}</span>`;
+  sizeRow.style.display = "";
+  const editingTarget = mode==="intend";
+  sizeLabel.textContent = editingTarget ? "Wanted size" : "Felt size";
+  const r = editingTarget ? st.tr : st.r;
+  sizeSlider.value = Math.round(r);
+  sizeOut.value = Math.round(r);
+}
+sizeSlider.addEventListener("input", () => {
+  if(!selectedId) return;
+  const st = state.chakras.find(c => c.id===selectedId);
+  const v = +sizeSlider.value;
+  if(mode==="intend") st.tr = v; else st.r = v;
+  sizeOut.value = v;
+  save(); render();
+});
+
+// ---------- alignment math ----------
+const POS_TOL = 150; // px distance at which alignment hits 0
+const R_TOL = 34;
+function alignmentOf(st){
+  const d = Math.hypot(st.x-st.tx, st.y-st.ty);
+  const dr = Math.abs(st.r-st.tr);
+  const a = 1 - (d/POS_TOL + dr/R_TOL);
+  return Math.max(0, Math.min(1, a));
+}
+function harmony(){
+  return state.chakras.reduce((s,c)=>s+alignmentOf(c),0) / state.chakras.length;
+}
+
+// ---------- rendering ----------
+const harmonyBig = document.getElementById("harmony-big");
+function render(){
+  state.chakras.forEach(st => {
+    const n = nodes[st.id];
+    n.core.setAttribute("cx", st.x); n.core.setAttribute("cy", st.y); n.core.setAttribute("r", st.r);
+    n.aura.setAttribute("cx", st.x); n.aura.setAttribute("cy", st.y); n.aura.setAttribute("r", st.r*1.9);
+    n.core.setAttribute("stroke-width", st.id===selectedId ? "3.5" : "2");
+    n.core.style.filter = "url(#softGlow)";
+    n.label.setAttribute("x", Math.min(st.x + st.r + 8, STAGE_W-70));
+    n.label.setAttribute("y", st.y + 4);
+
+    const showTargets = mode!=="sense";
+    n.target.setAttribute("cx", st.tx); n.target.setAttribute("cy", st.ty); n.target.setAttribute("r", st.tr);
+    n.target.setAttribute("opacity", showTargets ? (mode==="intend" ? "0.9" : "0.45") : "0");
+    n.target.style.pointerEvents = mode==="intend" ? "auto" : "none";
+    n.targetDot.setAttribute("cx", st.tx); n.targetDot.setAttribute("cy", st.ty);
+    n.targetDot.setAttribute("opacity", showTargets ? "0.6" : "0");
+
+    const a = alignmentOf(st);
+    n.bar.style.width = Math.round(a*100)+"%";
+    n.pct.textContent = Math.round(a*100)+"%";
+  });
+  harmonyBig.textContent = Math.round(harmony()*100)+"%";
+}
+
+// ---------- dragging (pointer events, works for touch) ----------
+let drag = null; // {id, kind, dx, dy}
+function stagePoint(evt){
+  const pt = svg.createSVGPoint();
+  pt.x = evt.clientX; pt.y = evt.clientY;
+  const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+  return {x:p.x, y:p.y};
+}
+svg.addEventListener("pointerdown", evt => {
+  const t = evt.target;
+  const id = t.getAttribute && t.getAttribute("data-id");
+  const kind = t.getAttribute && t.getAttribute("data-kind");
+  if(!id) return;
+  // during the breath game the circles are hands-off — the breath moves them
+  if(mode==="shift") return;
+  if(kind==="target" && mode!=="intend") return;
+  if(kind==="chakra" && mode==="intend") { selectChakra(id); return; }
+  const st = state.chakras.find(c => c.id===id);
+  const p = stagePoint(evt);
+  const cx = kind==="target" ? st.tx : st.x;
+  const cy = kind==="target" ? st.ty : st.y;
+  drag = {id, kind, dx:cx-p.x, dy:cy-p.y};
+  selectChakra(id);
+  svg.setPointerCapture(evt.pointerId);
+  evt.preventDefault();
+});
+svg.addEventListener("pointermove", evt => {
+  if(!drag) return;
+  const st = state.chakras.find(c => c.id===drag.id);
+  const p = stagePoint(evt);
+  const x = Math.max(24, Math.min(STAGE_W-24, p.x + drag.dx));
+  const y = Math.max(24, Math.min(STAGE_H-24, p.y + drag.dy));
+  if(drag.kind==="target"){ st.tx = x; st.ty = y; }
+  else { st.x = x; st.y = y; }
+  save(); render();
+});
+function endDrag(){ drag = null; }
+svg.addEventListener("pointerup", endDrag);
+svg.addEventListener("pointercancel", endDrag);
+
+// scroll over a circle to resize it
+svg.addEventListener("wheel", evt => {
+  const id = evt.target.getAttribute && evt.target.getAttribute("data-id");
+  if(!id || mode==="shift") return;
+  evt.preventDefault();
+  const kind = evt.target.getAttribute("data-kind");
+  const st = state.chakras.find(c => c.id===id);
+  const delta = evt.deltaY < 0 ? 2 : -2;
+  if(kind==="target" && mode==="intend") st.tr = Math.max(8, Math.min(52, st.tr+delta));
+  else if(kind==="chakra" && mode==="sense") st.r = Math.max(8, Math.min(52, st.r+delta));
+  else return;
+  selectChakra(id);
+  save(); render();
+}, {passive:false});
+
+// ---------- intend helpers ----------
+document.getElementById("align-btn").addEventListener("click", () => {
+  state.chakras.forEach(st => {
+    const meta = CHAKRAS.find(c => c.id===st.id);
+    st.tx = meta.homeX; st.ty = meta.homeY; st.tr = meta.homeR;
+  });
+  save(); render(); updateSelectedCard();
+});
+
+document.getElementById("reset-btn").addEventListener("click", () => {
+  if(!confirm("Start over? This clears your felt positions and targets.")) return;
+  state = freshState();
+  selectedId = null;
+  save(); setMode("sense");
+});
+
+// ---------- step 3: breath game ----------
+const beginBtn = document.getElementById("begin-btn");
+const breathWord = document.getElementById("breath-word");
+const syncLine = document.getElementById("sync-line");
+const celebrate = document.getElementById("celebrate");
+
+const INHALE_MS = 4000, EXHALE_MS = 4000, CYCLE_MS = INHALE_MS + EXHALE_MS;
+let breathing = false;
+let breathStart = 0;
+let holding = false;
+let goodMs = 0, sampledMs = 0, lastT = 0;
+let cycleCount = 0;
+let pacer = null, pacerGlow = null;
+let rafId = null;
+
+function ensurePacer(){
+  if(pacer) return;
+  pacerGlow = el("circle", {cx:220, cy:300, fill:"#b48cff", opacity:"0.12", filter:"url(#softGlow)"}, auraLayer);
+  pacer = el("circle", {cx:220, cy:300, fill:"none", stroke:"#b48cff", "stroke-width":"1.5",
+    opacity:"0.55", "pointer-events":"none"}, labelLayer);
+}
+function removePacer(){
+  if(pacer){ pacer.remove(); pacerGlow.remove(); pacer = pacerGlow = null; }
+}
+
+function startBreath(){
+  breathing = true;
+  cycleCount = 0; goodMs = 0; sampledMs = 0;
+  breathStart = performance.now(); lastT = breathStart;
+  beginBtn.textContent = "Pause";
+  celebrate.style.display = "none";
+  ensurePacer();
+  rafId = requestAnimationFrame(tick);
+}
+function stopBreath(){
+  breathing = false;
+  if(rafId) cancelAnimationFrame(rafId), rafId = null;
+  removePacer();
+  breathWord.innerHTML = "&nbsp;";
+  syncLine.innerHTML = "&nbsp;";
+  beginBtn.textContent = "Begin attunement";
+}
+beginBtn.addEventListener("click", () => breathing ? stopBreath() : startBreath());
+
+// hold detection for the game — anywhere on the stage
+svg.addEventListener("pointerdown", () => { if(mode==="shift") holding = true; });
+window.addEventListener("pointerup", () => { holding = false; });
+window.addEventListener("blur", () => { holding = false; });
+
+function tick(now){
+  if(!breathing) return;
+  const elapsed = now - breathStart;
+  const inCycle = elapsed % CYCLE_MS;
+  const isInhale = inCycle < INHALE_MS;
+  const phase01 = isInhale ? inCycle/INHALE_MS : 1-((inCycle-INHALE_MS)/EXHALE_MS);
+  const ease = 0.5 - 0.5*Math.cos(Math.PI*phase01); // smooth 0..1
+
+  breathWord.textContent = isInhale ? "inhale" : "exhale";
+  breathWord.style.color = isInhale ? "#cfe6ff" : "#e8d9ff";
+
+  // pacer follows the breath
+  const R = 40 + ease*150;
+  pacer.setAttribute("r", R);
+  pacerGlow.setAttribute("r", R*0.9);
+  pacerGlow.setAttribute("opacity", (0.06+ease*0.10).toFixed(3));
+
+  // score timing: hold on inhale, release on exhale
+  const dt = now - lastT; lastT = now;
+  sampledMs += dt;
+  if(holding === isInhale) goodMs += dt;
+
+  // chakras pulse gently with the breath
+  state.chakras.forEach(st => {
+    const n = nodes[st.id];
+    n.core.setAttribute("r", st.r * (1 + ease*0.08));
+    n.aura.setAttribute("r", st.r*1.9*(1 + ease*0.18));
+  });
+
+  // completed a full cycle?
+  const cyc = Math.floor(elapsed / CYCLE_MS);
+  if(cyc > cycleCount){
+    cycleCount = cyc;
+    const accuracy = sampledMs ? goodMs/sampledMs : 0;
+    goodMs = 0; sampledMs = 0;
+    applyShift(accuracy);
+    syncLine.innerHTML = `breath ${cycleCount} · sync <b style="color:var(--text)">${Math.round(accuracy*100)}%</b>`;
+    if(harmony() > 0.985){
+      finishAttunement();
+      return;
+    }
+  }
+  rafId = requestAnimationFrame(tick);
+}
+
+function applyShift(accuracy){
+  // 6% baseline drift + up to 22% more for perfect breath sync
+  const k = 0.06 + 0.22*accuracy;
+  state.chakras.forEach(st => {
+    spawnParticles(st, Math.max(2, Math.round(accuracy*6)));
+    st.x += (st.tx-st.x)*k;
+    st.y += (st.ty-st.y)*k;
+    st.r += (st.tr-st.r)*k;
+  });
+  save(); render();
+}
+
+function finishAttunement(){
+  state.chakras.forEach(st => { st.x=st.tx; st.y=st.ty; st.r=st.tr; });
+  save(); render();
+  stopBreath();
+  celebrate.style.display = "block";
+  breathWord.textContent = "✨";
+  // radiant burst
+  state.chakras.forEach(st => spawnParticles(st, 14));
+}
+
+// drifting spark particles from each chakra toward its target
+function spawnParticles(st, count){
+  const meta = CHAKRAS.find(c => c.id===st.id);
+  for(let i=0;i<count;i++){
+    const p = el("circle", {cx:st.x, cy:st.y, r:(1.5+Math.random()*2).toFixed(1),
+      fill:meta.color, opacity:"0.9", "pointer-events":"none"}, particleLayer);
+    const jx = (Math.random()-0.5)*30, jy = (Math.random()-0.5)*30;
+    const dur = 700 + Math.random()*600;
+    const t0 = performance.now();
+    (function animate(now){
+      const t = Math.min(1, (now-t0)/dur);
+      p.setAttribute("cx", st.x + (st.tx-st.x)*t + jx*Math.sin(Math.PI*t));
+      p.setAttribute("cy", st.y + (st.ty-st.y)*t + jy*Math.sin(Math.PI*t));
+      p.setAttribute("opacity", (0.9*(1-t)).toFixed(2));
+      if(t < 1) requestAnimationFrame(animate); else p.remove();
+    })(t0);
+  }
+}
+
+// ---------- boot ----------
+setMode(mode);
+render();
+})();
+</script>
+</body>
+</html>
