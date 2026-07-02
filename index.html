@@ -1,0 +1,1207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Long Game — a money-mindset game</title>
+<style>
+:root{
+  --bg:#131a16; --panel:#1b231e; --panel2:#222c26; --line:#2e3a32; --line2:#3a473e;
+  --text:#e9e4d6; --muted:#9aa69b; --dim:#6f7b70;
+  --gold:#d9a946; --gold-soft:#8a6f34; --gold-dim:rgba(217,169,70,.14);
+  --up:#7fba8c; --down:#d08770;
+  --serif:Georgia,'Iowan Old Style','Times New Roman',serif;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5;min-height:100vh}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+[hidden]{display:none!important}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.up{color:var(--up)} .down{color:var(--down)} .gold{color:var(--gold)}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.wrap{max-width:1060px;margin:0 auto;padding:0 20px}
+hr.rule{border:none;border-top:1px solid var(--line);margin:14px 0}
+
+/* ---------- start screen ---------- */
+#screen-start{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:48px 0}
+.masthead{text-align:left;max-width:640px}
+.masthead .eyebrow{color:var(--gold)}
+.masthead h1{font-family:var(--serif);font-weight:400;font-size:clamp(44px,7vw,72px);line-height:1.02;letter-spacing:-.01em;margin:10px 0 18px;text-wrap:balance}
+.masthead h1 em{font-style:italic;color:var(--gold)}
+.masthead p.lede{font-size:17px;color:var(--muted);max-width:56ch;margin-bottom:8px}
+.masthead p.lede b{color:var(--text);font-weight:600}
+.winline{display:flex;gap:10px;align-items:baseline;margin:22px 0 30px;padding:14px 16px;border-left:2px solid var(--gold);background:var(--gold-dim);border-radius:0 var(--r) var(--r) 0;max-width:560px}
+.winline .k{font-family:var(--serif);font-style:italic;color:var(--gold);white-space:nowrap}
+.winline .v{color:var(--muted);font-size:14px}
+.archetypes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:8px;max-width:900px}
+.arch{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;text-align:left;transition:border-color .15s, transform .15s;display:flex;flex-direction:column;gap:8px}
+.arch:hover{border-color:var(--gold-soft);transform:translateY(-2px)}
+.arch h3{font-family:var(--serif);font-weight:400;font-size:21px}
+.arch .age{font-size:12px;color:var(--gold)}
+.arch p{font-size:13.5px;color:var(--muted);flex:1}
+.arch .stats{font-size:12px;color:var(--dim);border-top:1px solid var(--line);padding-top:8px}
+.startfoot{margin-top:34px;font-size:12.5px;color:var(--dim);max-width:64ch}
+
+/* ---------- game frame ---------- */
+#screen-game{padding:18px 0 60px}
+.topbar{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:10px 0 14px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.brand{font-family:var(--serif);font-size:19px;white-space:nowrap}
+.brand em{color:var(--gold);font-style:italic}
+.agechip{font-size:13px;color:var(--muted);white-space:nowrap}
+.agechip b{color:var(--text);font-family:var(--mono)}
+.evwrap{flex:1;min-width:220px}
+.evwrap .lbl{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.evbar{height:10px;background:var(--panel2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.evbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold-soft),var(--gold));border-radius:99px;transition:width .6s ease;min-width:2px}
+.notesbtn{border:1px solid var(--line);border-radius:99px;padding:6px 14px;font-size:13px;color:var(--muted);white-space:nowrap}
+.notesbtn:hover{border-color:var(--gold-soft);color:var(--gold)}
+
+.layout{display:grid;grid-template-columns:308px 1fr;gap:20px;align-items:start}
+@media(max-width:820px){.layout{grid-template-columns:1fr}.ledger{order:2}}
+
+/* ---------- ledger ---------- */
+.ledger{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:2px}
+.ledger h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:10px 0 6px}
+.ledger h2:first-child{margin-top:0}
+.lrow{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13.5px;border-bottom:1px dotted var(--line)}
+.lrow:last-child{border-bottom:none}
+.lrow .nm{color:var(--muted);flex:1;min-width:0}
+.lrow .nm small{display:block;color:var(--dim);font-size:11px}
+.lrow .val{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.mmbtn{width:22px;height:22px;border:1px solid var(--line2);border-radius:6px;color:var(--muted);font-size:13px;line-height:1;flex:none}
+.mmbtn:hover{border-color:var(--gold-soft);color:var(--gold)}
+.mmbtn:disabled{opacity:.3;cursor:default}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:6px 0 4px}
+.chip{border:1px solid var(--line2);background:var(--panel2);border-radius:99px;padding:3px 10px;font-size:12px;font-family:var(--mono)}
+.chip:hover{border-color:var(--gold);color:var(--gold)}
+.chip.cancel{color:var(--dim)}
+.meter{height:7px;background:var(--panel2);border:1px solid var(--line);border-radius:99px;overflow:hidden;flex:1}
+.meter i{display:block;height:100%;border-radius:99px;transition:width .4s}
+.meter.wb i{background:var(--up)} .meter.wb.low i{background:var(--down)}
+.meter.wis i{background:var(--gold)}
+.autorow{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;color:var(--muted)}
+.sparkbox{margin-top:8px}
+canvas{display:block;width:100%}
+
+/* ---------- stage ---------- */
+.stage{min-height:420px;display:flex;flex-direction:column;gap:16px}
+.ticker{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
+.ticker .ti{display:flex;flex-direction:column}
+.ticker .ti span{color:var(--dim);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.ticker .ti b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+.idlebox{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:28px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+.idlebox .flavor{color:var(--muted);font-size:14px;max-width:52ch}
+.advance{background:var(--gold);color:#161207;font-weight:600;border-radius:99px;padding:12px 30px;font-size:15px;transition:transform .12s}
+.advance:hover{transform:translateY(-1px)}
+.gamecard{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:26px 26px 22px;position:relative;overflow:hidden}
+.gamecard::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--gold-soft),var(--gold),var(--gold-soft))}
+.cathdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.catchip{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-soft);border-radius:99px;padding:3px 12px}
+.cathdr .yr{font-size:12px;color:var(--dim);font-family:var(--mono)}
+.gamecard h3{font-family:var(--serif);font-weight:400;font-size:clamp(24px,3.4vw,32px);line-height:1.12;margin:4px 0 12px;text-wrap:balance}
+.gamecard .body{color:var(--muted);font-size:15px;max-width:62ch;margin-bottom:20px}
+.gamecard .body b{color:var(--text)}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line2);border-radius:var(--r);padding:13px 16px;transition:border-color .12s,background .12s}
+.opt:hover:not(:disabled){border-color:var(--gold);background:#273229}
+.opt:disabled{opacity:.45;cursor:default}
+.opt .ol{font-weight:600;font-size:14.5px}
+.opt .od{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.outcome{border-left:2px solid var(--gold);background:var(--gold-dim);padding:14px 16px;border-radius:0 var(--r) var(--r) 0;margin-top:6px}
+.outcome p{font-size:14.5px;max-width:60ch}
+.outcome .deltas{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:12.5px;font-family:var(--mono)}
+.contbtn{margin-top:16px;border:1px solid var(--gold-soft);color:var(--gold);border-radius:99px;padding:9px 26px;font-size:14px}
+.contbtn:hover{background:var(--gold-dim)}
+
+/* ---------- modal ---------- */
+.modal-veil{position:fixed;inset:0;background:rgba(8,12,9,.75);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal{background:var(--panel);border:1px solid var(--gold-soft);border-radius:14px;max-width:560px;width:100%;max-height:86vh;overflow-y:auto;padding:26px}
+.modal.note{border-color:var(--gold)}
+.note .eyebrow{color:var(--gold)}
+.note h3{font-family:var(--serif);font-weight:400;font-size:26px;margin:8px 0 10px;line-height:1.15;text-wrap:balance}
+.note .nbody{font-size:15px;color:var(--text);max-width:56ch}
+.note .cite{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);font-style:italic}
+.note .count{margin-top:14px;font-size:12px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+.notelist{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+.notelist .ni{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.notelist .ni h4{font-family:var(--serif);font-weight:400;font-size:17px;margin-bottom:4px}
+.notelist .ni p{font-size:13px;color:var(--muted)}
+.notelist .ni .cite{font-size:11.5px;color:var(--dim);font-style:italic;margin-top:6px}
+.notelist .locked{color:var(--dim);font-size:13px;border-style:dashed}
+
+/* ---------- end screen ---------- */
+#screen-end{padding:44px 0 70px}
+.endhead{text-align:center;margin-bottom:30px}
+.endhead h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,6vw,58px);margin:10px 0 12px;text-wrap:balance}
+.endhead h1 em{font-style:italic;color:var(--gold)}
+.endhead p{color:var(--muted);max-width:62ch;margin:0 auto;font-size:16px}
+.chartbox{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin:26px 0}
+.chartbox h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:4px}
+.chartbox .sub{font-size:13px;color:var(--dim);margin-bottom:14px}
+.legend{display:flex;gap:18px;font-size:12.5px;color:var(--muted);margin-top:10px;flex-wrap:wrap}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.grades{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:26px 0}
+.grade{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.grade .g{font-family:var(--serif);font-size:44px;color:var(--gold);line-height:1}
+.grade h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:8px 0 6px}
+.grade p{font-size:13px;color:var(--muted)}
+.grade .num{color:var(--text)}
+.endnotes{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:26px}
+.endnotes h2{font-family:var(--serif);font-weight:400;font-size:22px;margin-bottom:8px}
+.endnotes p{color:var(--muted);font-size:14px;max-width:70ch}
+.again{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.again .advance{padding:12px 34px}
+.ghostbtn{border:1px solid var(--line2);border-radius:99px;padding:12px 26px;color:var(--muted)}
+.ghostbtn:hover{border-color:var(--gold-soft);color:var(--gold)}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--gold-soft);border-radius:99px;padding:9px 20px;font-size:13.5px;z-index:60;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.rise{animation:rise .35s ease both}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+
+<!-- ============ START ============ -->
+<section id="screen-start">
+  <div class="masthead">
+    <div class="eyebrow">A money-mindset game · thirty years, one sitting</div>
+    <h1>The <em>Long</em> Game</h1>
+    <p class="lede">The kitchen-table money games taught a generation that assets buy freedom. This one is rebuilt for the algorithmic economy — gig income, four-easy-payments, meme assets, AI-shaped careers — and every lesson in it is drawn from published research, cited as you play.</p>
+  </div>
+  <div class="winline"><span class="k">How you win —</span><span class="v">reach <b style="color:var(--text)">escape velocity</b>: income from assets covering the full cost of your life. How you <i>really</i> win: get there with your health, relationships, and judgment intact. The game grades all four.</span></div>
+  <div class="eyebrow" style="margin-bottom:10px">Choose your starting hand</div>
+  <div class="archetypes" id="archetypes"></div>
+  <p class="startfoot">A single decision per year. Amounts are in today's dollars (returns are real, after inflation). Nothing here is financial advice — it's a flight simulator for judgment. Sources: Kahneman &amp; Tversky, Thaler &amp; Benartzi, S&amp;P SPIVA, Dunn · Gilbert · Wilson, Whillans, the Harvard Study of Adult Development, and friends — collected in-game as <span class="gold">Field Notes</span>.</p>
+</section>
+
+<!-- ============ GAME ============ -->
+<section id="screen-game" hidden>
+  <div class="topbar">
+    <div class="brand">The <em>Long</em> Game</div>
+    <div class="agechip">Age <b id="hud-age">25</b> · Year <b id="hud-year">1</b></div>
+    <div class="evwrap">
+      <div class="lbl"><span>Escape velocity</span><span class="num" id="hud-evpct">0%</span></div>
+      <div class="evbar"><i id="hud-evbar" style="width:0%"></i></div>
+    </div>
+    <button class="notesbtn" id="btn-notes">Field Notes · <span class="num" id="hud-notes">0/21</span></button>
+  </div>
+  <div class="layout">
+    <aside class="ledger" id="ledger" aria-label="Your ledger"></aside>
+    <main class="stage" id="stage"></main>
+  </div>
+</section>
+
+<!-- ============ END ============ -->
+<section id="screen-end" hidden></section>
+</div>
+<div id="modal-root"></div>
+<script>
+"use strict";
+/* ============================================================
+   THE LONG GAME — a research-grounded money-mindset simulator
+   All amounts annual, real (inflation-adjusted) dollars.
+   ============================================================ */
+
+const $ = s => document.querySelector(s);
+const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
+const fmt = n => (n<0?"−$":"$")+Math.round(Math.abs(n)).toLocaleString("en-US");
+const fmtK = n => (n<0?"−$":"$")+(Math.abs(n)>=1000?(Math.abs(n)/1000).toFixed(Math.abs(n)>=10000?0:1)+"k":Math.round(Math.abs(n)));
+const pct = n => Math.round(n*100)+"%";
+function gauss(mean,sd){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return mean+sd*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const pick = a => a[Math.floor(Math.random()*a.length)];
+
+/* ---------------- archetypes ---------------- */
+const ARCHETYPES = {
+  grad:{ key:"grad", name:"The Graduate", age:24, salary:52000, cash:1500, wellbeing:70, lifestyle:0, subs:1200,
+    debts:{student:{label:"Student loan",bal:32000,rate:0.06}},
+    blurb:"Entry-level job, $32k of student debt, and the one asset money can't buy: three extra decades of compounding.",
+    stats:"$52k salary · $32k debt · $1.5k cash" },
+  free:{ key:"free", name:"The Freelancer", age:27, salary:58000, cash:5000, wellbeing:75, lifestyle:0, subs:1500, gig:true,
+    debts:{},
+    blurb:"No boss, no debt, no floor. Income swings ±35% a year — feast and famine make the buffer math personal.",
+    stats:"~$58k variable · no debt · $5k cash" },
+  restart:{ key:"restart", name:"The Restart", age:38, salary:76000, cash:9000, wellbeing:55, lifestyle:2, subs:2400,
+    debts:{card:{label:"Credit card",bal:14000,rate:0.22}},
+    blurb:"A divorce reset the ledger at 38. Higher salary, higher stakes, shorter runway — proof it's late, never too late.",
+    stats:"$76k salary · $14k card debt · $9k cash" },
+};
+const END_AGE_SPAN = 31; // years played per run
+
+/* ---------------- field notes (the research) ---------------- */
+const NOTES = {
+  lossAversion:{t:"Losses roar, gains whisper",b:"Losing $100 stings about twice as hard as gaining $100 feels good. That asymmetry is why crashes trigger selling at exactly the wrong moment — and why the investors who check and trade the most earn the least.",c:"Kahneman & Tversky, Prospect Theory (1979); Barber & Odean, “Trading Is Hazardous to Your Wealth” (2000)"},
+  bestDays:{t:"The best days hide next to the worst",b:"Miss just the 10 best market days over 20 years and your total return roughly halves — and most of those best days land within two weeks of the worst ones. Sell in the storm and you're guaranteed to be on shore for the rebound.",c:"J.P. Morgan Asset Management, Guide to Retirement (time-in-market studies)"},
+  spiva:{t:"Almost nobody beats the boring fund",b:"Over 15-year windows, roughly 9 in 10 professional US large-cap fund managers underperform a plain index fund — before you even count their fees. A 1% annual fee quietly compounds into ~25% of your final wealth over a working life.",c:"S&P Dow Jones Indices, SPIVA U.S. Scorecard (persistent across years)"},
+  hedonic:{t:"The treadmill is real",b:"Humans adapt to material upgrades with ruthless speed — the bigger apartment feels normal in months, but its cost is forever. The raise you don't spend keeps paying you in security and options long after a lifestyle bump would have gone silent.",c:"Brickman & Campbell (1971); Frederick & Loewenstein, “Hedonic Adaptation” (1999)"},
+  auto:{t:"Automate; don't negotiate with yourself",b:"In the Save More Tomorrow trials, workers who pre-committed to automatic saving nearly quadrupled their saving rate (3.5% → 13.6%) — not through willpower, but by removing the monthly decision entirely. Systems beat intentions.",c:"Thaler & Benartzi, “Save More Tomorrow” (2004)"},
+  buffer:{t:"The $2,000 force field",b:"About 4 in 10 American adults couldn't cover a $400 surprise in cash. Yet research shows even a modest buffer — a month of expenses — sharply cuts the odds of hardship, high-interest debt, and panic decisions. The buffer isn't an investment; it's what protects the investments.",c:"Federal Reserve, Survey of Household Economics & Decisionmaking; Pew Charitable Trusts (2015)"},
+  painOfPaying:{t:"Frictionless spending is a feature — for the seller",b:"Paying hurts, and that pain is a useful brake. Cards, one-click, and pay-in-4 exist to decouple the fun of buying from the pain of paying — in experiments, people bid up to twice as much when paying by card instead of cash.",c:"Prelec & Loewenstein, “The Red and the Black” (1998); Prelec & Simester (2001)"},
+  mentalAccounting:{t:"Money doesn't know where it came from",b:"We file windfalls under “fun money” and spend them loosely, though a bonus dollar buys exactly as much freedom as a salary dollar. The fix is a standing rule that fires before the feeling: same plan, any source.",c:"Thaler, “Mental Accounting Matters” (1999)"},
+  experiences:{t:"Buy memories, not merchandise",b:"Across decades of studies, experiences beat possessions for lasting happiness: they resist hedonic adaptation, improve with retelling, and usually include other people. Objects depreciate; stories compound.",c:"Van Boven & Gilovich (2003); Dunn, Gilbert & Wilson, “If Money Doesn't Make You Happy…” (2011)"},
+  prosocial:{t:"Spending on others pays you back",b:"In experiments across rich and poor countries alike, people randomly assigned to spend on others ended the day happier than those who spent on themselves. Generosity is one of the few purchases that doesn't wear off by Tuesday.",c:"Dunn, Aknin & Norton, Science (2008)"},
+  lottery:{t:"Lottery tickets wear stock costumes",b:"Assets with a tiny chance of a huge payoff are systematically overpriced and underperform — we pay a premium for the dream. If you must speculate, cap it where the research caps it: small enough that a total loss can't touch the plan (~5%).",c:"Barberis & Huang (2008); Bali, Cakici & Whitelaw, “Maxing Out” (2011)"},
+  humanCapital:{t:"Your biggest asset isn't in the portfolio",b:"Early on, your future earning power dwarfs your savings. Returns to skills run ~9–10% a year — index-fund numbers with none of the volatility — and in an AI-shifted market, reskilling is portfolio management for the asset that pays your bills.",c:"Psacharopoulos & Patrinos, “Returns to Investment in Education” (2018)"},
+  fraud:{t:"Guaranteed + high + exclusive = run",b:"The regulator's fraud checklist is short: returns that are high, smooth, and “guaranteed”; pressure to act fast; secrecy about the method. Madoff reported ~1% a month with eerie consistency for decades. Real returns are lumpy; only the fake ones are smooth.",c:"SEC investor alerts on Ponzi red flags; SEC v. Madoff (2008)"},
+  compounding:{t:"Time is the ingredient you can't buy back",b:"At 7% real, money doubles roughly every decade — so each decade you delay roughly halves the final pot. The order of returns barely matters; the number of years in the market is nearly everything.",c:"The arithmetic of compound growth (rule of 72); Bogle, Common Sense on Mutual Funds"},
+  timeAffluence:{t:"Time poverty is expensive",b:"People who trade money for time — outsourcing chores, shorter commutes, saying no — report higher life satisfaction than those who trade time for money, at every income level studied. Burnout is a balance-sheet event; it just posts late.",c:"Whillans et al., “Buying time promotes happiness,” PNAS (2017)"},
+  insurance:{t:"Insure catastrophes, self-insure annoyances",b:"Insurance loses money on average — that's the deal — but it converts ruin into a bill. The research-backed pattern: high deductibles, full coverage on anything that could end you, and skip the extended warranty on the toaster.",c:"Expected-utility theory of insurance (Arrow, 1963); consumer-finance literature on warranty overpricing"},
+  comparison:{t:"Your feed is a rigged benchmark",b:"Happiness tracks relative income about as strongly as absolute income — your neighbors' earnings measurably dent your satisfaction. Social media replaces your neighbors with a global highlight reel, supersizing the reference group you compare against.",c:"Luttmer, “Neighbors as Negatives” (2005); Verduyn et al. (2017)"},
+  relationships:{t:"The 85-year study's one-line answer",b:"Harvard has tracked lives since 1938. The strongest predictor of late-life health and happiness isn't wealth, fame, or cholesterol — it's the quality of relationships. A financial plan that strip-mines them is a bad plan with good spreadsheets.",c:"Harvard Study of Adult Development (Waldinger & Schulz, The Good Life, 2023)"},
+  debtMath:{t:"Kill the expensive debt first (or the small one — just kill it)",b:"Highest-rate-first (“avalanche”) is optimal arithmetic. But field data shows people who close whole accounts (“snowball”) are more likely to stick with it. Either beats the real enemy: minimum-payment drift at 22%.",c:"Gal & McShane, JMR (2012); standard amortization math"},
+  rentBuy:{t:"A house is a place first, an asset second",b:"US real house prices rose well under 1% a year for most of the last century — the wealth from owning comes from leverage, forced saving, and not paying rent, not from magic appreciation. Decide by price-to-rent ratio and whether you'll stay 5–7 years, not by FOMO.",c:"Shiller, Irrational Exuberance (long-run US house price series)"},
+  attention:{t:"Subscriptions bill your inattention",b:"When surveyed, people estimate their subscription spend at about $86 a month. Their statements say ~$219 — off by 2.5×. Recurring billing is engineered to be forgotten; an annual audit is the best-paid hour of your year.",c:"C+R Research (2022); Stango & Zinman on limited attention in consumer finance"},
+  buyTime:{t:"Systems set you free; hustle just rents you out",b:"A side income that needs your evenings is a second job. The research on buying time applies to your own venture too: once it can run without you, it stops costing wellbeing and starts counting as freedom.",c:"Whillans et al., PNAS (2017); small-business literature on owner-independence"},
+};
+const NOTE_COUNT = Object.keys(NOTES).length;
+
+/* ---------------- state ---------------- */
+let S = null;
+function newGame(archKey){
+  const a = ARCHETYPES[archKey];
+  S = {
+    arch:archKey, startAge:a.age, age:a.age, year:0,
+    salary:a.salary, gig:!!a.gig, skills:0,
+    cash:a.cash, efund:0, index:0, spec:0, home:0,
+    biz:null, // {income, invested, systematized}
+    debts:JSON.parse(JSON.stringify(a.debts)),
+    lifestyle:a.lifestyle, subs:a.subs, baseExp:30000,
+    wellbeing:a.wellbeing, wisdom:10,
+    autoRate:0, feeDrag:0, insured:false, insOffered:false,
+    notes:[], seen:{}, lastSeen:{}, recent:[], flags:{},
+    lastTick:null, lastReturn:0, pendingTrigger:null,
+    fiAge:null, wbSum:a.wellbeing, wbN:1,
+    history:[], toastQ:[],
+    over:false, sandbox:false,
+  };
+  pushHistory();
+  showScreen("game");
+  setStage("idle", {first:true});
+  renderAll();
+}
+function pushHistory(){ S.history.push({age:S.age, nw:netWorth(), passive:passiveIncome(), exp:annualExpenses()}); }
+
+/* ---------------- finance core ---------------- */
+function debtTotal(){ return Object.values(S.debts).reduce((s,d)=>s+d.bal,0); }
+function bizValue(){ return S.biz ? Math.round(S.biz.income * (S.biz.systematized?3:1.5)) : 0; }
+function netWorth(){ return Math.round(S.cash+S.efund+S.index+S.spec+S.home+bizValue()-debtTotal()); }
+function annualExpenses(){
+  let minPays = 0;
+  for(const d of Object.values(S.debts)) minPays += Math.min(d.bal*(1+d.rate), d.bal*d.rate + d.bal*(d.rate>0.15?0.12:0.10));
+  return Math.round(S.baseExp + S.lifestyle*4000 + S.subs + (S.insured?700:0) + minPays);
+}
+function passiveIncome(){
+  const biz = S.biz ? (S.biz.systematized ? S.biz.income : S.biz.income*0.4) : 0;
+  return Math.round(0.04*(S.index+S.spec) + 0.03*S.efund + biz);
+}
+function fiRatio(){ const e=annualExpenses(); return e>0 ? passiveIncome()/e : 0; }
+
+function specRoll(){
+  const r=Math.random();
+  if(r<0.45) return -0.40;
+  if(r<0.75) return 0.20;
+  if(r<0.95) return 0.80;
+  return -0.90;
+}
+
+function addWisdom(n){ S.wisdom = clamp(S.wisdom+n, 0, 100); }
+function addWB(n){ S.wellbeing = clamp(S.wellbeing+n, 5, 100); }
+function unlockNote(id){
+  if(!NOTES[id] || S.notes.includes(id)) return false;
+  S.notes.push(id); return true;
+}
+
+/* one year passes */
+function tick(){
+  S.year++; S.age++;
+  const T = {gross:0, biz:0, spend:0, market:0, auto:0, notes:[]};
+
+  // income
+  let sal = S.salary;
+  if(S.gig) sal = Math.round(S.salary * (0.65 + Math.random()*0.70));
+  if(S.flags.laidOffYears > 0){ sal = Math.round(sal*0.25); S.flags.laidOffYears--; T.notes.push("Between jobs — severance and scraps only.");
+    if(S.flags.laidOffYears===0){ S.salary=Math.round(S.salary*(S.skills>0?1.05:0.92)); T.notes.push("Re-hired"+(S.skills>0?" at better pay — the reskilling paid off.":" at a pay cut.")); } }
+  T.gross = sal;
+  if(S.biz){
+    T.biz = Math.round(S.biz.income);
+    if(!S.biz.systematized){ S.biz.income = Math.min(45000, S.biz.income*1.35); addWB(-5); }
+    else S.biz.income = Math.min(60000, S.biz.income*1.06);
+  }
+
+  // expenses & debt
+  let exp = S.baseExp + S.lifestyle*4000 + S.subs + (S.insured?700:0);
+  for(const [k,d] of Object.entries(S.debts)){
+    const interest = d.bal*d.rate;
+    const principal = Math.min(d.bal, d.bal*(d.rate>0.15?0.12:0.10));
+    // avalanche/snowball strategy adds extra payment if cash allows
+    exp += interest + principal;
+    d.bal = Math.max(0, d.bal - principal);
+    if(d.bal < 200){ d.bal=0; }
+  }
+  for(const k of Object.keys(S.debts)) if(S.debts[k].bal===0){ T.notes.push(S.debts[k].label+" paid off."); delete S.debts[k]; }
+  if(S.flags.debtExtra && debtTotal()>0){
+    const target = Object.entries(S.debts).sort((a,b)=> S.flags.debtExtra==="avalanche" ? b[1].rate-a[1].rate : a[1].bal-b[1].bal)[0];
+    const extra = Math.min(4000, target[1].bal, Math.max(0, S.cash-2000));
+    if(extra>0){ target[1].bal-=extra; S.cash-=extra; T.notes.push("Extra "+fmt(extra)+" thrown at "+target[1].label.toLowerCase()+".");
+      if(target[1].bal<200){T.notes.push(target[1].label+" paid off."); delete S.debts[target[0]];} }
+  }
+  T.spend = Math.round(exp);
+
+  // cash flow
+  S.cash += sal + T.biz - exp;
+
+  // market
+  let r = clamp(gauss(0.07, 0.15), -0.45, 0.55) - S.feeDrag;
+  if(S.flags.dipBonus){ r += 0.06; S.flags.dipBonus=false; }
+  S.lastReturn = r;
+  const before = S.index + S.spec;
+  S.index *= (1+r);
+  if(S.spec>0) S.spec *= (1+specRoll());
+  S.efund *= 1.03;
+  S.home *= 1.025;
+  T.market = Math.round(S.index+S.spec-before);
+
+  // auto-invest from surplus
+  if(S.autoRate>0){
+    const surplus = Math.max(0, sal + T.biz - exp);
+    const amt = Math.min(Math.round(surplus*S.autoRate), Math.max(0,S.cash));
+    if(amt>0){ S.cash-=amt; S.index+=amt; T.auto=amt; }
+  }
+
+  // negative cash → card debt (the expensive kind)
+  if(S.cash < 0){
+    const short = -S.cash;
+    const fromE = Math.min(S.efund, short);
+    S.efund -= fromE;
+    let rem = short - fromE;
+    if(fromE>0) T.notes.push("Emergency fund absorbed "+fmt(fromE)+" of shortfall.");
+    if(rem>0){
+      if(!S.debts.card) S.debts.card={label:"Credit card",bal:0,rate:0.22};
+      S.debts.card.bal += rem*1.03;
+      T.notes.push(fmt(rem)+" of the year went on the card at 22%.");
+      addWB(-4);
+    }
+    S.cash = 0;
+  }
+
+  // ponzi "dividends" then collapse handled by trigger card
+  if(S.flags.ponzi){
+    if(S.year - S.flags.ponzi.year <= 1){ S.cash += 1200; T.notes.push("The private fund paid its smooth little “dividend.”"); }
+    else S.pendingTrigger = "ponziCollapse";
+  }
+  // stuff purchase hangover
+  if(S.flags.stuffFade){ addWB(-3); S.flags.stuffFade=false; }
+  // golden handcuffs drain
+  if(S.flags.handcuffs) addWB(-7);
+  // wellbeing drift toward 60
+  addWB(S.wellbeing<60?3:(S.wellbeing>72?-1:0));
+  // salary growth (real)
+  if(!S.flags.laidOffYears){
+    let g = 0.02 + S.skills*0.012 + (S.wellbeing>70?0.005:0) + (S.wellbeing<35?-0.02:0);
+    S.salary = Math.round(S.salary*(1+g));
+  }
+  if(S.flags.reskillBoost){ S.salary=Math.round(S.salary*1.12); S.flags.reskillBoost=false; T.notes.push("The new skills kicked in — salary jumps 12%."); }
+
+  // random layoff roll
+  if(!S.pendingTrigger && !S.flags.laidOffYears && S.age<52 && S.year-(S.flags.lastLayoff||-99)>6){
+    const p = S.flags.aiRisk?0.10:0.025;
+    if(Math.random()<p && !S.gig) S.pendingTrigger="layoff";
+  }
+  // uninsured disaster roll
+  if(!S.pendingTrigger && S.insOffered && S.year-(S.flags.lastDisaster||-99)>5 && Math.random()<0.09) S.pendingTrigger="disaster";
+
+  S.wbSum += S.wellbeing; S.wbN++;
+  S.lastTick = T;
+  pushHistory();
+
+  // FI check
+  if(S.fiAge===null && fiRatio()>=1 && S.year>3){ S.fiAge = S.age; }
+}
+
+/* ---------------- cards ---------------- */
+/* opt: {l:label, d:desc, req:fn->bool|string, fx:fn->outcomeText, note:id, wis:n} */
+const CARDS = [
+{ id:"automate", cat:"Mindset", w:9, once:true, maxYear:4,
+  t:"Payday, meet plumbing",
+  b:"Your pay lands in checking and evaporates by month's end — everyone's does. You could set a standing transfer that moves money to investments <b>before</b> you ever see it. How much of your yearly surplus should route itself?",
+  opts:[
+    {l:"Automate 30% of surplus", d:"Aggressive, invisible, no monthly willpower required.", note:"auto", wis:10,
+      fx:()=>{S.autoRate=0.3; return "Done in ten minutes. Future-you never gets a vote — which, per the research, is exactly the point.";}},
+    {l:"Automate 15% of surplus", d:"A solid floor you'll never have to think about.", note:"auto", wis:6,
+      fx:()=>{S.autoRate=0.15; return "A quiet pipeline is laid. You can raise the rate any time from the ledger.";}},
+    {l:"“I'll invest whatever's left over”", d:"Keep it flexible. You'll definitely remember. Probably.", wis:-3, note:"auto",
+      fx:()=>{return "Spoiler from four decades of behavioral data: there is rarely anything left over. The plan that requires monthly willpower isn't a plan — you can still set one up from the ledger.";}},
+  ]},
+{ id:"crash", cat:"Market", trigger:s=>s.lastReturn<=-0.18 && (s.index+s.spec)>=8000, cooldown:3,
+  t:"The sky is red and everyone is selling",
+  b:()=>"The market fell "+pct(Math.abs(S.lastReturn))+" this year. Your portfolio is down "+fmt(Math.abs(S.lastTick.market))+", every feed is a funeral, and a voice in your skull is yelling <b>“protect what's left.”</b>",
+  opts:[
+    {l:"Hold. Close the app.", d:"The plan was built for this weather.", note:"lossAversion", wis:6,
+      fx:()=>{return "You do nothing, which is the hardest trade in finance. Paper losses only become real ones when you sign for them.";}},
+    {l:"Buy the dip with spare cash", d:"Feed the plan when shares are on sale.", note:"bestDays", wis:8,
+      req:s=>s.cash>=5000 || "needs $5k+ spare cash",
+      fx:()=>{const amt=Math.min(S.cash-2000, 20000); S.cash-=amt; S.index+=amt; S.flags.dipBonus=true;
+        return "You move "+fmt(amt)+" in at depressed prices. The best days tend to arrive while the smoke is still clearing.";}},
+    {l:"Sell everything", d:"Make the pain stop.", wis:-8, note:"lossAversion",
+      fx:()=>{const amt=Math.round(S.index+S.spec); S.cash+=amt; S.index=0; S.spec=0; S.flags.soldOut=true;
+        return "You cash out "+fmt(amt)+" and the panic quiets — but the loss is signed now, and history says the rebound won't send a calendar invite.";}},
+  ]},
+{ id:"fomo", cat:"Temptation", w:6, cooldown:4,
+  t:"Everyone you know is suddenly rich",
+  b:"A coin called <b>$GROUNDFLOOR</b> is up 400% this year. A guy from high school posts his new boat weekly. The group chat has become a trading floor, and the fear isn't losing money — it's being the only one who missed it.",
+  opts:[
+    {l:"Take a capped stake — 5% of net worth, max", d:"Scratch the itch at a size that can't hurt the plan.", note:"lottery", wis:5,
+      req:s=>s.cash>=1000 || "needs $1k+ cash",
+      fx:()=>{const amt=Math.min(Math.max(1000,Math.round(netWorth()*0.05)), S.cash); S.cash-=amt; S.spec+=amt;
+        return "You put in "+fmt(amt)+" — small enough that zero changes nothing, big enough that a moonshot is fun. That's what the research calls position sizing; the group chat calls it cowardice. The group chat is not diversified.";}},
+    {l:"Pass entirely", d:"Boring is a strategy.", note:"lottery", wis:4,
+      fx:()=>{return "You mute the chat. Lottery-like assets underperform on average precisely because the dream is priced in — someone is buying the boat guy's exit.";}},
+    {l:"Go heavy — half your cash", d:"Fortune favors the brave, right?", wis:-6, note:"lottery",
+      req:s=>s.cash>=2000 || "needs $2k+ cash",
+      fx:()=>{const amt=Math.round(S.cash*0.5); S.cash-=amt; S.spec+=amt;
+        return fmt(amt)+" rides on a token whose whitepaper is a meme. Maybe it moons. On average, per the data, it won't — and now the outcome matters to your plan.";}},
+  ]},
+{ id:"raise", cat:"Work", w:7, cooldown:3, cond:s=>!s.gig,
+  t:"The raise",
+  b:()=>"Your review lands well: <b>+8% salary</b> ("+fmt(Math.round(S.salary*0.08))+" a year). Within an hour your brain has already spent it — nicer apartment, better car, the life one notch up. This exact moment is where most raises quietly disappear.",
+  opts:[
+    {l:"Bank the raise — lift auto-invest instead", d:"Live like the raise never happened; let the plan absorb it.", note:"hedonic", wis:8,
+      fx:()=>{S.salary=Math.round(S.salary*1.08); S.autoRate=clamp(S.autoRate+0.10,0,0.9);
+        return "Salary up, lifestyle flat, auto-invest raised. In six months the raise will be invisible either way — this way it's invisible and working.";}},
+    {l:"Celebrate once, then bank it", d:"One great dinner; the rest goes to the plan.", wis:5,
+      fx:()=>{S.salary=Math.round(S.salary*1.08); S.autoRate=clamp(S.autoRate+0.05,0,0.9); S.cash-=400; addWB(4);
+        return "A night worth remembering, then business as usual. Rituals beat upgrades: they don't renew monthly.";}},
+    {l:"Level up the lifestyle", d:"You earned it. Nicer place, nicer things.", wis:-3, note:"hedonic",
+      fx:()=>{S.salary=Math.round(S.salary*1.08); S.lifestyle++; addWB(6);
+        return "It genuinely feels great — for a while. Adaptation research gives the glow a few months; the +$4,000-a-year cost never adapts to anything.";}},
+  ]},
+{ id:"gigYear", cat:"Work", w:7, cooldown:3, cond:s=>s.gig,
+  t:"Feast year, famine year",
+  b:"Freelance income came in hot this year, and the calendar for next year is a shrug. The flush months always whisper the same thing: <i>this is the new normal.</i>",
+  opts:[
+    {l:"Bank the surge into the buffer", d:"Smooth the feast across the famine.", note:"buffer", wis:7,
+      req:s=>s.cash>=3000 || "needs $3k+ cash",
+      fx:()=>{const amt=Math.min(Math.round(S.cash*0.5),15000); S.cash-=amt; S.efund+=amt;
+        return fmt(amt)+" moved to the buffer. Variable income doesn't need a bigger apartment; it needs a flatter floor.";}},
+    {l:"Raise your rates", d:"Use the momentum to reprice.", wis:6,
+      fx:()=>{S.salary=Math.round(S.salary*1.10); return "You raise rates 10% and lose exactly one client who was underpaying anyway. Pricing is the freelancer's index fund.";}},
+    {l:"Upgrade the lifestyle to match", d:"Good years should feel good.", wis:-4, note:"hedonic",
+      fx:()=>{S.lifestyle++; addWB(5); return "The new normal lasts until the first slow quarter, but the +$4,000-a-year cost signed a longer lease than your income did.";}},
+  ]},
+{ id:"bnpl", cat:"Temptation", w:6, cooldown:4,
+  t:"Four easy payments",
+  b:"Your phone is fine. The new one is <b>$1,600</b>, and the checkout page has done the math for you: <i>just 4 × $400, 0% interest.</i> It doesn't feel like $1,600. That's the entire product.",
+  opts:[
+    {l:"Skip it — the phone is fine", d:"Decline the ambient upgrade.", note:"painOfPaying", wis:5,
+      fx:()=>{return "You keep the phone that works. Pay-in-4 isn't credit innovation; it's anesthesia for the pain of paying — and the pain was load-bearing.";}},
+    {l:"Buy it in cash", d:"If you're buying it, feel it.", wis:2,
+      req:s=>s.cash>=1600 || "needs $1,600 cash",
+      fx:()=>{S.cash-=1600; addWB(3); return "You pay full freight, wince, and enjoy the phone. The wince is the point — it's what keeps one purchase from becoming a pattern.";}},
+    {l:"Take the 4 easy payments", d:"It's interest-free. What's the harm?", wis:-4, note:"painOfPaying",
+      fx:()=>{S.cash-=400; if(!S.debts.bnpl) S.debts.bnpl={label:"Pay-in-4 balance",bal:1200,rate:0};
+        else S.debts.bnpl.bal+=1200;
+        if(Math.random()<0.3){ if(!S.debts.card)S.debts.card={label:"Credit card",bal:0,rate:0.22}; S.debts.card.bal+=520; addWB(-2);
+          return "Painless — until payment three lands during a thin month, slips, and re-emerges as $520 on the card at 22%. The average BNPL user runs several plans at once; the business model knows why."; }
+        addWB(3);
+        return "Painless, exactly as designed. Studies find decoupled payments reliably raise how much people spend — you'll never see the total, only the drips.";}},
+  ]},
+{ id:"emergency", cat:"Life", w:7, cooldown:3,
+  t:()=>pick(["The transmission has opinions","A tooth, a root canal, a bill"]),
+  b:()=>{const c=S.flags.emergCost=pick([3500,4200,5200]); return "No drama, just life: a repair bill of <b>"+fmt(c)+"</b>, due now. This is the moment every buffer conversation was actually about.";},
+  opts:[
+    {l:"Pay from the emergency fund", d:"This is literally its job.", note:"buffer", wis:4,
+      req:s=>s.efund>=s.flags.emergCost || "fund too small",
+      fx:()=>{S.efund-=S.flags.emergCost; return "Paid, shrugged off, forgotten by Friday. A boring transaction — which is the entire triumph. Rebuild the fund when you can.";}},
+    {l:"Pay from cash", d:"Absorb it in the checking account.", wis:2,
+      req:s=>s.cash>=s.flags.emergCost || "not enough cash",
+      fx:()=>{S.cash-=S.flags.emergCost; return "Covered, though it hollows out the month. A dedicated buffer would have kept this away from your operating cash.";}},
+    {l:"Put it on the card", d:"Deal with it later, at 22%.", wis:-3, note:"buffer",
+      fx:()=>{if(!S.debts.card)S.debts.card={label:"Credit card",bal:0,rate:0.22}; S.debts.card.bal+=S.flags.emergCost; addWB(-5);
+        return "The bill becomes a balance and starts compounding against you. This is the exact mechanism — documented in the Fed's data — by which one flat tire becomes a year of interest.";}},
+  ]},
+{ id:"aiShift", cat:"Work", w:7, once:true, minYear:2,
+  t:"The software update that does your job",
+  b:"A new AI tool now handles about 40% of what your role used to be. Half your team is pretending it isn't happening; the other half is quietly repositioning to run the tool instead of race it.",
+  opts:[
+    {l:"Spend $4,000 reskilling", d:"Evenings and weekends for a year. Become the person who wields it.", note:"humanCapital", wis:8,
+      req:s=>s.cash>=4000 || "needs $4k cash",
+      fx:()=>{S.cash-=4000; S.skills++; S.flags.reskillBoost=true; addWB(-4);
+        return "A grinding year — and the single highest-return investment on your books. Your earning power is the asset everything else is built on.";}},
+    {l:"Jump ship for a quick +8%", d:"Same skills, new logo, better pay.", wis:1,
+      fx:()=>{S.salary=Math.round(S.salary*1.08); S.flags.aiRisk=true;
+        return "The raise is real. So is the fact that you brought the same automatable skill set to a new desk — the exposure moved with you.";}},
+    {l:"Ride it out", d:"They'll always need humans. Probably.", wis:-5, note:"humanCapital",
+      fx:()=>{S.flags.aiRisk=true; return "Maybe. But 'wait and see' is a position too — short your own adaptability, and the layoff odds on your file just went up.";}},
+  ]},
+{ id:"layoff", cat:"Work", trigger:s=>s.pendingTrigger==="layoff",
+  t:"The Tuesday meeting with HR in it",
+  b:"Restructuring. Your role is “impacted.” There's a small severance, a cardboard box, and a year that just changed shape. The next few months will be financed by whatever you built before this morning.",
+  opts:[
+    {l:"Cut lifestyle hard, hunt calmly", d:"Drop expenses to the floor and take the time to land well.", wis:6, note:"buffer",
+      fx:()=>{S.pendingTrigger=null; S.flags.laidOffYears=1; S.flags.lastLayoff=S.year; const had=S.efund>=annualExpenses()/2;
+        S.lifestyle=Math.max(0,S.lifestyle-1); if(had){addWB(-3); return "With a real buffer and a leaner burn rate, this is a setback, not an emergency. You search on your terms.";}
+        addWB(-8); return "Lean months. Without much buffer it's white-knuckled — every interview carries rent on its back. The next buffer starts the day you're re-hired.";}},
+    {l:"Keep the lifestyle, burn savings", d:"Don't let it touch how you live.", wis:-2,
+      fx:()=>{S.pendingTrigger=null; S.flags.laidOffYears=1; S.flags.lastLayoff=S.year; addWB(-5);
+        return "Appearances maintained, runway shortened. Every month at full burn is a month less of choosing your next job instead of taking one.";}},
+    {l:"Panic-sell investments for a cash pile", d:"Get liquid, whatever it costs.", wis:-6, note:"lossAversion",
+      req:s=>(s.index+s.spec)>1000 || "nothing to sell",
+      fx:()=>{S.pendingTrigger=null; S.flags.laidOffYears=1; S.flags.lastLayoff=S.year; const amt=Math.round(S.index+S.spec); S.cash+=amt; S.index=0; S.spec=0; addWB(-4);
+        return "You liquidate "+fmt(amt)+" — far more than the gap required — converting a income problem into a permanently interrupted compounding curve. This is what buffers exist to prevent.";}},
+  ]},
+{ id:"sideHustle", cat:"Work", w:6, cooldown:5,
+  t:"The idea that won't shut up",
+  b:"You've spotted a gap — a small service people around you keep paying too much for, done badly. Starting it costs about <b>$5,000</b> and most of your evenings. It could become an asset. It will definitely become a workload.",
+  opts:[
+    {l:"Launch it", d:"$5k and your evenings, in exchange for a possible asset.", wis:4,
+      req:s=>(s.cash>=5000 && !s.biz) || (s.biz? "already running one" : "needs $5k cash"),
+      fx:()=>{S.cash-=5000; S.biz={income:2000, systematized:false};
+        return "You're in business. Income starts small and compounds fast while you feed it — but note the fine print: until it runs without you, it's paid for in evenings.";}},
+    {l:"Not now — protect your energy", d:"Capacity is a real number.", wis:2,
+      fx:()=>{ if(S.wellbeing<45){ addWisdom(2); if(unlockNote("timeAffluence")) S.toastQ.push("note:timeAffluence");
+          return "Reading your own gauge correctly is a skill. The time-affluence research is blunt: a venture funded by sleep debt costs more than $5,000."; }
+        return "The idea goes in the drawer. Ideas keep; burnout compounds.";}},
+  ]},
+{ id:"systematize", cat:"Work", cond:s=>s.biz && !s.biz.systematized && s.biz.income>=8000, w:9, once:true,
+  t:"Fire yourself from your own business",
+  b:()=>"The side business now clears <b>"+fmt(S.biz.income)+" a year</b> — because you personally do everything. For about <b>$6,000</b> you could document it, automate it, and hire help: a bit less margin, none of your evenings.",
+  opts:[
+    {l:"Systematize it — $6,000", d:"Trade 20% of margin for 100% of your evenings back.", note:"buyTime", wis:6,
+      req:s=>s.cash>=6000 || "needs $6k cash",
+      fx:()=>{S.cash-=6000; S.biz.income*=0.8; S.biz.systematized=true; addWB(8);
+        return "The machine runs without you now. From today its income counts fully toward escape velocity — a job you owned just became an asset you own.";}},
+    {l:"Keep grinding — margin is margin", d:"Nobody does it like you do.", wis:-2,
+      fx:()=>{return "True — and that's the trap. As long as it needs your hands, the research files it under second job, not freedom. The offer stands in the ledger of life; the evenings don't.";}},
+  ]},
+{ id:"subsAudit", cat:"Mindset", w:5, cooldown:4,
+  t:"Death by $12.99",
+  b:()=>"Idle scroll through your statement: streaming ×4, two meditation apps (ironic), cloud storage, a forgotten meal-kit trial, a gym you visited in March. Recurring charges: about <b>"+fmt(Math.round(S.subs/12))+" a month</b> — billed to your inattention.",
+  opts:[
+    {l:"Do the one-hour audit", d:"Cancel the zombies; keep what you actually use.", note:"attention", wis:5,
+      fx:()=>{const cut=Math.min(900, Math.max(0,S.subs-600)); S.subs-=cut;
+        return "One hour, "+fmt(cut)+" a year recovered — every year, forever. People underestimate this category by 2.5×; you just closed the gap.";}},
+    {l:"Later. Definitely later.", d:"It's only a few small charges.", wis:-2,
+      fx:()=>{S.subs+=300; return "“Later” is what recurring billing is engineered to hear. A new trial auto-converts next month; the pile grows another "+fmt(300)+" a year.";}},
+  ]},
+{ id:"ponzi", cat:"Temptation", w:5, once:true, minYear:3,
+  t:"An exclusive opportunity",
+  b:"A friend-of-a-friend runs a “private income fund”: <b>1.5% a month, every month, guaranteed</b> — audited by a firm nobody's heard of, closing to new investors <i>this week</i>. He shows you a statement. It's beautiful. It's a perfectly straight line.",
+  opts:[
+    {l:"Ask for registration docs, then decline", d:"Real funds have paperwork and lumpy returns.", note:"fraud", wis:8,
+      fx:()=>{return "He gets vague, then defensive, then stops replying. High + smooth + exclusive + urgent is the four-part harmony of every Ponzi since the original — Madoff's line was straight for decades, right up until it wasn't.";}},
+    {l:"Invest $8,000", d:"The returns speak for themselves. The friend vouches.", wis:-10,
+      req:s=>s.cash>=8000 || "needs $8k cash",
+      fx:()=>{S.cash-=8000; S.flags.ponzi={year:S.year};
+        return "You're in, and the first “dividend” arrives right on schedule. Smooth as paint. (Real returns are never smooth. Remember that you knew that.)";}},
+  ]},
+{ id:"ponziCollapse", cat:"Temptation", trigger:s=>s.pendingTrigger==="ponziCollapse",
+  t:"The fund stops answering",
+  b:"First the dividend is “delayed for a system upgrade.” Then the website is gone. Then a news item: the fund was a pipe from new investors to old ones, and you were the new ones. The $8,000 is gone.",
+  opts:[
+    {l:"Report it, absorb it, learn it", d:"File with the regulator; help the next person.", note:"fraud", wis:4,
+      fx:()=>{S.pendingTrigger=null; S.flags.ponzi=null; addWB(-6);
+        return "The money's gone, but the tuition buys a permanent reflex: returns that are high, smooth, and guaranteed are describing a crime, not an asset.";}},
+  ]},
+{ id:"windfall", cat:"Life", w:5, cooldown:5,
+  t:"Twelve thousand dollars, out of nowhere",
+  b:"A surprise bonus plus an old relative's small bequest: <b>$12,000</b>, landing in your account with confetti attached. Your brain has already filed it under <i>fun money</i> — a different mental drawer than salary, though the dollars are identical.",
+  opts:[
+    {l:"Run it through the standing plan", d:"Windfall or wage, same rules.", note:"mentalAccounting", wis:7,
+      fx:()=>{S.cash+=12000; return "All "+fmt(12000)+" lands in the plan's pipeline — allocate it from the ledger. Money is fungible; only the feelings aren't.";}},
+    {l:"Mostly plan, one real splurge", d:"$10k to the plan, $2k for something memorable.", wis:6,
+      fx:()=>{S.cash+=10000; addWB(5); return "The splurge gets savored precisely because it's bounded, and "+fmt(10000)+" goes to work. Deliberate beats default.";}},
+    {l:"It's found money — enjoy it", d:"Trips, gadgets, rounds for everyone.", wis:-4, note:"mentalAccounting",
+      fx:()=>{S.cash+=2000; addWB(8); return "A spectacular few months, and "+fmt(10000)+" evaporates at a speed salary never would. Same dollars, different drawer — Thaler wrote the receipt for this in 1999.";}},
+  ]},
+{ id:"experiences", cat:"Life", w:5, cooldown:3,
+  t:"The reunion trip",
+  b:"Old friends are planning a week away together — <b>$2,500</b> all-in. The same money would also cover the very nice television you've been eyeing. Or, of course, it could stay invested.",
+  opts:[
+    {l:"Take the trip", d:"A week with people you love.", note:"experiences", wis:4,
+      req:s=>s.cash>=2500 || "needs $2.5k cash",
+      fx:()=>{S.cash-=2500; addWB(9);
+        return "It's everything the research promised: experiences resist adaptation, improve with retelling, and come bundled with relationships — the one line item the Harvard study says actually predicts a good life.";}},
+    {l:"Buy the television", d:"You'll enjoy it every day. For a while.", wis:-1, note:"experiences",
+      req:s=>s.cash>=2500 || "needs $2.5k cash",
+      fx:()=>{S.cash-=2500; addWB(4); S.flags.stuffFade=true;
+        return "Gorgeous for a month, furniture by spring. Material purchases adapt into invisibility — that's not cynicism, it's the most replicated finding in consumer psychology.";}},
+    {l:"Skip both — stay invested", d:"Compounding doesn't take vacations.",
+      fx:()=>{ if(S.wellbeing>=55){ addWisdom(2); return "A reasonable pass — you're doing fine, and the money keeps working."; }
+        addWisdom(-2); return "The spreadsheet approves; the research doesn't. You're running low, and frugality that costs relationships is the most expensive kind. The portfolio exists to fund a life, not the reverse.";}},
+  ]},
+{ id:"advisor", cat:"Temptation", w:6, once:true, minYear:2, cond:s=>(s.index+s.spec)>10000 || s.cash>15000,
+  t:"A man in a very good suit",
+  b:"A “wealth manager” buys you coffee. His fund has <i>beaten the market three years running</i> (page 4 of the glossy brochure). Fee: just <b>1.5% a year</b>. Alternatively, a plain index fund costs 0.04% and comes with no coffee at all.",
+  opts:[
+    {l:"Stay with low-cost index funds", d:"Own the whole market for 0.04%.", note:"spiva", wis:8,
+      fx:()=>{return "Over 15-year stretches, roughly 90% of professional stock-pickers lose to the boring fund — and the winners rarely repeat. You keep the 1.5%; compounded over your career, that's roughly a quarter of your final wealth.";}},
+    {l:"Pay a flat-fee fiduciary once", d:"$800 for a real plan from someone with no products to sell.", wis:6,
+      req:s=>s.cash>=800 || "needs $800",
+      fx:()=>{S.cash-=800; S.autoRate=clamp(S.autoRate+0.05,0,0.9);
+        return "Money well spent: advice priced in dollars, not percentages, can't quietly compound against you. She tightens your automation and tells you you're overthinking it.";}},
+    {l:"Sign with the suit", d:"Three years of outperformance! It's basically proven.", wis:-6, note:"spiva",
+      fx:()=>{S.feeDrag=0.011;
+        return "Congratulations on the relationship. Three-year streaks are what luck looks like at fund scale; the 1.5% fee, though — that part is guaranteed. It now drains your returns every single year.";}},
+  ]},
+{ id:"fireFee", cat:"Mindset", cond:s=>s.feeDrag>0, w:7, once:true,
+  t:"Reading the fine print, finally",
+  b:"Your annual statement arrives. The fund trailed the index again, and there — in font size “legally required” — the fee: 1.5%, skimmed in every weather. Moving to an index fund takes one afternoon and one awkward phone call.",
+  opts:[
+    {l:"Make the awkward call", d:"Transfer everything to the 0.04% fund.", note:"spiva", wis:6,
+      fx:()=>{S.feeDrag=0; return "Twenty uncomfortable minutes, then decades of keeping your own returns. The suit takes it well; he has other coffees scheduled.";}},
+    {l:"Stay — he's practically a friend now", d:"The holiday card was nice.", wis:-4,
+      fx:()=>{return "The most expensive holiday card you'll ever receive. The drag continues, compounding in the wrong direction.";}},
+  ]},
+{ id:"handcuffs", cat:"Work", w:5, once:true, minYear:4, cond:s=>!s.gig && !s.flags.handcuffs,
+  t:"The golden handcuffs",
+  b:"A rival firm offers <b>+40% salary</b> for a role everyone describes with the same phrase: “intense, but the money's incredible.” Sixty-hour weeks, always-on, a boss whose last three deputies “moved on to new opportunities.”",
+  opts:[
+    {l:"Take the money", d:"A few brutal years could buy a decade of freedom.", wis:1,
+      fx:()=>{S.salary=Math.round(S.salary*1.4); S.flags.handcuffs=true;
+        return "The deposits are magnificent. The Sunday dread starts in month two. This trade can genuinely work — if you actually bank the difference and actually leave. Watch your wellbeing gauge; the exit is in the cards.";}},
+    {l:"Decline — the math includes you", d:"Price the hours, not just the salary.", note:"timeAffluence", wis:4,
+      fx:()=>{return "You run the real arithmetic: divide the raise by the extra hours and it's mediocre pay for your evenings, health, and people. Time-affluence research says you priced it right.";}},
+    {l:"Use it to negotiate where you are", d:"Leverage without the lifestyle.", wis:5,
+      fx:()=>{ if(Math.random()<0.6){S.salary=Math.round(S.salary*1.12); return "Your manager finds 12% rather than lose you. The best raise is one that costs no extra hours.";}
+        return "They call the bluff — no raise. But the market data is now yours, and courage compounds too."; }},
+  ]},
+{ id:"quitHandcuffs", cat:"Work", cond:s=>s.flags.handcuffs && s.wellbeing<50, w:8, once:true,
+  t:"The exit interview you keep rehearsing",
+  b:"The money is still incredible. You are visibly not. You've saved aggressively through the grind — the question is whether the plan was ever “forever,” or whether this was always a heist with an exit date.",
+  opts:[
+    {l:"Cash out — quit for a sane role", d:"−25% salary, +your life back.", note:"timeAffluence", wis:6,
+      fx:()=>{S.salary=Math.round(S.salary*0.75); S.flags.handcuffs=false; addWB(15);
+        return "You leave with the savings and without the eye twitch. The grind was a tool; you put it down before it became an identity. That's the whole trick.";}},
+    {l:"One more year. Then definitely.", d:"The bonus vests in March…", wis:-3,
+      fx:()=>{addWB(-5); return "The most expensive sentence in employment. There is always a March. The handcuffs don't loosen; you just stop noticing the weight.";}},
+  ]},
+{ id:"burnout", cat:"Life", trigger:s=>s.wellbeing<=20,
+  t:"The wall",
+  b:"You've been running on fumes for so long you forgot they were fumes. Now the body files its invoice: can't focus, can't sleep, dread with a heartbeat. This is no longer a productivity problem.",
+  opts:[
+    {l:"Take a real break — 3 unpaid months", d:"Expensive. Cheaper than the alternative.", note:"timeAffluence", wis:4,
+      fx:()=>{const cost=Math.round(S.salary*0.25); S.cash-=cost; addWB(20); if(S.flags.handcuffs){S.flags.handcuffs=false; S.salary=Math.round(S.salary*0.8);}
+        return "Three months of sleep, walks, and remembering what you like. It costs "+fmt(cost)+" and returns an asset no portfolio can replace: a functioning you.";}},
+    {l:"Push through", d:"Rest is for after the next milestone.", wis:-4,
+      fx:()=>{ if(Math.random()<0.5){S.cash-=6000; addWB(-8); return "The body overrules you: a health scare, "+fmt(6000)+" in bills, and a mandatory rest you no longer get to schedule. The wall always wins on points.";}
+        addWB(-4); return "You survive the quarter on caffeine and denial. Nothing breaks — this time. The invoice is still open.";}},
+  ]},
+{ id:"give", cat:"Life", w:4, cooldown:4, cond:s=>netWorth()>30000,
+  t:"The ask",
+  b:"A local mutual-aid fund is rebuilding after the floods — neighbors covering neighbors' deductibles. They're asking for <b>$1,200</b>, or hands-on weekends if money's tight.",
+  opts:[
+    {l:"Give the $1,200", d:"You have it; they need it.", note:"prosocial", wis:5,
+      req:s=>s.cash>=1200 || "needs $1.2k cash",
+      fx:()=>{S.cash-=1200; addWB(7);
+        return "The strangest ROI in behavioral science: money spent on others reliably buys more happiness than money spent on yourself. The experiments replicate from Vancouver to Uganda.";}},
+    {l:"Give weekends instead", d:"Sweat equity counts.", note:"prosocial", wis:3,
+      fx:()=>{addWB(5); return "Six Saturdays of drywall and coffee. You come home tired in the good way, knowing more neighbors than you did — the kind of asset the Harvard study keeps going on about.";}},
+    {l:"Not this year", d:"The plan comes first right now.",
+      fx:()=>{return "Fair enough — generosity from a stable base beats generosity from a crisis. The fund will ask again; so will the research.";}},
+  ]},
+{ id:"circle", cat:"Temptation", w:5, once:true, minYear:3,
+  t:"Your friends got expensive",
+  b:"Somewhere along the way the group's default became $200 dinners, weekend trips, and a wine knowledge arms race. Nobody decided this. Your feed agrees: everyone, everywhere, is living better than you.",
+  opts:[
+    {l:"Counter-program — host cheap, host often", d:"Change the default instead of leaving the group.", note:"comparison", wis:6,
+      fx:()=>{addWB(4); return "Turns out everyone was relieved. Half the table was quietly financing the arms race too. Relative-income research says the comparison group was the problem — so you rebuilt it.";}},
+    {l:"Keep pace", d:"These are your people; this is the price.", wis:-4, note:"comparison",
+      fx:()=>{S.subs+=2400; addWB(2); return "+"+fmt(2400)+" a year of keeping up. Luttmer's data is blunt: when the reference group upgrades, satisfaction doesn't budge — only the burn rate does.";}},
+    {l:"Quietly drift", d:"Cheaper. Lonelier.", wis:1,
+      fx:()=>{addWB(-4); return "The budget improves; the calendar empties. Careful with this trade — the 85-year study puts relationships, not savings rates, at the center of a good life.";}},
+  ]},
+{ id:"rentbuy", cat:"Life", w:6, once:true, minYear:4, cond:s=>netWorth()>=60000 && s.cash+s.efund+s.index>=50000,
+  t:"The open house",
+  b:"A solid two-bedroom, <b>$50,000 down</b>. The mortgage would run close to your current rent. One voice says <i>rent is throwing money away</i>; another notes the price-to-rent ratio in this neighborhood is historically rich.",
+  opts:[
+    {l:"Buy it", d:"Roots, forced saving, and a landlord who is you.", note:"rentBuy", wis:3,
+      fx:()=>{let need=50000; const fromCash=Math.min(S.cash,need); S.cash-=fromCash; need-=fromCash;
+        const fromE=Math.min(S.efund,need); S.efund-=fromE; need-=fromE; S.index-=need; S.home=50000; S.baseExp+=1500;
+        return "Keys in hand. Honest accounting: the wealth effect of owning is mostly leverage plus forced saving plus unpaid rent — real house prices barely beat inflation over the last century. It's a home first; that's a fine thing for it to be.";}},
+    {l:"Keep renting, invest the difference", d:"Flexibility has a yield too.", note:"rentBuy", wis:5,
+      fx:()=>{return "At these price-to-rent levels, the renter who actually invests the difference tends to come out ahead — the catch, per the data, is the “actually.” Your automation handles that part.";}},
+  ]},
+{ id:"insurance", cat:"Life", w:6, once:true, maxYear:6,
+  t:"The boring envelope",
+  b:"Renter's insurance plus disability coverage: <b>$700 a year</b> to make sure a burst pipe or a bad diagnosis is a bill instead of an ending. It is the least interesting purchase available to you, which is roughly the point.",
+  opts:[
+    {l:"Take the coverage", d:"Convert catastrophes into annoyances.", note:"insurance", wis:5,
+      fx:()=>{S.insured=true; S.insOffered=true;
+        return "Signed. Insurance has negative expected value and positive expected utility — you pay a small known cost to delete the scenarios that end plans. That's not waste; that's the product.";}},
+    {l:"Skip it — you're careful", d:"$700 a year buys a lot of index fund.", wis:-2,
+      fx:()=>{S.insOffered=true;
+        return "The premium stays invested, and most years that looks smart. Just be clear about the trade: you are now the insurer, and your reserves are the payout pool.";}},
+  ]},
+{ id:"disaster", cat:"Life", trigger:s=>s.pendingTrigger==="disaster",
+  t:"The pipe bursts at 2 a.m.",
+  b:()=>S.insured
+    ? "Water everywhere, laptop drowned, floor ruined. You file the claim from the hallway, still in socks. Total damage runs five figures; your share is the <b>$500 deductible</b>."
+    : "Water everywhere, laptop drowned, floor ruined. The landlord's policy covers the building — not your things, not your hotel weeks. The bill is <b>$9,000</b>, and it's yours.",
+  opts:[
+    {l:"Deal with it", d:"There is no option B at 2 a.m.",
+      fx:()=>{S.pendingTrigger=null; S.flags.lastDisaster=S.year;
+        if(S.insured){S.cash-=500; addWisdom(4); if(unlockNote("insurance")) S.toastQ.push("note:insurance");
+          return "Three weeks of hassle, $500, done. Somewhere a past version of you signs a boring envelope and nods."; }
+        S.cash-=9000; addWB(-8); addWisdom(-2); if(unlockNote("insurance")) S.toastQ.push("note:insurance");
+        return "Nine thousand dollars of uninsured lesson. The premium you saved bought a fraction of this bill — tail risk always quotes its real price eventually.";}},
+  ]},
+{ id:"debtplan", cat:"Mindset", w:7, cond:s=>debtTotal()>8000 && !s.flags.debtExtra, once:true,
+  t:"The debt needs a death date",
+  b:()=>"You're carrying <b>"+fmt(debtTotal())+"</b> across your balances, and “minimum payments” is not a strategy — it's a subscription to interest. Pick the order of execution.",
+  opts:[
+    {l:"Avalanche — highest rate first", d:"Optimal math: every extra dollar to the most expensive debt.", note:"debtMath", wis:7,
+      fx:()=>{S.flags.debtExtra="avalanche"; return "Extra payments now auto-target your priciest balance. Arithmetic's favorite strategy — every dollar kills the most interest it can.";}},
+    {l:"Snowball — smallest balance first", d:"Quick kills for motivation that actually lasts.", note:"debtMath", wis:6,
+      fx:()=>{S.flags.debtExtra="snowball"; return "Extra payments now clear the smallest balance first. Slightly worse math, measurably better follow-through — the field data says finished beats optimal.";}},
+    {l:"Minimums forever, invest the rest", d:"The market might out-earn the interest…", wis:-4,
+      fx:()=>{return "Against a 22% card, no diversified portfolio on record wins that race — paying it off is a guaranteed 22% return, tax-free. (Against a 4% loan the logic flips; know which one you're holding.)";}},
+  ]},
+{ id:"rebalance", cat:"Mindset", cond:s=>s.spec>10000 && s.spec>0.18*(s.index+s.spec), w:8, cooldown:3,
+  t:"Your lottery ticket got heavy",
+  b:()=>"The speculative bet mooned — it's now <b>"+fmt(S.spec)+"</b>, roughly "+pct(S.spec/(S.index+S.spec))+" of your portfolio. It feels like genius. It is also a single coin flip wearing your future's clothes.",
+  opts:[
+    {l:"Trim back to 5% — bank the win", d:"Sell most, roll it into index funds.", note:"lottery", wis:6,
+      fx:()=>{const keep=Math.round((S.index+S.spec)*0.05); const move=Math.round(S.spec-keep); S.spec=keep; S.index+=move;
+        return fmt(move)+" of luck converted into boring, diversified wealth. Rebalancing is the only mechanism that reliably sells high — feelings vote the other way every time.";}},
+    {l:"Let it ride", d:"Winners win. Diamond hands.", wis:-3,
+      fx:()=>{return "Maybe it doubles again. But you're no longer investing — you're re-betting the whole win each morning, and the roll table hasn't changed its odds for you.";}},
+  ]},
+{ id:"quiz", cat:"Mindset", w:3, filler:true, cooldown:2,
+  t:"A quiet year, and a question",
+  b:()=>{const q=S.flags.quiz=pick(QUIZ.filter(q=>!S.seen["q_"+q.id])) || pick(QUIZ);
+    return "Nothing dramatic happens for once — the plan just runs. Over coffee, a friend who knows you're “into this stuff” asks:<br><br><b>“"+q.q+"”</b>";},
+  opts:[
+    {l:"", d:"", fx:()=>quizAnswer(0)},
+    {l:"", d:"", fx:()=>quizAnswer(1)},
+    {l:"", d:"", fx:()=>quizAnswer(2)},
+  ]},
+];
+const QUIZ = [
+  {id:"spiva", q:"Over 15 years, what share of professional stock-picking funds beat a plain index fund?", a:["About half — it's skill vs skill","Roughly 1 in 10","Nearly all — that's their job"], k:1,
+   x:"S&P's SPIVA scorecard, year after year: ~90% of active US large-cap funds trail the index over 15 years.", note:"spiva"},
+  {id:"loss", q:"Psychologically, losing $100 feels about as intense as gaining…", a:["$100 — symmetric","$200","$1,000"], k:1,
+   x:"Loss aversion (Kahneman & Tversky): losses weigh roughly twice as much as equivalent gains — the engine behind panic selling.", note:"lossAversion"},
+  {id:"days", q:"If you missed just the 10 best market days over 20 years, your total return would be…",a:["Barely different","About 20% lower","Roughly cut in half"], k:2,
+   x:"Time-in-market studies: missing the 10 best days roughly halves returns — and those days cluster right beside the worst ones.", note:"bestDays"},
+  {id:"harvard", q:"In Harvard's 85-year study of adult life, the strongest predictor of late-life health and happiness is…",a:["Wealth at 50","Quality of relationships","Career achievement"], k:1,
+   x:"The Study of Adult Development's headline finding: good relationships, more than money or fame, keep people healthy and happy.", note:"relationships"},
+  {id:"late", q:"At 7% real returns, starting to invest 10 years late costs you about…",a:["10% of the final pot","A quarter of it","Half of it"], k:2,
+   x:"Money doubles roughly every decade at 7% — so a lost decade is a lost doubling: about half the final amount.", note:"compounding"},
+  {id:"subs", q:"When people estimate their monthly subscription spending, they're typically off by…",a:["They nail it","About 2.5× too low","A little too high"], k:1,
+   x:"Surveyed guess: ~$86/month. Actual statements: ~$219. Recurring billing is engineered to be forgotten.", note:"attention"},
+];
+function quizAnswer(i){
+  const q=S.flags.quiz; S.seen["q_"+q.id]=true;
+  if(i===q.k){ addWisdom(4); if(q.note && unlockNote(q.note)) S.toastQ.push("note:"+q.note);
+    return "“"+q.a[q.k]+"” — exactly right. "+q.x; }
+  addWisdom(1); if(q.note && unlockNote(q.note)) S.toastQ.push("note:"+q.note);
+  return "Close, but the research says: "+q.a[q.k].toLowerCase()+". "+q.x+" (Getting quizzed beats getting lectured — the testing effect says you'll keep this one.)";
+}
+
+/* card selection */
+function canShow(c){
+  if(c.once && S.seen[c.id]) return false;
+  if(c.cooldown && S.year-(S.lastSeen[c.id]??-99) < c.cooldown) return false;
+  if(c.minYear && S.year<c.minYear) return false;
+  if(c.maxYear && S.year>c.maxYear) return false;
+  if(c.cond && !c.cond(S)) return false;
+  return true;
+}
+function drawCard(){
+  for(const c of CARDS) if(c.trigger && c.trigger(S) && canShow(c)) return c;
+  let pool = CARDS.filter(c=>!c.trigger && !c.filler && canShow(c) && !S.recent.includes(c.id));
+  if(!pool.length) pool = CARDS.filter(c=>!c.trigger && !c.filler && canShow(c));
+  if(!pool.length) return CARDS.find(c=>c.id==="quiz");
+  // weighted
+  const total = pool.reduce((s,c)=>s+(c.w||1),0);
+  let r = Math.random()*total;
+  for(const c of pool){ r -= (c.w||1); if(r<=0) return c; }
+  return pool[0];
+}
+
+/* ---------------- UI: screens & stage ---------------- */
+function showScreen(name){
+  $("#screen-start").hidden = name!=="start";
+  $("#screen-game").hidden = name!=="game";
+  $("#screen-end").hidden = name!=="end";
+  window.scrollTo(0,0);
+}
+let stage = {mode:"idle"};
+function setStage(mode, data){ stage={mode,...data}; }
+
+const IDLE_FLAVOR = [
+  "The plan doesn't need you to watch it. That's what makes it a plan.",
+  "Somewhere, your index fund owns a tiny piece of 4,000 companies. None of them know your name. All of them work for you.",
+  "Wealth is what you don't see — the cars not bought, the upgrades not taken.",
+  "Nothing in your portfolio requires an opinion today.",
+  "Compound interest is happening right now, in silence, without content.",
+];
+
+function renderAll(){ renderHUD(); renderLedger(); renderStage(); }
+
+function renderHUD(){
+  $("#hud-age").textContent = S.age;
+  $("#hud-year").textContent = S.year+1;
+  const r = clamp(fiRatio(),0,1);
+  $("#hud-evpct").textContent = Math.round(fiRatio()*100)+"%";
+  $("#hud-evbar").style.width = (r*100)+"%";
+  $("#hud-notes").textContent = S.notes.length+"/"+NOTE_COUNT;
+}
+
+let mmOpen = null; // {key, dir}
+function renderLedger(){
+  const L=[];
+  const exp = annualExpenses();
+  L.push(`<h2>Cash flow /yr</h2>`);
+  L.push(lrow("Income", fmt(Math.round(S.salary + (S.biz?S.biz.income:0))), S.gig?"variable (freelance)":""));
+  L.push(lrow("Spending", fmt(exp), lifestyleLabel()));
+  L.push(lrow("Passive income", `<span class="gold">${fmt(passiveIncome())}</span>`, "counts toward escape velocity"));
+  L.push(`<h2>Assets</h2>`);
+  L.push(assetRow("cash","Cash", S.cash));
+  L.push(assetRow("efund","Emergency fund", S.efund, monthsCover()));
+  L.push(assetRow("index","Index funds", S.index, S.feeDrag?`<span class="down">−1.5%/yr fee drag</span>`:""));
+  L.push(assetRow("spec","Speculative", S.spec));
+  if(S.biz) L.push(lrow((S.biz.systematized?"Business (systematized)":"Business (hands-on)"), fmt(Math.round(S.biz.income))+"/yr", S.biz.systematized?"runs without you":"costs evenings"));
+  if(S.home>0) L.push(lrow("Home equity", fmt(S.home), "you live here — not income"));
+  const debts = Object.entries(S.debts);
+  if(debts.length){ L.push(`<h2>Debts</h2>`);
+    for(const [k,d] of debts) L.push(debtRow(k,d)); }
+  L.push(`<hr class="rule">`);
+  L.push(lrow("<b>Net worth</b>", `<b class="num">${fmt(netWorth())}</b>`));
+  L.push(`<div class="sparkbox"><canvas id="spark" height="64" aria-label="Net worth over time"></canvas></div>`);
+  L.push(`<h2>You</h2>`);
+  L.push(meterRow("Wellbeing", S.wellbeing, "wb"+(S.wellbeing<35?" low":"")));
+  L.push(meterRow("Wisdom", S.wisdom, "wis"));
+  L.push(`<div class="autorow"><span style="flex:1">Auto-invest <small style="color:var(--dim)">(of surplus)</small></span>
+    <button class="mmbtn" data-auto="-1" ${S.autoRate<=0?"disabled":""} aria-label="Decrease auto-invest">−</button>
+    <b class="num" style="width:38px;text-align:center">${Math.round(S.autoRate*100)}%</b>
+    <button class="mmbtn" data-auto="1" ${S.autoRate>=0.9?"disabled":""} aria-label="Increase auto-invest">+</button></div>`);
+  $("#ledger").innerHTML = L.join("");
+  drawSpark();
+  // wire money-move buttons
+  $("#ledger").querySelectorAll("[data-mm]").forEach(b=>b.addEventListener("click",()=>{
+    const [key,dir]=b.dataset.mm.split(":");
+    mmOpen = (mmOpen && mmOpen.key===key && mmOpen.dir===dir) ? null : {key,dir};
+    renderLedger(); }));
+  $("#ledger").querySelectorAll("[data-chip]").forEach(b=>b.addEventListener("click",()=>{
+    const amt=+b.dataset.chip; applyMove(mmOpen.key, mmOpen.dir, amt); mmOpen=null; renderAll(); }));
+  $("#ledger").querySelectorAll("[data-chipcancel]").forEach(b=>b.addEventListener("click",()=>{ mmOpen=null; renderLedger(); }));
+  $("#ledger").querySelectorAll("[data-auto]").forEach(b=>b.addEventListener("click",()=>{
+    S.autoRate=clamp(Math.round((S.autoRate+0.05*(+b.dataset.auto))*100)/100,0,0.9); renderLedger(); }));
+}
+function lifestyleLabel(){ const l=["minimal","modest","comfortable","plush","lavish","gilded"][clamp(S.lifestyle,0,5)]; return "lifestyle: "+l; }
+function monthsCover(){ const m=annualExpenses()/12; return m>0? (S.efund/m).toFixed(1)+" months of cover":""; }
+function lrow(nm,val,sub){ return `<div class="lrow"><span class="nm">${nm}${sub?`<small>${sub}</small>`:""}</span><span class="val">${val}</span></div>`; }
+function meterRow(nm,v,cls){ return `<div class="lrow"><span class="nm" style="flex:0 0 76px">${nm}</span><span class="meter ${cls}"><i style="width:${v}%"></i></span><span class="val" style="width:30px">${Math.round(v)}</span></div>`; }
+function assetRow(key,nm,val,sub){
+  let html = `<div class="lrow"><span class="nm">${nm}${sub?`<small>${sub}</small>`:""}</span><span class="val">${fmt(val)}</span>`;
+  if(key!=="cash"){ html+=`<button class="mmbtn" data-mm="${key}:in" ${S.cash<500?"disabled":""} aria-label="Add to ${nm}">+</button><button class="mmbtn" data-mm="${key}:out" ${val<100?"disabled":""} aria-label="Take from ${nm}">−</button>`; }
+  html+=`</div>`;
+  if(mmOpen && mmOpen.key===key) html+=chipRow(key, mmOpen.dir);
+  return html;
+}
+function debtRow(k,d){
+  let html=`<div class="lrow"><span class="nm">${d.label}<small>${pct(d.rate)} APR</small></span><span class="val down">${fmt(d.bal)}</span><button class="mmbtn" data-mm="${k}:pay" ${S.cash<100?"disabled":""} aria-label="Pay down ${d.label}">↓</button></div>`;
+  if(mmOpen && mmOpen.key===k) html+=chipRow(k,"pay");
+  return html;
+}
+function chipRow(key,dir){
+  let cap;
+  if(dir==="in") cap=S.cash;
+  else if(dir==="pay") cap=Math.min(S.cash, S.debts[key].bal);
+  else cap = {efund:S.efund,index:S.index,spec:S.spec}[key];
+  const amts=[...new Set([1000,5000,Math.round(cap/2/100)*100,Math.floor(cap/100)*100])].filter(a=>a>=100&&a<=cap).sort((a,b)=>a-b);
+  const lbl = dir==="in"?"Add":(dir==="pay"?"Pay":"Take");
+  return `<div class="chips"><span style="font-size:11px;color:var(--dim);align-self:center">${lbl}:</span>`+
+    amts.map(a=>`<button class="chip" data-chip="${a}">${fmtK(a)}</button>`).join("")+
+    `<button class="chip cancel" data-chipcancel>×</button></div>`;
+}
+function applyMove(key,dir,amt){
+  if(dir==="in"){ amt=Math.min(amt,S.cash); S.cash-=amt; S[key]+=amt; }
+  else if(dir==="pay"){ amt=Math.min(amt,S.cash,S.debts[key].bal); S.cash-=amt; S.debts[key].bal-=amt;
+    if(S.debts[key].bal<100){ toast(S.debts[key].label+" paid off."); delete S.debts[key]; } }
+  else { amt=Math.min(amt,S[key]); S[key]-=amt; S.cash+=amt; }
+}
+
+function drawSpark(){
+  const c=$("#spark"); if(!c) return;
+  const w=c.clientWidth||260; c.width=w*2; c.height=128; c.style.height="64px";
+  const x=c.getContext("2d"); x.scale(2,2);
+  const H=S.history; if(H.length<2){x.fillStyle="#6f7b70";x.font="10px sans-serif";x.fillText("net worth — year by year",4,36);return;}
+  const vals=H.map(h=>h.nw); const min=Math.min(0,...vals), max=Math.max(1000,...vals);
+  const px=i=>4+(w-8)*i/(H.length-1), py=v=>58-52*(v-min)/(max-min);
+  // zero line
+  if(min<0){x.strokeStyle="#3a473e";x.setLineDash([3,3]);x.beginPath();x.moveTo(0,py(0));x.lineTo(w,py(0));x.stroke();x.setLineDash([]);}
+  x.strokeStyle="#d9a946";x.lineWidth=1.6;x.beginPath();
+  H.forEach((h,i)=>{i?x.lineTo(px(i),py(h.nw)):x.moveTo(px(i),py(h.nw));});
+  x.stroke();
+  const last=H[H.length-1];
+  x.fillStyle="#d9a946";x.beginPath();x.arc(px(H.length-1),py(last.nw),2.5,0,7);x.fill();
+}
+
+/* ---------------- stage rendering ---------------- */
+function renderStage(){
+  const el=$("#stage");
+  if(stage.mode==="idle"){
+    const canEnd = S.year >= END_AGE_SPAN || (S.fiAge!==null && !S.sandbox);
+    let banner="";
+    if(S.fiAge!==null && !S.sandbox){
+      banner=`<div class="outcome rise" style="margin-bottom:4px"><p><b class="gold">Escape velocity reached at ${S.fiAge}.</b> Income from your assets now covers the full cost of your life. Work is officially optional — everything from here is by choice.</p></div>`;
+    }
+    el.innerHTML = `
+      ${stage.first?"":tickerHTML()}
+      ${banner}
+      <div class="idlebox rise">
+        <div class="eyebrow">Age ${S.age} · ${S.fiAge!==null?"free":"year "+(S.year+1)+" of "+END_AGE_SPAN}</div>
+        <p class="flavor">${stage.first?"Your ledger is on the left — move money whenever you like; set the auto-invest rate and it fires every year without asking. Then live out the years, one decision at a time.":pick(IDLE_FLAVOR)}</p>
+        <button class="advance" id="btn-advance">Live out the year ▸</button>
+        ${S.fiAge!==null&&!S.sandbox?`<button class="ghostbtn" id="btn-finish">See the final reckoning</button>`:
+          (S.year>=END_AGE_SPAN-1?"":`<button class="ghostbtn" id="btn-skip" title="Runs 3 years on autopilot — events still interrupt">Fast-forward 3 quiet years ▸▸</button>`)}
+      </div>`;
+    $("#btn-advance").addEventListener("click",()=>advance(false));
+    const sk=$("#btn-skip"); if(sk) sk.addEventListener("click",()=>advance(true));
+    const fin=$("#btn-finish"); if(fin) fin.addEventListener("click",endGame);
+  }
+  else if(stage.mode==="card"){
+    const c=stage.card;
+    const isQuiz = c.id==="quiz";
+    const opts = isQuiz ? S.flags.quiz.a.map((a,i)=>({l:a,d:"",fx:c.opts[i].fx})) : c.opts;
+    el.innerHTML = `
+      ${tickerHTML()}
+      <div class="gamecard rise">
+        <div class="cathdr"><span class="catchip">${c.cat}</span><span class="yr">Age ${S.age}</span></div>
+        <h3>${typeof c.t==="function"?c.t():c.t}</h3>
+        <p class="body">${typeof c.b==="function"?c.b():c.b}</p>
+        <div class="opts">${opts.map((o,i)=>{
+          const req = o.req ? o.req(S) : true;
+          const dis = req!==true;
+          return `<button class="opt" data-opt="${i}" ${dis?"disabled":""}>
+            <span class="ol">${o.l}</span>
+            ${o.d||dis?`<span class="od">${o.d}${dis?` — <i>${req}</i>`:""}</span>`:""}
+          </button>`;}).join("")}
+        </div>
+      </div>`;
+    el.querySelectorAll("[data-opt]").forEach(b=>b.addEventListener("click",()=>chooseOption(opts[+b.dataset.opt])));
+  }
+  else if(stage.mode==="outcome"){
+    const c=stage.card;
+    el.innerHTML = `
+      ${tickerHTML()}
+      <div class="gamecard rise">
+        <div class="cathdr"><span class="catchip">${c.cat}</span><span class="yr">Age ${S.age}</span></div>
+        <h3>${typeof c.t==="function"?c.t():c.t}</h3>
+        <div class="outcome"><p>${stage.text}</p>
+          <div class="deltas">${stage.deltas.join("")}</div></div>
+        <button class="contbtn" id="btn-cont">Continue ▸</button>
+      </div>`;
+    $("#btn-cont").addEventListener("click",()=>{
+      if(S.year>=END_AGE_SPAN) return endGame();
+      setStage("idle",{}); renderAll(); drainToasts(); });
+  }
+}
+function tickerHTML(){
+  const T=S.lastTick; if(!T) return "";
+  const items=[["Salary",fmt(T.gross),""],["Business",T.biz?fmt(T.biz):null,""],["Spent","−"+fmt(T.spend).replace("$","$"),"down"],
+    ["Markets",(T.market>=0?"+":"−")+fmt(Math.abs(T.market)).replace("−",""),T.market>=0?"up":"down"],
+    ["Auto-invested",T.auto?fmt(T.auto):null,"gold"]];
+  return `<div class="ticker rise" role="status">${items.filter(i=>i[1]!==null).map(i=>`<div class="ti"><span>${i[0]}</span><b class="${i[2]}">${i[1]}</b></div>`).join("")}
+    ${T.notes.length?`<div class="ti" style="flex-basis:100%"><span>Notes</span><b style="font-family:var(--sans);font-weight:400;color:var(--muted)">${T.notes.join(" · ")}</b></div>`:""}</div>`;
+}
+
+function advance(fast){
+  const rounds = fast?3:1;
+  for(let i=0;i<rounds;i++){
+    tick();
+    if(S.year>=END_AGE_SPAN){ return endGame(); }
+    const trig = CARDS.find(c=>c.trigger&&c.trigger(S)&&canShow(c));
+    if(!fast || trig || i===rounds-1){
+      const card = drawCard();
+      S.seen[card.id]=true; S.lastSeen[card.id]=S.year;
+      S.recent.push(card.id); if(S.recent.length>4) S.recent.shift();
+      setStage("card",{card}); renderAll();
+      return;
+    }
+  }
+}
+function chooseOption(o){
+  const before={w:S.wisdom, wb:S.wellbeing, nw:netWorth()};
+  if(o.wis) addWisdom(o.wis);
+  const text = o.fx ? o.fx() : "";
+  let noteUnlocked=null;
+  if(o.note && unlockNote(o.note)) noteUnlocked=o.note;
+  const deltas=[];
+  const dw=Math.round(S.wisdom-before.w), dwb=Math.round(S.wellbeing-before.wb), dnw=netWorth()-before.nw;
+  if(dnw) deltas.push(`<span class="${dnw>0?"up":"down"}">${dnw>0?"+":"−"}${fmt(Math.abs(dnw))} net worth</span>`);
+  if(dwb) deltas.push(`<span class="${dwb>0?"up":"down"}">${dwb>0?"+":""}${dwb} wellbeing</span>`);
+  if(dw) deltas.push(`<span class="${dw>0?"gold":"down"}">${dw>0?"+":""}${dw} wisdom</span>`);
+  setStage("outcome",{card:stage.card, text, deltas});
+  renderAll();
+  if(noteUnlocked) showNote(noteUnlocked);
+  else drainToasts();
+}
+
+/* ---------------- modals & toasts ---------------- */
+function modal(html, cls){
+  const root=$("#modal-root");
+  root.innerHTML=`<div class="modal-veil" role="dialog" aria-modal="true"><div class="modal ${cls||""} rise">${html}</div></div>`;
+  const veil=root.firstElementChild;
+  veil.addEventListener("click",e=>{if(e.target===veil) closeModal();});
+  const btn=root.querySelector("[data-close]"); if(btn){btn.addEventListener("click",closeModal); btn.focus();}
+  document.addEventListener("keydown",escClose);
+}
+function escClose(e){ if(e.key==="Escape") closeModal(); }
+function closeModal(){ $("#modal-root").innerHTML=""; document.removeEventListener("keydown",escClose); drainToasts(); }
+function showNote(id){
+  const n=NOTES[id];
+  modal(`<div class="eyebrow">Field note ${S.notes.length} of ${NOTE_COUNT} · collected</div>
+    <h3>${n.t}</h3><p class="nbody">${n.b}</p><p class="cite">${n.c}</p>
+    <div class="count"><button class="contbtn" data-close style="margin-top:2px">Noted ▸</button></div>`,"note");
+  renderHUD();
+}
+function showNotebook(){
+  const items = Object.entries(NOTES).map(([id,n])=> S.notes.includes(id)
+    ? `<div class="ni"><h4>${n.t}</h4><p>${n.b}</p><p class="cite">${n.c}</p></div>`
+    : `<div class="ni locked">Not yet collected — some lessons only teach themselves in the field.</div>`).join("");
+  modal(`<div class="eyebrow">Field notes — the research, as collected</div>
+    <div class="notelist">${items}</div>
+    <div class="count" style="margin-top:16px"><button class="contbtn" data-close>Close</button></div>`,"note");
+}
+function toast(msg){
+  const t=document.createElement("div"); t.className="toast rise"; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),3200);
+}
+function drainToasts(){
+  const q=S&&S.toastQ; if(!q||!q.length) return;
+  const item=q.shift();
+  if(item.startsWith("note:")) showNote(item.slice(5));
+}
+
+/* ---------------- endgame ---------------- */
+const GP={ "A+":4.3, "A":4, "B+":3.3, "B":3, "C+":2.3, "C":2, "D":1, "F":0 };
+function gradeOf(v, table){ for(const [g,min] of table) if(v>=min) return g; return "F"; }
+function endGame(){
+  S.over=true;
+  const yearsToFI = S.fiAge!==null ? S.fiAge-S.startAge : null;
+  const freedom = S.fiAge!==null
+    ? gradeOf(-yearsToFI, [["A+",-16],["A",-20],["B+",-24],["B",-28],["C+",-999]])
+    : gradeOf(fiRatio(), [["C+",0.7],["C",0.4],["D",0.15]]);
+  const wealth = gradeOf(netWorth()/(S.year*22000), [["A+",3],["A",2],["B+",1.4],["B",1],["C",0.5],["D",0.2]]);
+  const avgWB = S.wbSum/S.wbN;
+  const wellb = gradeOf(avgWB, [["A+",76],["A",68],["B+",62],["B",55],["C",46],["D",36]]);
+  const wisdom = gradeOf(S.wisdom + S.notes.length*1.5, [["A+",90],["A",75],["B+",62],["B",50],["C",35],["D",20]]);
+  const gpa=(GP[freedom]+GP[wealth]+GP[wellb]+GP[wisdom])/4;
+  let title, sub;
+  if(S.fiAge!==null && gpa>=3.4){ title="Escape <em>Velocity</em>"; sub="Free at "+S.fiAge+" — and, rarer still, in good shape to enjoy it. Money became what the research says it's for: autonomy, security, time, and people."; }
+  else if(S.fiAge!==null && avgWB<52){ title="Rich, and <em>Running on Empty</em>"; sub="The assets cover the life — but the life took the hit. You hit escape velocity at "+S.fiAge+" carrying a wellbeing debt no portfolio can refinance. The Harvard study would like a word."; }
+  else if(S.fiAge!==null){ title="Free, <em>Eventually</em>"; sub="Escape velocity at "+S.fiAge+". Not the fastest route, but you arrived intact — which beats arriving early hollow."; }
+  else if(gpa>=2.6){ title="On the <em>Runway</em>"; sub="Not free yet — but passive income covers "+Math.round(fiRatio()*100)+"% of your life and the machine is built. This trajectory finishes the job; it just needed more runway than one game allowed."; }
+  else if(avgWB>=65){ title="Happy, but <em>Fragile</em>"; sub="A genuinely good life with genuinely thin armor. One bad year still owns you — the research is clear that the buffer and the automation would protect exactly the life you've built."; }
+  else { title="The <em>Treadmill</em>"; sub="Income came in, income went out, and the machine that turns earnings into freedom never quite got built. The good news: every mechanism you needed is in your field notes, and real life grants replays every payday."; }
+  const H=S.history;
+  const crossed = S.fiAge!==null;
+  $("#screen-end").innerHTML=`
+    <div class="endhead rise">
+      <div class="eyebrow">The final reckoning · age ${S.age}</div>
+      <h1>${title}</h1><p>${sub}</p>
+    </div>
+    <div class="chartbox rise">
+      <h2>The crossover</h2>
+      <div class="sub">The whole game in one picture: the year passive income crosses the cost of living is the year work becomes optional.${crossed?"":" Yours hadn't crossed yet — but look at the slope."}</div>
+      <div style="overflow-x:auto"><canvas id="endchart" aria-label="Passive income versus expenses over time"></canvas></div>
+      <div class="legend"><span><i style="background:var(--gold)"></i>Passive income</span><span><i style="background:var(--down)"></i>Cost of living</span><span><i style="background:#5a7d66"></i>Net worth (right scale)</span></div>
+    </div>
+    <div class="grades rise">
+      ${gradeCard(freedom,"Freedom", S.fiAge!==null?`Escape velocity at <span class="num">${S.fiAge}</span> (${yearsToFI} years).`:`Passive income covers <span class="num">${Math.round(fiRatio()*100)}%</span> of your life.`)}
+      ${gradeCard(wealth,"Wealth", `Net worth <span class="num">${fmt(netWorth())}</span> over ${S.year} years.`)}
+      ${gradeCard(wellb,"Wellbeing", `Averaged <span class="num">${Math.round(avgWB)}</span>/100 across the run.`)}
+      ${gradeCard(wisdom,"Wisdom", `<span class="num">${S.notes.length}/${NOTE_COUNT}</span> field notes · score <span class="num">${Math.round(S.wisdom)}</span>.`)}
+    </div>
+    <div class="endnotes rise">
+      <h2>What the research would tell you</h2>
+      <p>${endAdvice(freedom,wealth,wellb,wisdom)}</p>
+    </div>
+    <div class="again">
+      <button class="advance" id="btn-again">Play a different life ▸</button>
+      <button class="ghostbtn" id="btn-endnotes">Review your field notes (${S.notes.length}/${NOTE_COUNT})</button>
+    </div>`;
+  showScreen("end");
+  $("#btn-again").addEventListener("click",()=>{ showScreen("start"); });
+  $("#btn-endnotes").addEventListener("click",showNotebook);
+  drawEndChart();
+}
+function gradeCard(g,name,desc){ return `<div class="grade"><div class="g">${g}</div><h3>${name}</h3><p>${desc}</p></div>`; }
+function endAdvice(f,w,wb,wis){
+  const bits=[];
+  if(GP[f]>=3.3) bits.push("Freedom came from the boring trio the literature keeps pointing at — automation, low fees, and staying in the market through weather.");
+  else bits.push("Freedom lagged for the usual documented reasons: money that wasn't automated leaked, and money that wasn't invested never compounded. Thaler's fix still stands — make the saving decision once, then never again.");
+  if(GP[wb]<2.5) bits.push("The wellbeing grade is the one the research says to take most seriously: the 85-year Harvard data puts relationships and health above every financial line item, and burnout always invoices eventually.");
+  else if(GP[wb]>=3.3) bits.push("You spent on experiences, people, and time — the three purchases the happiness literature says don't wear off.");
+  if(GP[wis]>=3.3) bits.push("And you collected the judgment to keep it: the mindset was the real asset all along — the portfolio was just where it showed up.");
+  else bits.push("The missing field notes are the cheap edge: every one is a documented, repeatable result — the kind of knowledge that pays compound interest for free.");
+  return bits.join(" ");
+}
+function drawEndChart(){
+  const c=$("#endchart"); if(!c)return;
+  const W=Math.max(620, Math.min(920, c.parentElement.clientWidth||700)), Hh=300;
+  c.width=W*2; c.height=Hh*2; c.style.width=W+"px"; c.style.height=Hh+"px";
+  const x=c.getContext("2d"); x.scale(2,2);
+  const H=S.history;
+  const P={l:56,r:56,t:16,b:30};
+  const maxL=Math.max(...H.map(h=>Math.max(h.passive,h.exp)))*1.15;
+  const maxR=Math.max(1000,...H.map(h=>h.nw))*1.1, minR=Math.min(0,...H.map(h=>h.nw));
+  const px=i=>P.l+(W-P.l-P.r)*i/(H.length-1);
+  const pyL=v=>Hh-P.b-(Hh-P.t-P.b)*v/maxL;
+  const pyR=v=>Hh-P.b-(Hh-P.t-P.b)*(v-minR)/(maxR-minR);
+  // grid
+  x.strokeStyle="#2e3a32"; x.fillStyle="#6f7b70"; x.font="10px system-ui"; x.textAlign="right";
+  for(let i=0;i<=4;i++){const v=maxL*i/4, y=pyL(v);
+    x.beginPath();x.moveTo(P.l,y);x.lineTo(W-P.r,y);x.stroke();
+    x.fillText(fmtK(v), P.l-6, y+3);}
+  x.textAlign="left";
+  for(let i=0;i<=4;i++){const v=minR+(maxR-minR)*i/4; x.fillText(fmtK(v), W-P.r+6, pyR(v)+3);}
+  x.textAlign="center";
+  for(let i=0;i<H.length;i+=Math.ceil(H.length/7)) x.fillText(String(H[i].age), px(i), Hh-10);
+  x.textAlign="right"; x.fillText("age →", W-P.r, Hh-10); x.textAlign="center";
+  // net worth area (right axis)
+  x.beginPath(); x.moveTo(px(0),pyR(Math.max(0,minR)));
+  H.forEach((h,i)=>x.lineTo(px(i),pyR(h.nw))); x.lineTo(px(H.length-1),pyR(Math.max(0,minR))); x.closePath();
+  x.fillStyle="rgba(90,125,102,.16)"; x.fill();
+  x.strokeStyle="#5a7d66"; x.lineWidth=1.4; x.beginPath();
+  H.forEach((h,i)=>{i?x.lineTo(px(i),pyR(h.nw)):x.moveTo(px(i),pyR(h.nw));}); x.stroke();
+  // expenses
+  x.strokeStyle="#d08770"; x.lineWidth=1.8; x.beginPath();
+  H.forEach((h,i)=>{i?x.lineTo(px(i),pyL(h.exp)):x.moveTo(px(i),pyL(h.exp));}); x.stroke();
+  // passive
+  x.strokeStyle="#d9a946"; x.lineWidth=2.4; x.beginPath();
+  H.forEach((h,i)=>{i?x.lineTo(px(i),pyL(h.passive)):x.moveTo(px(i),pyL(h.passive));}); x.stroke();
+  // crossover marker
+  const ci=H.findIndex(h=>h.passive>=h.exp && h.exp>0);
+  if(ci>0){ x.fillStyle="#d9a946"; x.beginPath(); x.arc(px(ci),pyL(H[ci].passive),4.5,0,7); x.fill();
+    x.fillStyle="#e9e4d6"; x.font="11px Georgia,serif"; x.textAlign="center";
+    x.fillText("the crossover — age "+H[ci].age, px(ci), pyL(H[ci].passive)-12); }
+  // endpoint dots
+  const le=H[H.length-1];
+  [["#d9a946",pyL(le.passive)],["#d08770",pyL(le.exp)]].forEach(([col,y])=>{x.fillStyle=col;x.beginPath();x.arc(px(H.length-1),y,3,0,7);x.fill();});
+}
+
+/* ---------------- boot ---------------- */
+function boot(){
+  const box=$("#archetypes");
+  box.innerHTML = Object.values(ARCHETYPES).map(a=>`
+    <button class="arch" data-arch="${a.key}">
+      <span class="age">Age ${a.age}</span><h3>${a.name}</h3>
+      <p>${a.blurb}</p><span class="stats num">${a.stats}</span>
+    </button>`).join("");
+  box.querySelectorAll("[data-arch]").forEach(b=>b.addEventListener("click",()=>newGame(b.dataset.arch)));
+  $("#btn-notes").addEventListener("click",showNotebook);
+}
+boot();
+</script>
+</body>
+</html>
