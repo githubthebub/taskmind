@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jhana Guide</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --bg: #0b0f14;
+    --panel: #121822;
+    --ink: #cfd8e3;
+    --dim: #6b7a8d;
+    --accent: #7fb8a4;
+    --warm: #d4a86a;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: radial-gradient(1200px 800px at 50% -10%, #101826 0%, var(--bg) 60%);
+    color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 2rem 1rem 4rem;
+  }
+  h1 { font-weight: 300; letter-spacing: 0.3em; font-size: 1.1rem; color: var(--dim); text-transform: uppercase; }
+  #phase {
+    font-size: 1.4rem; font-weight: 300; letter-spacing: 0.08em; color: var(--accent);
+    min-height: 2rem; text-align: center; transition: opacity 1s;
+  }
+  #orb-wrap { position: relative; width: 260px; height: 260px; margin: 1.5rem 0; }
+  #orb {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #2b4b57, #17242e 70%);
+    box-shadow: 0 0 60px 0 rgba(127, 184, 164, 0.12);
+    transform: scale(0.7);
+    transition: transform 0.2s linear, box-shadow 2s;
+  }
+  #cue {
+    max-width: 34rem; min-height: 5.5rem; text-align: center;
+    font-size: 1.05rem; font-weight: 300; color: var(--ink);
+    opacity: 0; transition: opacity 2.5s;
+    padding: 0 1rem;
+  }
+  #cue.visible { opacity: 1; }
+  .panel {
+    background: var(--panel); border: 1px solid #1d2836; border-radius: 12px;
+    padding: 1rem 1.25rem; margin-top: 1.25rem; width: min(36rem, 100%);
+  }
+  .panel h2 { margin: 0 0 0.75rem; font-size: 0.75rem; letter-spacing: 0.2em; color: var(--dim); text-transform: uppercase; font-weight: 500; }
+  .row { display: flex; align-items: center; gap: 0.75rem; margin: 0.4rem 0; }
+  .row label { flex: 0 0 8.5rem; font-size: 0.85rem; color: var(--dim); }
+  .row input[type=range] { flex: 1; accent-color: var(--accent); }
+  .bar-track { flex: 1; height: 6px; border-radius: 3px; background: #1c2634; overflow: hidden; }
+  .bar { height: 100%; width: 0; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+  .bar.warn { background: var(--warm); }
+  button {
+    background: #1a2635; color: var(--ink); border: 1px solid #2a3a50;
+    border-radius: 8px; padding: 0.55rem 1.1rem; font-size: 0.9rem; cursor: pointer;
+  }
+  button:hover { background: #223349; }
+  button.primary { background: #234339; border-color: var(--accent); }
+  .btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .hint { font-size: 0.75rem; color: var(--dim); margin-top: 0.5rem; }
+  #holding { color: var(--warm); font-size: 0.8rem; min-height: 1.2rem; text-align: center; }
+</style>
+</head>
+<body>
+  <h1>Jhana Guide</h1>
+  <div id="phase">Press Begin Session</div>
+  <div id="orb-wrap"><div id="orb"></div></div>
+  <div id="cue"></div>
+  <div id="holding"></div>
+
+  <div class="panel">
+    <h2>Session</h2>
+    <div class="btn-row">
+      <button id="start" class="primary">Begin Session</button>
+      <button id="settled" disabled>I'm settled — begin</button>
+      <button id="finish" disabled>End gently</button>
+      <button id="voice">Voice: on</button>
+    </div>
+    <div class="hint">Tap <b>space</b> (or the orb) at the start of each in-breath and out-breath so the engine can hear your rhythm.</div>
+  </div>
+
+  <div class="panel">
+    <h2>Check-in (how is it right now?)</h2>
+    <div class="row"><label>Focus</label><input type="range" id="r-focus" min="0" max="100" value="40"></div>
+    <div class="row"><label>Breath pleasantness</label><input type="range" id="r-pleasant" min="0" max="100" value="20"></div>
+    <div class="row"><label>Piti (energy/tingle)</label><input type="range" id="r-piti" min="0" max="100" value="0"></div>
+    <div class="row"><label>Sukha (ease/bliss)</label><input type="range" id="r-sukha" min="0" max="100" value="0"></div>
+    <div class="row"><label>Striving/effort</label><input type="range" id="r-effort" min="0" max="100" value="30"></div>
+    <div class="btn-row"><button id="report">Submit check-in</button></div>
+    <div class="hint">Check in occasionally — a few times per phase is plenty. Between check-ins the engine interpolates.</div>
+  </div>
+
+  <div class="panel">
+    <h2>Engine view</h2>
+    <div class="row"><label>Stability</label><div class="bar-track"><div class="bar" id="b-stability"></div></div></div>
+    <div class="row"><label>Pleasantness</label><div class="bar-track"><div class="bar" id="b-pleasantness"></div></div></div>
+    <div class="row"><label>Piti</label><div class="bar-track"><div class="bar" id="b-piti"></div></div></div>
+    <div class="row"><label>Sukha</label><div class="bar-track"><div class="bar" id="b-sukha"></div></div></div>
+    <div class="row"><label>Effort</label><div class="bar-track"><div class="bar warn" id="b-effort"></div></div></div>
+    <div class="row"><label>Grasping risk</label><div class="bar-track"><div class="bar warn" id="b-grasping"></div></div></div>
+    <div class="row"><label>Breath</label><span id="breath-info" style="font-size:0.8rem;color:var(--dim)">–</span></div>
+  </div>
+
+<script type="module">
+import { MeditationSession, Phase } from '../dist/index.js';
+
+const $ = (id) => document.getElementById(id);
+const PHASE_LABEL = {
+  [Phase.Settling]: 'Settling',
+  [Phase.Access]: 'Access concentration · breath at the nostrils',
+  [Phase.PitiCultivation]: 'Whole-body breath · inviting piti',
+  [Phase.Transition]: 'Turning toward the pleasure',
+  [Phase.Jhana1]: 'First jhana',
+  [Phase.Jhana2]: 'Second jhana',
+  [Phase.Emergence]: 'Emerging',
+};
+
+let session = null;
+let voiceOn = true;
+let nextMark = 'inhaleStart';
+let orbScale = 0.7;
+let orbTarget = 0.7;
+
+function speak(cue) {
+  if (!voiceOn || !('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(cue.text);
+  u.rate = 0.82;
+  u.pitch = 0.9;
+  u.volume = Math.max(0.25, cue.intensity);
+  speechSynthesis.speak(u);
+}
+
+function showCue(cue) {
+  const el = $('cue');
+  el.classList.remove('visible');
+  // Force a reflow so the fade restarts even for back-to-back cues.
+  void el.offsetWidth;
+  el.textContent = cue.text;
+  el.style.opacity = '';
+  el.classList.add('visible');
+  speak(cue);
+}
+
+function onEvent(e) {
+  if (e.type === 'cue') showCue(e.cue);
+  if (e.type === 'phaseChange') {
+    $('phase').textContent = PHASE_LABEL[e.change.to];
+  }
+  if (e.type === 'signals') {
+    const s = e.signals;
+    $('b-stability').style.width = `${s.stability * 100}%`;
+    $('b-pleasantness').style.width = `${s.pleasantness * 100}%`;
+    $('b-piti').style.width = `${s.piti * 100}%`;
+    $('b-sukha').style.width = `${s.sukha * 100}%`;
+    $('b-effort').style.width = `${s.effort * 100}%`;
+    $('b-grasping').style.width = `${s.graspingRisk * 100}%`;
+    $('breath-info').textContent = s.breath.warmedUp
+      ? `${s.breath.bpm.toFixed(1)} bpm · regularity ${(s.breath.regularity * 100).toFixed(0)}%`
+      : 'listening for your rhythm…';
+    $('holding').textContent = s.graspingRisk >= 0.5
+      ? '· softening — let it come to you ·'
+      : '';
+    // The orb glows with piti.
+    $('orb').style.boxShadow =
+      `0 0 ${60 + s.piti * 120}px ${s.piti * 10}px rgba(127,184,164,${0.12 + s.piti * 0.35})`;
+  }
+}
+
+function breathMark() {
+  if (!session) return;
+  session.breathMark({ t: performance.now(), kind: nextMark });
+  orbTarget = nextMark === 'inhaleStart' ? 1.0 : 0.7;
+  nextMark = nextMark === 'inhaleStart' ? 'exhaleStart' : 'inhaleStart';
+}
+
+$('start').addEventListener('click', () => {
+  session = new MeditationSession(performance.now(), {
+    listener: onEvent,
+    sessionBudgetMs: 45 * 60 * 1000,
+  });
+  $('start').disabled = true;
+  $('settled').disabled = false;
+  $('finish').disabled = false;
+  $('phase').textContent = PHASE_LABEL[Phase.Settling];
+});
+
+$('settled').addEventListener('click', () => {
+  session?.begin(performance.now());
+  $('settled').disabled = true;
+});
+
+$('finish').addEventListener('click', () => {
+  session?.end(performance.now());
+  $('finish').disabled = true;
+  $('settled').disabled = true;
+});
+
+$('voice').addEventListener('click', () => {
+  voiceOn = !voiceOn;
+  $('voice').textContent = `Voice: ${voiceOn ? 'on' : 'off'}`;
+  if (!voiceOn && 'speechSynthesis' in window) speechSynthesis.cancel();
+});
+
+$('report').addEventListener('click', () => {
+  if (!session) return;
+  session.selfReport(performance.now(), {
+    focus: $('r-focus').value / 100,
+    pleasantness: $('r-pleasant').value / 100,
+    piti: $('r-piti').value / 100,
+    sukha: $('r-sukha').value / 100,
+    effort: $('r-effort').value / 100,
+  });
+});
+
+$('orb-wrap').addEventListener('pointerdown', breathMark);
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !(e.target instanceof HTMLInputElement)) {
+    e.preventDefault();
+    breathMark();
+  }
+});
+
+function frame() {
+  if (session) session.tick(performance.now());
+  orbScale += (orbTarget - orbScale) * 0.03;
+  $('orb').style.transform = `scale(${orbScale.toFixed(3)})`;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
