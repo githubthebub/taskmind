@@ -1,0 +1,5 @@
+# Captured leads are user data — never commit them
+data/
+
+node_modules/
+.DS_Store

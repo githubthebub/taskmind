@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TaskMind — Discover Your Productivity Style</title>
+<meta name="description" content="Take the free 2-minute quiz to discover your productivity style, and get the Feel-Good Productivity Starter Kit — templates and systems to get more done without burning out.">
+<style>
+  :root {
+    --ink: #1a1d29;
+    --ink-soft: #4b5065;
+    --accent: #4f5dff;
+    --accent-dark: #3a46d4;
+    --warm: #fff8ef;
+    --card: #ffffff;
+    --line: #e7e6ef;
+    --ok: #1b9e6e;
+    --radius: 16px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    color: var(--ink);
+    background: var(--warm);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+  header { padding: 20px 0; }
+  .logo { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.02em; }
+  .logo span { color: var(--accent); }
+
+  .hero { padding: 56px 0 40px; text-align: center; }
+  .eyebrow {
+    display: inline-block; background: #eef0ff; color: var(--accent-dark);
+    font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 99px; margin-bottom: 20px;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 16px; }
+  h1 em { font-style: normal; color: var(--accent); }
+  .sub { font-size: 1.15rem; color: var(--ink-soft); max-width: 560px; margin: 0 auto 28px; }
+  .btn {
+    display: inline-block; background: var(--accent); color: #fff; border: none; cursor: pointer;
+    font-size: 1.05rem; font-weight: 700; padding: 15px 32px; border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(79, 93, 255, 0.3); transition: transform .12s, background .12s;
+  }
+  .btn:hover { background: var(--accent-dark); transform: translateY(-1px); }
+  .btn.secondary { background: #fff; color: var(--accent-dark); border: 2px solid var(--accent); box-shadow: none; }
+  .tiny { font-size: 0.85rem; color: var(--ink-soft); margin-top: 12px; }
+
+  .proof { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; padding: 8px 0 48px; color: var(--ink-soft); font-size: 0.95rem; }
+  .proof b { color: var(--ink); }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 36px; box-shadow: 0 4px 24px rgba(26, 29, 41, 0.05); margin-bottom: 28px;
+  }
+
+  /* Quiz */
+  .progress { height: 6px; background: var(--line); border-radius: 99px; margin-bottom: 24px; overflow: hidden; }
+  .progress > div { height: 100%; background: var(--accent); border-radius: 99px; width: 0; transition: width .3s; }
+  .q-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 18px; letter-spacing: -0.01em; }
+  .opt {
+    display: block; width: 100%; text-align: left; background: #fafafe; border: 2px solid var(--line);
+    border-radius: 12px; padding: 14px 18px; margin-bottom: 10px; font-size: 1rem; cursor: pointer;
+    transition: border-color .12s, background .12s;
+  }
+  .opt:hover { border-color: var(--accent); background: #f2f4ff; }
+
+  /* Email gate + forms */
+  .field { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .field input {
+    flex: 1 1 220px; padding: 14px 16px; font-size: 1rem; border: 2px solid var(--line);
+    border-radius: 12px; outline: none;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .msg { margin-top: 12px; font-weight: 600; font-size: 0.95rem; }
+  .msg.ok { color: var(--ok); }
+  .msg.err { color: #c62842; }
+
+  .result-badge { font-size: 2.6rem; }
+  .hidden { display: none; }
+
+  /* Sections */
+  section { padding: 8px 0 32px; }
+  h2 { font-size: 1.6rem; letter-spacing: -0.02em; margin-bottom: 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; margin-top: 20px; }
+  .grid .card { margin: 0; padding: 24px; }
+  .grid h3 { font-size: 1.05rem; margin: 10px 0 6px; }
+  .grid p { color: var(--ink-soft); font-size: 0.95rem; }
+  .emoji { font-size: 1.8rem; }
+
+  blockquote {
+    border-left: 4px solid var(--accent); padding: 4px 0 4px 18px; color: var(--ink-soft);
+    font-size: 1.05rem; margin-top: 16px;
+  }
+  blockquote cite { display: block; margin-top: 8px; font-style: normal; font-weight: 700; color: var(--ink); font-size: 0.9rem; }
+
+  footer { text-align: center; padding: 32px 0 48px; color: var(--ink-soft); font-size: 0.9rem; }
+  footer a { color: var(--accent-dark); }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="logo">Task<span>Mind</span></div>
+</header>
+
+<!-- ============ HERO ============ -->
+<div class="hero wrap">
+  <div class="eyebrow">Free 2-minute quiz</div>
+  <h1>Discover your <em>productivity style</em> — and stop fighting it</h1>
+  <p class="sub">Most productivity advice fails because it's built for someone else's brain. Answer 5 quick questions and get a personalised system — plus the free <b>Feel-Good Productivity Starter Kit</b>.</p>
+  <button class="btn" onclick="startQuiz()">Take the free quiz →</button>
+  <p class="tiny">No spam, ever. Unsubscribe with one click.</p>
+</div>
+
+<div class="proof wrap">
+  <div>⭐️ <b>4.9/5</b> from early users</div>
+  <div>⏱️ Takes <b>under 2 minutes</b></div>
+  <div>📬 Join <b>the TaskMind Weekly</b> readers</div>
+</div>
+
+<!-- ============ QUIZ ============ -->
+<div class="wrap">
+  <div class="card hidden" id="quiz">
+    <div class="progress"><div id="bar"></div></div>
+    <div id="quiz-body"></div>
+  </div>
+
+  <!-- Email gate shown after the last question -->
+  <div class="card hidden" id="gate">
+    <div class="result-badge" id="gate-emoji">✨</div>
+    <h2>Your result is ready!</h2>
+    <p style="color:var(--ink-soft)">Enter your email and we'll show your productivity style right away — and send you the <b>Feel-Good Productivity Starter Kit</b> (worth $29, free today) matched to your result.</p>
+    <form class="field" id="gate-form">
+      <input type="text" id="gate-name" placeholder="First name (optional)" autocomplete="given-name">
+      <input type="email" id="gate-email" placeholder="you@example.com" required autocomplete="email">
+      <button class="btn" type="submit">Show my result →</button>
+    </form>
+    <div class="msg" id="gate-msg"></div>
+    <p class="tiny">We'll also add you to TaskMind Weekly — one useful email a week. Unsubscribe anytime.</p>
+  </div>
+
+  <!-- Result -->
+  <div class="card hidden" id="result">
+    <div class="result-badge" id="result-emoji"></div>
+    <h2 id="result-title"></h2>
+    <p id="result-desc" style="color:var(--ink-soft); margin-top:8px;"></p>
+    <p style="margin-top:16px;"><b>Your next step:</b> <span id="result-tip"></span></p>
+    <div style="margin-top:22px;">
+      <a class="btn" href="/starter-kit.md" download>Download your Starter Kit 📥</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LEAD MAGNET ============ -->
+<section class="wrap">
+  <h2>What's inside the free Starter Kit</h2>
+  <p style="color:var(--ink-soft)">Give value first — that's the whole philosophy. This kit is genuinely useful even if you never buy anything from us.</p>
+  <div class="grid">
+    <div class="card"><div class="emoji">🗓️</div><h3>The Weekly Reset template</h3><p>A 20-minute Sunday ritual that plans your week around energy, not just time.</p></div>
+    <div class="card"><div class="emoji">🐸</div><h3>Eat-the-frog daily planner</h3><p>A one-page planner that forces the one task that actually matters to the top.</p></div>
+    <div class="card"><div class="emoji">🔋</div><h3>Energy audit worksheet</h3><p>Find which tasks charge you and which drain you — then redesign your calendar.</p></div>
+    <div class="card"><div class="emoji">📵</div><h3>Distraction firewall checklist</h3><p>The 10-step setup that makes deep work the default on your phone and laptop.</p></div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIAL ============ -->
+<section class="wrap">
+  <div class="card">
+    <blockquote>
+      "I've read every productivity book out there. The quiz told me in two minutes what took me years to figure out — I'm an Architect, and forcing myself to be spontaneous was the whole problem."
+      <cite>— Priya S., early TaskMind user</cite>
+    </blockquote>
+  </div>
+</section>
+
+<!-- ============ NEWSLETTER (secondary capture) ============ -->
+<section class="wrap">
+  <div class="card" style="text-align:center;">
+    <h2>Not a quiz person?</h2>
+    <p style="color:var(--ink-soft); max-width:520px; margin:0 auto;">Just grab <b>TaskMind Weekly</b> — one short email every Sunday with a practical productivity experiment to try that week.</p>
+    <form class="field" id="nl-form" style="max-width:520px; margin:18px auto 0;">
+      <input type="email" id="nl-email" placeholder="you@example.com" required autocomplete="email">
+      <button class="btn secondary" type="submit">Subscribe free</button>
+    </form>
+    <div class="msg" id="nl-msg"></div>
+  </div>
+</section>
+
+<footer class="wrap">
+  TaskMind · Made with care · <a href="/api/leads.csv">Export leads (admin)</a>
+</footer>
+
+<script>
+// ---------- Quiz definition ----------
+const QUESTIONS = [
+  { q: "It's 9am with a free day ahead. What do you actually do?",
+    opts: [
+      ["Open my planned to-do list and start at the top", "architect"],
+      ["Dive into whatever feels most exciting right now", "explorer"],
+      ["Check messages first — people might need me", "connector"],
+      ["Work on my long-term project; the rest can wait", "visionary"],
+    ]},
+  { q: "Your to-do list is overflowing. Your instinct is to…",
+    opts: [
+      ["Reorganise it into a proper system", "architect"],
+      ["Ignore it and follow my energy", "explorer"],
+      ["Ask someone to help me triage", "connector"],
+      ["Delete everything not tied to my big goal", "visionary"],
+    ]},
+  { q: "What derails you most often?",
+    opts: [
+      ["Unexpected changes to my plan", "architect"],
+      ["Boredom with repetitive tasks", "explorer"],
+      ["Other people's requests and meetings", "connector"],
+      ["Day-to-day admin that feels beneath the mission", "visionary"],
+    ]},
+  { q: "Your ideal work session looks like…",
+    opts: [
+      ["Time-blocked calendar, everything scheduled", "architect"],
+      ["A blank morning and freedom to follow curiosity", "explorer"],
+      ["Co-working with a friend or accountability partner", "connector"],
+      ["A deep, uninterrupted dive on one meaningful thing", "visionary"],
+    ]},
+  { q: "Which compliment lands best?",
+    opts: [
+      ["“You're so organised.”", "architect"],
+      ["“You're so creative.”", "explorer"],
+      ["“You're so reliable — everyone counts on you.”", "connector"],
+      ["“You think so big.”", "visionary"],
+    ]},
+];
+
+const RESULTS = {
+  architect: { emoji: "📐", title: "The Architect",
+    desc: "You thrive on structure and hate surprises. Your superpower is systems — your trap is over-planning instead of doing.",
+    tip: "Use the Weekly Reset template, but leave 20% of your calendar deliberately empty as a buffer." },
+  explorer: { emoji: "🧭", title: "The Explorer",
+    desc: "You run on curiosity and momentum. Your superpower is creative bursts — your trap is a graveyard of half-finished projects.",
+    tip: "Use the Eat-the-frog planner: one must-finish task per day before you chase anything new." },
+  connector: { emoji: "🤝", title: "The Connector",
+    desc: "You're energised by people and hate letting anyone down. Your superpower is collaboration — your trap is living in your inbox.",
+    tip: "Run the Distraction Firewall checklist and batch all messages into two windows a day." },
+  visionary: { emoji: "🔭", title: "The Visionary",
+    desc: "You think in years, not days. Your superpower is direction — your trap is drowning in small stuff that 'doesn't matter'.",
+    tip: "Do the Energy Audit, then schedule one daily 'boring block' so admin never piles up into a crisis." },
+};
+
+// ---------- Quiz engine ----------
+let step = 0;
+const scores = { architect: 0, explorer: 0, connector: 0, visionary: 0 };
+
+function startQuiz() {
+  document.getElementById('quiz').classList.remove('hidden');
+  document.getElementById('quiz').scrollIntoView({ behavior: 'smooth' });
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const { q, opts } = QUESTIONS[step];
+  document.getElementById('bar').style.width = (step / QUESTIONS.length) * 100 + '%';
+  document.getElementById('quiz-body').innerHTML =
+    '<div class="q-title">' + (step + 1) + '. ' + q + '</div>' +
+    opts.map(([label, key], i) =>
+      '<button class="opt" onclick="answer(\'' + key + '\')">' + label + '</button>'
+    ).join('');
+}
+
+function answer(key) {
+  scores[key]++;
+  step++;
+  if (step < QUESTIONS.length) return renderQuestion();
+  document.getElementById('bar').style.width = '100%';
+  document.getElementById('quiz').classList.add('hidden');
+  document.getElementById('gate').classList.remove('hidden');
+  document.getElementById('gate').scrollIntoView({ behavior: 'smooth' });
+}
+
+function topResult() {
+  return Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+// ---------- Lead capture ----------
+async function capture(payload) {
+  const res = await fetch('/api/leads', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) throw new Error(data.error || 'Something went wrong — please try again.');
+}
+
+document.getElementById('gate-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('gate-msg');
+  msg.className = 'msg';
+  msg.textContent = 'Saving…';
+  const key = topResult();
+  try {
+    await capture({
+      email: document.getElementById('gate-email').value,
+      name: document.getElementById('gate-name').value,
+      source: 'quiz',
+      quizResult: key,
+    });
+    const r = RESULTS[key];
+    document.getElementById('gate').classList.add('hidden');
+    document.getElementById('result-emoji').textContent = r.emoji;
+    document.getElementById('result-title').textContent = 'You’re ' + r.title;
+    document.getElementById('result-desc').textContent = r.desc;
+    document.getElementById('result-tip').textContent = r.tip;
+    document.getElementById('result').classList.remove('hidden');
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+  } catch (err) {
+    msg.className = 'msg err';
+    msg.textContent = err.message;
+  }
+});
+
+document.getElementById('nl-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('nl-msg');
+  msg.className = 'msg';
+  msg.textContent = 'Saving…';
+  try {
+    await capture({ email: document.getElementById('nl-email').value, source: 'newsletter' });
+    msg.className = 'msg ok';
+    msg.textContent = '🎉 You’re in! Check your inbox on Sunday.';
+    document.getElementById('nl-form').reset();
+  } catch (err) {
+    msg.className = 'msg err';
+    msg.textContent = err.message;
+  }
+});
+</script>
+</body>
+</html>
