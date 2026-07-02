@@ -524,6 +524,28 @@
   };
 
   /* =========================================================
+     RESCUE — never planned; inserted when the traveler taps
+     "too much". Straight back to orientation and ground.
+     ========================================================= */
+
+  P.rescue = {
+    id: "rescue",
+    name: "Solid Ground",
+    phase: ["rescue"],
+    effects: { energy: -1, ease: 1, ground: 3, clarity: 1 },
+    min: 60, max: 180,
+    build(dur) {
+      return fill([
+        { dur: 12, text: "Okay — stepping back. Nothing has gone wrong. Open your eyes if they were closed." },
+        { dur: 16, text: "Look around the room, slowly. Find three things and silently name them. Just their names." },
+        { dur: 14, text: "Press your feet into the floor. Feel the chair or the ground holding your weight. You're here." },
+        { dur: 14, text: "This is you regulating in real time — noticing an edge and choosing ground. That's the skill, working." },
+        { dur: 12, text: "Whenever you're ready — and only then — we'll continue, more gently." },
+      ], dur);
+    },
+  };
+
+  /* =========================================================
      INTEGRATION — always the final move
      ========================================================= */
 

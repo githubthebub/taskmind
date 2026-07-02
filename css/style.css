@@ -384,6 +384,21 @@ input[type="range"]::-moz-range-thumb {
 }
 #guidance-text.visible { opacity: 1; }
 
+.lifeline {
+  align-self: center;
+  background: transparent;
+  border: none;
+  color: var(--ink-faint);
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  padding: 8px 16px;
+  margin-bottom: 6px;
+  border-bottom: 1px dashed transparent;
+  transition: all 0.3s ease;
+}
+.lifeline:hover { color: var(--amber); border-bottom-color: rgba(217,165,102,0.4); }
+
 .session-controls {
   display: flex; justify-content: center; align-items: center; gap: 14px;
   padding: 0 24px 34px;
@@ -449,6 +464,14 @@ input[type="range"]::-moz-range-thumb {
 .log-desc small { display: block; color: var(--ink-dim); }
 .log-delta { font-variant-numeric: tabular-nums; color: var(--accent-bright); font-size: 0.85rem; text-align: right; }
 .log-empty { color: var(--ink-dim); text-align: center; padding: 30px 0; }
+.log-insights {
+  color: var(--ink-dim);
+  font-size: 0.86rem;
+  padding-bottom: 16px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.log-insights strong { color: var(--accent-bright); }
 
 @media (max-width: 640px) {
   .screen { padding: 28px 16px 40px; }

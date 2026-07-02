@@ -455,6 +455,26 @@
   });
   $("#ctl-exit").addEventListener("click", finishSession);
 
+  /* the lifeline: bail out of whatever is happening into eyes-open
+     grounding, then re-enter the interrupted practice more gently */
+  $("#ctl-lifeline").addEventListener("click", () => {
+    if (Player.finished) return;
+    const cur = Player.items[Player.itemIndex];
+    if (!cur || cur.practice.id === "rescue") return;
+    const done = stepDoneSec() + Player.stepElapsed;
+    const insert = [{ practice: Attune.PRACTICES.rescue, dur: 95, phase: cur.phase }];
+    // revisit the interrupted practice only if most of it remains
+    if (cur.dur - done > cur.dur * 0.4 && cur.dur - done > 60) {
+      insert.push({ ...cur, dur: Math.round(cur.dur - done) });
+    }
+    Player.items.splice(Player.itemIndex + 1, 0, ...insert);
+    cur.dur = Math.round(done);   // the interrupted item ends here — keep the clock honest
+    Player.doneSec += done;
+    Attune.Audio.hush();
+    if (!Player.running) resumePlayer();
+    nextItem();
+  });
+
   function finishSession() {
     if (Player.finished) return;
     Player.finished = true;
@@ -550,7 +570,24 @@
       wrap.innerHTML = `<p class="log-empty">No journeys yet. The map is waiting.</p>`;
       return;
     }
-    wrap.innerHTML = list.map((j) => {
+    // insights across all journeys
+    const totalMin = list.reduce((s, j) => s + (j.minutes || 0), 0);
+    const coverages = list.map((j) => {
+      const b = Attune.vecDist(j.before, j.target);
+      const a = Attune.vecDist(j.after, j.target);
+      return b > 0 ? Math.max(0, (b - a) / b) : 1;
+    });
+    const avgCov = Math.round((coverages.reduce((s, c) => s + c, 0) / coverages.length) * 100);
+    const destCount = {};
+    for (const j of list) if (j.presetId) destCount[j.presetId] = (destCount[j.presetId] || 0) + 1;
+    const topDest = Object.entries(destCount).sort((a, b) => b[1] - a[1])[0];
+    const topName = topDest ? (Attune.PRESETS.find((p) => p.id === topDest[0]) || {}).name : null;
+    const insights = `<p class="log-insights">
+      ${list.length} journey${list.length === 1 ? "" : "s"} · ${totalMin} minutes of practice ·
+      on average you cover <strong>${avgCov}%</strong> of the distance to the state you choose${
+        topName ? ` · your most-traveled destination is <strong>${topName}</strong>` : ""}.
+    </p>`;
+    wrap.innerHTML = insights + list.map((j) => {
       const d = new Date(j.at);
       const date = d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) +
         " · " + d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
