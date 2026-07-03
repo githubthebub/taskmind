@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080b12">
 <title>Cybernetic Jhāna Engine — offline biofeedback</title>
-<meta name="description" content="Offline camera + mic biofeedback: rPPG pulse, FFT, breath-key game, aum/breath mic detection, confidence bars.">
+<meta name="description" content="Offline camera + mic biofeedback: rPPG pulse, FFT, breath-key game, responsive aum/inhale/hold/exhale mic detection, confidence bars.">
 <style>html,body{margin:0;padding:0;background:#080b12}</style>
 </head>
 <body>
@@ -99,6 +99,8 @@
   #cje .mmeter i{display:block;height:100%;width:0;border-radius:3px;background:var(--focus);transition:width .08s linear}
   #cje .mdet{font:600 12px/1 var(--mono);color:var(--ink-dim);min-width:96px;text-align:right}
   #cje .mdet.aum{color:var(--focus)} #cje .mdet.breath{color:var(--calm)}
+  #cje .msens{display:flex;align-items:center;gap:6px;font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim)}
+  #cje .msens input[type=range]{width:72px}
   #cje .modes{margin-top:10px}
   #cje .pacewrap{gap:10px}
   #cje input[type=range]{accent-color:var(--calm);width:120px;vertical-align:middle}
@@ -231,6 +233,7 @@
       <span class="mlabel">mic</span>
       <div class="mmeter"><i id="micLevel"></i></div>
       <span class="mdet" id="micDet">listening…</span>
+      <label class="msens">sens<input type="range" id="micSens" min="1" max="10" step="1" value="7"></label>
     </div>
     <div class="grsa" id="grsa">Respiratory coupling (RSA): HR should rise on your inhale, fall on your exhale. When your inputs track that swing, confidence climbs.</div>
   </div>
@@ -732,8 +735,10 @@
     var src=E.ac.createMediaStreamSource(stream);
     var an=E.ac.createAnalyser(); an.fftSize=2048; an.smoothingTimeConstant=0.5;
     src.connect(an); // analyser only — never routed to output (no feedback)
+    var sensEl=$("micSens");
     E.mic={ stream:stream, src:src, an:an, td:new Float32Array(an.fftSize), fd:new Float32Array(an.frequencyBinCount),
-            floor:0.008, voiceFrames:0, breathHigh:false, lastAum:0 };
+            floor:0.005, env:0, voiceFrames:0, lastAum:0,
+            phase:null, airflow:false, lastEdge:0, brightRef:0, sens: sensEl? parseFloat(sensEl.value):6 };
     $("micRow").hidden=false; setMicDet("listening…","");
     return true;
   }
@@ -748,31 +753,68 @@
   function micDetect(){
     var m=E.mic; if(!m||!E.ac) return;
     m.an.getFloatTimeDomainData(m.td); m.an.getFloatFrequencyData(m.fd);
-    // RMS energy
     var i, n=m.td.length, s=0; for(i=0;i<n;i++) s+=m.td[i]*m.td[i];
     var rms=Math.sqrt(s/n);
-    // spectral flatness (geo mean / arith mean of magnitudes) — low = tonal/voiced
-    var fb=m.fd.length, gm=0, am=0, cnt=0;
-    for(i=2;i<fb;i++){ var mag=Math.pow(10, m.fd[i]/20); if(mag<1e-9) mag=1e-9; gm+=Math.log(mag); am+=mag; cnt++; }
-    gm=Math.exp(gm/cnt); am/=cnt; var flat=am>0? gm/am : 1;
-    // pitch via time-domain autocorrelation (only meaningful when voiced)
+    // fast envelope (quick attack, quick-ish release) → responsive to phase edges
+    m.env = rms>m.env ? m.env+(rms-m.env)*0.6 : m.env+(rms-m.env)*0.28;
+    // spectral flatness (tonal↓) + centroid (inhale tends brighter than exhale)
+    var fb=m.fd.length, gm=0, am=0, cnt=0, csum=0, cden=0, sr=E.ac.sampleRate, binHz=sr/(2*fb);
+    for(i=2;i<fb;i++){ var mag=Math.pow(10, m.fd[i]/20); if(mag<1e-9) mag=1e-9;
+      gm+=Math.log(mag); am+=mag; cnt++; csum+=mag*(i*binHz); cden+=mag; }
+    gm=Math.exp(gm/cnt); am/=cnt; var flat=am>0? gm/am : 1; var centroid=cden>0? csum/cden : 0;
     var pitch=autoPitch(m.td, E.ac.sampleRate);
     // adaptive noise floor from quiet frames
-    if(rms<m.floor*1.5) m.floor=lerp(m.floor, Math.max(0.003,rms), 0.02);
-    var lvl=clamp(rms/0.08,0,1); $("micLevel").style.width=(lvl*100)+"%";
+    if(m.env < m.floor*1.6) m.floor = lerp(m.floor, Math.max(0.0015, m.env), 0.03);
+    $("micLevel").style.width = clamp(m.env/0.06,0,1)*100 + "%";
 
-    var voiced = rms>Math.max(0.012,m.floor*2.5) && flat<0.28 && pitch>70 && pitch<400;
+    // sensitivity 1..10 → threshold multiplier over the noise floor (higher = touchier)
+    var k = lerp(3.0, 1.25, (clamp(m.sens,1,10)-1)/9);
+    var onTh  = Math.max(lerp(0.010,0.0035,(m.sens-1)/9), m.floor*k);
+    var offTh = onTh*0.55;                 // hysteresis so it doesn't chatter
+    var t=now();
+
+    // aum: sustained voiced hum (kept separate from airflow)
+    var voiced = m.env>Math.max(0.009,m.floor*2.2) && flat<0.32 && pitch>70 && pitch<400;
     if(voiced){
       m.voiceFrames++;
-      if(m.voiceFrames>6){ setMicDet("🕉 aum · "+Math.round(pitch)+" Hz","aum");
-        if(now()-m.lastAum>1200){ reportPhase("aum","mic"); m.lastAum=now(); } }
-    } else {
-      m.voiceFrames=0;
-      var breath = rms>Math.max(0.02, m.floor*3.2) && flat>0.3;
-      if(breath && !m.breathHigh){ m.breathHigh=true; setMicDet("breath out ›","breath"); reportPhase("exhale","mic"); }
-      else if(!breath && m.breathHigh && rms<m.floor*2){ m.breathHigh=false; setMicDet("breath in ‹","breath"); reportPhase("inhale","mic"); }
-      else if(!m.breathHigh && rms<m.floor*2){ if(E.micOn && $("micDet").className.indexOf("aum")<0 && $("micDet").textContent.indexOf("breath")<0) setMicDet("listening…",""); }
+      if(m.voiceFrames>4){ setMicDet("🕉 aum · "+Math.round(pitch)+" Hz","aum");
+        m.phase="aum"; if(t-m.lastAum>1000){ reportPhase("aum","mic"); m.lastAum=t; }
+        m.airflow=false; return; }
+    } else m.voiceFrames=0;
+
+    // breath state machine: airflow ON/OFF edges drive inhale→hold→exhale→rest
+    var wasAir=m.airflow;
+    if(!m.airflow && m.env>onTh) m.airflow=true;
+    else if(m.airflow && m.env<offTh) m.airflow=false;
+    if(t-m.lastEdge < 140) { paintMic(m); return; }   // debounce, but stay responsive
+
+    if(m.airflow && !wasAir){                          // airflow just started = a breath stroke
+      m.lastEdge=t;
+      var guess = breathOnsetPhase(m.phase);           // alternate, seeded by prior phase
+      if(centroid>0 && m.brightRef>0){ if(centroid>m.brightRef*1.15) guess="inhale"; else if(centroid<m.brightRef*0.85) guess="exhale"; }
+      m.brightRef = m.brightRef? lerp(m.brightRef, centroid, 0.1) : centroid;
+      m.phase=guess; reportPhase(guess,"mic");
+    } else if(!m.airflow && wasAir){                    // airflow just stopped = a pause
+      m.lastEdge=t;
+      m.phase = breathPausePhase(m.phase);              // 'hold' (after inhale) or 'rest' (after exhale)
+      reportPhase(m.phase==="hold" ? "hold" : "aum","mic"); // rest lights the A "aum·rest" key
     }
+    paintMic(m);
+  }
+  // pure breath-phase transitions (unit-tested): airflow onset alternates
+  // inhale/exhale; a pause after inhaling is a hold, after exhaling is rest.
+  function breathOnsetPhase(prev){
+    if(prev==="inhale"||prev==="hold") return "exhale";
+    return "inhale"; // exhale / rest / aum / null → inhale
+  }
+  function breathPausePhase(prev){ return prev==="inhale" ? "hold" : "rest"; }
+  function paintMic(m){
+    if($("micDet").className.indexOf("aum")>=0 && m.phase==="aum") return;
+    var lbl = m.phase==="inhale" ? ["breathing in ‹","breath"] :
+              m.phase==="hold"   ? ["holding •","breath"] :
+              m.phase==="exhale" ? ["breathing out ›","breath"] :
+              m.phase==="rest"   ? ["rest ·",""] : ["listening…",""];
+    setMicDet(lbl[0], lbl[1]);
   }
   // Autocorrelation pitch estimate (Hz), 0 if none — cheap, robust enough for a hum.
   function autoPitch(td, sr){
@@ -1255,6 +1297,7 @@
     else { stopMic(); }
     applyLeadUI();
   });
+  $("micSens").addEventListener("input", function(e){ if(E.mic) E.mic.sens=parseFloat(e.target.value); });
 
   // Breath-key game: W/S/D/A (or tap) report the current breath phase.
   window.addEventListener("keydown", function(e){
@@ -1387,6 +1430,17 @@
       var ok=E.detectedPhase==="exhale" && E.gameTries===0;
       E.leadMode=svL; E.gameTries=svT; E.detectedPhase=svD;
       tests.push({name:"Detect mode logs phase, no score penalty", ok:ok, detail:"tries="+E.gameTries});
+    })();
+    // 18. mic breath cycle: inhale → hold → exhale → rest → inhale
+    (function(){
+      var p=null, seq=[];
+      p=breathOnsetPhase(p); seq.push(p);      // onset → inhale
+      p=breathPausePhase(p); seq.push(p);      // pause  → hold
+      p=breathOnsetPhase(p); seq.push(p);      // onset → exhale
+      p=breathPausePhase(p); seq.push(p);      // pause  → rest
+      p=breathOnsetPhase(p); seq.push(p);      // onset → inhale
+      var ok = seq.join(">")==="inhale>hold>exhale>rest>inhale";
+      tests.push({name:"Mic breath cycle inhale→hold→exhale→rest", ok:ok, detail:seq.join(" › ")});
     })();
 
     var host=$("tests"); host.innerHTML="";
