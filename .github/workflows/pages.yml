@@ -1,0 +1,51 @@
+name: Deploy to GitHub Pages
+
+# Publishes the offline biofeedback app so it can run as a real web page
+# (secure https context) where the camera / getUserMedia actually works —
+# unlike the sandboxed artifact preview, which blocks camera access.
+
+# Only deploys from main (once Pages is enabled in repo Settings) or on manual
+# dispatch — so it doesn't spam failing checks on the feature-branch PR before
+# Pages has been turned on. See CYBERNETIC_JHANA_ENGINE.md "Run it".
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress run.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        # enablement: true creates/enables the Pages site via the API if it
+        # isn't set up yet, so no manual repo-settings toggle is required.
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Repo root: serves index.html at the site root.
+          path: .
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

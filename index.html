@@ -1,0 +1,1477 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#080b12">
+<title>Cybernetic Jhāna Engine — offline biofeedback</title>
+<meta name="description" content="Offline camera + mic biofeedback: rPPG pulse, FFT, breath-key game, responsive aum/inhale/hold/exhale mic detection, confidence bars.">
+<style>html,body{margin:0;padding:0;background:#080b12}</style>
+</head>
+<body>
+<style>
+  :root{
+    --ground:#080b12;
+    --ground-2:#0d121d;
+    --panel:rgba(18,24,38,0.72);
+    --edge:rgba(120,150,200,0.14);
+    --ink:#c8d2e4;
+    --ink-dim:#7d8aa3;
+    --calm:#5ad1c4;      /* parasympathetic / vagal */
+    --stress:#e8905a;    /* sympathetic */
+    --focus:#a78bfa;     /* mandala / absorption */
+    --peak:#e8e6d2;      /* peak coherence */
+    --good:#5ad1c4;
+    --warn:#e8c05a;
+    --bad:#e8905a;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  #cje{
+    position:relative;min-height:100vh;background:
+      radial-gradient(1200px 800px at 50% -10%, #121a2b 0%, var(--ground) 60%);
+    color:var(--ink);font-family:var(--sans);overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #cje .wrap{max-width:1100px;margin:0 auto;padding:22px 18px 60px}
+  #cje header.h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  #cje h1{
+    font-size:clamp(20px,3vw,30px);font-weight:600;letter-spacing:-0.02em;margin:0;
+    background:linear-gradient(92deg,var(--calm),var(--focus));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  #cje .sub{font-size:12px;color:var(--ink-dim);letter-spacing:0.04em}
+  #cje .disclaim{
+    font-size:11.5px;color:var(--ink-dim);border:1px solid var(--edge);
+    background:rgba(232,144,90,0.05);border-radius:10px;padding:9px 12px;margin:12px 0 18px;line-height:1.5
+  }
+  #cje .disclaim b{color:#e8b28a;font-weight:600}
+
+  #cje .stage{
+    position:relative;width:100%;aspect-ratio:16/10;max-height:62vh;
+    border:1px solid var(--edge);border-radius:16px;overflow:hidden;
+    background:#05070c;box-shadow:0 20px 60px rgba(0,0,0,0.5), inset 0 0 80px rgba(90,120,200,0.05);
+  }
+  #cje canvas#viz{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #cje video#cam{position:absolute;right:12px;bottom:12px;width:118px;height:88px;object-fit:cover;
+    border-radius:10px;border:1px solid var(--edge);transform:scaleX(-1);opacity:0.9;background:#000;z-index:3}
+  #cje .roi{position:absolute;right:12px;bottom:12px;width:118px;height:88px;z-index:4;pointer-events:none;
+    border-radius:10px;box-shadow:inset 0 0 0 2px rgba(90,209,196,0.0)}
+  #cje .lexicon{
+    position:absolute;left:0;right:0;bottom:0;z-index:2;padding:26px 24px 22px;
+    background:linear-gradient(transparent, rgba(5,7,12,0.85));
+    font-size:clamp(15px,2.4vw,22px);line-height:1.4;font-weight:400;letter-spacing:0.01em;
+    text-wrap:balance;min-height:96px;display:flex;align-items:flex-end;
+    transition:color .8s ease;text-shadow:0 2px 20px rgba(0,0,0,0.8)
+  }
+  #cje .statechip{
+    position:absolute;left:14px;top:14px;z-index:5;display:flex;gap:8px;align-items:center;
+    font:600 11px/1 var(--mono);letter-spacing:0.12em;text-transform:uppercase;
+    padding:7px 11px;border-radius:999px;border:1px solid var(--edge);background:rgba(8,11,18,0.6)
+  }
+  #cje .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-dim);box-shadow:0 0 12px currentColor;transition:.6s}
+
+  #cje .clinician{display:flex;gap:10px;align-items:baseline;margin-top:14px;padding:12px 15px;border-radius:12px;
+    border:1px solid var(--edge);background:linear-gradient(180deg,rgba(167,139,250,0.07),rgba(90,120,200,0.03));
+    font-size:14px;line-height:1.5;text-wrap:pretty}
+  #cje .clinician .tag,#cje .game .tag{font:600 10px/1 var(--mono);letter-spacing:0.13em;text-transform:uppercase;
+    color:var(--focus);border:1px solid rgba(167,139,250,0.3);border-radius:6px;padding:4px 7px;white-space:nowrap;flex:0 0 auto}
+  #cje #clinText{color:var(--ink)}
+
+  #cje .game{margin-top:12px;padding:14px 15px;border-radius:14px;border:1px solid var(--edge);background:var(--panel)}
+  #cje .game .ghead{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--ink-dim)}
+  #cje .game .gscore{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  #cje .game .gscore b{color:var(--ink)}
+  #cje .gprompt{text-align:center;font:600 26px/1.1 var(--sans);letter-spacing:0.02em;margin:12px 0;min-height:32px;transition:color .3s}
+  #cje .gprompt b{font-weight:700}
+  #cje .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  #cje .key{display:flex;flex-direction:column;align-items:center;gap:3px;padding:11px 6px;border-radius:11px;
+    border:1px solid var(--edge);background:rgba(90,120,200,0.06);cursor:pointer;transition:.12s}
+  #cje .key b{font:700 17px/1 var(--mono)} #cje .key span{font-size:11px;color:var(--ink-dim)}
+  #cje .key:hover{border-color:rgba(120,160,230,0.5)}
+  #cje .key.lit{border-color:var(--calm);background:rgba(90,209,196,0.16);box-shadow:0 0 0 1px var(--calm)}
+  #cje .key.hit{border-color:var(--good);background:rgba(90,209,196,0.28)}
+  #cje .key.miss{border-color:var(--bad);background:rgba(232,144,90,0.2)}
+  #cje .microw{display:flex;align-items:center;gap:10px;margin-top:12px}
+  #cje .microw .mlabel{font:600 10px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--ink-dim)}
+  #cje .mmeter{flex:1;height:6px;border-radius:3px;background:rgba(120,150,200,0.15);overflow:hidden}
+  #cje .mmeter i{display:block;height:100%;width:0;border-radius:3px;background:var(--focus);transition:width .08s linear}
+  #cje .mdet{font:600 12px/1 var(--mono);color:var(--ink-dim);min-width:96px;text-align:right}
+  #cje .mdet.aum{color:var(--focus)} #cje .mdet.breath{color:var(--calm)}
+  #cje .msens{display:flex;align-items:center;gap:6px;font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim)}
+  #cje .msens input[type=range]{width:72px}
+  #cje .modes{margin-top:10px}
+  #cje .pacewrap{gap:10px}
+  #cje input[type=range]{accent-color:var(--calm);width:120px;vertical-align:middle}
+  #cje input[type=range]:disabled{opacity:.45}
+  #cje .paceval{font:600 12px/1 var(--mono);color:var(--ink);min-width:52px}
+  #cje .grsa{font-size:11.5px;color:var(--ink-dim);line-height:1.5;margin-top:10px}
+  #cje .rng{font:600 11px/1.2 var(--mono);color:var(--ink-dim);margin-top:6px;font-variant-numeric:tabular-nums;min-height:13px}
+
+  #cje .hud{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}
+  @media(max-width:900px){#cje .hud{grid-template-columns:repeat(3,1fr)}}
+  #cje .metric{
+    border:1px solid var(--edge);border-radius:12px;padding:12px 14px;background:var(--panel);
+    backdrop-filter:blur(6px);min-width:0
+  }
+  #cje .metric .lab{font:600 10.5px/1 var(--mono);letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim)}
+  #cje .metric .val{font:600 27px/1.05 var(--sans);font-variant-numeric:tabular-nums;margin-top:7px;letter-spacing:-0.02em}
+  #cje .metric .u{font-size:13px;color:var(--ink-dim);font-weight:400;margin-left:3px}
+  #cje .metric .bar{height:4px;border-radius:2px;background:rgba(120,150,200,0.15);margin-top:9px;overflow:hidden}
+  #cje .metric .bar i{display:block;height:100%;width:0;border-radius:2px;transition:width .5s ease,background .5s}
+
+  #cje .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+  #cje button{
+    font:600 13px/1 var(--sans);letter-spacing:0.01em;color:var(--ink);cursor:pointer;
+    background:linear-gradient(180deg,rgba(90,120,200,0.16),rgba(90,120,200,0.06));
+    border:1px solid var(--edge);border-radius:10px;padding:11px 16px;transition:.18s
+  }
+  #cje button:hover{border-color:rgba(120,160,230,0.5);transform:translateY(-1px)}
+  #cje button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  #cje button.primary{background:linear-gradient(180deg,var(--calm),#3fae9f);color:#04120f;border-color:transparent}
+  #cje button.ghost{background:transparent}
+  #cje button:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+  #cje select{background:var(--ground-2);color:var(--ink);border:1px solid var(--edge);border-radius:10px;padding:10px 12px;font:600 13px var(--sans)}
+  #cje label.sel{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-dim)}
+
+  #cje .camstatus{display:flex;align-items:center;gap:10px;margin-top:12px;padding:11px 14px;border-radius:11px;
+    font-size:13px;line-height:1.45;border:1px solid var(--edge);background:var(--panel)}
+  #cje .camstatus .ic{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 10px currentColor}
+  #cje .camstatus .msg{flex:1;min-width:0}
+  #cje .camstatus.ok{border-color:rgba(90,209,196,0.4)} #cje .camstatus.ok .ic{background:var(--good);color:var(--good)}
+  #cje .camstatus.wait .ic{background:var(--warn);color:var(--warn)}
+  #cje .camstatus.blocked{border-color:rgba(232,144,90,0.4);background:rgba(232,144,90,0.06)} #cje .camstatus.blocked .ic{background:var(--bad);color:var(--bad)}
+  #cje .camstatus #btnCam{flex:0 0 auto;font-size:12px;padding:8px 13px}
+
+  #cje .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-top:22px}
+  @media(max-width:820px){#cje .grid2{grid-template-columns:1fr}#cje .hud{grid-template-columns:repeat(2,1fr)}}
+  #cje .card{border:1px solid var(--edge);border-radius:14px;background:var(--panel);padding:16px 18px}
+  #cje .card h2{font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-dim);margin:0 0 12px}
+  #cje .kv{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:6px 0;border-bottom:1px dashed var(--edge)}
+  #cje .kv:last-child{border-bottom:0}
+  #cje .kv b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+  #cje .hist{max-height:220px;overflow:auto}
+  #cje .hrow{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;font-size:12px;padding:7px 0;border-bottom:1px dashed var(--edge);font-variant-numeric:tabular-nums}
+  #cje .hrow .t{color:var(--ink-dim)}
+  #cje .empty{color:var(--ink-dim);font-size:12.5px;padding:10px 0}
+
+  #cje .diag{margin-top:22px}
+  #cje .test{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:12.5px;padding:7px 0;border-bottom:1px dashed var(--edge)}
+  #cje .test .badge{font:700 10px/1 var(--mono);padding:4px 7px;border-radius:6px;letter-spacing:.08em}
+  #cje .badge.pass{background:rgba(90,209,196,0.15);color:var(--good)}
+  #cje .badge.fail{background:rgba(232,144,90,0.16);color:var(--bad)}
+  #cje .badge.pend{background:rgba(125,138,163,0.14);color:var(--ink-dim)}
+  #cje .test .d{color:var(--ink-dim)}
+
+  /* completion overlay — exit-driven */
+  #cje .exit{
+    position:absolute;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:30px;gap:16px;background:radial-gradient(circle at 50% 45%, rgba(20,26,40,0.92), rgba(5,7,12,0.98));
+    backdrop-filter:blur(3px)
+  }
+  #cje .exit.show{display:flex;animation:fade 1.1s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  #cje .exit h3{font-size:clamp(20px,3.5vw,30px);font-weight:600;margin:0;letter-spacing:-0.01em;color:var(--peak)}
+  #cje .exit p{max-width:46ch;line-height:1.55;color:var(--ink);font-size:15px;margin:0}
+  #cje .exit .st{font:600 11px/1 var(--mono);letter-spacing:0.14em;text-transform:uppercase;color:var(--calm)}
+  #cje .foot{margin-top:26px;font-size:11.5px;color:var(--ink-dim);line-height:1.6;border-top:1px solid var(--edge);padding-top:16px}
+  @media (prefers-reduced-motion: reduce){#cje *{animation-duration:0.001ms !important}}
+</style>
+
+<div id="cje">
+ <div class="wrap">
+  <header class="h">
+    <h1>Cybernetic Jhāna Engine</h1>
+    <span class="sub">offline · client-side · camera-driven biofeedback</span>
+  </header>
+
+  <div class="disclaim">
+    <b>What this is:</b> a real, working closed-loop biofeedback toy. Your camera estimates pulse from
+    micro-color changes in your skin (rPPG) using an in-browser FFT; the sound, visuals, and on-screen cues
+    adapt to that signal. Choose your <b>Lead</b> mode (follow the pacer, or let the app follow you), set the
+    <b>pace</b>, and optionally turn on the <b>mic</b> so it can hear an <em>aum</em> hum and your breath. Every
+    input cross-checks the optical read against your real breathing (heart rate should rise on the inhale, fall on
+    the exhale) and drives the <b>confidence bar and ± range</b> on every number. <b>What it is not:</b> a medical device. Webcam heart-rate —
+    and especially HRV — is a rough estimate; the confidence bar tells you how much to trust it, and low
+    confidence means treat the numbers as noise. Nothing here diagnoses or treats anything. Nothing leaves your device.
+  </div>
+
+  <div class="stage" id="stage">
+    <canvas id="viz"></canvas>
+    <video id="cam" playsinline muted></video>
+    <div class="roi" id="roi"></div>
+    <div class="statechip"><span class="dot" id="dot"></span><span id="stateName">idle</span></div>
+    <div class="lexicon" id="lexicon">Grant camera access and sit still for ~30 seconds while the engine finds your baseline.</div>
+
+    <div class="exit" id="exit">
+      <div class="st">peak coherence reached</div>
+      <h3 id="exitTitle">Settled.</h3>
+      <p id="exitBody"></p>
+      <button class="ghost" id="exitClose">Return</button>
+    </div>
+  </div>
+
+  <div class="clinician" id="clinician">
+    <span class="tag">clinical read-out</span>
+    <span id="clinText">Start a session and I'll narrate what your autonomic signal is doing, and how much to trust it.</span>
+  </div>
+
+  <div class="game" id="game">
+    <div class="ghead">
+      <div><span class="tag">breath</span> <span id="gMode">follow the pacer &amp; tap the phase — it cross-checks the optical signal</span></div>
+      <div class="gscore" id="gScoreWrap">match <b id="gAcc">–</b> · coupling <b id="gCouple">–</b></div>
+    </div>
+    <div class="gprompt" id="gPrompt">— press <b>Start</b> —</div>
+    <div class="keys">
+      <button class="key" data-k="inhale"><b>W</b><span>inhale</span></button>
+      <button class="key" data-k="hold"><b>S</b><span>hold</span></button>
+      <button class="key" data-k="exhale"><b>D</b><span>exhale</span></button>
+      <button class="key" data-k="aum"><b>A</b><span>aum · rest</span></button>
+    </div>
+    <div class="microw" id="micRow" hidden>
+      <span class="mlabel">mic</span>
+      <div class="mmeter"><i id="micLevel"></i></div>
+      <span class="mdet" id="micDet">listening…</span>
+      <label class="msens">sens<input type="range" id="micSens" min="1" max="10" step="1" value="7"></label>
+    </div>
+    <div class="grsa" id="grsa">Respiratory coupling (RSA): HR should rise on your inhale, fall on your exhale. When your inputs track that swing, confidence climbs.</div>
+  </div>
+
+  <div class="hud">
+    <div class="metric"><div class="lab">Heart rate</div><div class="val"><span id="mHr">–</span><span class="u">bpm</span></div><div class="rng" id="rHr">—</div><div class="bar"><i id="bHr" style="background:var(--calm)"></i></div></div>
+    <div class="metric"><div class="lab">HRV · RMSSD*</div><div class="val"><span id="mHrv">–</span><span class="u">ms</span></div><div class="rng" id="rHrv">—</div><div class="bar"><i id="bHrv" style="background:var(--focus)"></i></div></div>
+    <div class="metric"><div class="lab">Reading confidence</div><div class="val"><span id="mConf">–</span><span class="u">%</span></div><div class="rng" id="rConf">calibrating…</div><div class="bar"><i id="bConf" style="background:var(--good)"></i></div></div>
+    <div class="metric"><div class="lab">Signal coherence</div><div class="val"><span id="mCoh">–</span><span class="u">%</span></div><div class="rng">spectral SNR</div><div class="bar"><i id="bCoh" style="background:var(--warn)"></i></div></div>
+    <div class="metric"><div class="lab">Autonomic balance</div><div class="val" id="mBal">–</div><div class="rng" id="rBal">sympathetic ↔ vagal</div><div class="bar"><i id="bBal" style="background:var(--calm)"></i></div></div>
+  </div>
+
+  <div class="controls">
+    <button class="primary" id="btnStart">Start session</button>
+    <button class="ghost" id="btnStop" disabled>Stop</button>
+    <label class="sel">Signal source
+      <select id="src"><option value="face">Face</option><option value="finger">Fingertip on lens</option></select>
+    </label>
+    <label class="sel"><input type="checkbox" id="chkSound" checked> Sound</label>
+    <label class="sel"><input type="checkbox" id="chkHaptic" checked> Haptics</label>
+    <button class="ghost" id="btnRecal" disabled>Re-baseline</button>
+  </div>
+
+  <div class="controls modes">
+    <label class="sel">Lead
+      <select id="lead">
+        <option value="guided">Guided — I follow the app</option>
+        <option value="detect">Detect — app follows me</option>
+      </select>
+    </label>
+    <label class="sel"><input type="checkbox" id="chkAdaptive" checked> Adaptive pace</label>
+    <label class="sel pacewrap">Pace
+      <input type="range" id="pace" min="3" max="10" step="0.5" value="5.5" disabled>
+      <span class="paceval" id="paceVal">5.5/min</span>
+    </label>
+    <label class="sel"><input type="checkbox" id="chkMic"> Mic (detect aum + breath)</label>
+  </div>
+
+  <div id="camStatus" class="camstatus" hidden>
+    <span class="ic" aria-hidden="true"></span>
+    <span class="msg"></span>
+    <button class="ghost" id="btnCam" hidden>Enable camera</button>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>Loop state — what the engine is doing</h2>
+      <div class="kv"><span>Detected mode</span><b id="dMode">—</b></div>
+      <div class="kv"><span>Carrier tone</span><b id="dTone">—</b></div>
+      <div class="kv"><span>Breath pacer</span><b id="dPace">—</b></div>
+      <div class="kv"><span>Detected breathing</span><b id="dResp">—</b></div>
+      <div class="kv"><span>Haptic pattern</span><b id="dHap">—</b></div>
+      <div class="kv"><span>Visual field</span><b id="dVis">—</b></div>
+      <div class="kv"><span>Baseline HR</span><b id="dBase">—</b></div>
+      <div class="kv"><span>Time in session</span><b id="dTime">—</b></div>
+      <div class="kv"><span>Shift velocity</span><b id="dVel">—</b></div>
+    </div>
+    <div class="card">
+      <h2>Session history <span style="font-weight:400;text-transform:none;letter-spacing:0">· local only</span></h2>
+      <div class="hist" id="hist"><div class="empty">No sessions stored yet.</div></div>
+      <button class="ghost" id="btnClear" style="margin-top:12px;font-size:12px;padding:8px 12px">Clear local data</button>
+    </div>
+  </div>
+
+  <div class="card diag">
+    <h2>Self-test &amp; validation <span style="font-weight:400;text-transform:none;letter-spacing:0">· runs the DSP + state machine against known inputs</span></h2>
+    <div id="tests"></div>
+    <button class="ghost" id="btnTest" style="margin-top:12px;font-size:12px;padding:8px 12px">Re-run self-tests</button>
+  </div>
+
+  <div class="foot">
+    Storage: <span id="storeMode">detecting…</span>. Camera frames are processed in-memory and never stored or transmitted.
+    The "neuro-lexicon" cues are meditation-style attention prompts (positive reappraisal / savoring), not medical instructions —
+    read them as invitations, ignore any that don't fit. Stop anytime.
+  </div>
+ </div>
+</div>
+
+<script>
+"use strict";
+(function(){
+/* ============================================================================
+   CYBERNETIC JHĀNA ENGINE — single-file, offline, zero external dependency.
+   Pipeline:  getUserMedia → ROI green/red mean → ring buffer → detrend/window
+   → radix-2 FFT → spectral HR + coherence → time-domain peak/IBI → RMSSD
+   → autonomic balance → JSON state machine → {audio, haptics, visuals, text}.
+   ========================================================================== */
+
+  var $ = function(id){ return document.getElementById(id); };
+  var clamp = function(x,a,b){ return x<a?a:(x>b?b:x); };
+  var lerp = function(a,b,t){ return a+(b-a)*t; };
+  var now = function(){ return performance.now(); };
+
+  /* ---------- radix-2 iterative FFT (in-place, complex) --------------------- */
+  function fft(re, im){
+    var n = re.length, i, j, k;
+    for(i=1, j=0; i<n; i++){
+      var bit = n>>1;
+      for(; j & bit; bit>>=1){ j ^= bit; }
+      j ^= bit;
+      if(i < j){ var tr=re[i]; re[i]=re[j]; re[j]=tr; var ti=im[i]; im[i]=im[j]; im[j]=ti; }
+    }
+    for(var len=2; len<=n; len<<=1){
+      var ang = -2*Math.PI/len;
+      var wr = Math.cos(ang), wi = Math.sin(ang);
+      for(i=0; i<n; i+=len){
+        var cr=1, ci=0;
+        for(k=0; k<len/2; k++){
+          var a=i+k, b=i+k+len/2;
+          var tr = cr*re[b] - ci*im[b];
+          var ti = cr*im[b] + ci*re[b];
+          re[b]=re[a]-tr; im[b]=im[a]-ti;
+          re[a]+=tr; im[a]+=ti;
+          var ncr = cr*wr - ci*wi;
+          ci = cr*wi + ci*wr; cr = ncr;
+        }
+      }
+    }
+  }
+  function nextPow2(n){ var p=1; while(p<n) p<<=1; return p; }
+
+  /* ---------- JSON state-transition engine (data, not code) ---------------- */
+  // Autonomic balance A ∈ [-1,1]: +calm(parasympathetic) / -stress(sympathetic)
+  var STATES = {
+    idle:        { name:"idle",          color:"#7d8aa3", enter:-99, exit:-99 },
+    baselining:  { name:"finding baseline", color:"#e8c05a" },
+    sympathetic: { name:"sympathetic",   color:"#e8905a", tone:90,  paceSec:8.0, haptic:"slow double-pulse", visual:"block-matching field", absorption:0.05, dopa:0.0 },
+    neutral:     { name:"neutral",       color:"#8fb0d6", tone:120, paceSec:6.5, haptic:"even pulse",         visual:"settling lattice",     absorption:0.35, dopa:0.2 },
+    parasympathetic:{ name:"parasympathetic", color:"#5ad1c4", tone:150, paceSec:5.5, haptic:"soft heartbeat", visual:"single-point mandala", absorption:0.85, dopa:0.6 },
+    peak:        { name:"peak coherence", color:"#e8e6d2", tone:162, paceSec:5.5, haptic:"whisper", visual:"pure mandala", absorption:1.0, dopa:1.0 }
+  };
+  // transition table w/ hysteresis (enter threshold vs current-hold threshold)
+  var TRANSITIONS = [
+    { to:"sympathetic",    when:function(A){ return A < -0.18; } },
+    { to:"parasympathetic",when:function(A){ return A >  0.40; } },
+    { to:"neutral",        when:function(A){ return A >= -0.10 && A <= 0.34; } }
+  ];
+
+  /* ---------- engine state ------------------------------------------------- */
+  var E = {
+    running:false, source:"face",
+    stream:null, video:null, grab:null, gctx:null,
+    buf:[],                 // {t, v}
+    fs:30, winSec:10,
+    hr:0, hrv:0, coh:0, bal:0, balSmooth:0,
+    baseline:null, baselineSamples:[], baseStart:0,
+    state:"idle", stateSince:0, sessionStart:0, firstCalmAt:0,
+    peakHoldStart:0, sessionSaved:false,
+    // audio
+    ac:null, osc:null, oscGain:null, lp:null, lfo:null, lfoGain:null, subOsc:null, subGain:null,
+    soundOn:true, hapticOn:true,
+    curTone:120, curPace:6.5,
+    hapticTimer:null,
+    // ibi peak detection
+    lastSample:0, ppgFilt:0, ppgPrev:0, rising:false, lastPeakT:0, ibis:[], peakThresh:0,
+    // viz
+    absorption:0, absorptionTarget:0, phase:0, breathPhase:0, hueShift:0,
+    // breath-key game + validation
+    reported:null, reportedSince:0, promptPhase:null, gameAcc:0, gameHits:0, gameTries:0,
+    rsaBuf:[],            // {t, hr, phase}
+    coupling:0, conf:0, hrStd:0, hrHist:[],
+    // modes: lead + pace + mic + camera-derived respiration
+    leadMode:"guided", paceMode:"adaptive", paceBpm:5.5, statePace:6.5,
+    micOn:false, mic:null, detectedPhase:null, respBpm:0, respBuf:[],
+    reduced: window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  };
+
+  /* ---------- storage (localStorage w/ in-memory fallback) ------------------ */
+  var Store = (function(){
+    var KEY="cje.v1", mem=null, ok=false;
+    try{ localStorage.setItem(KEY+".t","1"); localStorage.removeItem(KEY+".t"); ok=true; }catch(e){ ok=false; }
+    function read(){
+      if(!ok) return mem || {baselineHR:null, sessions:[]};
+      try{ return JSON.parse(localStorage.getItem(KEY)) || {baselineHR:null, sessions:[]}; }
+      catch(e){ return {baselineHR:null, sessions:[]}; }
+    }
+    function write(o){ if(!ok){ mem=o; return; } try{ localStorage.setItem(KEY, JSON.stringify(o)); }catch(e){ mem=o; } }
+    return {
+      mode: ok? "localStorage (persistent)" : "in-memory (sandboxed — not persisted)",
+      get:read, set:write,
+      addSession:function(s){ var o=read(); o.sessions.unshift(s); o.sessions=o.sessions.slice(0,50); if(s.baselineHR) o.baselineHR=s.baselineHR; write(o); },
+      clear:function(){ if(ok){ try{ localStorage.removeItem(KEY);}catch(e){} } mem=null; }
+    };
+  })();
+
+  /* ============================ CAMERA + rPPG =============================== */
+  function initGrab(){
+    E.grab = document.createElement("canvas");
+    E.grab.width = 80; E.grab.height = 60;
+    E.gctx = E.grab.getContext("2d", { willReadFrequently:true });
+  }
+  function sampleFrame(){
+    if(!E.video || E.video.readyState < 2) return null;
+    var w=E.grab.width, h=E.grab.height;
+    try{ E.gctx.drawImage(E.video, 0,0, w,h); }catch(e){ return null; }
+    // central ROI ~ 46% box
+    var x0=Math.floor(w*0.27), x1=Math.floor(w*0.73), y0=Math.floor(h*0.27), y1=Math.floor(h*0.73);
+    var data;
+    try{ data = E.gctx.getImageData(x0,y0, x1-x0, y1-y0).data; }catch(e){ return null; }
+    var sr=0,sg=0,sb=0,n=0;
+    for(var i=0;i<data.length;i+=4){ sr+=data[i]; sg+=data[i+1]; sb+=data[i+2]; n++; }
+    if(!n) return null;
+    sr/=n; sg/=n; sb/=n;
+    // face → green channel (best rPPG SNR); finger → red channel (strong perfusion)
+    var v = E.source==="finger" ? sr : sg;
+    return { v:v, r:sr, g:sg, b:sb };
+  }
+
+  // uniform-resample buffer to fs over last winSec, linear interp
+  function resample(){
+    var N = Math.round(E.fs*E.winSec);
+    if(E.buf.length < 12) return null;
+    var t1 = E.buf[E.buf.length-1].t;
+    var t0 = t1 - E.winSec*1000;
+    var out = new Float64Array(N), j=0;
+    for(var k=0;k<N;k++){
+      var tt = t0 + (k/(N-1))*(t1-t0);
+      while(j<E.buf.length-1 && E.buf[j+1].t < tt) j++;
+      var a=E.buf[j], b=E.buf[Math.min(j+1,E.buf.length-1)];
+      var span=(b.t-a.t)||1, f=clamp((tt-a.t)/span,0,1);
+      out[k]=lerp(a.v,b.v,f);
+    }
+    return out;
+  }
+  function detrend(x){
+    var n=x.length, mean=0, i;
+    // remove slow drift via moving-average high-pass (~0.8s window), then subtract mean
+    var win=Math.max(3,Math.round(E.fs*0.8)), ma=new Float64Array(n), acc=0;
+    for(i=0;i<n;i++){ acc+=x[i]; if(i>=win) acc-=x[i-win]; ma[i]=acc/Math.min(i+1,win); }
+    var y=new Float64Array(n);
+    for(i=0;i<n;i++){ y[i]=x[i]-ma[i]; mean+=y[i]; }
+    mean/=n;
+    for(i=0;i<n;i++) y[i]-=mean;
+    return y;
+  }
+  function hann(x){
+    var n=x.length, y=new Float64Array(n);
+    for(var i=0;i<n;i++){ var w=0.5*(1-Math.cos(2*Math.PI*i/(n-1))); y[i]=x[i]*w; }
+    return y;
+  }
+  // returns {hr, coh} from spectrum in [0.7,4]Hz
+  function spectralHR(sig){
+    var n=nextPow2(sig.length);
+    var re=new Float64Array(n), im=new Float64Array(n);
+    for(var i=0;i<sig.length;i++) re[i]=sig[i];
+    fft(re,im);
+    var lo=0.7, hi=4.0; // 42–240 bpm
+    var loBin=Math.max(1,Math.floor(lo*n/E.fs)), hiBin=Math.min(n/2,Math.ceil(hi*n/E.fs));
+    var peak=0, peakBin=-1, sum=0;
+    for(var k=loBin;k<=hiBin;k++){
+      var mag=re[k]*re[k]+im[k]*im[k];
+      sum+=mag;
+      if(mag>peak){ peak=mag; peakBin=k; }
+    }
+    if(peakBin<0||sum<=0) return null;
+    // parabolic interpolation for sub-bin freq
+    var y0=Math.sqrt(re[peakBin-1]*re[peakBin-1]+im[peakBin-1]*im[peakBin-1]);
+    var y1=Math.sqrt(peak);
+    var y2=Math.sqrt(re[peakBin+1]*re[peakBin+1]+im[peakBin+1]*im[peakBin+1]);
+    var denom=(y0-2*y1+y2); var d = denom? 0.5*(y0-y2)/denom : 0;
+    var freq=(peakBin+d)*E.fs/n;
+    var hr=freq*60;
+    var coh=peak/sum; // spectral concentration 0..1
+    return { hr:hr, coh:clamp(coh,0,1) };
+  }
+
+  // time-domain: detect beats on filtered signal → IBIs → RMSSD
+  function updateIBI(v){
+    // one-pole bandpass-ish: subtract slow EMA, keep fast component
+    E.slowEMA = (E.slowEMA==null)? v : E.slowEMA + 0.06*(v-E.slowEMA);
+    var f = v - E.slowEMA;
+    E.ppgFilt = E.ppgFilt + 0.35*(f - E.ppgFilt);
+    E.peakThresh = E.peakThresh*0.99 + Math.abs(E.ppgFilt)*0.01;
+    var t=now();
+    var prev=E.ppgPrev; E.ppgPrev=E.ppgFilt;
+    // zero-cross downward after being above threshold ⇒ beat
+    if(prev>E.peakThresh*0.6 && E.ppgFilt<=prev && !E.rising){
+      E.rising=true;
+      if(E.lastPeakT){
+        var ibi=t-E.lastPeakT;
+        if(ibi>300 && ibi<1500){ E.ibis.push(ibi); if(E.ibis.length>12) E.ibis.shift(); }
+      }
+      E.lastPeakT=t;
+    }
+    if(E.ppgFilt < 0) E.rising=false;
+  }
+  function rmssd(){
+    if(E.ibis.length<3) return 0;
+    var s=0,c=0;
+    for(var i=1;i<E.ibis.length;i++){ var d=E.ibis[i]-E.ibis[i-1]; s+=d*d; c++; }
+    return c? Math.sqrt(s/c):0;
+  }
+
+  /* ======================= AUTONOMIC BALANCE + STATE ======================= */
+  /* ===================== BREATH-KEY GAME + VALIDATION ====================== */
+  // Reported breath phases map to keys. The pacer prompts a phase; the player
+  // taps the matching key. Reported phase also tags HR samples so we can measure
+  // respiratory sinus arrhythmia (RSA) coupling — an independent check that the
+  // optical signal is a real pulse, and a genuine vagal-tone indicator.
+  var PHASE_KEYS = { w:"inhale", s:"hold", d:"exhale", a:"aum" };
+  var PHASE_LABEL = { inhale:"INHALE", hold:"HOLD", exhale:"EXHALE", aum:"AUM · rest" };
+  var PHASE_COLOR = { inhale:"var(--calm)", hold:"var(--warn)", exhale:"var(--focus)", aum:"var(--peak)" };
+  // 4-phase breath cycle as fractions of the pacer period (inhale→hold→exhale→rest)
+  function phaseAt(frac){
+    if(frac<0.34) return "inhale";
+    if(frac<0.46) return "hold";
+    if(frac<0.82) return "exhale";
+    return "aum";
+  }
+  // src: "key" | "mic". In guided mode we score against the prompt; in detect
+  // mode the reported phase IS the answer (the app is following the user).
+  function reportPhase(p, src){
+    if(!p) return;
+    E.reported=p; E.reportedSince=now(); E.detectedPhase=p;
+    var cell=document.querySelector('.key[data-k="'+p+'"]');
+    if(E.leadMode==="guided" && E.running && E.promptPhase){
+      E.gameTries++;
+      var hit=(p===E.promptPhase);
+      if(hit) E.gameHits++;
+      E.gameAcc = lerp(E.gameAcc, hit?1:0, 0.25);
+      if(cell){ cell.classList.remove("hit","miss"); void cell.offsetWidth; cell.classList.add(hit?"hit":"miss");
+        setTimeout(function(){ cell.classList.remove("hit","miss"); }, 300); }
+    } else if(cell){ // detect mode (or idle): light the phase, no scoring
+      var prev=document.querySelector(".key.lit"); if(prev&&prev!==cell) prev.classList.remove("lit");
+      cell.classList.add("lit");
+      cell.classList.add("hit"); setTimeout(function(){ cell.classList.remove("hit"); }, 200);
+    }
+  }
+  function updatePrompt(){
+    if(E.leadMode==="detect"){
+      // App follows the user: show what it currently believes you're doing.
+      var d=E.detectedPhase, el=$("gPrompt");
+      if(el){
+        if(d){ el.innerHTML='<span style="opacity:.55;font-size:.6em;letter-spacing:.12em">YOU’RE</span> &nbsp;'+PHASE_LABEL[d]; el.style.color=PHASE_COLOR[d]; }
+        else { el.innerHTML='<span style="opacity:.5">breathe — I’m watching '+(E.micOn?'mic + camera':'your keys + camera')+'</span>'; el.style.color="var(--ink-dim)"; }
+      }
+      return;
+    }
+    // Guided: prescribe the phase on the pacer clock.
+    var p=phaseAt(E.breathPhase);
+    if(p!==E.promptPhase){
+      E.promptPhase=p;
+      var el2=$("gPrompt"); if(el2){ el2.innerHTML=PHASE_LABEL[p]+' &nbsp;<b style="opacity:.6">['+keyFor(p)+']</b>'; el2.style.color=PHASE_COLOR[p]; }
+      var lit=document.querySelector(".key.lit"); if(lit) lit.classList.remove("lit");
+      var next=document.querySelector('.key[data-k="'+p+'"]'); if(next) next.classList.add("lit");
+    }
+  }
+  function keyFor(phase){ for(var k in PHASE_KEYS){ if(PHASE_KEYS[k]===phase) return k.toUpperCase(); } return ""; }
+
+  // RSA coupling: mean HR during reported inhale vs exhale over recent window.
+  function updateCoupling(){
+    if(E.hr) E.rsaBuf.push({ t:now(), hr:E.hr, phase:E.reported });
+    var cutoff=now()-30000;
+    while(E.rsaBuf.length && E.rsaBuf[0].t<cutoff) E.rsaBuf.shift();
+    var inS=0,inN=0,exS=0,exN=0;
+    for(var i=0;i<E.rsaBuf.length;i++){ var r=E.rsaBuf[i];
+      if(r.phase==="inhale"){ inS+=r.hr; inN++; } else if(r.phase==="exhale"){ exS+=r.hr; exN++; } }
+    if(inN>=3 && exN>=3){
+      var delta=(inS/inN)-(exS/exN);          // physiological RSA: inhale HR > exhale HR
+      E.rsaDelta=delta;
+      E.coupling=lerp(E.coupling, clamp(delta/6,0,1), 0.2); // ~6 bpm swing → full coupling
+    } else { E.rsaDelta=null; E.coupling=lerp(E.coupling,0,0.05); }
+  }
+
+  // Reading confidence 0..1 — how much to trust the numbers right now.
+  function updateConfidence(){
+    // HR temporal stability
+    E.hrHist.push(E.hr); if(E.hrHist.length>10) E.hrHist.shift();
+    var m=0,i; for(i=0;i<E.hrHist.length;i++) m+=E.hrHist[i]; m/= (E.hrHist.length||1);
+    var v=0; for(i=0;i<E.hrHist.length;i++) v+=(E.hrHist[i]-m)*(E.hrHist[i]-m);
+    E.hrStd=Math.sqrt(v/(E.hrHist.length||1));
+    var c_coh = clamp((E.coh-0.15)/0.30, 0, 1);                 // spectral SNR (primary)
+    var c_stab= clamp(1-(E.hrStd/8), 0, 1);                     // steady HR estimate
+    var c_fill= clamp(E.buf.length/(E.fs*E.winSec), 0, 1);      // buffer warmed up
+    var c_rsa = E.gameTries>4 ? E.coupling : 0;                 // independent physiological check
+    var conf = 0.42*c_coh + 0.24*c_stab + 0.14*c_fill + 0.20*c_rsa;
+    E.conf = lerp(E.conf, clamp(conf,0,1), 0.25);
+  }
+  // ± range for a reading given confidence: low confidence ⇒ wide band.
+  function hrBand(){
+    if(!E.hr) return null;
+    var e = clamp(2 + (1-E.conf)*15 + E.hrStd*0.5, 2, 20);     // bpm
+    return { lo:Math.round(E.hr-e), hi:Math.round(E.hr+e), e:Math.round(e) };
+  }
+  function hrvBand(){
+    if(E.hrv<1) return null;
+    var e = clamp(8 + (1-E.conf)*40, 8, 55);                   // RMSSD is inherently noisy on webcam
+    return { lo:Math.max(0,Math.round(E.hrv-e)), hi:Math.round(E.hrv+e) };
+  }
+
+  function computeBalance(){
+    // components (each ~ -1..1, calm positive)
+    var A_hr = E.baseline? clamp((E.baseline - E.hr)/8, -1, 1) : 0;        // slower-than-baseline = calm
+    var A_coh = clamp((E.coh-0.28)/0.28, -1, 1);                            // sharper spectral peak = calm
+    var A_hrv = clamp((E.hrv-25)/45, -1, 1);                               // higher RMSSD = calm
+    var A_rsa = clamp((E.coupling-0.2)/0.6, -0.5, 1);                       // wide RSA swing = vagal engagement
+    var A = 0.40*A_hr + 0.25*A_coh + 0.20*A_hrv + 0.15*A_rsa;
+    // weight down when signal is junk
+    A *= clamp(E.coh/0.22, 0, 1);
+    return clamp(A,-1,1);
+  }
+  function stateForBalance(A){
+    if(E.state==="idle"||E.state==="baselining") return E.state;
+    // peak requires sustained very-high balance
+    if(A>0.72){ if(!E.peakHoldStart) E.peakHoldStart=now(); if(now()-E.peakHoldStart>7000) return "peak"; }
+    else E.peakHoldStart=0;
+    // hysteresis: hold current unless clearly crossed
+    var cur=E.state;
+    for(var i=0;i<TRANSITIONS.length;i++){ if(TRANSITIONS[i].when(A)){ return TRANSITIONS[i].to; } }
+    return cur;
+  }
+  function enterState(s){
+    if(s===E.state) return;
+    E.state=s; E.stateSince=now();
+    var cfg=STATES[s];
+    $("stateName").textContent = cfg.name;
+    $("dot").style.background = cfg.color; $("dot").style.color=cfg.color;
+    document.documentElement.style.setProperty("--peakhue", cfg.color);
+    if(cfg.tone!=null){
+      applyAudioTargets(cfg.tone, cfg.paceSec);
+      $("dMode").textContent=cfg.name;
+      $("dTone").textContent=cfg.tone+" Hz "+(s==="sympathetic"?"(deep resonant)":s==="peak"?"(pure)":"");
+      $("dPace").textContent=cfg.paceSec.toFixed(1)+" s/breath ("+(60/cfg.paceSec).toFixed(1)+"/min)";
+      $("dHap").textContent=cfg.haptic;
+      $("dVis").textContent=cfg.visual;
+      setHaptic(cfg.paceSec, s);
+      E.absorptionTarget=cfg.absorption;
+    }
+    if(s==="parasympathetic" && !E.firstCalmAt) E.firstCalmAt=now();
+    if(s==="peak") triggerExit();
+    pushLexicon(true);
+  }
+
+  /* ============================== AUDIO ==================================== */
+  function initAudio(){
+    if(E.ac) return;
+    var AC = window.AudioContext||window.webkitAudioContext;
+    if(!AC){ E.soundOn=false; return; }
+    E.ac=new AC();
+    E.lp=E.ac.createBiquadFilter(); E.lp.type="lowpass"; E.lp.frequency.value=600;
+    E.oscGain=E.ac.createGain(); E.oscGain.gain.value=0.0;
+    E.osc=E.ac.createOscillator(); E.osc.type="sine"; E.osc.frequency.value=E.curTone;
+    E.osc.connect(E.oscGain); E.oscGain.connect(E.lp);
+    // sub layer for depth
+    E.subGain=E.ac.createGain(); E.subGain.gain.value=0.0;
+    E.subOsc=E.ac.createOscillator(); E.subOsc.type="sine"; E.subOsc.frequency.value=E.curTone/2;
+    E.subOsc.connect(E.subGain); E.subGain.connect(E.lp);
+    E.lp.connect(E.ac.destination);
+    // breath-pacer LFO on amplitude
+    E.lfoGain=E.ac.createGain();
+    E.osc.start(); E.subOsc.start();
+    applyAudioTargets(E.curTone, E.curPace);
+  }
+  function applyAudioTargets(tone, paceSec){
+    E.curTone=tone; E.statePace=paceSec; recomputePace();
+    if(!E.ac||!E.soundOn) return;
+    var t=E.ac.currentTime;
+    E.osc.frequency.cancelScheduledValues(t);
+    E.osc.frequency.linearRampToValueAtTime(tone, t+4.0);      // glide, don't jump
+    E.subOsc.frequency.linearRampToValueAtTime(tone/2, t+4.0);
+  }
+  // Effective breath pace = manual slider (user leads) or state-adaptive (auto).
+  function recomputePace(){
+    E.curPace = (E.paceMode==="manual") ? clamp(60/E.paceBpm, 3, 20) : (E.statePace||6.5);
+    if(E.paceMode==="adaptive"){ var el=$("pace"); if(el){ el.value=(60/E.curPace).toFixed(1); }
+      var pv=$("paceVal"); if(pv) pv.textContent=(60/E.curPace).toFixed(1)+"/min"; }
+  }
+  var lastBreath=0;
+  function audioBreath(dt){
+    if(!E.ac||!E.soundOn) return;
+    // amplitude follows a raised-cosine breath envelope at current pace
+    E.breathPhase += dt/(E.curPace*1000);
+    if(E.breathPhase>1) E.breathPhase-=1;
+    var env=0.5-0.5*Math.cos(2*Math.PI*E.breathPhase); // 0..1 inhale/exhale
+    var g=0.02+0.05*env;
+    var t=E.ac.currentTime;
+    E.oscGain.gain.setTargetAtTime(g, t, 0.15);
+    E.subGain.gain.setTargetAtTime(g*0.5, t, 0.15);
+  }
+  function stopAudio(){
+    if(!E.ac) return;
+    try{ E.oscGain.gain.setTargetAtTime(0, E.ac.currentTime, 0.2); E.subGain.gain.setTargetAtTime(0, E.ac.currentTime, 0.2);}catch(e){}
+  }
+
+  /* ========================= MIC: aum + breath ============================ */
+  // Analyses the microphone to auto-report breath phases. It reliably detects a
+  // sustained voiced hum ("aum" — low spectral flatness + a stable pitch) and
+  // airflow energy (broadband noise). Audible airflow ⇒ exhale, the quiet after
+  // ⇒ inhale — a heuristic, honestly imperfect, but it feeds the same coupling
+  // cross-check so a wrong guess shows up as low confidence.
+  async function initMic(){
+    if(E.mic) return true;
+    if(!camSupported()){ setMicDet("no mic API",""); return false; }
+    var stream;
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    }catch(err){ setMicDet("blocked ("+((err&&err.name)||"err")+")",""); $("chkMic").checked=false; E.micOn=false; return false; }
+    initAudio(); if(!E.ac){ setMicDet("no audio ctx",""); return false; }
+    var src=E.ac.createMediaStreamSource(stream);
+    var an=E.ac.createAnalyser(); an.fftSize=2048; an.smoothingTimeConstant=0.5;
+    src.connect(an); // analyser only — never routed to output (no feedback)
+    var sensEl=$("micSens");
+    E.mic={ stream:stream, src:src, an:an, td:new Float32Array(an.fftSize), fd:new Float32Array(an.frequencyBinCount),
+            floor:0.005, env:0, voiceFrames:0, lastAum:0,
+            phase:null, airflow:false, lastEdge:0, brightRef:0, sens: sensEl? parseFloat(sensEl.value):6 };
+    $("micRow").hidden=false; setMicDet("listening…","");
+    return true;
+  }
+  function stopMic(){
+    if(!E.mic) return;
+    try{ E.mic.stream.getTracks().forEach(function(t){t.stop();}); }catch(e){}
+    try{ E.mic.src.disconnect(); }catch(e){}
+    E.mic=null; $("micRow").hidden=true; $("micLevel").style.width="0%";
+  }
+  function setMicDet(txt, kind){ var el=$("micDet"); if(el){ el.textContent=txt; el.className="mdet "+(kind||""); } }
+
+  function micDetect(){
+    var m=E.mic; if(!m||!E.ac) return;
+    m.an.getFloatTimeDomainData(m.td); m.an.getFloatFrequencyData(m.fd);
+    var i, n=m.td.length, s=0; for(i=0;i<n;i++) s+=m.td[i]*m.td[i];
+    var rms=Math.sqrt(s/n);
+    // fast envelope (quick attack, quick-ish release) → responsive to phase edges
+    m.env = rms>m.env ? m.env+(rms-m.env)*0.6 : m.env+(rms-m.env)*0.28;
+    // spectral flatness (tonal↓) + centroid (inhale tends brighter than exhale)
+    var fb=m.fd.length, gm=0, am=0, cnt=0, csum=0, cden=0, sr=E.ac.sampleRate, binHz=sr/(2*fb);
+    for(i=2;i<fb;i++){ var mag=Math.pow(10, m.fd[i]/20); if(mag<1e-9) mag=1e-9;
+      gm+=Math.log(mag); am+=mag; cnt++; csum+=mag*(i*binHz); cden+=mag; }
+    gm=Math.exp(gm/cnt); am/=cnt; var flat=am>0? gm/am : 1; var centroid=cden>0? csum/cden : 0;
+    var pitch=autoPitch(m.td, E.ac.sampleRate);
+    // adaptive noise floor from quiet frames
+    if(m.env < m.floor*1.6) m.floor = lerp(m.floor, Math.max(0.0015, m.env), 0.03);
+    $("micLevel").style.width = clamp(m.env/0.06,0,1)*100 + "%";
+
+    // sensitivity 1..10 → threshold multiplier over the noise floor (higher = touchier)
+    var k = lerp(3.0, 1.25, (clamp(m.sens,1,10)-1)/9);
+    var onTh  = Math.max(lerp(0.010,0.0035,(m.sens-1)/9), m.floor*k);
+    var offTh = onTh*0.55;                 // hysteresis so it doesn't chatter
+    var t=now();
+
+    // aum: sustained voiced hum (kept separate from airflow)
+    var voiced = m.env>Math.max(0.009,m.floor*2.2) && flat<0.32 && pitch>70 && pitch<400;
+    if(voiced){
+      m.voiceFrames++;
+      if(m.voiceFrames>4){ setMicDet("🕉 aum · "+Math.round(pitch)+" Hz","aum");
+        m.phase="aum"; if(t-m.lastAum>1000){ reportPhase("aum","mic"); m.lastAum=t; }
+        m.airflow=false; return; }
+    } else m.voiceFrames=0;
+
+    // breath state machine: airflow ON/OFF edges drive inhale→hold→exhale→rest
+    var wasAir=m.airflow;
+    if(!m.airflow && m.env>onTh) m.airflow=true;
+    else if(m.airflow && m.env<offTh) m.airflow=false;
+    if(t-m.lastEdge < 140) { paintMic(m); return; }   // debounce, but stay responsive
+
+    if(m.airflow && !wasAir){                          // airflow just started = a breath stroke
+      m.lastEdge=t;
+      var guess = breathOnsetPhase(m.phase);           // alternate, seeded by prior phase
+      if(centroid>0 && m.brightRef>0){ if(centroid>m.brightRef*1.15) guess="inhale"; else if(centroid<m.brightRef*0.85) guess="exhale"; }
+      m.brightRef = m.brightRef? lerp(m.brightRef, centroid, 0.1) : centroid;
+      m.phase=guess; reportPhase(guess,"mic");
+    } else if(!m.airflow && wasAir){                    // airflow just stopped = a pause
+      m.lastEdge=t;
+      m.phase = breathPausePhase(m.phase);              // 'hold' (after inhale) or 'rest' (after exhale)
+      reportPhase(m.phase==="hold" ? "hold" : "aum","mic"); // rest lights the A "aum·rest" key
+    }
+    paintMic(m);
+  }
+  // pure breath-phase transitions (unit-tested): airflow onset alternates
+  // inhale/exhale; a pause after inhaling is a hold, after exhaling is rest.
+  function breathOnsetPhase(prev){
+    if(prev==="inhale"||prev==="hold") return "exhale";
+    return "inhale"; // exhale / rest / aum / null → inhale
+  }
+  function breathPausePhase(prev){ return prev==="inhale" ? "hold" : "rest"; }
+  function paintMic(m){
+    if($("micDet").className.indexOf("aum")>=0 && m.phase==="aum") return;
+    var lbl = m.phase==="inhale" ? ["breathing in ‹","breath"] :
+              m.phase==="hold"   ? ["holding •","breath"] :
+              m.phase==="exhale" ? ["breathing out ›","breath"] :
+              m.phase==="rest"   ? ["rest ·",""] : ["listening…",""];
+    setMicDet(lbl[0], lbl[1]);
+  }
+  // Autocorrelation pitch estimate (Hz), 0 if none — cheap, robust enough for a hum.
+  function autoPitch(td, sr){
+    var n=td.length, best=-1, bestLag=-1;
+    var minLag=Math.floor(sr/400), maxLag=Math.floor(sr/70);
+    var rms=0,i; for(i=0;i<n;i++) rms+=td[i]*td[i]; rms=Math.sqrt(rms/n);
+    if(rms<0.01) return 0;
+    for(var lag=minLag; lag<=maxLag; lag++){
+      var c=0; for(i=0;i<n-lag;i++) c+=td[i]*td[i+lag];
+      if(c>best){ best=c; bestLag=lag; }
+    }
+    if(bestLag<=0) return 0;
+    return sr/bestLag;
+  }
+
+  /* ================= CAMERA-DERIVED RESPIRATION (bonus) =================== */
+  // Breathing modulates the pulse baseline; the low-frequency band (0.1–0.5 Hz)
+  // of the optical signal gives a breaths-per-minute estimate with no keys/mic.
+  function computeRespiration(rs){
+    if(!rs) return;
+    var n=nextPow2(rs.length), re=new Float64Array(n), im=new Float64Array(n), i;
+    var mean=0; for(i=0;i<rs.length;i++) mean+=rs[i]; mean/=rs.length;
+    for(i=0;i<rs.length;i++) re[i]=(rs[i]-mean);
+    // Hann to reduce leakage
+    for(i=0;i<rs.length;i++){ re[i]*=0.5*(1-Math.cos(2*Math.PI*i/(rs.length-1))); }
+    fft(re,im);
+    var lo=0.1, hi=0.5, loBin=Math.max(1,Math.floor(lo*n/E.fs)), hiBin=Math.ceil(hi*n/E.fs);
+    var peak=0, pb=-1; for(var k=loBin;k<=hiBin;k++){ var mg=re[k]*re[k]+im[k]*im[k]; if(mg>peak){ peak=mg; pb=k; } }
+    if(pb<0) return;
+    var bpm=(pb*E.fs/n)*60;
+    E.respBpm = E.respBpm? lerp(E.respBpm, bpm, 0.2) : bpm;
+  }
+
+  /* ============================== HAPTICS ================================== */
+  function setHaptic(paceSec, state){
+    if(E.hapticTimer){ clearInterval(E.hapticTimer); E.hapticTimer=null; }
+    if(!E.hapticOn || !navigator.vibrate) return;
+    var period=paceSec*1000;
+    var pattern = state==="sympathetic" ? [55,120,55] : state==="parasympathetic" ? [30] : [40,90,40];
+    E.hapticTimer=setInterval(function(){ try{ navigator.vibrate(pattern); }catch(e){} }, period);
+  }
+
+  /* ============================ NEURO-LEXICON ============================== */
+  // Generative attention cues conditioned on state + present sensation anchors.
+  // Framed as invitations (positive reappraisal / savoring), never medical claims.
+  var ANCHOR = ["the cool edge of the air at the rim of your nostrils","the faint weight of your hands where they rest",
+    "the light pressure of your fingertip against the lens","the warmth pooling in your palms",
+    "the slow fall of your shoulders","the quiet contact of your back against the chair",
+    "the small tide of your belly rising and falling"];
+  var LEX = {
+    sympathetic: [
+      "Nothing to fix. Let {a} be the only thing you attend to — everything else can wait one breath.",
+      "The tone dropped low on purpose. Ride it downward. Let your exhale grow longer than your inhale.",
+      "You are safe enough, right now, to slow down. Follow {a} and let the pace pull you with it.",
+      "Unclench {a}. There is nowhere to be for the length of this breath."
+    ],
+    neutral: [
+      "Good — the system is settling. Keep your attention loosely on {a}.",
+      "Let {a} become slightly interesting, then slightly pleasant. Stay with the pleasant part.",
+      "Notice {a} without narrating it. Just the raw sensation, arriving and leaving.",
+      "The field is quieting. Let the next exhale be the softest thing in the room."
+    ],
+    parasympathetic: [
+      "Rest in {a}. Let it become the single point the whole mind gathers around.",
+      "Let the calm feel faintly rewarding — savor {a} the way you'd savor warmth after cold.",
+      "Collapse the visual field into one point, and let {a} hold you there.",
+      "This ease is yours. Let it deepen on its own — you don't have to reach for it."
+    ],
+    peak: [
+      "Here. Stay exactly here.",
+      "Nothing to add. The point holds you.",
+      "Let it brighten and steady. This is the note to remember."
+    ]
+  };
+  var lastLexT=0, lastLexIdx=-1;
+  function pushLexicon(force){
+    var s=E.state; if(s==="idle"||s==="baselining") return;
+    if(!force && now()-lastLexT<7000) return;
+    var pool=LEX[s]||LEX.neutral;
+    var idx; do{ idx=Math.floor((E.phase*97+lastLexIdx+1))%pool.length; lastLexIdx=idx; }while(false);
+    var anchor=ANCHOR[Math.floor((E.phase*53))%ANCHOR.length];
+    var txt=pool[idx].replace("{a}", anchor);
+    var el=$("lexicon"); el.style.color = STATES[s].color;
+    el.textContent=txt; lastLexT=now();
+  }
+
+  /* ============================== VISUALS ================================== */
+  var cv=$("viz"), cx=cv.getContext("2d"), DPR=Math.min(2,window.devicePixelRatio||1);
+  function resize(){ var r=cv.getBoundingClientRect(); cv.width=r.width*DPR; cv.height=r.height*DPR; }
+  window.addEventListener("resize", resize);
+
+  function drawViz(dt){
+    var W=cv.width, H=cv.height, cxp=W/2, cyp=H/2;
+    E.phase += dt*0.00018*(1+ (1-E.absorption)*0.6);
+    E.breathScale = 0.5-0.5*Math.cos(2*Math.PI*E.breathPhase);
+    var ab=E.absorption;
+    // background wash shifts with state
+    var col = STATES[E.state]||STATES.neutral;
+    cx.globalCompositeOperation="source-over";
+    var g=cx.createRadialGradient(cxp,cyp,0,cxp,cyp,Math.max(W,H)*0.7);
+    g.addColorStop(0, shade(col.color, lerp(0.10,0.20,ab)));
+    g.addColorStop(1, "rgba(5,7,12,1)");
+    cx.fillStyle=g; cx.fillRect(0,0,W,H);
+
+    // LAYER A: block-matching puzzle field (weight = 1-absorption) — distraction blocking
+    var puz=1-ab;
+    if(puz>0.02 && !E.reduced){
+      var cols=10, rows=6, cw=W/cols, ch=H/rows;
+      cx.globalAlpha=puz*0.5;
+      for(var yy=0;yy<rows;yy++)for(var xx=0;xx<cols;xx++){
+        var seed=(xx*7+yy*13);
+        var jx=Math.sin(E.phase*3+seed)*cw*0.18*puz;
+        var jy=Math.cos(E.phase*2.3+seed*1.7)*ch*0.18*puz;
+        var s=0.4+0.5*Math.abs(Math.sin(E.phase*1.5+seed));
+        cx.fillStyle=shade(col.color, 0.05+0.12*s*puz);
+        var bw=cw*0.6*s, bh=ch*0.6*s;
+        cx.fillRect(xx*cw+cw*0.2+jx, yy*ch+ch*0.2+jy, bw, bh);
+      }
+      cx.globalAlpha=1;
+    }
+
+    // LAYER B: single-point mandala (weight = absorption) — absorption / jhāna
+    if(ab>0.02){
+      cx.save();
+      cx.translate(cxp,cyp);
+      cx.globalAlpha=ab;
+      var baseR=Math.min(W,H)*(0.10+0.02*E.breathScale);
+      var rings=Math.round(lerp(3,7,ab));
+      var rot=E.phase*(E.reduced?0.05:0.35);
+      for(var ring=rings; ring>=1; ring--){
+        var rr=baseR*ring*(1.0+0.06*E.breathScale);
+        var petals=6+ring*2;
+        cx.beginPath();
+        for(var p=0;p<=petals;p++){
+          var a=(p/petals)*Math.PI*2+rot*(ring%2?1:-1);
+          var wob=1+0.12*Math.sin(a*petals*0.5+E.phase*2)*(1-ab*0.6);
+          var x=Math.cos(a)*rr*wob, y=Math.sin(a)*rr*wob;
+          if(p===0) cx.moveTo(x,y); else cx.lineTo(x,y);
+        }
+        cx.closePath();
+        cx.strokeStyle=shade(col.color, lerp(0.18,0.5,ab)*(ring/rings));
+        cx.lineWidth=DPR*(1+ab);
+        cx.stroke();
+      }
+      // luminous single point at center
+      var pr=baseR*(0.5+0.5*E.breathScale)*lerp(0.3,1,ab);
+      var pg=cx.createRadialGradient(0,0,0,0,0,pr*3);
+      pg.addColorStop(0, shade(col.color, lerp(0.5,1,ab)));
+      pg.addColorStop(1, "rgba(0,0,0,0)");
+      cx.fillStyle=pg; cx.beginPath(); cx.arc(0,0,pr*3,0,Math.PI*2); cx.fill();
+      cx.restore();
+    }
+
+    // breathing guide ring (always) — expand=inhale, contract=exhale
+    cx.save(); cx.translate(cxp,cyp);
+    var gr=Math.min(W,H)*(0.30+0.05*E.breathScale);
+    cx.beginPath(); cx.arc(0,0,gr,0,Math.PI*2);
+    cx.strokeStyle="rgba(200,220,255,"+(0.10+0.12*ab)+")"; cx.lineWidth=DPR*1.5; cx.stroke();
+    cx.restore();
+  }
+  function shade(hex, a){
+    var h=hex.replace("#",""); if(h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    var r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+    return "rgba("+r+","+g+","+b+","+a+")";
+  }
+
+  /* ============================== MAIN LOOP ================================ */
+  var lastFrame=0, lastDSP=0;
+  function loop(t){
+    if(!E.running){ return; }
+    var dt = lastFrame? (t-lastFrame):16; lastFrame=t;
+    // sample camera at frame rate
+    var s=sampleFrame();
+    if(s){ E.buf.push({t:now(), v:s.v}); if(E.buf.length>600) E.buf.shift(); updateIBI(s.v); }
+
+    // ease absorption + visuals every frame
+    E.absorption += (E.absorptionTarget - E.absorption)*Math.min(1, dt*0.0009);
+    recomputePace();
+    if(E.micOn) micDetect();
+    audioBreath(dt);
+    updatePrompt();          // drive the breath-game pacer prompt (or detect read-out)
+    drawViz(dt);
+
+    // DSP every ~350ms
+    if(t-lastDSP>350){
+      lastDSP=t;
+      runDSP();
+      pushLexicon(false);
+      updateHUD();
+    }
+    E._raf=requestAnimationFrame(loop);
+  }
+
+  function runDSP(){
+    var rs=resample(); if(!rs) return;
+    computeRespiration(rs); // camera-derived breaths/min (low-freq baseline)
+    var sig=hann(detrend(rs));
+    var sp=spectralHR(sig); if(!sp) return;
+    // smooth HR
+    E.hr = E.hr? lerp(E.hr, sp.hr, 0.25) : sp.hr;
+    E.coh = E.coh? lerp(E.coh, sp.coh, 0.3) : sp.coh;
+    E.hrv = lerp(E.hrv, rmssd(), 0.3);
+    updateCoupling();       // RSA cross-check from reported breath phases
+    updateConfidence();     // reading-confidence estimate
+
+    // baseline capture during first 30s
+    if(E.state==="baselining"){
+      if(E.coh>0.15) E.baselineSamples.push(E.hr);
+      if(now()-E.baseStart>30000 && E.baselineSamples.length>10){
+        E.baselineSamples.sort(function(a,b){return a-b;});
+        E.baseline=E.baselineSamples[Math.floor(E.baselineSamples.length/2)]; // median
+        $("dBase").textContent=Math.round(E.baseline)+" bpm";
+        enterState("neutral");
+      } else if(now()-E.baseStart>30000){
+        E.baseline=E.hr||72; $("dBase").textContent=Math.round(E.baseline)+" bpm (low-confidence)";
+        enterState("neutral");
+      }
+      return;
+    }
+
+    // balance + state machine
+    E.bal=computeBalance();
+    E.balSmooth=lerp(E.balSmooth, E.bal, 0.2);
+    var ns=stateForBalance(E.balSmooth);
+    enterState(ns);
+  }
+
+  /* ============================== HUD ===================================== */
+  function updateHUD(){
+    $("mHr").textContent = E.hr? Math.round(E.hr) : "–";
+    $("mHrv").textContent = E.hrv>1? Math.round(E.hrv) : "–";
+    $("mCoh").textContent = E.coh? Math.round(E.coh*100) : "–";
+    $("mConf").textContent = E.conf? Math.round(E.conf*100) : "–";
+    var b=E.balSmooth;
+    $("mBal").textContent = b>0.4?"calm ↑":b>0.1?"settling":b<-0.15?"aroused ↓":"neutral";
+    $("bHr").style.width = clamp((E.hr-45)/(120-45)*100,4,100)+"%";
+    $("bHrv").style.width = clamp(E.hrv/80*100,3,100)+"%";
+    $("bCoh").style.width = clamp(E.coh*100,3,100)+"%";
+    $("bConf").style.width = clamp(E.conf*100,3,100)+"%";
+    $("bConf").style.background = E.conf>0.66?"var(--good)":E.conf>0.33?"var(--warn)":"var(--bad)";
+    var bp=(b+1)/2*100; $("bBal").style.width=clamp(bp,3,100)+"%";
+    $("bBal").style.background = b>0.1? "var(--calm)" : b<-0.15? "var(--stress)":"var(--warn)";
+    // ± ranges (probable true reading)
+    var hb=hrBand(); $("rHr").textContent = hb? "likely "+hb.lo+"–"+hb.hi+" (±"+hb.e+")" : "—";
+    var vb=hrvBand(); $("rHrv").textContent = vb? "likely "+vb.lo+"–"+vb.hi+" ms" : "—";
+    $("rConf").textContent = E.conf>0.66?"trustworthy":E.conf>0.33?"treat as rough":"low — noisy signal";
+    // game score + coupling (match % only meaningful when you're following the app)
+    $("gAcc").textContent = (E.leadMode==="guided" && E.gameTries>0)? Math.round(E.gameAcc*100)+"%" : "–";
+    $("gCouple").textContent = (E.rsaBuf.length>6 && E.rsaDelta!=null)? (E.rsaDelta>0?"+":"")+E.rsaDelta.toFixed(1)+" bpm" : "–";
+    // pace + respiration read-outs
+    $("dPace").textContent = (60/E.curPace).toFixed(1)+"/min ("+E.curPace.toFixed(1)+"s)"+(E.paceMode==="manual"?" · manual":" · adaptive");
+    $("dResp").textContent = E.respBpm>3? E.respBpm.toFixed(1)+"/min (camera)" : "—";
+    updateClinician();
+    // session panel
+    if(E.sessionStart){
+      var sec=Math.floor((now()-E.sessionStart)/1000);
+      $("dTime").textContent=Math.floor(sec/60)+"m "+(sec%60)+"s";
+      if(E.firstCalmAt){ var v=(E.firstCalmAt-E.sessionStart)/1000; $("dVel").textContent=v.toFixed(0)+"s to first calm"; }
+    }
+  }
+
+  /* ===================== CLINICIAN / NEUROCHEMICAL VOICE =================== */
+  // Grounded persona: names the mechanism honestly ("associated with", not
+  // "this is releasing X now"), and always states how much to trust the read.
+  var lastClin=0, lastClinTxt="";
+  function updateClinician(){
+    if(now()-lastClin<5000) return; lastClin=now();
+    var el=$("clinText"); if(!el) return;
+    var conf=E.conf, s=E.state, hb=hrBand();
+    var trust = conf>0.66? "The signal is clean enough to take at face value."
+              : conf>0.33? "Read this as a rough estimate — the optical signal is only moderately clean."
+              : "Confidence is low right now: hold still, brighten your face, and let the buffer settle before trusting the numbers.";
+    var body;
+    if(s==="baselining"){
+      body="Establishing your resting baseline. Breathe as you normally would — I need a stable reference before any of the state calls mean anything. "+trust;
+    } else if(s==="sympathetic"){
+      body="Your profile reads sympathetically weighted — faster rate, narrow beat-to-beat variability. That's the arousal branch (adrenergic tone) in the foreground. I've dropped the tone low and lengthened the exhale; a longer exhale is the most direct voluntary lever you have on the vagus nerve. Let the out-breath lead. "+trust;
+    } else if(s==="neutral"){
+      body="You're in transition. Beat-to-beat variability is opening up, which tracks with rising vagal (parasympathetic) tone — the branch associated with acetylcholine-mediated slowing and the felt sense of 'downshifting'. Keep the exhale long and stay with the anchor. "+trust;
+    } else if(s==="parasympathetic"){
+      body=(E.coupling>0.4? "Your reported breath and your heart-rate swing are moving together — that respiratory coupling is real vagal engagement, not an artifact. " : "")+
+           "This is the parasympathetic register: slower rate, wider RSA. States like this are associated with the calm-reward chemistry — dopaminergic 'quiet interest' and endogenous opioid ease — though I'm inferring that from your physiology, not measuring it. Let the field narrow to one point. "+trust;
+    } else if(s==="peak"){
+      body="Sustained coherence. Rate, variability, and your breath rhythm are locked. This is the note to remember and carry out with you. "+trust;
+    } else {
+      body="Idle. Start a session and follow the breath pacer with the W/S/D/A keys — that both trains the rhythm and lets me verify the optical read against your actual breathing. "+trust;
+    }
+    if(hb && s!=="idle" && s!=="baselining") body = "HR ≈ "+Math.round(E.hr)+" bpm (probably "+hb.lo+"–"+hb.hi+"). "+body;
+    if(body!==lastClinTxt){ el.textContent=body; lastClinTxt=body; }
+  }
+
+  /* ============================ EXIT / COMPLETION ========================== */
+  function triggerExit(){
+    if(E.sessionSaved) return;
+    var el=$("exit");
+    var dur=E.sessionStart? Math.floor((now()-E.sessionStart)/1000):0;
+    var vel=E.firstCalmAt? Math.round((E.firstCalmAt-E.sessionStart)/1000):null;
+    $("exitBody").textContent =
+      "You reached steady coherence in "+Math.floor(dur/60)+"m "+(dur%60)+"s"+
+      (vel!=null? " (first calm at "+vel+"s)":"")+
+      ". This is the state worth remembering. Carry the steadiness with you — take one clear next action while it lasts, then come back when you want it again.";
+    el.classList.add("show");
+    saveSession(true);
+  }
+  function saveSession(peak){
+    if(E.sessionSaved || !E.sessionStart) return;
+    E.sessionSaved=true;
+    var dur=Math.floor((now()-E.sessionStart)/1000);
+    Store.addSession({
+      date:new Date().toISOString(),
+      durationSec:dur,
+      avgHR:E.hr?Math.round(E.hr):null,
+      baselineHR:E.baseline?Math.round(E.baseline):null,
+      peakCoherence:Math.round(E.coh*100),
+      reachedPeak:!!peak,
+      timeToCalmSec:E.firstCalmAt?Math.round((E.firstCalmAt-E.sessionStart)/1000):null
+    });
+    renderHistory();
+  }
+  $("exitClose").addEventListener("click", function(){ $("exit").classList.remove("show"); });
+
+  /* ============================ HISTORY UI ================================= */
+  function renderHistory(){
+    var o=Store.get(), el=$("hist");
+    if(!o.sessions||!o.sessions.length){ el.innerHTML='<div class="empty">No sessions stored yet.</div>'; return; }
+    var html="";
+    o.sessions.forEach(function(s){
+      var d=new Date(s.date);
+      var dd=(d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+      html+='<div class="hrow"><span class="t">'+dd+'</span>'+
+        '<span>'+Math.floor(s.durationSec/60)+'m'+(s.durationSec%60)+'s</span>'+
+        '<span>'+(s.avgHR||"–")+' bpm</span>'+
+        '<span>'+(s.reachedPeak?'★ ':'')+s.peakCoherence+'%</span></div>';
+    });
+    el.innerHTML=html;
+  }
+  $("btnClear").addEventListener("click", function(){ Store.clear(); renderHistory(); });
+
+  /* ============================ CONTROLS ================================== */
+  function camSupported(){ return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia); }
+  function inIframe(){ try{ return window.self!==window.top; }catch(e){ return true; } }
+  function setCamStatus(kind, msg){
+    var el=$("camStatus"); if(!el) return;
+    el.hidden=false; el.className="camstatus "+kind;
+    el.querySelector(".msg").textContent=msg;
+    $("btnCam").hidden = (kind==="ok");
+  }
+  function clearCamStatus(){ var el=$("camStatus"); if(el){ el.hidden=true; } }
+
+  async function start(){
+    initGrab(); resize();
+    E.video=$("cam");
+    // capability + secure-context gate BEFORE we touch getUserMedia
+    if(!camSupported()){
+      var why = !window.isSecureContext
+        ? "This page isn't a secure context. Cameras only work over https:// or on localhost — file:// and some embeds are blocked."
+        : "getUserMedia isn't available in this browser context.";
+      if(inIframe()) why += " It's also running inside an embedded frame (like the Claude artifact preview), which blocks camera access. Open the standalone/hosted page to use your real camera.";
+      setCamStatus("blocked", why);
+      $("lexicon").textContent="Camera blocked here — running the live simulation so you can still see the loop. See the note below to use your real camera.";
+      startSim();
+      return;
+    }
+    setCamStatus("wait","Requesting camera… choose “Allow” in the browser prompt.");
+    try{
+      E.stream=await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode: E.source==="finger"?{ideal:"environment"}:{ideal:"user"}, width:{ideal:320}, height:{ideal:240} }, audio:false
+      });
+    }catch(err){
+      var name=(err&&err.name)||"Error", msg;
+      if(name==="NotAllowedError"||name==="SecurityError"){
+        msg="Camera permission was denied or blocked.";
+        if(inIframe()) msg+=" This page is embedded in a frame (e.g. the Claude artifact preview) that isn't allowed to use the camera — open the hosted/standalone page instead.";
+        else msg+=" Click the camera icon in your browser's address bar, allow access, then press “Enable camera”.";
+      } else if(name==="NotFoundError"||name==="OverconstrainedError"||name==="DevicesNotFoundError"){
+        msg="No matching camera was found. If you picked “Fingertip”, switch the source to “Face”, or connect a camera.";
+      } else if(name==="NotReadableError"||name==="TrackStartError"){
+        msg="The camera is busy — another app or tab is using it. Close it and press “Enable camera”.";
+      } else {
+        msg="Camera error ("+name+"). Running the simulation instead.";
+      }
+      setCamStatus("blocked", msg);
+      $("lexicon").textContent="Camera unavailable — running the live simulation so the loop is still playable.";
+      startSim();
+      return;
+    }
+    clearCamStatus(); setCamStatus("ok","Camera live — processing frames locally, nothing is recorded or sent.");
+    E.video.srcObject=E.stream; await E.video.play().catch(function(){});
+    if(E.source==="finger"){ try{ applyTorch(); }catch(e){} }
+    E.soundOn=$("chkSound").checked; E.hapticOn=$("chkHaptic").checked;
+    if(E.soundOn) initAudio();
+    E.running=true; E.sessionStart=now(); E.sessionSaved=false; E.firstCalmAt=0; E.baselineSamples=[]; E.baseline=null; E.baseStart=now();
+    resetGame();
+    enterState("baselining");
+    $("btnStart").disabled=true; $("btnStop").disabled=false; $("btnRecal").disabled=false;
+    $("lexicon").textContent="Finding your baseline. Sit still, breathe normally, keep your face evenly lit for ~30 seconds.";
+    if(E.micOn) initMic();
+    E._raf=requestAnimationFrame(loop);
+  }
+  function resetGame(){
+    E.reported=null; E.promptPhase=null; E.detectedPhase=null; E.gameAcc=0; E.gameHits=0; E.gameTries=0;
+    E.rsaBuf=[]; E.coupling=0; E.rsaDelta=null; E.conf=0; E.hrHist=[]; E.hr=0; E.hrv=0; E.coh=0; E.respBpm=0;
+  }
+  function applyTorch(){
+    var track=E.stream.getVideoTracks()[0];
+    var caps=track.getCapabilities&&track.getCapabilities();
+    if(caps&&caps.torch){ track.applyConstraints({advanced:[{torch:true}]}); }
+  }
+  function stop(){
+    E.running=false; if(E._raf) cancelAnimationFrame(E._raf);
+    saveSession(false);
+    if(E.stream){ E.stream.getTracks().forEach(function(t){t.stop();}); E.stream=null; }
+    stopAudio(); stopMic(); if(E.hapticTimer) clearInterval(E.hapticTimer);
+    enterState("idle"); $("stateName").textContent="idle";
+    $("btnStart").disabled=false; $("btnStop").disabled=true; $("btnRecal").disabled=true;
+    $("lexicon").textContent="Session ended. Your metrics are saved locally. Start again whenever you like.";
+  }
+  function recal(){ E.baselineSamples=[]; E.baseline=null; E.baseStart=now(); enterState("baselining"); }
+
+  // Simulation fallback (no camera): synthesize a physiologically-plausible signal
+  function startSim(){
+    E.running=true; E.sessionStart=now(); E.sessionSaved=false; E.firstCalmAt=0;
+    resetGame();
+    E.baseline=74; E.simT=0; E.simHR=82; enterState("baselining");
+    if($("chkSound").checked){ E.soundOn=true; initAudio(); }
+    if(E.micOn) initMic();
+    $("btnStart").disabled=true; $("btnStop").disabled=false;
+    var simLoop=function(t){
+      if(!E.running) return;
+      var dt=lastFrame?(t-lastFrame):16; lastFrame=t;
+      E.simT+=dt;
+      // drift from 82 → 60 bpm over ~90s, add pulse wave into buffer
+      var target=lerp(82,58,clamp(E.simT/90000,0,1));
+      E.simHR=lerp(E.simHR,target,0.002);
+      var f=E.simHR/60;
+      var v=128+18*Math.sin(2*Math.PI*f*(E.simT/1000))+4*Math.sin(2*Math.PI*0.2*(E.simT/1000));
+      E.buf.push({t:now(), v:v}); if(E.buf.length>600) E.buf.shift(); updateIBI(v);
+      E.absorption += (E.absorptionTarget-E.absorption)*Math.min(1,dt*0.0009);
+      recomputePace(); if(E.micOn) micDetect(); audioBreath(dt); updatePrompt(); drawViz(dt);
+      if(t-lastDSP>350){ lastDSP=t; runDSP(); pushLexicon(false); updateHUD(); }
+      E._raf=requestAnimationFrame(simLoop);
+    };
+    E._raf=requestAnimationFrame(simLoop);
+  }
+
+  $("btnStart").addEventListener("click", start);
+  $("btnStop").addEventListener("click", stop);
+  $("btnRecal").addEventListener("click", recal);
+  $("btnCam").addEventListener("click", function(){
+    // tear down any running sim/session, then re-request the real camera
+    E.running=false; if(E._raf) cancelAnimationFrame(E._raf);
+    if(E.stream){ E.stream.getTracks().forEach(function(t){t.stop();}); E.stream=null; }
+    E.buf=[]; E.sessionSaved=false; clearCamStatus(); start();
+  });
+  $("src").addEventListener("change", function(e){ E.source=e.target.value; });
+  $("chkSound").addEventListener("change", function(e){ E.soundOn=e.target.checked; if(!E.soundOn) stopAudio(); else if(E.running) initAudio(); });
+  $("chkHaptic").addEventListener("change", function(e){ E.hapticOn=e.target.checked; if(!E.hapticOn&&E.hapticTimer) clearInterval(E.hapticTimer); });
+
+  // Lead mode: guided (you follow app) vs detect (app follows you).
+  function applyLeadUI(){
+    var detect=E.leadMode==="detect";
+    $("gMode").innerHTML = detect
+      ? "breathe naturally — the app reads your phase from "+(E.micOn?"mic + keys + camera":"keys + camera")+" and follows you"
+      : "follow the pacer &amp; tap the phase — it cross-checks the optical signal";
+    $("gScoreWrap").style.opacity = detect? "0.55" : "1";
+    if(detect){ var lit=document.querySelector(".key.lit"); if(lit) lit.classList.remove("lit"); }
+  }
+  $("lead").addEventListener("change", function(e){ E.leadMode=e.target.value; E.promptPhase=null; applyLeadUI(); });
+  $("chkAdaptive").addEventListener("change", function(e){
+    E.paceMode = e.target.checked? "adaptive":"manual";
+    $("pace").disabled = e.target.checked; recomputePace();
+  });
+  $("pace").addEventListener("input", function(e){
+    E.paceBpm=parseFloat(e.target.value); $("paceVal").textContent=E.paceBpm.toFixed(1)+"/min";
+    if(E.paceMode==="manual") recomputePace();
+  });
+  $("chkMic").addEventListener("change", function(e){
+    E.micOn=e.target.checked;
+    if(E.micOn){ if(E.running) initMic(); else { $("micRow").hidden=false; setMicDet("starts with session","" ); } }
+    else { stopMic(); }
+    applyLeadUI();
+  });
+  $("micSens").addEventListener("input", function(e){ if(E.mic) E.mic.sens=parseFloat(e.target.value); });
+
+  // Breath-key game: W/S/D/A (or tap) report the current breath phase.
+  window.addEventListener("keydown", function(e){
+    if(e.repeat) return;
+    var tag=(e.target&&e.target.tagName)||"";
+    if(tag==="INPUT"||tag==="SELECT"||tag==="TEXTAREA") return;
+    var k=e.key&&e.key.toLowerCase();
+    if(PHASE_KEYS[k]){ reportPhase(PHASE_KEYS[k], "key"); }
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".key"), function(btn){
+    btn.addEventListener("click", function(){ reportPhase(btn.getAttribute("data-k"), "key"); });
+  });
+
+  /* ============================ SELF-TESTS ================================= */
+  function runTests(){
+    var tests=[];
+    // 1. FFT recovers a known frequency
+    (function(){
+      var n=256, fs=30, freq=1.25; // 75 bpm
+      var re=new Float64Array(n), im=new Float64Array(n);
+      for(var i=0;i<n;i++) re[i]=Math.sin(2*Math.PI*freq*i/fs);
+      fft(re,im);
+      var peak=0,pb=0; for(var k=1;k<n/2;k++){var m=re[k]*re[k]+im[k]*im[k]; if(m>peak){peak=m;pb=k;}}
+      var got=pb*fs/n;
+      tests.push({name:"FFT recovers 1.25 Hz sine (→75 bpm)", ok:Math.abs(got-freq)<0.15, detail:got.toFixed(2)+" Hz"});
+    })();
+    // 2. spectralHR end-to-end on synthetic PPG
+    (function(){
+      var save=E.fs; E.fs=30; var N=300, arr=new Float64Array(N);
+      for(var i=0;i<N;i++) arr[i]=Math.sin(2*Math.PI*(66/60)*i/30)+0.15*Math.sin(2*Math.PI*0.15*i/30);
+      var r=spectralHR(hann(detrend(arr))); E.fs=save;
+      tests.push({name:"Pipeline detects ~66 bpm from synthetic PPG", ok:r&&Math.abs(r.hr-66)<6, detail:r?r.hr.toFixed(1)+" bpm":"null"});
+    })();
+    // 3. RMSSD math
+    (function(){
+      var sv=E.ibis; E.ibis=[800,820,810,830,815]; var r=rmssd(); E.ibis=sv;
+      tests.push({name:"RMSSD computes on known IBI series", ok:r>10&&r<40, detail:r.toFixed(1)+" ms"});
+    })();
+    // 4. state machine: stress balance → sympathetic
+    (function(){
+      var sv=E.state; E.state="neutral"; var s=stateForBalance(-0.5); E.state=sv;
+      tests.push({name:"Balance −0.5 → sympathetic state", ok:s==="sympathetic", detail:s});
+    })();
+    // 5. state machine: calm balance → parasympathetic
+    (function(){
+      var sv=E.state; E.state="neutral"; var s=stateForBalance(0.6); E.state=sv;
+      tests.push({name:"Balance +0.6 → parasympathetic state", ok:s==="parasympathetic", detail:s});
+    })();
+    // 6. balance responds to HR below baseline
+    (function(){
+      var svb=E.baseline,svh=E.hr,svc=E.coh,svv=E.hrv;
+      E.baseline=75; E.hr=63; E.coh=0.5; E.hrv=55; var a=computeBalance();
+      E.baseline=svb;E.hr=svh;E.coh=svc;E.hrv=svv;
+      tests.push({name:"Lower HR + high HRV → positive balance", ok:a>0.2, detail:a.toFixed(2)});
+    })();
+    // 7. lexicon synthesizes non-empty, anchor-substituted text
+    (function(){
+      var t=LEX.parasympathetic[0].replace("{a}",ANCHOR[0]);
+      tests.push({name:"Lexicon substitutes sensation anchor (no placeholder left)", ok:t.indexOf("{a}")<0&&t.length>20, detail:'"'+t.slice(0,32)+'…"'});
+    })();
+    // 8. storage round-trips
+    (function(){
+      var before=Store.get().sessions.length;
+      Store.addSession({date:new Date().toISOString(),durationSec:1,avgHR:70,peakCoherence:50,reachedPeak:false});
+      var after=Store.get().sessions.length;
+      // roll back the probe
+      var o=Store.get(); o.sessions.shift(); Store.set(o);
+      tests.push({name:"Storage layer persists a session record", ok:after===before+1, detail:Store.mode});
+    })();
+    // 9. resample handles sparse buffer without NaN
+    (function(){
+      var sv=E.buf; E.buf=[]; for(var i=0;i<40;i++) E.buf.push({t:i*33, v:128+Math.sin(i)});
+      var rs=resample(); E.buf=sv;
+      var okv=rs&&rs.length>0; for(var k=0;rs&&k<rs.length;k++){ if(isNaN(rs[k])){okv=false;break;} }
+      tests.push({name:"Resampler produces finite uniform grid", ok:!!okv, detail:rs?rs.length+" samples":"null"});
+    })();
+    // 10. no unresolved template placeholders across all lexicon entries
+    (function(){
+      var bad=0; Object.keys(LEX).forEach(function(k){ LEX[k].forEach(function(s){ if(/\{[a-z]\}/.test(s.replace("{a}","x"))) bad++; }); });
+      tests.push({name:"No stray template placeholders in lexicon corpus", ok:bad===0, detail:bad+" stray"});
+    })();
+    // 11. breath cycle maps fractions to the four phases in order
+    (function(){
+      var ok = phaseAt(0.1)==="inhale" && phaseAt(0.4)==="hold" && phaseAt(0.6)==="exhale" && phaseAt(0.9)==="aum";
+      tests.push({name:"Breath cycle maps to inhale→hold→exhale→aum", ok:ok, detail:phaseAt(0.1)+"/"+phaseAt(0.4)+"/"+phaseAt(0.6)+"/"+phaseAt(0.9)});
+    })();
+    // 12. game scoring: correct key raises accuracy, wrong key lowers it
+    (function(){
+      var svR=E.running,svP=E.promptPhase,svA=E.gameAcc,svT=E.gameTries,svH=E.gameHits;
+      E.running=true; E.promptPhase="inhale"; E.gameAcc=0.5; E.gameTries=0; E.gameHits=0;
+      reportPhase("inhale"); var up=E.gameAcc; reportPhase("hold"); var down=E.gameAcc;
+      E.running=svR; E.promptPhase=svP; E.gameAcc=svA; E.gameTries=svT; E.gameHits=svH;
+      tests.push({name:"Game accuracy rises on hit, falls on miss", ok:up>0.5&&down<up, detail:"hit→"+up.toFixed(2)+" miss→"+down.toFixed(2)});
+    })();
+    // 13. confidence widens the HR error band when signal is poor
+    (function(){
+      var svC=E.conf,svH=E.hr,svS=E.hrStd; E.hr=72; E.hrStd=1;
+      E.conf=0.9; var tight=hrBand().e; E.conf=0.1; var wide=hrBand().e;
+      E.conf=svC; E.hr=svH; E.hrStd=svS;
+      tests.push({name:"Low confidence widens the HR ± band", ok:wide>tight, detail:"±"+tight+" → ±"+wide+" bpm"});
+    })();
+    // 14. RSA coupling detects inhale-HR > exhale-HR
+    (function(){
+      var sv=E.rsaBuf.slice(), svc=E.coupling, svd=E.rsaDelta, t=now();
+      E.rsaBuf=[]; for(var i=0;i<4;i++){ E.rsaBuf.push({t:t,hr:78,phase:"inhale"}); E.rsaBuf.push({t:t,hr:70,phase:"exhale"}); }
+      E.coupling=0; var svHr=E.hr; E.hr=0; updateCoupling(); E.hr=svHr;
+      var ok=E.rsaDelta!=null && E.rsaDelta>3;
+      E.rsaBuf=sv; E.coupling=svc; E.rsaDelta=svd;
+      tests.push({name:"RSA coupling detects inhale-HR > exhale-HR", ok:ok, detail:"Δ "+(E.rsaDelta==null?"n/a":E.rsaDelta.toFixed(1))+" bpm"});
+    })();
+    // 15. autocorrelation pitch recovers a known tone (for aum detection)
+    (function(){
+      var sr=44100, f=140, n=2048, td=new Float32Array(n);
+      for(var i=0;i<n;i++) td[i]=0.5*Math.sin(2*Math.PI*f*i/sr);
+      var p=autoPitch(td, sr);
+      tests.push({name:"Pitch detector recovers a 140 Hz hum (±10)", ok:Math.abs(p-140)<10, detail:p.toFixed(1)+" Hz"});
+    })();
+    // 16. manual pace maps BPM → seconds/breath
+    (function(){
+      var svM=E.paceMode, svB=E.paceBpm, svP=E.curPace, svS=E.statePace;
+      E.paceMode="manual"; E.paceBpm=6; recomputePace(); var six=E.curPace;
+      E.paceBpm=4; recomputePace(); var four=E.curPace;
+      E.paceMode=svM; E.paceBpm=svB; E.curPace=svP; E.statePace=svS;
+      tests.push({name:"Manual pace maps 6/min→10s, 4/min→15s", ok:Math.abs(six-10)<0.1&&Math.abs(four-15)<0.1, detail:six.toFixed(1)+"s / "+four.toFixed(1)+"s"});
+    })();
+    // 17. detect mode records reported phase without scoring
+    (function(){
+      var svL=E.leadMode, svT=E.gameTries, svD=E.detectedPhase;
+      E.leadMode="detect"; E.gameTries=0; reportPhase("exhale","mic");
+      var ok=E.detectedPhase==="exhale" && E.gameTries===0;
+      E.leadMode=svL; E.gameTries=svT; E.detectedPhase=svD;
+      tests.push({name:"Detect mode logs phase, no score penalty", ok:ok, detail:"tries="+E.gameTries});
+    })();
+    // 18. mic breath cycle: inhale → hold → exhale → rest → inhale
+    (function(){
+      var p=null, seq=[];
+      p=breathOnsetPhase(p); seq.push(p);      // onset → inhale
+      p=breathPausePhase(p); seq.push(p);      // pause  → hold
+      p=breathOnsetPhase(p); seq.push(p);      // onset → exhale
+      p=breathPausePhase(p); seq.push(p);      // pause  → rest
+      p=breathOnsetPhase(p); seq.push(p);      // onset → inhale
+      var ok = seq.join(">")==="inhale>hold>exhale>rest>inhale";
+      tests.push({name:"Mic breath cycle inhale→hold→exhale→rest", ok:ok, detail:seq.join(" › ")});
+    })();
+
+    var host=$("tests"); host.innerHTML="";
+    var pass=0;
+    tests.forEach(function(tt){
+      if(tt.ok) pass++;
+      var row=document.createElement("div"); row.className="test";
+      row.innerHTML='<span class="badge '+(tt.ok?"pass":"fail")+'">'+(tt.ok?"PASS":"FAIL")+'</span>'+
+        '<span>'+tt.name+'</span><span class="d">'+tt.detail+'</span>';
+      host.appendChild(row);
+    });
+    var sum=document.createElement("div"); sum.className="test";
+    sum.innerHTML='<span class="badge '+(pass===tests.length?"pass":"fail")+'">'+pass+'/'+tests.length+'</span>'+
+      '<span>Validation suite</span><span class="d">'+(pass===tests.length?"all green":"review failures")+'</span>';
+    host.appendChild(sum);
+  }
+  $("btnTest").addEventListener("click", runTests);
+
+  /* ============================== BOOT ==================================== */
+  $("storeMode").textContent=Store.mode;
+  enterState("idle"); resize(); renderHistory(); runTests();
+  // idle ambient canvas so the stage isn't dead before start
+  (function idle(){
+    if(E.running) return;
+    var t=now(); E.phase+=0.004; E.breathPhase=(E.breathPhase+0.0016)%1;
+    drawViz(16);
+    requestAnimationFrame(idle);
+  })();
+
+})();
+</script>
+
+</body>
+</html>
