@@ -139,7 +139,8 @@
 
   /* practice panel */
   #practicePanel .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-  #practicePanel h3 { font-size: 18px; margin-bottom: 6px; }
+  #practicePanel h3 { font-size: 18px; margin-bottom: 2px; }
+  #pSub { font-size: 12px; color: var(--ink-dim); font-style: italic; margin-bottom: 8px; }
   #pRatio { font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; font-style: normal; letter-spacing: .06em; }
   #pPurpose { font-size: 13px; line-height: 1.5; }
   #pSource { font-size: 12px; color: var(--ink-dim); margin-top: 6px; }
@@ -272,9 +273,10 @@
       <span class="note" id="pRatio"></span>
     </div>
     <h3 id="pName"></h3>
+    <p id="pSub"></p>
     <p id="pPurpose"></p>
     <p id="pSource"></p>
-    <span class="note">Purposes are described as tradition, not promised effects.</span>
+    <span class="note">What each practice is for is drawn from tradition and common use — the only evidence that counts is your own session.</span>
   </div>
 
   <div class="panel" id="mudraPanel">
@@ -336,30 +338,36 @@
   /* ============ practices ============ */
   // Different breathwork for different purposes. Sources are named; purposes
   // are worded as tradition, never as promised effects (honesty invariant).
+  // Benefit first, tradition second: the chip sells what it does for you;
+  // the subtitle and source credit where it comes from.
   const PRACTICES = [
-    { key: 'downshift', name: '4-7-8 Downshift', ratio: '4 · 7 · 8',
-      purpose: 'Downregulation toward sleep. The long exhale is the active ingredient; the hold lets the breath settle before it.',
+    { key: 'downshift', name: 'Fall Asleep Faster', ratio: '4 · 7 · 8',
+      sub: 'The 4-7-8 relaxing breath',
+      purpose: 'For the racing mind at midnight. The long exhale is the off-switch; the hold lets the breath settle before it. Traditionally used at bedtime — most people feel the downshift within a few cycles.',
       source: 'Modern relaxing-breath ratio, pranayama-derived.',
       phases: [ { key: 'inhale', dur: 4 }, { key: 'hold', dur: 7 }, { key: 'exhale', dur: 8 } ],
       profile: { gaba: 9, ht: 4, da: 2, ne: 1 },
       tags: { gaba: 'Sleep Onset', da: 'Inactive Reward', ne: 'Minimal Arousal' } },
 
-    { key: 'anapanasati', name: 'Ānāpānasati', ratio: '6 · 6',
-      purpose: 'Bare mindfulness of breathing — knowing a long breath as long, a short breath as short. No forcing: the count is a suggestion, the noticing is the practice. Traditionally the foundation from which the jhānas are developed.',
+    { key: 'anapanasati', name: 'Calm, Clear Focus', ratio: '6 · 6',
+      sub: 'Mindfulness of breathing — Ānāpānasati in the Pali canon',
+      purpose: 'For a scattered mind. Ride the natural breath and anchor on one sensation: the air is cool at the tip of your nose on the way in, warm on the way out. Nothing forced — the count is a suggestion, the noticing is the practice.',
       source: 'Ānāpānasati Sutta, MN 118 — first tetrad.',
       phases: [ { key: 'inhale', dur: 6 }, { key: 'exhale', dur: 6 } ],
       profile: { gaba: 6, ht: 7, da: 4, ne: 4 },
       tags: { ht: 'Settled Attention' } },
 
-    { key: 'passaddhi', name: 'Passaddhi Long Exhale', ratio: '4 · 2 · 10',
-      purpose: '“He trains himself: calming the bodily fabrication, I breathe out.” A brief hold, then the longest exhale in the app — traditionally the step where breath practice turns into tranquility (passaddhi).',
+    { key: 'passaddhi', name: 'Melt Tension', ratio: '4 · 2 · 10',
+      sub: 'The long calming exhale — “calming the bodily fabrication”',
+      purpose: 'For the tight jaw, the raised shoulders, the clenched everything. A brief hold, then the longest exhale in the app lets the body\u2019s version of the thought wind down with it.',
       source: 'Ānāpānasati Sutta, MN 118 — first tetrad, fourth step.',
       phases: [ { key: 'inhale', dur: 4 }, { key: 'hold', dur: 2 }, { key: 'exhale', dur: 10 } ],
       profile: { gaba: 8, ht: 5, da: 3, ne: 2 },
       tags: { gaba: 'Deep Settling' } },
 
-    { key: 'box', name: 'Box (Samavṛtti)', ratio: '4 · 4 · 4 · 4',
-      purpose: 'Equal measure on all four sides, including a hold on empty lungs. Traditionally samavṛtti prāṇāyāma — for steadiness and composure under load rather than sleep.',
+    { key: 'box', name: 'Steady Under Pressure', ratio: '4 · 4 · 4 · 4',
+      sub: 'Box breathing — samavṛtti, equal measure on all four sides',
+      purpose: 'For the minutes before something hard. Equal sides, including a hold on empty lungs — composure you can carry into the meeting, the exam, the difficult call. Steadiness rather than sleep.',
       source: 'Yogic samavṛtti prāṇāyāma.',
       phases: [ { key: 'inhale', dur: 4 }, { key: 'hold', dur: 4 }, { key: 'exhale', dur: 4 }, { key: 'hold2', dur: 4 } ],
       profile: { gaba: 6, ht: 6, da: 5, ne: 3 },
@@ -420,22 +428,39 @@
 
   /* ============ personas ============ */
   const PERSONAS = {
+    // Prompts are arrays: the line rotates each cycle, and the coolness of
+    // the incoming air is the recurring sensory anchor on the inhale.
     sage: {
       name: 'Sage',
       greet: 'Welcome back. Nothing to win here — just notice the breath. The noticing IS the skill.',
-      prompts: { inhale: 'Let the breath arrive on its own.', hold: 'Rest inside the pause. Nothing is missing.', exhale: 'Let it all the way out. Longer than feels natural.', hold2: 'Empty, and at ease. Wait here.' },
+      prompts: {
+        inhale: ['Cool air in — feel it touch the tip of your nose.', 'Let the breath arrive on its own. Notice how cool it is.'],
+        hold: ['Rest inside the pause. Nothing is missing.', 'Full, and quiet. Stay with it.'],
+        exhale: ['All the way out — it leaves warmer than it came.', 'Let it all the way out. Longer than feels natural.'],
+        hold2: ['Empty, and at ease. Wait here.'],
+      },
       debrief: (c, mmss) => `${cyc(c)} of honest attention. However it felt, showing up was the practice.`,
     },
     challenger: {
       name: 'Challenger',
       greet: "Alright. Pick your ratio, then hit every side of it. Partial reps don't count. Go.",
-      prompts: { inhale: 'Fill it properly. All the way.', hold: "Hold it. You're fine. Discomfort isn't damage.", exhale: 'Full seconds out. No shortcuts.', hold2: 'Stay empty. Trust it. This is the rep.' },
+      prompts: {
+        inhale: ['Cold air through the nose. Track it the whole way down.', 'Fill it properly. All the way.'],
+        hold: ["Hold it. You're fine. Discomfort isn't damage."],
+        exhale: ['Full seconds out. No shortcuts.', 'Warm air out. That means you did the work.'],
+        hold2: ['Stay empty. Trust it. This is the rep.'],
+      },
       debrief: (c, mmss) => `${cyc(c)} verified, ${mmss} on the clock. That's the number. No cope — come back and beat it.`,
     },
     alchemist: {
       name: 'Alchemist',
       greet: 'Nineteen seconds of doing nothing — the most underpriced luxury in the world. Shall we spend lavishly?',
-      prompts: { inhale: 'Breathe in like it costs a fortune. It does — elsewhere.', hold: 'Holding is not waiting. It is owning the moment outright.', exhale: 'Another cycle banked. Compound interest, but for your nervous system.', hold2: 'An empty pause — scarcity is exactly what makes the next breath valuable.' },
+      prompts: {
+        inhale: ['That coolness at your nostrils? Complimentary air conditioning. Notice the luxury.', 'Breathe in like it costs a fortune. It does — elsewhere.'],
+        hold: ['Holding is not waiting. It is owning the moment outright.'],
+        exhale: ['Warm air out — you upgraded it on the way through.', 'Another cycle banked. Compound interest, but for your nervous system.'],
+        hold2: ['An empty pause — scarcity is exactly what makes the next breath valuable.'],
+      },
       debrief: (c, mmss) => `${cyc(c)} banked in ${mmss}. Most people would pay handsomely to feel like this; you merely sat still.`,
     },
   };
@@ -614,6 +639,7 @@
   function renderPracticePanel() {
     const p = practice();
     $('#pName').textContent = p.name;
+    $('#pSub').textContent = p.sub;
     $('#pRatio').textContent = p.ratio;
     $('#pPurpose').textContent = p.purpose;
     $('#pSource').textContent = p.source;
@@ -731,7 +757,9 @@
       lastPhaseKey = key;
       app.setAttribute('data-phase', key);
       audioPhase(key, dur);
-      say(PERSONAS[personaKey].prompts[key]);
+      const lines = PERSONAS[personaKey].prompts[key];
+      const cycleIdx = carriedCycles + Math.floor(tc / cycleLen());
+      say(lines[cycleIdx % lines.length]);
     }
 
     // phase label with countdown, tinted by CSS var --phase
