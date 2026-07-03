@@ -191,11 +191,7 @@ const App = {
   _welcome(c) {
     const app = document.getElementById('app');
     app.innerHTML = '';
-    const line = pick({
-      sera: "Hi. I'm Sera. I'm not going to miss you when you leave, and that's exactly why you can trust me. Ready to breathe?",
-      noa: "Noa. One thing before anything else: nothing I say is behind a paywall, and nothing I say is designed to keep you here. Sit down.",
-      kai: "Kai. Here's the deal — I coach, you breathe, and when we're done I tell you to leave. Everything else is details. Let's start."
-    });
+    const line = pick(WELCOME_LINES);
     const w = el(`
       <div class="screen stack" style="text-align:center; align-items:center; padding-top:4vh">
         <div class="portrait-wrap">
@@ -222,13 +218,7 @@ const App = {
 
     const minsToday = State.minutesToday();
     const overCap = minsToday >= DAILY_SOFT_CAP_MIN;
-    const greeting = overCap
-      ? pick({
-          sera: "You've already done plenty in here today. The calm works better out there — I'll see you tomorrow.",
-          noa: "Enough practice for one day. Go let it settle. The app can't do that part.",
-          kai: "You've hit today's training volume. More isn't better — recovery is out there, not in here."
-        })
-      : pick(c.greetings[this.timeOfDay()]);
+    const greeting = overCap ? pick(CAP_LINES) : pick(c.greetings[this.timeOfDay()]);
 
     const home = el(`
       <div class="screen stack">

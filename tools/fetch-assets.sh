@@ -16,4 +16,21 @@ curl -fsSL "$base/hf_20260702_184419_dbfabd7f-8bf9-4183-8bb0-47630cbf1e96.mp4" -
 curl -fsSL "$base/hf_20260702_184422_dceb591c-1892-4bc4-a0b4-cfdfb17d9fd6.mp4" -o assets/noa.mp4
 curl -fsSL "$base/hf_20260702_184424_55d4a78c-d2ea-4e6b-9783-b99b913da34a.mp4" -o assets/kai.mp4
 
-echo "Portraits and breathing loops saved to assets/. Haven is now fully offline."
+# voice clip library (reads assets/voices.js, saves to assets/voice/<companion>/<key>.mp3)
+if [ -f assets/voices.js ]; then
+  node - <<'EOF'
+const fs = require('fs');
+const { execSync } = require('child_process');
+const lib = new Function(fs.readFileSync('assets/voices.js', 'utf8') + ';return VOICE_LIB;')();
+for (const [c, clips] of Object.entries(lib)) {
+  fs.mkdirSync(`assets/voice/${c}`, { recursive: true });
+  for (const [key, url] of Object.entries(clips)) {
+    const out = `assets/voice/${c}/${key}.mp3`;
+    if (!fs.existsSync(out)) execSync(`curl -fsSL "${url}" -o "${out}"`);
+  }
+  console.log(c, Object.keys(clips).length, 'clips');
+}
+EOF
+fi
+
+echo "Portraits, breathing loops, and voices saved to assets/. Haven is now fully offline."

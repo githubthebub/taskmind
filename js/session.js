@@ -16,12 +16,50 @@ function pick(textOrMap) {
   return textOrMap[c] || textOrMap.sera;
 }
 
-function speak(text) {
-  if (!State.data.settings.voice || !window.speechSynthesis) return;
+/* stable key for a spoken line — must match tools/voice-corpus.js */
+function lineKey(text) {
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+}
+
+let _voiceAudio = null;
+
+function stopSpeech() {
+  if (_voiceAudio) { _voiceAudio.pause(); _voiceAudio = null; }
+  if (window.speechSynthesis) speechSynthesis.cancel();
+}
+
+function speakSynth(text) {
+  if (!window.speechSynthesis) return;
   const u = new SpeechSynthesisUtterance(text);
   u.rate = 0.86; u.pitch = 1.0; u.volume = 0.9;
-  speechSynthesis.cancel();
   speechSynthesis.speak(u);
+}
+
+/* Speak with the companion's pre-generated AI voice clip when the library
+   has it (local file first, then the hosted copy), else fall back to the
+   browser's speech synthesis. Nothing is generated at runtime. */
+function speak(text) {
+  if (!State.data.settings.voice) return;
+  stopSpeech();
+  const cid = State.profile.companion || 'sera';
+  const lib = (typeof VOICE_LIB !== 'undefined' && VOICE_LIB[cid]) || null;
+  const key = lineKey(text);
+  if (lib && lib[key]) {
+    const audio = new Audio();
+    _voiceAudio = audio;
+    let stage = 0;                                  // 0 = local file, 1 = hosted
+    audio.onerror = () => {
+      if (audio !== _voiceAudio) return;
+      if (stage === 0) { stage = 1; audio.src = lib[key]; audio.play().catch(() => {}); }
+      else speakSynth(text);
+    };
+    audio.src = `assets/voice/${cid}/${key}.mp3`;
+    audio.play().catch(() => {});
+    return;
+  }
+  speakSynth(text);
 }
 
 function typewrite(node, text, msPerChar, done) {
@@ -108,7 +146,7 @@ const Session = {
 
   abort() {
     if (this.active && this.active.engine) this.active.engine.stop();
-    if (window.speechSynthesis) speechSynthesis.cancel();
+    stopSpeech();
     this.active = null;
     setBreathVar(0);
     App.home();
@@ -140,7 +178,7 @@ const Session = {
       State.data.settings.voice = !State.data.settings.voice;
       State.save();
       vbtn.textContent = State.data.settings.voice ? 'voice on' : 'voice off';
-      if (!State.data.settings.voice && window.speechSynthesis) speechSynthesis.cancel();
+      if (!State.data.settings.voice) stopSpeech();
     };
     app.appendChild(stage);
     return {
@@ -349,11 +387,7 @@ const Surf = {
         </div>
       </div>`);
     s1.querySelector('[data-x]').onclick = () => App.home();
-    const opener = pick({
-      sera: "Hey. You pressed the button instead of obeying the pull — that's already the win. Stay with me for ninety seconds.",
-      noa: "Good. You noticed it. Most people never even see the wave — you're already standing on the shore.",
-      kai: "Smart move. An urge peaks for about ninety seconds. We're going to stand in it, not run from it. First — name it."
-    });
+    const opener = pick(SURF_OPENER);
     typewrite(s1.querySelector('[data-b]'), opener, 30, null);
     speak(opener);
     const chips = s1.querySelector('[data-chips]');
@@ -507,11 +541,7 @@ const Surf = {
       State.logUrge(log);
       const c = State.companion;
       app.innerHTML = '';
-      const closeLine = pick({
-        sera: "Proud of you. Genuinely. Now do one kind, real-world thing for yourself — water, a walk, a window. Off you go.",
-        noa: "Logged. Notice what you feel now versus five minutes ago. That difference is yours to keep.",
-        kai: "Rep completed. Every surfed wave makes the next one smaller. Now get out of the app — that's an order, warmly."
-      });
+      const closeLine = pick(SURF_CLOSER);
       const out = el(`
         <div class="screen stack" style="text-align:center;align-items:center;">
           <div class="stat" style="min-width:200px">

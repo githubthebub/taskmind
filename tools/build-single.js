@@ -8,9 +8,9 @@ const root = path.join(__dirname, '..');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 
 const css = read('css/haven.css');
-const js = ['js/data.js', 'js/state.js', 'js/breath.js', 'js/session.js', 'js/app.js']
-  .map(f => `/* ---- ${f} ---- */\n` + read(f))
-  .join('\n\n');
+const files = ['js/data.js', 'js/state.js', 'js/breath.js', 'js/session.js', 'js/app.js'];
+if (fs.existsSync(path.join(root, 'assets/voices.js'))) files.splice(1, 0, 'assets/voices.js');
+const js = files.map(f => `/* ---- ${f} ---- */\n` + read(f)).join('\n\n');
 
 let html = read('index.html');
 html = html.replace(/<link rel="stylesheet"[^>]*>/, () => `<style>\n${css}\n</style>`);

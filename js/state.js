@@ -15,7 +15,7 @@ const State = {
         monthlySpend: 0,        // what they told us they spend / month
         createdAt: Date.now()
       },
-      settings: { voice: false },
+      settings: { voice: true },
       sessions: [],             // {ts, practiceId, minutes, before, after}
       urges: [],                // {ts, type, spotName, before, after, avoided}
       checkins: []              // {ts, tension}

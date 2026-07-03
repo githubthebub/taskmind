@@ -337,6 +337,30 @@ const URGE_TYPES = [
 
 const BODY_SPOTS = ['Chest', 'Throat', 'Stomach', 'Hands', 'Face', 'Everywhere'];
 
+const WELCOME_LINES = {
+  sera: "Hi. I'm Sera. I'm not going to miss you when you leave, and that's exactly why you can trust me. Ready to breathe?",
+  noa: "Noa. One thing before anything else: nothing I say is behind a paywall, and nothing I say is designed to keep you here. Sit down.",
+  kai: "Kai. Here's the deal — I coach, you breathe, and when we're done I tell you to leave. Everything else is details. Let's start."
+};
+
+const CAP_LINES = {
+  sera: "You've already done plenty in here today. The calm works better out there — I'll see you tomorrow.",
+  noa: "Enough practice for one day. Go let it settle. The app can't do that part.",
+  kai: "You've hit today's training volume. More isn't better — recovery is out there, not in here."
+};
+
+const SURF_OPENER = {
+  sera: "Hey. You pressed the button instead of obeying the pull — that's already the win. Stay with me for ninety seconds.",
+  noa: "Good. You noticed it. Most people never even see the wave — you're already standing on the shore.",
+  kai: "Smart move. An urge peaks for about ninety seconds. We're going to stand in it, not run from it. First — name it."
+};
+
+const SURF_CLOSER = {
+  sera: "Proud of you. Genuinely. Now do one kind, real-world thing for yourself — water, a walk, a window. Off you go.",
+  noa: "Logged. Notice what you feel now versus five minutes ago. That difference is yours to keep.",
+  kai: "Rep completed. Every surfed wave makes the next one smaller. Now get out of the app — that's an order, warmly."
+};
+
 const SURF_LINES = [
   "An urge is a wave. It rises, it peaks, and — if you don't feed it — it breaks. Ninety seconds is usually all a peak lasts.",
   "You don't have to make it go away. You just have to not obey it while it's loud.",
