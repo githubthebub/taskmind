@@ -257,6 +257,7 @@ select.inputline{width:auto;padding:10px 12px}
 .dotrow{display:flex;gap:5px;align-items:center}
 .dotrow .dt{width:9px;height:9px;border-radius:50%;background:var(--well);border:1px solid var(--line)}
 .dotrow .dt.on{background:var(--accent-mark);border-color:transparent}
+.dotrow .dt.oil{background:transparent;border-color:var(--accent-mark)}
 .dotrow .dt.today{outline:1.6px solid var(--accent);outline-offset:1.5px}
 .joyrow{display:flex;gap:8px}
 .joyrow .inputline{flex:1}
@@ -450,11 +451,122 @@ details.scripts .body{padding:2px 16px 14px;display:flex;flex-direction:column;g
 .codeline{font-family:var(--serif);font-weight:500;font-size:16px;line-height:1.45;padding:11px 2px}
 .codeline + .codeline{border-top:1px solid var(--line-soft)}
 
+/* ---------- game layer ---------- */
+.gamepill{
+  display:flex;align-items:center;gap:9px;
+  font-size:13px;font-weight:700;color:var(--ink-2);
+  border:1px solid var(--line-soft);border-radius:999px;
+  padding:7px 12px;background:var(--surface);
+  font-variant-numeric:tabular-nums;
+}
+.gamepill:hover{border-color:var(--ink-3)}
+.gamepill svg{width:14px;height:14px;display:block}
+.gamepill .flame{color:var(--accent)}
+.gamepill .sep{width:1px;height:14px;background:var(--line)}
+.gamepill .lvl{background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 8px;font-size:11px}
+.rewardtag{
+  font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);
+  border-radius:999px;padding:2px 8px;white-space:nowrap;vertical-align:2px;margin-left:8px;
+}
+.emberline{margin-top:7px;font-size:12.5px;color:var(--ink-3)}
+.emberline button{color:var(--accent);font-weight:700}
+.emberline button:hover{text-decoration:underline}
+
+.xpfloats{
+  position:fixed;top:58px;right:max(16px, calc(50% - 322px));z-index:65;pointer-events:none;
+  display:flex;flex-direction:column;align-items:flex-end;gap:5px;
+}
+.xpf{
+  font-size:12.5px;font-weight:700;color:var(--accent);
+  background:var(--surface);border:1px solid var(--line-soft);border-radius:999px;
+  padding:4px 11px;box-shadow:var(--shadow);
+  animation:xpf 1.7s ease forwards;
+}
+@keyframes xpf{0%{opacity:0;transform:translateY(8px)}18%{opacity:1;transform:translateY(0)}72%{opacity:1}100%{opacity:0;transform:translateY(-26px)}}
+
+.lvlup{
+  position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+  background:rgba(10,14,28,.80);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  text-align:center;padding:24px;
+}
+.lvlup.on{display:flex}
+.lvlbox{display:flex;flex-direction:column;gap:14px;align-items:center;max-width:340px}
+.lvlbox .glyph{width:74px;height:74px;color:var(--lamp);filter:drop-shadow(0 0 24px rgba(240,178,74,.55))}
+.lvlbox .k{font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#B9A276}
+.lvlbox .rk{font-family:var(--serif);font-weight:600;font-size:28px;color:#F1EEE4}
+.lvlbox .sub2{color:rgba(241,238,228,.72);font-size:14px}
+
+.rankcard{display:flex;gap:16px;align-items:center}
+.rankcard .glyph{width:52px;height:52px;color:var(--accent);flex:none}
+.rankcard .meta{flex:1;display:flex;flex-direction:column;gap:7px;min-width:0}
+.rankcard .rname{font-family:var(--serif);font-weight:600;font-size:21px}
+.lvlbar{height:10px;border-radius:5px;background:var(--well);overflow:hidden;position:relative}
+.lvlbar .f{position:absolute;inset:0 auto 0 0;background:var(--accent-mark);border-radius:5px;min-width:2px}
+.oilrow{display:flex;align-items:center;gap:8px}
+.vial{width:13px;height:21px;border:1.6px solid var(--line);border-radius:4px 4px 6px 6px;position:relative;flex:none}
+.vial.full{border-color:var(--accent-mark)}
+.vial.full::after{content:"";position:absolute;inset:50% 2px 2px;background:var(--accent-mark);border-radius:2px}
+
+.statrow{display:grid;grid-template-columns:78px 42px 1fr;gap:12px;align-items:center;padding:9px 0}
+.statrow + .statrow{border-top:1px solid var(--line-soft)}
+.statrow .sn{font-weight:700;font-size:13.5px}
+.statrow .sn small{display:block;font-weight:400;font-size:11px;color:var(--ink-3)}
+.statrow .sl{font-size:11px;color:var(--peri);font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.statrow .sb{height:8px;background:var(--well);border-radius:4px;position:relative;overflow:hidden}
+.statrow .sb .f{position:absolute;inset:0 auto 0 0;background:var(--peri);border-radius:4px;min-width:2px}
+
+.trialpick{display:flex;flex-direction:column;gap:10px}
+.trialopt{
+  border:1px solid var(--line);border-radius:12px;padding:13px 14px;
+  display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--surface);
+}
+.trialopt:hover{border-color:var(--ink-3)}
+.trialopt .tx2{flex:1;min-width:0}
+.trialopt .tn{font-weight:700;font-size:14px}
+.trialopt .td{font-size:13px;color:var(--ink-2)}
+.trialopt .rewardtag{flex:none;margin-left:0;margin-top:2px}
+.trialactive{background:var(--well);border-radius:12px;padding:15px;display:flex;flex-direction:column;gap:10px}
+.trialactive .tn{font-family:var(--serif);font-weight:600;font-size:17px}
+.honor{font-size:12px;color:var(--ink-3);font-style:italic}
+
+.sigilgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:14px}
+.sigil{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center}
+.sigil .seal{
+  width:52px;height:52px;border-radius:50%;display:grid;place-items:center;
+  border:1.6px dashed var(--line);color:var(--ink-3);
+}
+.sigil.earned .seal{background:var(--accent-soft);border:1.6px solid var(--accent-mark);color:var(--accent)}
+.sigil .seal svg{width:24px;height:24px}
+.sigil .sn2{font-size:11px;font-weight:700;line-height:1.25}
+.sigil .sd2{font-size:10.5px;color:var(--ink-3);line-height:1.3}
+
+.dawnwrap{display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center}
+.dawncard{perspective:1000px;width:min(280px,82%)}
+.dcinner{position:relative;width:100%;aspect-ratio:5/6.6;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.2,.7,.25,1)}
+.dawncard.flip .dcinner{transform:rotateY(180deg)}
+.dcface{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:20px;
+}
+.dcback{
+  background:radial-gradient(circle at 50% 38%, rgba(240,178,74,.32), rgba(240,178,74,0) 58%), #131936;
+  border:1px solid #2A3150;color:#F1EEE4;
+}
+.dcback svg{width:44px;height:44px;color:#F0B24A}
+.dcback .bk{font-size:10px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:#B9A276}
+.dcfront{background:var(--surface);border:1px solid var(--line);transform:rotateY(180deg)}
+.dcfront .dctype{font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+.dcfront .dcbig{font-family:var(--serif);font-weight:600;font-size:19px;line-height:1.35;text-wrap:balance}
+.dcfront .dcsub{font-size:13px;color:var(--ink-2)}
+.dcfront .dcamt{font-size:26px;font-weight:700;color:var(--accent)}
+@media (prefers-reduced-motion: reduce){ .dcinner{transition:none} }
+
 /* ---------- tabbar ---------- */
 .tabbar{
   position:fixed;z-index:40;bottom:0;left:50%;transform:translateX(-50%);
   width:min(660px,100%);
-  display:grid;grid-template-columns:repeat(4,1fr);
+  display:grid;grid-template-columns:repeat(5,1fr);
   background:color-mix(in srgb, var(--surface) 92%, transparent);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-top:1px solid var(--line-soft);
@@ -498,10 +610,13 @@ details.scripts .body{padding:2px 16px 14px;display:flex;flex-direction:column;g
 <div class="app">
   <header class="top">
     <div class="wordmark"><span class="dev">स्वराज</span>Svaraj</div>
-    <div class="streakpill" id="streakPill" title="Practice streak">
+    <button class="gamepill" data-go="path" title="Streak · light · level — open your Path">
       <svg class="flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c3.2 3.6 4.5 6 4.5 8.5a4.5 4.5 0 0 1-9 0c0-2.5 1.3-4.9 4.5-8.5Z"/><path d="M12 21v-2"/></svg>
       <span id="streakN">0</span>
-    </div>
+      <span class="sep"></span>
+      <span id="lightN">0</span>
+      <span class="lvl" id="lvlChip">L1</span>
+    </button>
   </header>
 
   <main>
@@ -517,7 +632,7 @@ details.scripts .body{padding:2px 16px 14px;display:flex;flex-direction:column;g
 
       <div class="card" id="introCard" hidden>
         <span class="eyebrow">Why this app exists</span>
-        <p class="doctrine">Freedom has two halves. The outer half is money and skill — the means to run your own life. The inner half is a mind that stays yours: calm on demand, in love with the process, un-bossed by guilt or by gold. Svaraj trains both, a little every day, in four rooms: <b>Sit</b> (jhāna), <b>Wheel</b> (a whole life), <b>Mind</b> (the three muscles), and this page — the daily loop that ties them together.</p>
+        <p class="doctrine">Freedom has two halves. The outer half is money and skill — the means to run your own life. The inner half is a mind that stays yours: calm on demand, in love with the process, un-bossed by guilt or by gold. Svaraj trains both, a little every day, in four rooms — <b>Sit</b> (jhāna), <b>Wheel</b> (a whole life), <b>Mind</b> (the three muscles), and this daily loop — with a game of light running through it: every rep earns light, and the lamp grows from a spark toward sunrise. See <b>Path</b>.</p>
         <div><button class="btn-ghost" id="introDismiss">Got it — begin</button></div>
       </div>
 
@@ -529,18 +644,22 @@ details.scripts .body{padding:2px 16px 14px;display:flex;flex-direction:column;g
         <div class="threelist">
           <div class="three" id="threeSit">
             <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 10 18 20 6.5"/></svg></span>
-            <div class="tx"><div class="t">Sit</div><div class="d" id="threeSitD">Ten minutes counts. Pre-dawn counts double.</div></div>
-            <button class="btn-ghost" data-go="sit" id="threeSitBtn">Begin</button>
+            <div class="tx">
+              <div class="t">Sit<span class="rewardtag" title="Base +15, +1 per two minutes, depth bonus, ×1.5 before 7am">+15…</span></div>
+              <div class="d" id="threeSitD">Ten minutes counts. Pre-dawn burns ×1.5.</div>
+              <div class="emberline" id="emberLine">No fuel today? <button type="button" id="emberBtn">2-minute ember — still counts (+8)</button></div>
+            </div>
+            <button class="btn-ghost" id="threeSitBtn">Begin</button>
           </div>
           <div class="three" id="threeRep">
             <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 10 18 20 6.5"/></svg></span>
-            <div class="tx"><div class="t" id="threeRepT">Mind rep</div><div class="d" id="threeRepD">—</div></div>
+            <div class="tx"><div class="t"><span id="threeRepT">Mind rep</span><span class="rewardtag">+10</span></div><div class="d" id="threeRepD">—</div></div>
             <button class="btn-ghost" data-go="mind" id="threeRepBtn">Open</button>
           </div>
           <div class="three" id="threeJoy">
             <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 10 18 20 6.5"/></svg></span>
             <div class="tx" style="width:100%">
-              <div class="t">The evening line</div>
+              <div class="t">The evening line<span class="rewardtag">+5</span></div>
               <div class="d" style="margin-bottom:8px">What did you enjoy about the process today?</div>
               <div class="joyrow">
                 <input class="inputline" id="joyInput" maxlength="180" placeholder="One honest sentence…">
@@ -550,6 +669,14 @@ details.scripts .body{padding:2px 16px 14px;display:flex;flex-direction:column;g
           </div>
         </div>
         <div class="dotrow" id="dotRow" aria-label="Last 14 days of practice"></div>
+      </div>
+
+      <div class="card">
+        <div class="charthead">
+          <h2>The dawn card</h2>
+          <span class="mut" id="deckHint">one a day, after the loop closes</span>
+        </div>
+        <div class="dawnwrap" id="dawnWrap"></div>
       </div>
 
       <div class="card">
@@ -757,7 +884,7 @@ details.scripts .body{padding:2px 16px 14px;display:flex;flex-direction:column;g
         <div class="codelist" id="codeList"></div>
       </div>
 
-      <div class="footer">
+      <div class="footer" id="mindFooter">
         <span>Everything you write stays in this browser — nothing leaves the device.</span>
         <div class="frow">
           <button class="linkish" id="exportBtn">Export my data</button>
@@ -770,6 +897,59 @@ details.scripts .body{padding:2px 16px 14px;display:flex;flex-direction:column;g
             <button class="linkish" id="dataClose">Close</button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ================= PATH ================= -->
+    <section class="view" id="view-path">
+      <div class="viewhead">
+        <h1>Path</h1>
+        <p class="lede">The whole app is the hour before dawn. You are the growing light — from a spark toward sunrise. Every rep earns light; nothing else does.</p>
+      </div>
+
+      <div class="card">
+        <div class="rankcard">
+          <svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4c3 3.4 4 5.4 4 7.4a4 4 0 0 1-8 0C8 9.4 9 7.4 12 4Z"/><path d="M7 19.5h10"/></svg>
+          <div class="meta">
+            <span class="eyebrow" id="rankLvl">Level 1</span>
+            <span class="rname" id="rankName">Spark</span>
+            <div class="lvlbar"><div class="f" id="rankFill" style="width:0%"></div></div>
+            <span class="mut" id="rankNext">—</span>
+          </div>
+        </div>
+        <hr class="hr">
+        <div class="optrow">
+          <span class="lbl">Lamp oil<small>Miss a day and a vial burns itself so the streak doesn’t. One vial per five closed loops, max two.</small></span>
+          <div class="oilrow" id="oilRow"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="charthead"><h2>Character</h2><span class="mut">levels come from real reps only</span></div>
+        <div id="statList"></div>
+      </div>
+
+      <div class="card">
+        <div class="charthead"><h2>This week’s trial</h2><span class="mut" id="trialHint">pick one</span></div>
+        <div id="trialZone"></div>
+        <p class="honor">Trials run on honor. Cheating here is stealing from the only person keeping you free.</p>
+      </div>
+
+      <div class="card">
+        <div class="charthead"><h2>Sigils</h2><span class="mut" id="sigilCount">0 earned</span></div>
+        <div class="sigilgrid" id="sigilGrid"></div>
+      </div>
+
+      <div class="card">
+        <details class="scripts">
+          <summary>How light works — the whole economy</summary>
+          <div class="body">
+            <p class="mut">Sit: +15, plus +1 per two minutes, plus a depth bonus up to +50. Sits begun between 4 and 7 am burn ×1.5 — the brahmamuhūrta multiplier. A 2-minute ember on empty days: +8 flat.</p>
+            <p class="mut">Mind reps +10 each · the evening line +5 · closing all three +20 · wheel check-in +15, and +25 more when the lowest spoke rises · sigils +25 · trials pay what they promise.</p>
+            <p class="mut">The dawn card: one draw a day, only after the loop closes. That’s the deal.</p>
+            <p class="mut">Light is deliberately cheap early and expensive late — like every good habit.</p>
+          </div>
+        </details>
       </div>
     </section>
   </main>
@@ -791,6 +971,10 @@ details.scripts .body{padding:2px 16px 14px;display:flex;flex-direction:column;g
     <button class="tab" data-view="mind" aria-label="Mind">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5c2 2.6 2 6 0 8.6-2-2.6-2-6 0-8.6Z"/><path d="M4.5 10.5c.6 5 3.7 8 7.5 8s6.9-3 7.5-8"/></svg>
       <span>Mind</span>
+    </button>
+    <button class="tab" data-view="path" aria-label="Path">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"/><path d="M4 19v-4h4v4"/><path d="M10 19v-8h4v8"/><path d="M16 19V7h4v12"/></svg>
+      <span>Path</span>
     </button>
   </nav>
 
@@ -832,6 +1016,16 @@ details.scripts .body{padding:2px 16px 14px;display:flex;flex-direction:column;g
     <button class="linkish" id="sheetDiscard" style="align-self:center">discard this sit</button>
   </div>
 
+  <div class="lvlup" id="lvlUp">
+    <div class="lvlbox">
+      <svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4c3 3.4 4 5.4 4 7.4a4 4 0 0 1-8 0C8 9.4 9 7.4 12 4Z"/><path d="M7 19.5h10"/></svg>
+      <span class="k">The lamp grows</span>
+      <span class="rk" id="lvlUpName">Level 2 · Ember</span>
+      <span class="sub2" id="lvlUpSub">Same you. More light.</span>
+      <button class="btn" id="lvlUpGo">Carry on</button>
+    </div>
+  </div>
+  <div class="xpfloats" id="xpFloats" aria-hidden="true"></div>
   <div class="tooltip" id="tooltip"></div>
   <div class="toast" id="toast"></div>
 </div>
@@ -912,14 +1106,15 @@ const LENGTHS = [10,15,20,30,45,60];
 const KEY = 'svaraj.v1';
 const DEFAULTS = {
   v:1, introDone:false,
-  sits:[],                 // {d, min, depth, piti, note}
+  sits:[],                 // {d, min, depth, piti, note, dawn}
   checkins:[],             // {d, scores:{id:n}}
   draft:null,              // live wheel scores
   focus:{domain:null, action:'', d:null},
   reps:{},                 // {date:{p,b,m,joy}}
   reframes:[],             // {d, g, p}
   money:{cur:'₹', monthly:0, fund:0},
-  settings:{len:20, bells:true, pacer:true, pace:5.5, guide:true}
+  settings:{len:20, bells:true, pacer:true, pace:5.5, guide:true},
+  game:{light:0, oil:0, loopsClosed:0, awarded:{}, oiled:{}, sigils:{}, trial:null, trialsDone:[], boon:null, draws:{}}
 };
 let data;
 function load(){
@@ -928,6 +1123,7 @@ function load(){
     data = raw ? Object.assign({}, JSON.parse(JSON.stringify(DEFAULTS)), JSON.parse(raw)) : JSON.parse(JSON.stringify(DEFAULTS));
   }catch(e){ data = JSON.parse(JSON.stringify(DEFAULTS)); }
   if(!data.draft){ data.draft = {}; DOMAINS.forEach(d=> data.draft[d.id]=5); }
+  data.game = Object.assign(JSON.parse(JSON.stringify(DEFAULTS.game)), data.game||{});
 }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(data)); }catch(e){} }
 
@@ -962,10 +1158,11 @@ function setRep(field, val){
   save();
 }
 function mindDoneOn(k){ const r=repsOf(k); return !!(r.p||r.b||r.m); }
-function activeOn(k){
+function activeRaw(k){
   const r=repsOf(k);
   return data.sits.some(s=>s.d===k) || !!(r.p||r.b||r.m||r.joy);
 }
+function activeOn(k){ return activeRaw(k) || !!data.game.oiled[k]; }
 function streakFrom(test){
   let n=0, off = test(todayKey()) ? 0 : -1;
   for(let i=off;; i--){
@@ -975,6 +1172,355 @@ function streakFrom(test){
   }
   return n;
 }
+
+/* ================= GAME LAYER ================= */
+const RANKS=['Spark','Ember','Flame','Lamp','Bright Lamp','Torch','Beacon','First Light','Daybreak','Sunrise'];
+function rankOf(lvl){ return lvl<=10 ? RANKS[lvl-1] : 'Sunrise +'+(lvl-10); }
+function levelInfo(L){
+  let lvl=1, need=60, cum=0;
+  while(L >= cum+need){ cum+=need; lvl++; need=60+40*(lvl-1); }
+  return {lvl, into:L-cum, need};
+}
+function hash32(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function rng(seed){
+  let a=hash32(seed);
+  return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+}
+function awardedOf(k){ data.game.awarded[k]=data.game.awarded[k]||{}; return data.game.awarded[k]; }
+
+const lvlQueue=[];
+const LVLSUBS=['Same you. More light.','The wick holds. Keep pouring.','Quietly, the room got brighter.'];
+function float(txt){
+  if(reduceMotion) return;
+  const f=dv('xpf',txt); $('#xpFloats').append(f);
+  setTimeout(()=>f.remove(),1750);
+}
+function award(n,label){
+  const before=levelInfo(data.game.light).lvl;
+  data.game.light+=n; save();
+  float('+'+n+' light'+(label?' — '+label:''));
+  renderHeaderGame();
+  const after=levelInfo(data.game.light).lvl;
+  if(after>before){ for(let l=before+1;l<=after;l++) lvlQueue.push(l); showNextLvl(); }
+}
+function showNextLvl(){
+  const o=$('#lvlUp');
+  if(o.classList.contains('on')) return;
+  const lvl=lvlQueue.shift(); if(!lvl) return;
+  $('#lvlUpName').textContent='Level '+lvl+' · '+rankOf(lvl);
+  $('#lvlUpSub').textContent=LVLSUBS[lvl%LVLSUBS.length];
+  o.classList.add('on');
+}
+function checkLoop(){
+  const k=todayKey(), r=repsOf(k), aw=awardedOf(k);
+  const done = data.sits.some(s=>s.d===k) && mindDoneOn(k) && !!r.joy;
+  if(done && !aw.loop){
+    aw.loop=1; data.game.loopsClosed++;
+    award(20,'the loop closes');
+    if(data.game.loopsClosed%5===0 && data.game.oil<2){
+      data.game.oil++; save();
+      toast('Five loops closed — a vial of lamp oil banked.');
+    }
+  }
+  save();
+}
+function reconcileOil(){
+  const gap=[];
+  for(let i=-1;i>=-4;i--){
+    const k=shiftKey(i);
+    if(activeRaw(k)||data.game.oiled[k]) break;
+    gap.push(k);
+  }
+  if(!gap.length || gap.length>data.game.oil) return;
+  const before=shiftKey(-(gap.length+1));
+  if(!(activeRaw(before)||data.game.oiled[before])) return;
+  gap.forEach(k=>{ data.game.oiled[k]=1; data.game.oil--; });
+  save();
+  toast(gap.length===1 ? 'A vial of oil burned itself — the streak lives.' : gap.length+' vials of oil burned — the streak lives.');
+}
+
+/* ----- character stats ----- */
+const STATS=[
+  {id:'calm',    n:'Calm',    h:'sits',             T:[1,3,7,15,30,60,100]},
+  {id:'joy',     n:'Joy',     h:'lines + reframes', T:[1,3,7,15,30,60,100]},
+  {id:'spine',   n:'Spine',   h:'boundary reps',    T:[1,3,7,15,30,60,100]},
+  {id:'rights',  n:'Rights',  h:'money reps',       T:[1,3,7,15,30,60,100]},
+  {id:'balance', n:'Balance', h:'check-ins',        T:[1,2,4,7,12,20,30]}
+];
+function statCounts(){
+  let b=0,m=0,joys=0;
+  Object.values(data.reps).forEach(r=>{ if(r.b)b++; if(r.m)m++; if(r.joy)joys++; });
+  return {
+    calm:data.sits.length,
+    joy:joys+data.reframes.length,
+    spine:b,
+    rights:m+((data.money.monthly>0&&data.money.fund>0)?3:0),
+    balance:data.checkins.length
+  };
+}
+function statLevel(count,T){
+  const lv=T.filter(t=>count>=t).length+1;
+  const prevT=lv>1?T[lv-2]:0, nextT=T[lv-1]||null;
+  return {lv, pct: nextT? Math.min(100,(count-prevT)/(nextT-prevT)*100) : 100};
+}
+
+/* ----- trials ----- */
+const TRIALS=[
+  {id:'longsit',  n:'The Long Sit',       d:'One 45-minute sit before the week ends.',                 lt:80},
+  {id:'sunrises', n:'Seven Sunrises',     d:'Close the loop seven days straight.',                     lt:120},
+  {id:'spokenno', n:'The Spoken No',      d:'Say one kind-firm sentence to the actual person, out loud, this week.', lt:100},
+  {id:'ledger',   n:'The Ledger',         d:'Track every expense for seven days running.',             lt:100},
+  {id:'quietsat', n:'The Quiet Saturday', d:'Three sits in one day, slow walks between.',              lt:120},
+  {id:'kettle',   n:'The Kettle',         d:'Five sits of thirty minutes or more this week.',          lt:100},
+  {id:'gift',     n:'The Unsigned Gift',  d:'Do something kind anonymously. Tell no one, ever.',       lt:60},
+  {id:'dusk',     n:'Digital Dusk',       d:'Three nights this week: no phone after nine.',            lt:80}
+];
+function weekSeed(){ const n=new Date(); return n.getFullYear()+'-'+Math.floor(dayOfYear()/7); }
+function offeredTrials(){
+  let pool=TRIALS.filter(t=>!data.game.trialsDone.includes(t.id));
+  if(pool.length<3) pool=TRIALS.slice();
+  const r=rng('trials:'+weekSeed());
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  return pool.slice(0,3);
+}
+
+/* ----- sigils ----- */
+const ICONS={
+  flame:{p:['M12 4c3 3.4 4 5.4 4 7.4a4 4 0 0 1-8 0C8 9.4 9 7.4 12 4Z']},
+  door:{p:['M7 20V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v14','M5 20h14'],c:[{cx:14.2,cy:12,r:1}]},
+  bolt:{p:['M13 3 6 13.5h5L10 21l7-10.5h-5L13 3Z']},
+  moon:{p:['M20 13.5A8 8 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 9.5Z']},
+  ring:{c:[{cx:12,cy:12,r:7.5}]},
+  sun:{p:['M4 17h16','M8 17a4 4 0 0 1 8 0','M12 9V7','M6.6 10.6 5.2 9.2','M17.4 10.6l1.4-1.4']},
+  wheel:{c:[{cx:12,cy:12,r:8},{cx:12,cy:12,r:2}],p:['M12 4v16','M4 12h16']},
+  spine:{p:['M12 4v16','M8 7.5h8','M8 12h8','M8 16.5h8']},
+  coin:{c:[{cx:12,cy:12,r:8}],t:'₹'},
+  scroll:{p:['M7.5 4H17a1.5 1.5 0 0 1 1.5 1.5V18a2 2 0 0 1-2 2H8a2.5 2.5 0 0 1-2.5-2.5v-11A2.5 2.5 0 0 1 8 4Z','M9 9.5h6','M9 13.5h6']},
+  wave:{p:['M3 14c3-5.5 6-5.5 9 0s6 5.5 9 0']},
+  check:{c:[{cx:12,cy:12,r:7.5}],p:['M8.6 12.4 11 15l4.4-5']}
+};
+function iconSvg(kind){
+  const ic=ICONS[kind]||ICONS.flame;
+  const svg=sv('svg',{viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':'1.8','stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':'true'});
+  (ic.c||[]).forEach(c=>sv('circle',c,svg));
+  (ic.p||[]).forEach(d=>sv('path',{d},svg));
+  if(ic.t){ const t=sv('text',{x:12,y:16.5,'text-anchor':'middle','font-size':11,'font-weight':700,fill:'currentColor',stroke:'none'},svg); t.textContent=ic.t; }
+  return svg;
+}
+const SIGILS=[
+  {id:'firstlight',n:'First Light',      d:'Log your first sit.',                 ic:'flame',  test:()=>data.sits.length>=1},
+  {id:'doorway',   n:'The Doorway',      d:'Touch Access for the first time.',    ic:'door',   test:()=>data.sits.some(s=>s.depth>=2)},
+  {id:'surge',     n:'The Surge',        d:'First jhāna — pīti takes over.',      ic:'bolt',   test:()=>data.sits.some(s=>s.depth>=3)},
+  {id:'silence',   n:'The Great Quiet',  d:'Reach the 4th jhāna.',                ic:'ring',   test:()=>data.sits.some(s=>s.depth>=6)},
+  {id:'week',      n:'Unbroken Week',    d:'Seven days of practice in a row.',    ic:'flame',  test:()=>streakFrom(activeOn)>=7},
+  {id:'moon30',    n:'Unbroken Moon',    d:'Thirty days in a row.',               ic:'moon',   test:()=>streakFrom(activeOn)>=30},
+  {id:'dawnrun',   n:'Dawn Runner',      d:'Five sits begun before 7 am.',        ic:'sun',    test:()=>data.sits.filter(s=>s.dawn).length>=5},
+  {id:'longbreath',n:'The Long Breath',  d:'One sit of 45 minutes or more.',      ic:'wave',   test:()=>data.sits.some(s=>s.min>=45)},
+  {id:'monk',      n:'Process Monk',     d:'Ten reframes logged.',                ic:'scroll', test:()=>data.reframes.length>=10},
+  {id:'kindiron',  n:'Kind Iron',        d:'Ten boundary reps done.',             ic:'spine',  test:()=>statCounts().spine>=10},
+  {id:'napkin',    n:'The Napkin',       d:'Freedom math filled in.',             ic:'coin',   test:()=>data.money.monthly>0&&data.money.fund>0},
+  {id:'runway3',   n:'Three Months of No', d:'Runway reaches three months.',      ic:'coin',   test:()=>data.money.monthly>0&&data.money.fund/data.money.monthly>=3},
+  {id:'roundwheel',n:'The Round Wheel',  d:'A check-in with no spoke below 5.',   ic:'wheel',  test:()=>data.checkins.length>0&&Math.min(...DOMAINS.map(x=>data.checkins[data.checkins.length-1].scores[x.id]||0))>=5},
+  {id:'oath',      n:'Oathkeeper',       d:'Three trials completed.',             ic:'check',  test:()=>data.game.trialsDone.length>=3},
+  {id:'loop10',    n:'Ten Closed Loops', d:'Close the daily loop ten times.',     ic:'sun',    test:()=>data.game.loopsClosed>=10}
+];
+function checkSigils(){
+  let got=false;
+  SIGILS.forEach(s=>{
+    if(!data.game.sigils[s.id] && s.test()){
+      data.game.sigils[s.id]=todayKey(); got=true;
+      award(25,'sigil');
+      toast('Sigil earned — '+s.n);
+    }
+  });
+  if(got){ save(); renderPath(); }
+}
+
+/* ----- the dawn deck ----- */
+const KOANS=[
+  {q:'You have a right to your actions, never to their fruits.', w:'Bhagavad Gītā 2.47'},
+  {q:'It is Swaraj when we learn to rule ourselves.', w:'M. K. Gandhi'},
+  {q:'The kettle boils on its own schedule. Yours is to keep it on the stove.', w:'the operating code'},
+  {q:'No is a full sentence. Said gently, it is still a full sentence.', w:'the operating code'},
+  {q:'Enjoy the process. Results can tell when they are being stared at.', w:'the operating code'},
+  {q:'Wandering is not failure. Returning is the rep.', w:'the operating code'},
+  {q:'Guilt is a toll, not a verdict. Pay it and keep driving.', w:'the operating code'},
+  {q:'Every new fixed cost is a boss you hired.', w:'the operating code'},
+  {q:'The lowest spoke sets the ride.', w:'the operating code'},
+  {q:'Effort carries you to the door. Letting go opens it.', w:'the operating code'}
+];
+const WILDS=[
+  'Text someone one specific thing you appreciate about them. Specific — not “you’re great.”',
+  'Drink your next glass of water like a ceremony. Slowly. That’s the whole dare.',
+  'Step outside tonight and find the moon. Report to no one.',
+  'Cook one thing for yourself today, start to finish.',
+  'Walk ten minutes without your phone. Let the boredom talk.',
+  'Give away one object you no longer need.',
+  'Take your next sit somewhere new — balcony, roof, floor.',
+  'Write your future self one sentence for the next hard day.'
+];
+function drawCard(){
+  const k=todayKey();
+  if(data.game.draws[k] || !awardedOf(k).loop) return;
+  const R=rng('draw:'+k+':'+data.game.light);
+  const r1=R(), r2=R();
+  let card;
+  if(r1<0.38){ card={t:'flare', amt:10+Math.floor(r2*31)}; }
+  else if(r1<0.65){ card={t:'koan', i:Math.floor(r2*KOANS.length)}; }
+  else if(r1<0.85){ card={t:'wild', i:Math.floor(r2*WILDS.length)}; }
+  else if(r1<0.95){ card={t:'boon'}; }
+  else { card = data.game.oil<2 ? {t:'oil'} : {t:'flare', amt:10+Math.floor(r2*31)}; }
+  data.game.draws[k]=card;
+  if(card.t==='flare') award(card.amt,'the lamp flares');
+  if(card.t==='koan') award(10,'a line for the road');
+  if(card.t==='wild') award(15,'a small dare');
+  if(card.t==='boon'){ data.game.boon={d:shiftKey(1), used:false}; }
+  if(card.t==='oil'){ data.game.oil=Math.min(2,data.game.oil+1); }
+  save();
+  renderDeck(true);
+  checkSigils();
+}
+function cardFace(card){
+  const f=dv('dcface dcfront');
+  if(card.t==='flare'){
+    f.append(dv('dctype','The lamp flares'));
+    f.append(dv('dcamt','+'+card.amt));
+    f.append(dv('dcsub','Bonus light, for no reason. The best kind.'));
+  } else if(card.t==='koan'){
+    const kn=KOANS[card.i%KOANS.length];
+    f.append(dv('dctype','A line for the road'));
+    f.append(dv('dcbig','“'+kn.q+'”'));
+    f.append(dv('dcsub',kn.w+' · +10 light'));
+  } else if(card.t==='wild'){
+    f.append(dv('dctype','A small dare'));
+    f.append(dv('dcbig',WILDS[card.i%WILDS.length]));
+    f.append(dv('dcsub','+15 light, on your honor'));
+  } else if(card.t==='boon'){
+    f.append(dv('dctype','Tomorrow’s boon'));
+    f.append(dv('dcbig','Your first sit tomorrow burns double.'));
+    f.append(dv('dcsub','Light the lamp early.'));
+  } else {
+    f.append(dv('dctype','Lamp oil'));
+    f.append(dv('dcbig','One vial, banked.'));
+    f.append(dv('dcsub','A missed day won’t break the streak.'));
+  }
+  return f;
+}
+function deckCardEl(card, flipped){
+  const outer=dv('dawncard'+(flipped?' flip':''));
+  const inner=dv('dcinner');
+  const back=dv('dcface dcback');
+  const g=sv('svg',{viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':'1.5','stroke-linecap':'round','stroke-linejoin':'round'});
+  sv('path',{d:'M12 4c3 3.4 4 5.4 4 7.4a4 4 0 0 1-8 0C8 9.4 9 7.4 12 4Z'},g);
+  sv('path',{d:'M7 19.5h10'},g);
+  back.append(g, dv('bk','svaraj'));
+  inner.append(back);
+  if(card) inner.append(cardFace(card));
+  outer.append(inner);
+  return outer;
+}
+function renderDeck(animate){
+  const wrap=$('#dawnWrap'); if(!wrap) return;
+  wrap.textContent='';
+  const k=todayKey();
+  const closed=!!awardedOf(k).loop;
+  const card=data.game.draws[k];
+  const hint=$('#deckHint');
+  if(card){
+    hint.textContent='drawn — the deck reshuffles at dawn';
+    if(animate){
+      const el=deckCardEl(card,false); wrap.append(el);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('flip')));
+    } else wrap.append(deckCardEl(card,true));
+    if(card.t==='boon' && data.game.boon && !data.game.boon.used) wrap.append(dv('mut','Boon armed for tomorrow’s first sit.'));
+  } else if(closed){
+    hint.textContent='the loop is closed — draw';
+    wrap.append(deckCardEl(null,false));
+    const b=dv('btn','Draw the dawn card','button'); b.type='button';
+    b.addEventListener('click', drawCard);
+    wrap.append(b);
+  } else {
+    hint.textContent='one a day, after the loop closes';
+    const el=deckCardEl(null,false); el.style.opacity=.55; wrap.append(el);
+    wrap.append(dv('mut','Close today’s three and the deck opens. One card a day — that’s the deal.'));
+  }
+}
+
+/* ----- game renders ----- */
+function renderHeaderGame(){
+  const li=levelInfo(data.game.light);
+  $('#lightN').textContent=String(data.game.light);
+  $('#lvlChip').textContent='L'+li.lvl;
+}
+function renderPath(){
+  const li=levelInfo(data.game.light);
+  $('#rankLvl').textContent='Level '+li.lvl;
+  $('#rankName').textContent=rankOf(li.lvl);
+  $('#rankFill').style.width=Math.round(li.into/li.need*100)+'%';
+  $('#rankNext').textContent=li.into+' / '+li.need+' light · next: '+rankOf(li.lvl+1);
+  const oil=$('#oilRow'); oil.textContent='';
+  for(let i=0;i<2;i++) oil.append(dv('vial'+(i<data.game.oil?' full':'')));
+  const sc=statCounts();
+  const sl=$('#statList'); sl.textContent='';
+  STATS.forEach(s=>{
+    const st2=statLevel(sc[s.id], s.T);
+    const row=dv('statrow');
+    const sn=dv('sn',s.n); sn.append(dv('',s.h,'small'));
+    const bar=dv('sb'); const f=dv('f'); f.style.width=st2.pct+'%'; bar.append(f);
+    row.append(sn, dv('sl','Lv '+st2.lv), bar);
+    sl.append(row);
+  });
+  renderTrialZone();
+  const grid=$('#sigilGrid'); grid.textContent='';
+  let earned=0;
+  SIGILS.forEach(s=>{
+    const got=!!data.game.sigils[s.id]; if(got) earned++;
+    const el=dv('sigil'+(got?' earned':''));
+    const seal=dv('seal'); seal.append(iconSvg(s.ic));
+    el.append(seal, dv('sn2',s.n), dv('sd2',got?('earned '+fmtDay(data.game.sigils[s.id])):s.d));
+    grid.append(el);
+  });
+  $('#sigilCount').textContent=earned+' of '+SIGILS.length+' earned';
+}
+function renderTrialZone(){
+  const zone=$('#trialZone'); zone.textContent='';
+  const tr=data.game.trial;
+  if(tr){
+    const t=TRIALS.find(x=>x.id===tr.id) || TRIALS[0];
+    $('#trialHint').textContent='on your honor';
+    const box=dv('trialactive');
+    box.append(dv('tn',t.n), dv('td',t.d,'div'));
+    const tag=dv('rewardtag','+'+t.lt+' light'); tag.style.marginLeft='0'; box.append(tag);
+    const row=dv(''); row.style.display='flex'; row.style.gap='12px'; row.style.alignItems='center';
+    const done=dv('btn-ghost','Completed — on my honor','button'); done.type='button';
+    done.addEventListener('click', ()=>{
+      data.game.trialsDone.push(t.id); data.game.trial=null; save();
+      award(t.lt,'trial — '+t.n);
+      toast('Trial complete — '+t.n+'.');
+      checkSigils(); renderPath();
+    });
+    const drop=dv('linkish','set it down','button'); drop.type='button';
+    drop.addEventListener('click', ()=>{ data.game.trial=null; save(); renderPath(); toast('Set down. No shame in choosing your fights.'); });
+    row.append(done,drop);
+    box.append(row);
+    zone.append(box);
+  } else {
+    $('#trialHint').textContent='pick one';
+    const pick=dv('trialpick');
+    offeredTrials().forEach(t=>{
+      const b=dv('trialopt','','button'); b.type='button';
+      const tx=dv('tx2'); tx.append(dv('tn',t.n), dv('td',t.d));
+      b.append(tx, dv('rewardtag','+'+t.lt));
+      b.addEventListener('click', ()=>{
+        data.game.trial={id:t.id, wk:weekSeed()}; save(); renderPath();
+        toast('Trial accepted — '+t.n+'.');
+      });
+      pick.append(b);
+    });
+    zone.append(pick);
+  }
+}
+function renderGame(){ renderHeaderGame(); renderPath(); renderDeck(false); }
 
 /* ---------------- router ---------------- */
 function showView(name){
@@ -1022,9 +1568,10 @@ async function wake(){
 }
 document.addEventListener('visibilitychange', ()=>{ if(st.running && document.visibilityState==='visible') wake(); });
 
-function sitStart(){
+function sitStart(overrideMin){
   const s=data.settings;
-  st.durMs = s.len*60000; st.startTs = Date.now();
+  st.durMs = (overrideMin||s.len)*60000; st.startTs = Date.now();
+  st.startHour = new Date().getHours();
   st.stage = 0; st.maxStage = 0; st.running = true;
   $('#sitOverlay').classList.add('on');
   document.body.style.overflow='hidden';
@@ -1126,9 +1673,18 @@ function renderPiti(){
   }
 }
 $('#sheetSave').addEventListener('click', ()=>{
-  data.sits.push({d:todayKey(), min:sheetMin, depth:selDepth, piti:selPiti, note:$('#sitNoteIn').value.trim()});
+  const dawn = st.startHour>=4 && st.startHour<7;
+  data.sits.push({d:todayKey(), min:sheetMin, depth:selDepth, piti:selPiti, note:$('#sitNoteIn').value.trim(), dawn:dawn?1:0});
+  let pts, tags=[];
+  if(sheetMin<8){ pts=8; tags.push('ember'); }
+  else pts = 15 + Math.round(sheetMin/2) + [0,5,15,30,35,40,50][selDepth];
+  if(dawn){ pts=Math.round(pts*1.5); tags.push('dawn ×1.5'); }
+  const bo=data.game.boon;
+  if(bo && bo.d===todayKey() && !bo.used){ pts*=2; bo.used=true; tags.push('boon ×2'); }
   save(); closeSheet();
-  toast('Logged — '+sheetMin+' min · '+DEPTHS[selDepth].n);
+  award(pts,'the sit');
+  toast('Logged — '+sheetMin+' min · '+DEPTHS[selDepth].n+' · +'+pts+' light'+(tags.length?' ('+tags.join(', ')+')':''));
+  checkLoop(); checkSigils();
   renderAll();
 });
 $('#sheetDiscard').addEventListener('click', ()=>{ closeSheet(); });
@@ -1388,6 +1944,7 @@ function renderToday(){
     ? sitToday.reduce((a,s)=>a+s.min,0)+' min on the seat · '+DEPTHS[Math.max(...sitToday.map(s=>s.depth))].n
     : 'Ten minutes counts. Pre-dawn counts double.';
   $('#threeSitBtn').textContent = sitDone ? 'Again' : 'Begin';
+  $('#emberLine').style.display = sitDone ? 'none' : '';
 
   const doy=dayOfYear(), muscle=doy%3;
   const repDone=mindDoneOn(k);
@@ -1405,8 +1962,10 @@ function renderToday(){
 
   const dots=$('#dotRow'); dots.textContent='';
   for(let i=-13;i<=0;i++){
-    const d=dv('dt'+(activeOn(shiftKey(i))?' on':'')+(i===0?' today':''));
-    d.className='dt'+(activeOn(shiftKey(i))?' on':'')+(i===0?' today':'');
+    const dk=shiftKey(i);
+    const cls = activeRaw(dk) ? ' on' : (data.game.oiled[dk] ? ' oil' : '');
+    const d=dv('dt'+cls+(i===0?' today':''));
+    if(data.game.oiled[dk]) d.title='kept alight by lamp oil';
     dots.append(d);
   }
   $('#streakN').textContent=String(streakFrom(activeOn));
@@ -1459,7 +2018,7 @@ function renderMind(){
 
 /* ---------------- render all ---------------- */
 function renderAll(){
-  renderToday(); renderSitView(); renderWheelAll(); renderSpark(); renderMind();
+  renderToday(); renderSitView(); renderWheelAll(); renderSpark(); renderMind(); renderGame();
 }
 
 /* ---------------- static events ---------------- */
@@ -1475,6 +2034,13 @@ $('#optPace').addEventListener('input', e=>{
   $('#paceVal').textContent=data.settings.pace; $('#paceVal2').textContent=data.settings.pace;
 });
 $('#beginSit').addEventListener('click', ()=>{ if(data.settings.bells) ac(); sitStart(); });
+$('#threeSitBtn').addEventListener('click', ()=>{ if(data.settings.bells) ac(); sitStart(); });
+$('#emberBtn').addEventListener('click', ()=>{ if(data.settings.bells) ac(); sitStart(2); });
+$('#lvlUpGo').addEventListener('click', ()=>{
+  $('#lvlUp').classList.remove('on');
+  renderPath();
+  showNextLvl();
+});
 
 $('#tableToggle').addEventListener('click', ()=>{
   const t=$('#sitTable'), c=$('#depthChart');
@@ -1486,21 +2052,41 @@ $('#tableToggle').addEventListener('click', ()=>{
 $('#joySave').addEventListener('click', ()=>{
   const v=$('#joyInput').value.trim();
   if(!v){ toast('One honest sentence — anything you enjoyed.'); return; }
-  setRep('joy', v); toast('Kept. That’s the muscle.'); renderAll();
+  const had=!!repsOf(todayKey()).joy;
+  setRep('joy', v);
+  if(!had) award(5,'the evening line');
+  toast('Kept. That’s the muscle.');
+  checkLoop(); checkSigils();
+  renderAll();
 });
 $('#joyInput').addEventListener('keydown', e=>{ if(e.key==='Enter') $('#joySave').click(); });
 
 $('#saveCheckin').addEventListener('click', ()=>{
-  const k=todayKey();
+  const k=todayKey(), aw=awardedOf(k);
+  const prev=prevCheckin();
   const scores={}; DOMAINS.forEach(d=> scores[d.id]=data.draft[d.id]||1);
   const i=data.checkins.findIndex(c=>c.d===k);
   if(i>=0) data.checkins[i]={d:k,scores}; else data.checkins.push({d:k,scores});
-  save(); toast('Check-in saved. The wheel remembers.'); renderAll();
+  save();
+  if(!aw.ck){
+    aw.ck=1; award(15,'check-in');
+    if(prev){
+      const pl=Math.min(...DOMAINS.map(d=>prev.scores[d.id]||0));
+      const nl=Math.min(...DOMAINS.map(d=>scores[d.id]));
+      if(nl>pl) award(25,'the wheel rounds');
+    }
+    save();
+  }
+  toast('Check-in saved. The wheel remembers.');
+  checkSigils();
+  renderAll();
 });
 $('#focusSave').addEventListener('click', ()=>{
   const v=$('#focusAction').value.trim();
   if(!v){ toast('Write one tiny action first.'); return; }
   data.focus={domain:lowestDomain().id, action:v, d:todayKey()};
+  const aw=awardedOf(todayKey());
+  if(!aw.fo){ aw.fo=1; award(5,'focus set'); }
   save(); toast('Set. One point, gently.'); renderAll();
 });
 
@@ -1509,12 +2095,28 @@ $('#reframeSave').addEventListener('click', ()=>{
   if(!p){ toast('Write the process line — that’s the rep.'); return; }
   data.reframes.push({d:todayKey(), g, p});
   if(data.reframes.length>40) data.reframes=data.reframes.slice(-40);
+  const had=!!repsOf(todayKey()).p;
   setRep('p',1);
   $('#gripInput').value=''; $('#processInput').value='';
-  toast('Logged. Grip loosened.'); renderAll();
+  if(!had) award(10,'process rep');
+  toast('Logged. Grip loosened.');
+  checkLoop(); checkSigils();
+  renderAll();
 });
-$('#boundaryDone').addEventListener('click', ()=>{ setRep('b',1); toast('Rep logged. The spine remembers.'); renderAll(); });
-$('#moneyDone').addEventListener('click', ()=>{ setRep('m',1); toast('Rep logged. Decision rights: kept.'); renderAll(); });
+$('#boundaryDone').addEventListener('click', ()=>{
+  if(repsOf(todayKey()).b){ toast('Already logged today. Tomorrow brings a new rep.'); return; }
+  setRep('b',1); award(10,'boundary rep');
+  toast('Rep logged. The spine remembers.');
+  checkLoop(); checkSigils();
+  renderAll();
+});
+$('#moneyDone').addEventListener('click', ()=>{
+  if(repsOf(todayKey()).m){ toast('Already logged today. Tomorrow brings a new rep.'); return; }
+  setRep('m',1); award(10,'money rep');
+  toast('Rep logged. Decision rights: kept.');
+  checkLoop(); checkSigils();
+  renderAll();
+});
 
 $('#curSel').addEventListener('change', e=>{ data.money.cur=e.target.value; save(); renderMind(); });
 $('#monthlyIn').addEventListener('change', e=>{ data.money.monthly=parseNum(e.target.value); save(); renderMind(); });
@@ -1542,7 +2144,9 @@ $('#dataClose').addEventListener('click', ()=> $('#dataModal').classList.remove(
 
 /* ---------------- init ---------------- */
 load();
+reconcileOil();
 renderAll();
+checkSigils();
 showView('today');
 })();
 </script>
