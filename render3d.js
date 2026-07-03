@@ -11,7 +11,7 @@ const R3D = (() => {
   let playerSprite, playerShadow, npcSprites = [], itemSprites = {};
   let waterMesh, waterGeo, waterTexRef = null, smokeSprites = [], ferryGroup;
   let flowerSprites = [], tuftMatRef = null, foamMatRef = null, cloudSprites = [];
-  let lavaMatRef = null, lavaLightRef = null;
+  let lavaMatRef = null, lavaLightRef = null, lavaTileMatRef = null;
   let mapGroup = null, currentMap = null;
   let t = 0;
   const texCache = {};
@@ -263,6 +263,19 @@ const R3D = (() => {
     g.fillStyle = '#2a2020'; g.fillRect(7, 8, 2, 2);
     return (texCache.ball = nearest(new THREE.CanvasTexture(c)));
   }
+  function gemTex() {
+    if (texCache.gem) return texCache.gem;
+    const c = document.createElement('canvas');
+    c.width = 16; c.height = 16;
+    const g = c.getContext('2d');
+    g.fillStyle = '#5a1a14';
+    g.beginPath(); g.moveTo(8, 1); g.lineTo(15, 8); g.lineTo(8, 15); g.lineTo(1, 8); g.closePath(); g.fill();
+    g.fillStyle = '#d83828';
+    g.beginPath(); g.moveTo(8, 2); g.lineTo(14, 8); g.lineTo(8, 14); g.lineTo(2, 8); g.closePath(); g.fill();
+    g.fillStyle = '#f87858'; g.fillRect(5, 4, 3, 3);
+    g.fillStyle = '#ffd0b8'; g.fillRect(6, 5, 1, 1);
+    return (texCache.gem = nearest(new THREE.CanvasTexture(c)));
+  }
   function grassTuftTex(frame) {
     const key = 'tuft' + frame;
     if (texCache[key]) return texCache[key];
@@ -437,7 +450,7 @@ const R3D = (() => {
     cloudSprites.forEach(s => worldScene.remove(s));
     cloudSprites = [];
     flowerSprites = [];
-    tuftMatRef = null; foamMatRef = null; lavaMatRef = null; lavaLightRef = null;
+    tuftMatRef = null; foamMatRef = null; lavaMatRef = null; lavaLightRef = null; lavaTileMatRef = null;
     if (waterMesh) { worldScene.remove(waterMesh); waterMesh = null; waterTexRef = null; }
     if (ferryGroup) { worldScene.remove(ferryGroup); ferryGroup = null; }
 
@@ -447,9 +460,10 @@ const R3D = (() => {
     worldScene.add(mapGroup);
 
     if (m.outdoor) {
-      worldScene.background = skyTex('#5aa8e8', '#c8ecff');
-      worldScene.fog = new THREE.Fog(0xb8e0f8, 20, 46);
-      sun.intensity = 1.15;
+      // warm dusk palette on the volcano summit
+      worldScene.background = m.warm ? skyTex('#e8935a', '#f8dca8') : skyTex('#5aa8e8', '#c8ecff');
+      worldScene.fog = new THREE.Fog(m.warm ? 0xf0c090 : 0xb8e0f8, 20, 46);
+      sun.intensity = m.warm ? 1.0 : 1.15;
       // drifting clouds
       for (let i = 0; i < 4; i++) {
         const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex(i % 2), transparent: true, opacity: 0.85, depthWrite: false }));
@@ -476,15 +490,15 @@ const R3D = (() => {
       worldScene.add(sh);
       npcSprites.push({ sprite: spr, shadow: sh, npc: n });
     }
-    if (mapKey === 'oneisland') {
-      for (const key in ITEM_BALLS) {
-        const [x, y] = key.split(',').map(Number);
-        const spr = makeSprite(ballTex(), 0.44, 0.44);
-        spr.center.set(0.5, 0.1);
-        spr.position.set(x + 0.5, 0.05, y + 0.5);
-        worldScene.add(spr);
-        itemSprites[key] = spr;
-      }
+    const balls = ITEM_BALLS[mapKey] || {};
+    for (const key in balls) {
+      const [x, y] = key.split(',').map(Number);
+      const isGem = balls[key].item === 'RUBY';
+      const spr = makeSprite(isGem ? gemTex() : ballTex(), isGem ? 0.5 : 0.44, isGem ? 0.5 : 0.44);
+      spr.center.set(0.5, 0.1);
+      spr.position.set(x + 0.5, 0.05, y + 0.5);
+      worldScene.add(spr);
+      itemSprites[key] = spr;
     }
     snapCamera();
   }
@@ -521,20 +535,23 @@ const R3D = (() => {
   function buildOutdoor(m) {
     const g = new THREE.Group();
     const grid = m.grid;
-    const pos = { grass: [], dark: [], path: [], sand: [], rock: [], plank: [], spa: [],
+    const pos = { grass: [], dark: [], path: [], sand: [], rock: [], plank: [], spa: [], rocky: [], lava: [],
       wallC: [], wallH: [], roofC: [], roofH: [], tree: [], tuftA: [], tuftB: [], flower: [], sign: [] };
 
     eachTile(grid, (tc, x, y) => {
       const cx = x + 0.5, cz = y + 0.5;
       switch (tc) {
         case 'G': case 'F': case 'R': case '!': pos.grass.push([cx, -0.25, cz]); break;
+        case '.': (m.rocky ? pos.rocky : pos.grass).push([cx, -0.25, cz]); break;
         case 'T':
           pos.dark.push([cx, -0.25, cz]);
           pos.tuftA.push([cx, 0.26, cz]);
           pos.tuftB.push([cx, 0.26, cz, Math.PI / 2]);
           break;
-        case 'P': pos.path.push([cx, -0.26, cz]); break;
-        case 'S': case 'I': pos.sand.push([cx, -0.27, cz]); break;
+        case 'P': case '5': (m.rocky ? pos.rocky : pos.path).push([cx, -0.26, cz]); break;
+        case 'L': pos.lava.push([cx, -0.28, cz]); break;
+        case 'S': pos.sand.push([cx, -0.27, cz]); break;
+        case 'I': (m.rocky ? pos.rocky : pos.sand).push([cx, -0.27, cz]); break;
         case '#': {
           const h = 1.1 + ((x * 7 + y * 13) % 5) * 0.12;
           pos.rock.push([cx, h / 2 - 0.5, cz]);
@@ -561,6 +578,11 @@ const R3D = (() => {
       pos.rock, { castShadow: true });
     instanced(g, groundGeo, groundMats('plank', 0x7a5430), pos.plank);
     instanced(g, groundGeo, groundMats('spa', 0x2a8a7c), pos.spa);
+    instanced(g, groundGeo, groundMats('rockTop', 0x7a6a54), pos.rocky, { vary: 0.09 });
+    if (pos.lava.length) {
+      lavaTileMatRef = new THREE.MeshBasicMaterial({ color: 0xff6830 });
+      instanced(g, groundGeo, lavaTileMatRef, pos.lava);
+    }
 
     // buildings: textured walls + shingled roof slabs
     const wallM = allMat('wall');
@@ -670,19 +692,21 @@ const R3D = (() => {
     waterMesh.position.set(15, -0.22, 30);
     g.add(waterMesh);
 
-    // Mt. Ember on the horizon
-    const volcano = new THREE.Mesh(new THREE.ConeGeometry(11, 9, 9), mat('volcano', { color: 0x6e5a48 }));
-    volcano.position.set(13, 3.2, -7.5);
+    // Mt. Ember on the horizon (bigger and closer on the summit map)
+    const vk = m.volcano || { x: 13, z: -7.5, s: 1 };
+    const vx = vk.x, vz = vk.z, vs = vk.s;
+    const volcano = new THREE.Mesh(new THREE.ConeGeometry(11 * vs, 9 * vs, 9), mat('volcano', { color: 0x6e5a48 }));
+    volcano.position.set(vx, 3.2 * vs, vz);
     g.add(volcano);
-    const crater = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 3.4, 1.6, 9), mat('crater', { color: 0x4a3a30 }));
-    crater.position.set(13, 7.4, -7.5);
+    const crater = new THREE.Mesh(new THREE.CylinderGeometry(2.4 * vs, 3.4 * vs, 1.6 * vs, 9), mat('crater', { color: 0x4a3a30 }));
+    crater.position.set(vx, 7.4 * vs, vz);
     g.add(crater);
     lavaMatRef = new THREE.MeshBasicMaterial({ color: 0xff6830 });
-    const lava = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.1, 0.3, 9), lavaMatRef);
-    lava.position.set(13, 8.05, -7.5);
+    const lava = new THREE.Mesh(new THREE.CylinderGeometry(2.1 * vs, 2.1 * vs, 0.3 * vs, 9), lavaMatRef);
+    lava.position.set(vx, 8.05 * vs, vz);
     g.add(lava);
-    lavaLightRef = new THREE.PointLight(0xff7838, 1.4, 16);
-    lavaLightRef.position.set(13, 8.8, -7.5);
+    lavaLightRef = new THREE.PointLight(0xff7838, 1.4, 16 * vs);
+    lavaLightRef.position.set(vx, 8.8 * vs, vz);
     g.add(lavaLightRef);
     for (let i = 0; i < 4; i++) {
       const c = document.createElement('canvas');
@@ -692,11 +716,17 @@ const R3D = (() => {
       cg.beginPath(); cg.arc(16, 16, 11, 0, 7); cg.fill();
       const tex = new THREE.CanvasTexture(c);
       const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0.55, depthWrite: false }));
-      s.scale.set(2.4, 2.4, 1);
+      s.scale.set(2.4 * vs, 2.4 * vs, 1);
       s.userData.phase = i / 4;
-      s.position.set(13, 8.6, -7.5);
+      s.userData.vk = vk;
+      s.position.set(vx, 8.6 * vs, vz);
       worldScene.add(s);
       smokeSprites.push(s);
+    }
+
+    if (!m.ferry) {
+      g.traverse(o => { if (o.isMesh || o.isInstancedMesh) o.receiveShadow = true; });
+      return g;
     }
 
     // Seagallop ferry docked beside the pier
@@ -840,12 +870,17 @@ const R3D = (() => {
       if (lavaLightRef) lavaLightRef.intensity = 1.1 + pulse * 0.8;
     }
 
+    if (lavaTileMatRef) {
+      const pulse2 = 0.5 + 0.5 * Math.sin(t * 2.6);
+      lavaTileMatRef.color.setRGB(1, 0.4 + pulse2 * 0.22, 0.16 + pulse2 * 0.1);
+    }
     for (const s of smokeSprites) {
+      const vk = s.userData.vk || { x: 13, z: -7.5, s: 1 };
       const ph = (t * 0.14 + s.userData.phase) % 1;
-      s.position.y = 8.6 + ph * 4.2;
-      s.position.x = 13 + Math.sin(ph * 5 + s.userData.phase * 7) * 0.8;
+      s.position.y = (8.6 + ph * 4.2) * vk.s;
+      s.position.x = vk.x + Math.sin(ph * 5 + s.userData.phase * 7) * 0.8 * vk.s;
       s.material.opacity = 0.5 * (1 - ph);
-      const sc = 1.6 + ph * 2.6;
+      const sc = (1.6 + ph * 2.6) * vk.s;
       s.scale.set(sc, sc, 1);
     }
     if (ferryGroup) ferryGroup.position.y = -0.05 + Math.sin(t * 1.3) * 0.03;

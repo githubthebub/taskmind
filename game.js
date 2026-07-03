@@ -92,6 +92,7 @@ const game = {
   gotGift: false,
   collected: {},
   beaten: {},
+  quest: 0,
   steps: 0,
   frame: 0,
 };
@@ -101,8 +102,9 @@ function newGame() {
   game.bag = STARTING_BAG.map(s => ({ ...s }));
   game.map = 'oneisland'; game.px = 13; game.py = 49; game.dir = 'up';
   game.gotGift = false;
-  game.collected = {}; game.beaten = {};
+  game.collected = {}; game.beaten = {}; game.quest = 0;
   R3D.setMap(game.map);
+  MUSIC.play('overworld');
   startDialog([
     'ONE ISLAND - SEVII ISLANDS',
     'You step off the SEAGALLOP ferry', 'onto the harbor pier.',
@@ -116,7 +118,7 @@ function saveGame() {
   const s = {
     map: game.map, px: game.px, py: game.py, dir: game.dir,
     party: game.party, bag: game.bag, gotGift: game.gotGift,
-    collected: game.collected, beaten: game.beaten,
+    collected: game.collected, beaten: game.beaten, quest: game.quest,
   };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); return true; }
   catch (e) { return false; }
@@ -128,7 +130,9 @@ function loadGame() {
     Object.assign(game, s);
     game.collected = game.collected || {};
     game.beaten = game.beaten || {};
+    game.quest = game.quest || 0;
     R3D.setMap(game.map);
+    MUSIC.play(mapTrack());
     return true;
   } catch (e) { return false; }
 }
@@ -176,7 +180,7 @@ function updateDialog() {
 }
 
 // ---------- Map helpers ----------
-const SOLID_TILES = new Set(['#', 'R', 'W', 'A', 'a', 'B', 'b', '!', '4', '~', 'w', 'c', 'h', 'p', 'k', 't']);
+const SOLID_TILES = new Set(['#', 'R', 'W', 'A', 'a', 'B', 'b', '!', '4', '~', 'L', 'w', 'c', 'h', 'p', 'k', 't']);
 function tileAt(mapKey, x, y) {
   const g = MAPS[mapKey].grid;
   if (y < 0 || y >= g.length || x < 0 || x >= g[0].length) return '#';
@@ -188,9 +192,11 @@ function npcAt(mapKey, x, y) {
 function isBlocked(mapKey, x, y) {
   if (npcAt(mapKey, x, y)) return true;
   const t = tileAt(mapKey, x, y);
-  if (t === 'I') return !game.collected[x + ',' + y]; // item ball blocks until picked up
+  if (t === 'I') return !game.collected[x + ',' + y]; // coords are unique across maps
   return SOLID_TILES.has(t);
 }
+
+const mapTrack = () => !MAPS[game.map].outdoor ? 'interior' : (game.map === 'summit' ? 'summit' : 'overworld');
 
 // ---------- World update ----------
 const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
@@ -198,7 +204,8 @@ const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 function updateWorld() {
   game.frame++;
   if (game.walking) {
-    game.walkFrame++;
+    game.walkFrame += (keys['Shift'] ? 2 : 1); // hold Shift to run
+    game.walkFrame = Math.min(8, game.walkFrame);
     const [dx, dy] = DIRS[game.dir];
     game.ox = dx * game.walkFrame * 2;
     game.oy = dy * game.walkFrame * 2;
@@ -211,7 +218,7 @@ function updateWorld() {
   }
 
   if (tapA()) { interact(); return; }
-  if (tapB() || tapped('m', 'M')) { openMenu(); return; }
+  if (tapB()) { openMenu(); return; }
 
   let dir = null;
   if (keys['ArrowUp'] || keys['w']) dir = 'up';
@@ -225,7 +232,11 @@ function updateWorld() {
   const nx = game.px + dx, ny = game.py + dy;
 
   const warp = MAPS[game.map].warps[nx + ',' + ny];
-  if (warp) { doWarp(warp); return; }
+  if (warp) {
+    if (warp.needQuest && game.quest < warp.needQuest) { startDialog(warp.blockedMsg); return; }
+    doWarp(warp);
+    return;
+  }
   if (isBlocked(game.map, nx, ny)) return;
   game.walking = true; game.walkFrame = 0;
 }
@@ -235,6 +246,7 @@ function doWarp(warp) {
     game.map = warp.map; game.px = warp.x; game.py = warp.y; game.dir = warp.dir;
     game.walking = false; game.ox = game.oy = 0;
     R3D.setMap(game.map);
+    MUSIC.play(mapTrack());
     fadeIn(() => { game.state = 'world'; });
   });
 }
@@ -257,6 +269,19 @@ function interact() {
     if (npc.trainer) {
       if (game.beaten[npc.trainer.id]) startDialog(npc.trainer.after);
       else startDialog(npc.trainer.intro, () => startTrainerBattle(npc));
+    } else if (npc.action === 'celio') {
+      const q = game.quest;
+      if (q === 0) startDialog(CELIO_DIALOG[0], () => { game.quest = 1; });
+      else if (q === 1) startDialog(CELIO_DIALOG[1]);
+      else if (q === 2) startDialog(CELIO_DIALOG[2], () => {
+        const idx = game.bag.findIndex(b => b.item === 'RUBY');
+        if (idx >= 0) game.bag.splice(idx, 1);
+        game.quest = 3;
+        addItem('MASTER BALL', 1);
+        blip(1000, .1); blip(1300, .15);
+        startDialog(['CELIO set the RUBY into the', 'NETWORK MACHINE...', 'It hums with a warm, steady glow!', 'CELIO gave you a MASTER BALL!'], beginEnding);
+      });
+      else startDialog(CELIO_DIALOG[3]);
     } else if (npc.action === 'heal') {
       startDialog(npc.lines, null, {
         options: ['YES', 'NO'],
@@ -286,16 +311,22 @@ function interact() {
   const t = tileAt(game.map, tx, ty);
   if (t === 'I') {
     const key = tx + ',' + ty;
-    const ball = game.map === 'oneisland' && ITEM_BALLS[key];
+    const ball = (ITEM_BALLS[game.map] || {})[key];
     if (ball && !game.collected[key]) {
       game.collected[key] = true;
       addItem(ball.item, ball.qty);
       R3D.hideItem(key);
       blip(1200, .1);
-      startDialog(['You found ' + ball.qty + ' ' + ball.item + '!']);
+      if (ball.item === 'RUBY') {
+        game.quest = Math.max(game.quest, 2);
+        startDialog(['You found the RUBY!', 'It glows warm in your hand, like a', 'coal that never cools.', 'CELIO is waiting for this!']);
+      } else {
+        startDialog(['You found ' + ball.qty + ' ' + ball.item + '!']);
+      }
     }
     return;
   }
+  if (t === 'L') { startDialog(['The lava bubbles and pops.', 'Best admired from right here.']); return; }
   if (t === '~') {
     blip(1000, .1); blip(1300, .12);
     healParty();
@@ -418,10 +449,11 @@ function stageMult(stg) { return stg >= 0 ? (2 + stg) / 2 : 2 / (2 - stg); }
 function freshStages() { return { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 }; }
 
 function startWildBattle() {
-  // weighted pick
-  const total = WILD_TABLE.reduce((s, w) => s + w.weight, 0);
-  let r = rand(total), pick = WILD_TABLE[0];
-  for (const w of WILD_TABLE) { if (r < w.weight) { pick = w; break; } r -= w.weight; }
+  // weighted pick from this map's encounter table
+  const table = MAPS[game.map].wildTable || WILD_TABLE;
+  const total = table.reduce((s, w) => s + w.weight, 0);
+  let r = rand(total), pick = table[0];
+  for (const w of table) { if (r < w.weight) { pick = w; break; } r -= w.weight; }
   const lv = pick.minLv + rand(pick.maxLv - pick.minLv + 1);
   const foe = makeMon(pick.species, lv, pick.moves);
   battle.trainer = null; battle.trainerParty = []; battle.foeIdx = 0;
@@ -452,14 +484,21 @@ function beginBattle(foe, introMsgs) {
   battle.menuIdx = 0; battle.moveIdx = 0;
   battle.queue = [];
   battle.foeAnim = 0; battle.playerAnim = 0;
+  battle.dispFoe = foe.hp; battle.dispPm = playerMonHp(); battle.dispExp = -1;
   blip(200, .15, .06); blip(150, .2, .06);
   fadeOut(() => {
     game.state = 'battle';
+    MUSIC.play('battle');
     introMsgs.forEach((m, i) => {
       queueMsg(m, i === introMsgs.length - 1 ? () => { battle.phase = 'menu'; } : null);
     });
     fade.alpha = 0;
   });
+}
+
+function playerMonHp() {
+  const lead = game.party.find(p => p.hp > 0);
+  return lead ? lead.hp : 0;
 }
 
 const playerMon = () => game.party[battle.activeIdx];
@@ -743,6 +782,7 @@ function endOfTurn(done) {
 function checkFaints() {
   const foe = battle.foe, pm = playerMon();
   if (foe.hp <= 0) {
+    if (!battle.trainer || battle.foeIdx + 1 >= battle.trainerParty.length) MUSIC.play('victory');
     queueMsg(wildOrFoe() + foe.name + ' fainted!', () => giveExp(afterFoeFainted));
     battle.phase = 'msg';
     return true;
@@ -804,6 +844,7 @@ function afterFoeFainted() {
     const next = battle.trainerParty[battle.foeIdx];
     next.stages = freshStages();
     battle.foe = next;
+    battle.dispFoe = next.hp;
     queueMsg(battle.trainer.name + ' sent out ' + next.name + '!', () => { battle.phase = 'menu'; });
     battle.phase = 'msg';
   } else if (battle.trainer) {
@@ -832,6 +873,7 @@ function endBattle(cb) {
     battle.trainer = null; battle.trainerParty = []; battle.foeIdx = 0;
     fadeIn();
     if (cb) cb();
+    MUSIC.play(mapTrack());
   }, 'battle');
 }
 
@@ -845,6 +887,7 @@ function battleQueuePlayerSwitch() {
   const doSwitch = () => {
     battle.activeIdx = newIdx;
     fresh.stages = freshStages();
+    battle.dispPm = fresh.hp; battle.dispExp = -1;
     queueMsg('Go! ' + fresh.name + '!', () => {
       if (wasFainted) { battle.phase = 'menu'; return; }
       // switching costs the turn - foe attacks
@@ -874,6 +917,10 @@ function useBattleItem(slot, item) {
         endOfTurn(() => { if (!checkFaints()) battle.phase = 'menu'; });
       });
     });
+    return;
+  }
+  if (item.kind !== 'ball') {
+    queueMsg('It would have no effect here.', () => { battle.phase = 'menu'; });
     return;
   }
   // ball
@@ -1088,12 +1135,26 @@ function drawBattleUI() {
   const foe = battle.foe;
   const pm = playerMon();
 
+  // animate HP/EXP bars toward their true values
+  const approach = (disp, target) => {
+    const diff = target - disp;
+    return Math.abs(diff) < 0.7 ? target : disp + diff * 0.09;
+  };
+  if (foe) battle.dispFoe = approach(battle.dispFoe === undefined ? foe.hp : battle.dispFoe, foe.hp);
+  if (pm) {
+    battle.dispPm = approach(battle.dispPm === undefined ? pm.hp : battle.dispPm, pm.hp);
+    if (battle.dispExp === -1 || battle.dispExp === undefined || pm.exp < battle.dispExp - 1) battle.dispExp = pm.exp < (battle.dispExp || 0) ? 0 : pm.exp;
+    battle.dispExp = approach(battle.dispExp, pm.exp);
+    // low-HP warning chirp
+    if (battle.dispPm > 0 && battle.dispPm / pm.stats.hp <= 0.25 && game.frame % 48 === 0) blip(760, .07, .05);
+  }
+
   // foe info box (no HP numbers, like the original)
   if (foe) {
     drawInfoBox(4, 4, 108, 28);
     text(foe.name, 9, 8, '#40342c', 7);
     text('Lv' + foe.level, 82, 8, '#40342c', 7);
-    drawHPBar(9, 19, 94, foe.hp, foe.stats.hp, true);
+    drawHPBar(9, 19, 94, battle.dispFoe, foe.stats.hp, true);
     if (foe.status) text(foe.status, 86, 25, '#c04838', 6);
     if (battle.trainer) {
       // party dots for trainer battles
@@ -1108,10 +1169,10 @@ function drawBattleUI() {
     drawInfoBox(VW - 116, 74, 112, 40);
     text(pm.name, VW - 110, 78, '#40342c', 7);
     text('Lv' + pm.level, VW - 40, 78, '#40342c', 7);
-    drawHPBar(VW - 110, 89, 100, pm.hp, pm.stats.hp, true);
-    text(pm.hp + '/' + pm.stats.hp, VW - 68, 97, '#484038', 7);
+    drawHPBar(VW - 110, 89, 100, battle.dispPm, pm.stats.hp, true);
+    text(Math.round(battle.dispPm) + '/' + pm.stats.hp, VW - 68, 97, '#484038', 7);
     if (pm.status) text(pm.status, VW - 110, 97, '#c04838', 6);
-    drawExpBar(VW - 110, 108, 100, pm.exp, pm.expNext);
+    drawExpBar(VW - 110, 108, 100, battle.dispExp, pm.expNext);
   }
 
   // bottom: FRLG dark message panel / split command panel
@@ -1161,6 +1222,34 @@ function wrapText(str, x, y, w, lh, color = '#383838') {
   if (line) text(line, x, ly, color);
 }
 
+// ---------- Ending ----------
+function beginEnding() {
+  fadeOut(() => {
+    game.state = 'ending';
+    fade.alpha = 0;
+    MUSIC.play('title');
+  });
+}
+function updateEnding() {
+  game.frame++;
+  if (tapA()) {
+    blip(900);
+    game.state = 'world';
+    MUSIC.play(mapTrack());
+  }
+}
+function drawEnding() {
+  px(0, 0, VW, VH, '#16243a');
+  px(0, 118, VW, 42, '#1d3450');
+  text('THE END', 84, 22, '#f8d030', 18);
+  text('THE END', 82, 20, '#e85838', 18);
+  game.party.forEach((p, i) => drawMon(p.species, 22 + i * 34, 48, 30));
+  text('The RUBY powers the NETWORK MACHINE.', 14, 92, '#cdd6e0', 7);
+  text('The SEVII ISLANDS are linked at last.', 14, 104, '#cdd6e0', 7);
+  text('Thanks for playing, CHAMPION!', 40, 122, '#88b8d8', 8);
+  if (Math.floor(game.frame / 25) % 2 === 0) text('ENTER: keep exploring', 62, 142, '#f8f8f8', 7);
+}
+
 // ---------- Title ----------
 function drawTitle() {
   px(0, 0, VW, VH, '#183048');
@@ -1197,6 +1286,7 @@ function updateTitle() {
 // ---------- Main loop ----------
 function frame() {
   ctx.clearRect(0, 0, VW, VH); // UI layer is transparent over the 3D canvas
+  if (tapped('m', 'M')) { MUSIC.ensure(); MUSIC.toggleMute(); blip(MUSIC.muted ? 300 : 900, .05); }
   switch (game.state) {
     case 'title': updateTitle(); drawTitle(); break;
     case 'world': updateWorld(); drawWorld(); break;
@@ -1209,6 +1299,7 @@ function frame() {
     case 'party': updateParty(); drawParty(); break;
     case 'bag': updateBag(); drawBag(); break;
     case 'battle': updateBattle(); drawBattle(); break;
+    case 'ending': updateEnding(); drawEnding(); break;
     case 'fade':
       updateFade();
       if (fade.bg === 'battle' && battle.foe) drawBattle(); else drawWorld();

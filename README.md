@@ -47,11 +47,31 @@ Laid out after FRLG's One Island, from south to north:
   Camper Rick (ask him about his tent)
 - **Ember Spa** — a hot spring at the foot of the mountain that fully heals
   your party, just like the real one
-- **Mt. Ember** — smoking on the horizon
+- **Mt. Ember** — smoking on the horizon, and now climbable: Celio's quest
+  opens the summit trail (lava pools, high-level wilds, and Cooltrainer Atlas
+  guarding the Ruby)
+
+![Mt. Ember summit](docs/summit.png)
 
 ![Town](docs/town.png)
 ![Kindle Road](docs/kindle-road.png)
 ![Ember Spa](docs/ember-spa.png)
+
+## The Ruby quest
+
+Talk to **Celio** in the Network Center to begin: his machine needs a Ruby
+from Mt. Ember's summit. Beat Atlas, grab the gem, bring it back — the machine
+hums to life, you earn a **Master Ball**, and the credits roll (then keep
+exploring in the postgame).
+
+![Ending](docs/ending.png)
+
+## Music & feel
+
+- Original **chiptune soundtrack** synthesized live with WebAudio — overworld,
+  interior, summit, battle, and victory themes (press **M** to mute)
+- HP and EXP bars **drain and fill smoothly**, with a low-HP warning chirp
+- Hold **Shift** to run
 
 ## Battles
 

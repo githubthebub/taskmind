@@ -118,6 +118,8 @@ const ITEMS = {
   'HYPER POTION': { kind:'heal', amt:200, desc:'Restores 200 HP.' },
   'POKe BALL':    { kind:'ball', bonus:1,   desc:'Catches wild POKeMON.' },
   'GREAT BALL':   { kind:'ball', bonus:1.5, desc:'A good, high-performance BALL.' },
+  'MASTER BALL':  { kind:'ball', bonus:255, desc:'The best BALL. It never fails.' },
+  'RUBY':         { kind:'key',  desc:'A gemstone that glows like embers.' },
 };
 
 const STARTING_BAG = [
@@ -636,7 +638,7 @@ const MAP_ONEISLAND = [
   '###########~~~~###############',
   '###########~~~~###############',
   '##########.!PP..##############',
-  '##########GGPPGG##############',
+  '##########GGPPGGGG55##########',
   '####RGGGGGGGPPGGGGGGGGGGGR####',
   '####RGTTTGGGPPGGTTTTGGGGGR####',
   '####RGTTTGGGPPGGTTTTGGGGGR####',
@@ -710,12 +712,42 @@ const MAP_HOUSE = [
   'wwwmwwww',
 ];
 
+// Mt. Ember summit trail: L = lava pool (blocked), 5 = warp back down
+const MAP_SUMMIT = [
+  '################',
+  '################',
+  '#####...I..#####',
+  '####........####',
+  '####.LL..LL.####',
+  '#####......#####',
+  '######PP########',
+  '######PP########',
+  '####..PP..######',
+  '####..PP..######',
+  '####..PP..LL####',
+  '####..PP..LL####',
+  '####..PPTT..####',
+  '####..PPTT..####',
+  '####..PP..######',
+  '######PP########',
+  '######PP########',
+  '######PP########',
+  '######55########',
+  '################',
+];
+
 const MAPS = {
   oneisland: {
-    grid: MAP_ONEISLAND, outdoor: true,
+    grid: MAP_ONEISLAND, outdoor: true, ferry: true,
+    volcano: { x: 13, z: -7.5, s: 1 },
     warps: {
       '9,34':  { map:'center', x:4, y:6, dir:'up' },   // PokeCenter door
       '19,34': { map:'house',  x:3, y:5, dir:'up' },   // house door
+      // Mt. Ember trail gate, opened by Celio's request
+      '18,5':  { map:'summit', x:6, y:17, dir:'up', needQuest:1,
+        blockedMsg:['Fallen rocks block the trail up', 'MT. EMBER...'] },
+      '19,5':  { map:'summit', x:7, y:17, dir:'up', needQuest:1,
+        blockedMsg:['Fallen rocks block the trail up', 'MT. EMBER...'] },
     },
     signs: {
       '11,4':  ['EMBER SPA', 'A hot spring fed by MT. EMBER.', 'Soak to restore your POKeMON.'],
@@ -762,6 +794,37 @@ const MAPS = {
         } },
     ],
   },
+  summit: {
+    grid: MAP_SUMMIT, outdoor: true, rocky: true, warm: true,
+    volcano: { x: 8, z: -16, s: 1.3 },
+    wildTable: [
+      { species:'GEODUDE', weight:40, minLv:38, maxLv:42, moves:['ROCK THROW','TACKLE','MUD-SLAP','DEFENSE CURL'] },
+      { species:'PONYTA',  weight:35, minLv:38, maxLv:42, moves:['FLAME WHEEL','STOMP','TAIL WHIP','QUICK ATTACK'] },
+      { species:'FEAROW',  weight:25, minLv:40, maxLv:44, moves:['DRILL PECK','FURY ATTACK','LEER','GROWL'] },
+    ],
+    warps: {
+      '6,18': { map:'oneisland', x:18, y:6, dir:'down' },
+      '7,18': { map:'oneisland', x:19, y:6, dir:'down' },
+    },
+    signs: {
+      '8,3': ['MT. EMBER SUMMIT', 'The earth here breathes fire.', 'Watch your step.'],
+    },
+    npcs: [
+      { x:6, y:9, dir:'right', color:'#c05848', name:'COOLTRAINER ATLAS',
+        trainer: {
+          id: 'atlas',
+          intro: ['So you\'re the CHAMPION the whole', 'island is whispering about.', 'I train up here where the ground', 'itself burns. My team was forged', 'in this volcano\'s breath!', 'Show me what forged YOURS!'],
+          party: [
+            { species:'FEAROW',   level:46, moves:['DRILL PECK','FURY ATTACK','LEER','GROWL'] },
+            { species:'RAPIDASH', level:47, moves:['FLAME WHEEL','STOMP','QUICK ATTACK','TAIL WHIP'] },
+            { species:'SNORLAX',  level:49, moves:['BODY SLAM','EARTHQUAKE','REST','ROCK SLIDE'] },
+          ],
+          defeat: 'Scorched... utterly scorched!',
+          win: ['So that\'s a champion\'s fire...', 'It burns hotter than any volcano.', 'The RUBY rests on the plateau', 'above. It\'s yours - you\'ve more', 'than earned the right.'],
+          after: ['With the RUBY, CELIO\'s machine', 'might actually work.', 'Tell him ATLAS says hello.', 'We used to be lab partners!'],
+        } },
+    ],
+  },
   center: {
     grid: MAP_CENTER, outdoor: false,
     warps: { '4,7': { map:'oneisland', x:9, y:35, dir:'down' } },
@@ -769,8 +832,7 @@ const MAPS = {
     npcs: [
       { x:4, y:2, dir:'down', color:'#e88898', name:'NURSE', action:'heal',
         lines:['Welcome to the POKeMON CENTER!', 'Shall I restore your POKeMON', 'to full health?'] },
-      { x:7, y:3, dir:'left', color:'#c05848', name:'CELIO',
-        lines:['Oh! You must be the trainer BILL', 'wrote about. I\'m CELIO!', 'BILL and I have been pen pals', 'since we were kids. He got famous.', 'I got... this very nice machine.', 'One day it will link the SEVII', 'ISLANDS to trainers everywhere!', 'It only sparks a LITTLE now.'] },
+      { x:7, y:3, dir:'left', color:'#c05848', name:'CELIO', action:'celio' },
     ],
   },
   house: {
@@ -789,8 +851,29 @@ const GIFT_ITEMS = [
   { item:'GREAT BALL', qty:3 },
 ];
 
-// Item balls lying on the ground ('I' tiles), keyed by 'x,y' on oneisland
+// Item balls lying on the ground ('I' tiles), keyed by map then 'x,y'
 const ITEM_BALLS = {
-  '5,46':  { item:'GREAT BALL',   qty:3 },
-  '19,46': { item:'HYPER POTION', qty:2 },
+  oneisland: {
+    '5,46':  { item:'GREAT BALL',   qty:3 },
+    '19,46': { item:'HYPER POTION', qty:2 },
+  },
+  summit: {
+    '8,2': { item:'RUBY', qty:1 },
+  },
+};
+
+// Celio's quest dialog, keyed by quest stage
+const CELIO_DIALOG = {
+  0: ['Oh! You must be the trainer BILL', 'wrote about. I\'m CELIO!',
+      'My NETWORK MACHINE could link the', 'SEVII ISLANDS to the whole world -',
+      'but it needs a gem to focus its', 'signal. A RUBY, to be exact.',
+      'One rests at MT. EMBER\'s summit.', 'I\'ve asked the HIKER to clear the',
+      'trail north of EMBER SPA for you.', 'Would you fetch it? Please?'],
+  1: ['The trail past EMBER SPA is open!', 'The RUBY should be at the summit.',
+      'Mind the lava. And the trainer up', 'there... he\'s the intense type.'],
+  2: ['Is that... the RUBY?!', 'It\'s PERFECT! Hand it here -',
+      'careful - gently - YES!'],
+  3: ['Listen to it HUM! The machine', 'works! BILL is going to flip!',
+      'The SEAGALLOP can sail again, and', 'it\'s all thanks to you.',
+      'You\'re welcome on ONE ISLAND', 'forever, CHAMPION.'],
 };
