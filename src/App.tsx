@@ -61,11 +61,13 @@ export default function App() {
   const [progression, setProgression] = useState<ProgressionState>(() => loadProgression());
   const [chosenPath, setChosenPath] = useState<ContinuationPath | null>(null);
   const [lastEntry, setLastEntry] = useState<SessionLogEntry | null>(null);
+  const [endLabel, setEndLabel] = useState<string>('');
 
   const sound = useMemo(() => createSoundEngine(), []);
   const sessionStartedAt = useRef(0);
   const pathStartedAt = useRef(0);
   const triggerOutcome = useRef<TriggerOutcome | null>(null);
+  const selectorReached = useRef(false);
 
   const eyesClosed = settings.eyesClosedMode && eyesClosedEligible(progression);
 
@@ -103,11 +105,21 @@ export default function App() {
     };
     appendEntry(entry);
     setLastEntry(entry);
+    setEndLabel(
+      path !== null
+        ? pathNames[path]
+        : selectorReached.current
+          ? 'Ended at the selector'
+          : 'Ended during the breathwork stage',
+    );
     if (entry.completed && path !== null) {
       setProgression(recordCompletedSession(path));
     }
     sound.stopPacing();
-    sound.setIntensity(1);
+    // Intensity is deliberately NOT reset here: Path A's tapered "Settled"
+    // cue may still be sounding, and restoring full volume mid-swell would
+    // raise stimulation at the moment of deepest settling. beginSession /
+    // beginClassic reset intensity before any audio plays.
     setScreen('complete');
   };
 
@@ -120,6 +132,7 @@ export default function App() {
     sound.setEnabled(settings.soundEnabled);
     sound.setIntensity(1);
     triggerOutcome.current = null;
+    selectorReached.current = false;
     setChosenPath(null);
     setScreen('gate');
   };
@@ -129,6 +142,7 @@ export default function App() {
     sound.setEnabled(settings.soundEnabled);
     sound.setIntensity(1);
     triggerOutcome.current = null;
+    selectorReached.current = false;
     setChosenPath(null);
     sessionStartedAt.current = Date.now();
     pathStartedAt.current = Date.now();
@@ -172,9 +186,13 @@ export default function App() {
           sessionStartedAt={sessionStartedAt.current}
           onComplete={(outcome) => {
             triggerOutcome.current = outcome;
+            selectorReached.current = true;
             setScreen('select');
           }}
-          onAbort={abortSession}
+          onAbort={(outcome) => {
+            triggerOutcome.current = outcome;
+            abortSession();
+          }}
         />
       );
 
@@ -213,6 +231,7 @@ export default function App() {
         <Anapanasati
           {...pathScreenProps}
           onComplete={(completion) => finishSession('classic-anapanasati', completion)}
+          onAbort={() => finishSession('classic-anapanasati', null)}
           entryMode="classic"
         />
       );
@@ -225,7 +244,7 @@ export default function App() {
             <div className="card stack" style={{ minWidth: '280px', textAlign: 'left' }}>
               <div className="row-between">
                 <span className="dim">Path</span>
-                <span>{lastEntry.path ? pathNames[lastEntry.path] : 'Ended at selector'}</span>
+                <span>{endLabel}</span>
               </div>
               <div className="row-between">
                 <span className="dim">Time to rapture onset</span>

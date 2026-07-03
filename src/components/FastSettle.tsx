@@ -106,6 +106,16 @@ export default function FastSettle({ sound, eyesClosed, onComplete }: PathScreen
             lower half — settled
           </span>
         </button>
+        <button
+          type="button"
+          className="settle-veil-end"
+          onClick={handleEndHere}
+          aria-label="Bottom edge of the screen — end the session here without reporting settled"
+        >
+          <span className="settle-veil-hint" aria-hidden="true">
+            end here
+          </span>
+        </button>
       </div>
     );
   }
@@ -114,7 +124,7 @@ export default function FastSettle({ sound, eyesClosed, onComplete }: PathScreen
     <div className={`screen fast-settle taper-${factorIndex}`}>
       <header className="top-bar">
         <span>Fast Settle</span>
-        <span className="faint">self-paced</span>
+        <span className="faint">unhurried · prompts drift gently</span>
       </header>
 
       <main className="fast-settle-main">

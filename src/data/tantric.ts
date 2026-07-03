@@ -53,6 +53,8 @@ export const tantricStageSequence: TantricStage[] = [
     eyeState: 'open',
     guidance:
       'With the rapture still moving, engage the throat lock and let attention gather at the throat center. In the tradition, this seals the risen energy.',
+    guidanceNoRapture:
+      'If anything is moving, let it; either way, engage the throat lock and let attention gather at the throat center. In the tradition, this seals whatever has risen.',
   },
   {
     stage: 2,

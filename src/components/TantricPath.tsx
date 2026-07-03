@@ -92,6 +92,7 @@ export default function TantricPath({
   progression,
   sound,
   eyesClosed,
+  raptureOnsetAt,
   onComplete,
   correspondences,
   framing,
@@ -172,10 +173,12 @@ export default function TantricPath({
   }, [chainIndex, chain, completing]);
 
   // Optional soft dwell: after a generous, never-shown interval, drift to the
-  // next stage — but ONLY if that stage has no bandha. Engaging a lock is
+  // next stage — but ONLY if the current stage holds no lock (a drift must
+  // never fire mid-hold) and the next stage has no bandha. Engaging a lock is
   // always user-initiated (nothing auto-escalates), and nothing auto-completes.
   useEffect(() => {
     if (completing) return;
+    if (stage.bandha !== null) return;
     const next = tantricStageSequence[stageIndex + 1];
     if (!next || next.bandha !== null) return;
     const t = window.setTimeout(() => {
@@ -315,7 +318,7 @@ export default function TantricPath({
       <header className="top-bar">
         <span>Tantric sequence</span>
         <span className="faint">
-          stage {stage.stage} of {tantricStageSequence.length} · self-paced
+          stage {stage.stage} of {tantricStageSequence.length} · unhurried
         </span>
       </header>
 
@@ -351,7 +354,11 @@ export default function TantricPath({
           </p>
         )}
 
-        <p className="prompt-text">{stage.guidance}</p>
+        <p className="prompt-text">
+          {raptureOnsetAt === null && stage.guidanceNoRapture
+            ? stage.guidanceNoRapture
+            : stage.guidance}
+        </p>
 
         <div className="stack tantric-mudra-block">
           <p className="faint mudra-name">
@@ -442,9 +449,11 @@ export default function TantricPath({
           </button>
         </div>
         <p className="faint tantric-selfnote">
-          Every step here is paced by you. The app never times, measures, or
-          detects anything — the traditional framings above are practice
-          language, not physiological claims.
+          Every hold and release is yours — nothing here measures or detects
+          anything about you. If you rest a long while between locks, the
+          scene may drift gently onward; the continue tap is always yours to
+          use sooner. The traditional framings above are practice language,
+          not physiological claims.
         </p>
       </footer>
     </div>

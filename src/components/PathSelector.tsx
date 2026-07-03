@@ -10,7 +10,10 @@ import './path-a.css';
 interface PathCardCopy {
   path: ContinuationPath;
   title: string;
+  /** Shown when the user reported Rapture Onset. */
   description: string;
+  /** Shown when they skipped without a tap — no state is asserted for them. */
+  descriptionNoRapture: string;
   tag: string;
 }
 
@@ -19,6 +22,7 @@ const PATH_CARDS: PathCardCopy[] = [
     path: 'fast-settle',
     title: 'Fast Settle',
     description: 'Ride the rapture straight into stillness. Short and direct.',
+    descriptionNoRapture: 'Settle straight into stillness. Short and direct.',
     tag: 'soft jhāna, Brasington-style',
   },
   {
@@ -26,18 +30,23 @@ const PATH_CARDS: PathCardCopy[] = [
     title: 'Full Ānāpānasati',
     description:
       'Use the rapture as a doorway into the traditional 16-step practice. Slow and deep.',
+    descriptionNoRapture:
+      'Enter the traditional 16-step practice from right where you are. Slow and deep.',
     tag: 'sixteen steps, four tetrads',
   },
   {
     path: 'tantric',
     title: 'Extended Tantric',
     description: 'Carry the energy through locks, centers, and mudra work.',
+    descriptionNoRapture: 'Work through locks, centers, and mudra practice.',
     tag: 'bandhas, chakras, mudrās',
   },
   {
     path: 'combo',
     title: 'Combo',
     description:
+      'The tantric sequence, annotated with ānāpānasati correspondences. A personal synthesis.',
+    descriptionNoRapture:
       'The tantric sequence, annotated with ānāpānasati correspondences. A personal synthesis.',
     tag: 'tantric + ānāpānasati notes',
   },
@@ -76,7 +85,9 @@ export default function PathSelector({
             onClick={() => onSelect(card.path)}
           >
             <span className="path-card-title">{card.title}</span>
-            <span className="path-card-desc">{card.description}</span>
+            <span className="path-card-desc">
+              {reportedRapture ? card.description : card.descriptionNoRapture}
+            </span>
             <span className="path-card-tag">{card.tag}</span>
           </button>
         ))}

@@ -108,6 +108,9 @@ export interface TantricStage {
   eyeState: EyeState;
   /** Traditional-practice framing; never a physiological claim. */
   guidance: string;
+  /** Variant used when the user did NOT report Rapture Onset — the copy must
+   *  not assert a rapture/energy state for them. Falls back to `guidance`. */
+  guidanceNoRapture?: string;
 }
 
 // --- Path D: Combo ---
@@ -309,7 +312,8 @@ export interface TriggerStageProps {
   sound: SoundEngine;
   sessionStartedAt: number;
   onComplete: (outcome: TriggerOutcome) => void;
-  onAbort: () => void;
+  /** Carries the partial outcome so completed rounds are logged faithfully. */
+  onAbort: (outcome: TriggerOutcome) => void;
 }
 
 export interface PathSelectorProps {

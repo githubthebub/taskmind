@@ -224,3 +224,22 @@
 .settle-veil-zone:active .settle-veil-hint {
   color: rgba(232, 228, 218, 0.18);
 }
+
+/* Thin bottom strip: end the session without reporting settled. */
+.settle-veil-end {
+  font: inherit;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid rgba(232, 228, 218, 0.05);
+}
+
+.settle-veil-end:focus-visible {
+  outline: 1px solid rgba(127, 168, 160, 0.35);
+  outline-offset: -6px;
+}

@@ -56,7 +56,11 @@ export default function TriggerStage({
 
   const handleEnd = () => {
     engine.stop();
-    onAbort();
+    onAbort({
+      raptureOnsetAt: null,
+      roundsCompleted: engine.roundsCompleted,
+      skippedToSettle: false,
+    });
   };
 
   const roundLabel =

@@ -61,12 +61,11 @@ export default function Anapanasati({
   entryMode,
   onComplete,
 }: AnapanasatiProps) {
-  // Eyes-closed mode is for practitioners who completed learn-mode, so the
-  // visual entry-choice screen is skipped; post-trigger sessions begin at the
-  // recommended Feeling-tetrad entry, classic sessions at step 1. (Starting
-  // point only — retention/intensity are untouched, so no auto-escalation.)
-  const initialEntry = entryMode === 'post-trigger' && !eyesClosed;
-  const initialIndex = entryMode === 'post-trigger' && eyesClosed ? FEELING_ENTRY_INDEX : 0;
+  // Post-trigger arrivals always get the entry choice — step 5 is an offered
+  // shortcut, never a forced start. In eyes-closed mode the choice renders as
+  // a two-zone veil instead of the visual cards.
+  const initialEntry = entryMode === 'post-trigger';
+  const initialIndex = 0;
 
   const [phase, setPhase] = useState<Phase>(initialEntry ? 'entry' : 'practice');
   const [stepIndex, setStepIndex] = useState(initialIndex);
@@ -211,6 +210,33 @@ export default function Anapanasati({
   // ------------------------------------------------------------------
 
   if (phase === 'entry') {
+    if (eyesClosed) {
+      // Audio-only entry choice: same two options as the visual cards.
+      return (
+        <div className="eyes-closed-veil">
+          <button
+            type="button"
+            className="anp-veil-zone anp-veil-breath"
+            onClick={() => startAt(FEELING_ENTRY_INDEX)}
+            aria-label="Upper half of the screen — start at step 5, the Feeling tetrad, recommended after the trigger stage"
+          >
+            <span className="anp-veil-hint" aria-hidden="true">
+              upper half — start at step 5
+            </span>
+          </button>
+          <button
+            type="button"
+            className="anp-veil-zone"
+            onClick={() => startAt(0)}
+            aria-label="Lower half of the screen — start from step 1 and take the full sixteen-step sequence"
+          >
+            <span className="anp-veil-hint" aria-hidden="true">
+              lower half — start from step 1
+            </span>
+          </button>
+        </div>
+      );
+    }
     const raptureClause =
       raptureOnsetAt !== null
         ? 'You can use the rapture you just generated as a doorway into the traditional practice — '
