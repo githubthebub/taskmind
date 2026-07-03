@@ -342,6 +342,9 @@
   }
   .lg-reset:hover{opacity:1;color:var(--muted)}
   .lg-reset:focus-visible{outline:2px solid var(--piti);outline-offset:2px}
+  .set-meter{display:inline-flex;gap:3px;vertical-align:middle;margin-left:2px}
+  .set-meter i{width:6px;height:6px;border-radius:50%;background:var(--raised-2);border:1px solid var(--line);display:inline-block;transition:background .3s}
+  .set-meter i.on{background:var(--piti);border-color:var(--piti);box-shadow:0 0 5px color-mix(in srgb,var(--piti) 55%,transparent)}
 
   /* ---------- legend ---------- */
   .legend{
@@ -527,11 +530,15 @@
     </div>
     <div class="row">
       <span class="tag">Two modes</span>
-      <span><b>5-min practice</b> ends cleanly in silence. <b>Sleep</b> runs the same descent, then keeps darkening and thinning for ~20 minutes more before fading to true silence at ~25 min — no loop, so it won't wake you. <b>Follow my breath</b> uses your microphone to read your breathing <em>rate</em> and lock the pacer and shimmer to it — it meets you where you are, then leads you slower. The mic signal is analysed on-device only; nothing is recorded, stored, or sent anywhere.</span>
+      <span><b>5-min practice</b> ends cleanly in silence. <b>Sleep</b> runs the same descent, then keeps darkening and thinning for ~20 minutes more before fading to true silence at ~25 min — no loop, so it won't wake you. <b>Follow my breath</b> uses your microphone to read your breathing and lock the pacer and shimmer to it — it meets you where you are, then leads you slower. The mic signal is analysed on-device only; nothing is recorded, stored, or sent anywhere.</span>
     </div>
     <div class="row safety">
       <span class="tag">Care</span>
       <span>Kept deliberately quiet — raise the volume only as far as is comfortable. This is not a medical device and makes no clinical claims. Don't use while driving or operating machinery. If you have epilepsy or are sensitive to rhythmic stimulation, skip it.</span>
+    </div>
+    <div class="row">
+      <span class="tag">Settling</span>
+      <span>In mic mode a live <em>settling</em> meter reads the breath domain — how slow your breathing is, how <em>even</em> it is (variability drops as you relax), and its depth — a genuine proxy for the parasympathetic shift. It is <b>not</b> HRV: a microphone can't read your heartbeat, and nothing here pretends to. The measured settling scales how much each session strengthens the anchor, so conditioning only grows as much as you actually let go. A wearable (Oura, Apple Watch) would fit as overnight/trend confirmation in a native app, not as a live input — see the architecture doc.</span>
     </div>
     <div class="row">
       <span class="tag">How it works</span>
@@ -763,16 +770,20 @@
       ? "new — finish a session to begin conditioning the anchor"
       : `${ledger.sessions} session${ledger.sessions>1?"s":""} paired · the anchor is ${strengthWord(ledger.strength)}`;
   }
-  function recordCompletion(){
+  function recordCompletion(settled){
+    // measured settling (mic) scales the conditioning gain; unmeasured (pacer) gets the benefit of the doubt
+    const gain = settled==null ? 0.16 : 0.16*(0.35+0.65*clamp(settled,0,1));
     ledger.sessions+=1;
-    ledger.strength=ledger.strength+(1-ledger.strength)*0.16;   // diminishing-returns conditioning curve
+    ledger.strength=clamp(ledger.strength+(1-ledger.strength)*gain,0,1);   // diminishing-returns curve
     try{ ledger.last=new Date().toISOString(); }catch(e){}
     saveLedger(); renderLedger();
   }
 
   // ============ mic breath tracker ============
   const mic={active:false,stream:null,analyser:null,data:null,
-             env:0,floor:0.002,level:0,rate:0,lastOnset:0,armed:true,intervals:[],err:null};
+             env:0,floor:0.002,level:0,rate:0,lastOnset:0,armed:true,intervals:[],err:null,
+             cyclePeak:0,depths:[],maxDepth:0,regularity:0,depthNorm:0,slowness:0,settling:0,settlingTarget:0};
+  let sessionSettleSum=0, sessionSettleCount=0;
 
   async function enableMic(){
     if(!ctx) buildGraph();
@@ -804,19 +815,36 @@
     mic.floor=Math.max(mic.floor,0.0006);
     const activity=Math.max(0,mic.env-mic.floor*1.4);
     mic.level=clamp(activity/(mic.floor*5+0.006),0,1);
+    mic.cyclePeak=Math.max(mic.cyclePeak,mic.env);
     const thr=mic.floor*2.4+0.004;
     if(mic.armed && mic.env>thr){
       if(mic.lastOnset>0){
         const dt=nowSec-mic.lastOnset;
         if(dt>1.6 && dt<16){
-          mic.intervals.push(dt); if(mic.intervals.length>5) mic.intervals.shift();
+          mic.intervals.push(dt); if(mic.intervals.length>6) mic.intervals.shift();
           const avg=mic.intervals.reduce((a,b)=>a+b,0)/mic.intervals.length;
           mic.rate=clamp(60/avg,4,20);
+          // breath-rate regularity — settling makes breathing slower AND more even (low variability)
+          if(mic.intervals.length>=3){
+            const m=avg, va=mic.intervals.reduce((a,b)=>a+(b-m)*(b-m),0)/mic.intervals.length;
+            const cv=Math.sqrt(va)/(m||1);
+            mic.regularity=clamp(1-cv*2.2,0,1);
+          }
+          // per-breath depth relative to the deepest breath seen this session
+          mic.depths.push(mic.cyclePeak); if(mic.depths.length>6) mic.depths.shift();
+          mic.maxDepth=Math.max(mic.maxDepth,mic.cyclePeak);
+          const md=mic.depths.reduce((a,b)=>a+b,0)/mic.depths.length;
+          mic.depthNorm=clamp(md/((mic.maxDepth*0.85)||1),0,1);
+          // slowness toward resonance breathing (~5–6/min)
+          mic.slowness=clamp((13-mic.rate)/8,0,1);
+          // composite settling index — a breath-domain proxy for parasympathetic shift (NOT HRV)
+          mic.settlingTarget=0.5*mic.slowness+0.4*mic.regularity+0.1*mic.depthNorm;
         }
       }
-      mic.lastOnset=nowSec; mic.armed=false;
+      mic.lastOnset=nowSec; mic.armed=false; mic.cyclePeak=0;
     }
     if(mic.env<thr*0.6) mic.armed=true;
+    mic.settling+=(mic.settlingTarget-mic.settling)*0.03;
   }
 
   // ============ main loop ============
@@ -831,6 +859,10 @@
 
     // mic: read rate + live breath level
     if(breathSrc==="mic") micUpdate(now/1000);
+    // accumulate settling across the back 60% of the session for an honest "did they settle?" measure
+    if(breathSrc==="mic" && mic.active && tSec>M.duration*0.4){
+      sessionSettleSum+=mic.settling; sessionSettleCount++;
+    }
 
     // effective breath rate: early on, meet the user where they are (iso principle), then lead to score
     let bpm=s.bpm;
@@ -976,10 +1008,15 @@
     voiceEls.sukha.dataset.live=(started&&s.sukha>0.05&&stage==="rest")?"1":"0";
 
     if(breathSrc==="mic"&&started&&mic.active){
-      micStatus.classList.remove("err");
-      micStatus.innerHTML = mic.rate>0
-        ? `listening · your breath ≈ <b>${mic.rate.toFixed(1)}/min</b> · leading you to ${M.phases[Math.min(pi,1)].name==="Capture"?"6":s.bpm.toFixed(0)}/min`
-        : `listening · breathe audibly so it can find your rhythm…`;
+      if(quiet){ micStatus.innerHTML=""; }   // let go of the readout as you drift into the deep tail
+      else {
+        micStatus.classList.remove("err");
+        const f=Math.round(mic.settling*5);
+        const meter=`<span class="set-meter">${Array.from({length:5},(_,i)=>`<i class="${i<f?"on":""}"></i>`).join("")}</span>`;
+        micStatus.innerHTML = mic.rate>0
+          ? `breath ≈ <b>${mic.rate.toFixed(1)}/min</b> · settling ${meter}`
+          : `listening · breathe audibly so it can find your rhythm…`;
+      }
     }
   }
 
@@ -995,6 +1032,7 @@
     restart.disabled=false; glyph.textContent="";
     playBtn.setAttribute("aria-label","Restart session");
     t0=performance.now(); lastFrame=t0; breathPhase=0; sukhaArmed=true; rings=[];
+    sessionSettleSum=0; sessionSettleCount=0;
     // native safety fade: guarantees silence at end even if the tab is throttled/backgrounded
     const M=mode(), now=ctx.currentTime;
     nodes.envelope.gain.cancelScheduledValues(now);
@@ -1013,7 +1051,12 @@
     cue.textContent=modeName==="sleep"?"silence · sleep well":"silence · rest as long as you like";
     cue.classList.remove("in","out");
     if(ctx) nodes.master.gain.setTargetAtTime(0,ctx.currentTime,0.4);
-    recordCompletion();
+    const settled=(breathSrc==="mic"&&sessionSettleCount>0)?sessionSettleSum/sessionSettleCount:null;
+    if(settled!=null){
+      micStatus.classList.remove("err");
+      micStatus.textContent=`session complete · you settled ${settled<0.35?"a little":settled<0.6?"well":"deeply"} (${Math.round(settled*100)}%)`;
+    }
+    recordCompletion(settled);
     idleLoop();
   }
   function stopHard(){

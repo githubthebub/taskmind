@@ -74,7 +74,7 @@ should carry the safety notes in §7.
 | **Breath Tracker** | Estimates breath phase (inhale / hold / exhale / pause) and rate. Three tiers: mic-based (breath noise), IMU/chest-strap (motion), or a fixed metronomic pacer the user follows. This is the single most important input — the three signature sounds are all breath-gated. |
 | **Sound Engine** | Real-time synthesis of the three signature voices (Anchor, Pīti, Sukha) plus a bed/pad. Handles binaural beat generation, granular/additive texture, sub-bass synthesis, filtering, and the master bus. |
 | **3D Spatializer** | HRTF-based binaural spatialization (headphones) or first-order Ambisonics → speaker downmix. Controls perceived distance, elevation, and "thickness" of the Pīti texture. |
-| **Biosignal In (optional)** | HRV / heart rate / movement from a wearable, used only to *adapt pacing* and to *log conditioning progress*. Never required. |
+| **Biosignal In** | **Mic-derived breath analysis** (rate, regularity, depth → a live *settling index*) is the primary in-session signal; an optional wearable (Oura / Apple Watch) adds overnight/trend confirmation in a native app. Never a hard dependency. See §6.5. |
 | **Conditioning Ledger** | Persists the pairing history that makes the Anchor Trigger work over time (see §6). |
 | **Legend / Onboarding** | The only place text appears. Teaches the meaning of each sound before first use. |
 
@@ -244,6 +244,55 @@ what the "instant trigger" language really refers to.
   "strengthening."
 - This also protects against overclaiming: the app never promises the sound *causes* the
   state on day one. It builds the association honestly and measurably.
+
+---
+
+## 6.5 Reading the body with a microphone (and where wearables fit)
+
+The target users won't buy a chest strap or a dedicated sensor. The realistic inputs are
+**the phone/laptop microphone** (live, in-session) and possibly an **Oura ring or Apple
+Watch** (owned already, but not live). This section states honestly what each can and cannot
+give, and how the system uses them.
+
+### 6.5.1 What the microphone can extract — the breath domain
+A microphone hears **breath turbulence** (the noise of air through the nose/mouth). From a
+band-limited (~180–2200 Hz) RMS envelope we can derive, per breath cycle:
+
+| Signal | How | Meaning |
+|---|---|---|
+| **Breath rate** | Onset detection on the envelope → inter-breath interval | Slower toward ~5–6/min ≈ resonance breathing |
+| **Breath-rate regularity** | Coefficient of variation of recent intervals | Variability **falls as the nervous system settles** — a genuine, well-supported parasympathetic proxy |
+| **Breath depth (relative)** | Per-cycle envelope peak vs. session max | Steady, present breathing vs. shallow/absent |
+| **Restlessness** | Broadband energy spikes (shifts, sighs) | Movement / arousal events |
+
+These combine into a single **settling index** (implemented as
+`0.5·slowness + 0.4·regularity + 0.1·depth`, smoothed). It is displayed live as a small meter
+in mic mode and, crucially, **scales the Conditioning Ledger's gain**: a session only
+strengthens the Anchor as much as the user actually down-regulated. This replaces the earlier
+"completion = settled" assumption with a measured one.
+
+### 6.5.2 What the microphone **cannot** do — and we must not fake
+- **No HRV.** Heart-rate variability requires a cardiac signal (PPG/ECG). A room microphone
+  cannot reliably recover a heartbeat; any "HRV from mic" claim is dishonest. We derive a
+  *breath-domain* settling proxy and label it as exactly that — never as HRV.
+- **Reliable inhale/exhale *classification*** from acoustics alone is person-dependent and
+  unreliable; we use breath *timing, regularity and depth*, not a claim of knowing in-vs-out
+  from sound. (The pacer still supplies the inhale/exhale *shape*.)
+- **No sleep staging.** The mic can detect "breathing slowed and steadied," not sleep stages.
+
+### 6.5.3 Where Oura / Apple Watch fit — trend, not live
+Neither streams to a web app in real time: Apple Watch data lives in **HealthKit** (needs a
+*native iOS app*), and Oura exposes a **cloud API** (overnight/historical, not live). So the
+honest architecture is a split:
+
+- **Live, in-session → microphone only.** Drives pacing, shimmer, and the settling index.
+- **Overnight / trend → optional wearable, in a native app.** Pull last night's resting HR,
+  HRV, respiratory rate and sleep summary the morning after to (a) *validate* that the mic's
+  settling reading tracked real physiology, (b) *personalize* the descent (e.g. a user whose
+  HRV responds best to 5.5/min), and (c) show longitudinal progress alongside the ledger.
+
+This keeps every real-time claim grounded in a signal we actually have, and treats wearables
+as confirmation and personalization rather than a dependency.
 
 ---
 
