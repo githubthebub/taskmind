@@ -187,12 +187,17 @@
   .breath-line{
     position:absolute;bottom:112px;left:0;right:0;text-align:center;pointer-events:none;
   }
-  .breath-word{font-family:var(--serif);font-size:22px;letter-spacing:.06em;color:var(--ink)}
-  .breath-count{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+  .breath-word{font-family:var(--serif);font-size:24px;letter-spacing:.1em;color:var(--ink);text-transform:uppercase}
+  .breath-count{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums;letter-spacing:.14em}
   .caption{
-    position:absolute;bottom:50px;left:24px;right:24px;text-align:center;
+    position:absolute;bottom:48px;left:24px;right:24px;text-align:center;
     font-family:var(--serif);font-size:17px;line-height:1.5;color:#C9C2B2;
     text-shadow:0 1px 8px #000;min-height:52px;transition:opacity .8s;
+  }
+  .lex-name{
+    position:absolute;top:38%;left:0;right:0;text-align:center;pointer-events:none;
+    font-family:var(--serif);font-size:30px;color:var(--ink);letter-spacing:.04em;
+    text-shadow:0 2px 14px #000;display:none;
   }
   .mic-dot{
     position:absolute;top:16px;right:16px;font-family:var(--mono);font-size:9px;
@@ -362,12 +367,12 @@
     </button>
     <button class="opt" id="optC">
       <h3>C · The Sound Field</h3>
-      <p>Eyes closed. Faint breath-sound carries the pace; a low voice carries the turns. For tired eyes.</p>
+      <p>Eyes closed. The tide carries the pace — every sound is taught before it is used.</p>
     </button>
     <div class="field-label">Pacing</div>
     <div class="pace">
-      <button class="chip" data-pace="demo" aria-pressed="true">Demo · ~4 min</button>
-      <button class="chip" data-pace="full" aria-pressed="false">Full · ~16 min</button>
+      <button class="chip" data-pace="demo" aria-pressed="true">Demo · ~5 min</button>
+      <button class="chip" data-pace="full" aria-pressed="false">Full · ~17 min</button>
     </div>
   </section>
 
@@ -375,7 +380,7 @@
   <section class="screen" id="s-commit">
     <button class="back" data-go="s-config">‹ Reconfigure</button>
     <p class="eyebrow">One tap</p>
-    <div class="vow">If imagery or storyline arises, I return to the count on the very next inhale.</div>
+    <div class="vow">If imagery or storyline arises, I return to the tide on the very next inhale.</div>
     <div class="fineprint" id="commitFine"></div>
     <div class="btn-row">
       <button class="btn" id="beginSession">I commit — begin</button>
@@ -402,11 +407,12 @@
         <circle class="glabella" cx="100" cy="76" r="3.4"></circle>
       </svg>
       <div class="asset-note" id="assetNote" style="display:none">Stand-in · cinematic guide loop renders here</div>
+      <div class="lex-name" id="lexName"></div>
       <div class="mic-dot" id="micDot"><i id="micDotI"></i><span id="micDotT">listening</span></div>
       <div class="toast" id="toast"></div>
       <div class="breath-line" id="breathLine" style="display:none">
-        <div class="breath-word" id="breathWord">Inhale</div>
-        <div class="breath-count" id="breathCount">2</div>
+        <div class="breath-word" id="breathWord">Ride</div>
+        <div class="breath-count" id="breathCount"></div>
       </div>
       <div class="caption" id="caption"></div>
       <div class="fork-overlay" id="forkOverlay">
@@ -478,7 +484,7 @@ const $ = id => document.getElementById(id);
 
 /* ============================ audio engine ============================ */
 const audio = {
-  ctx:null, noiseGain:null, noiseFilter:null, droneGain:null,
+  ctx:null, droneGain:null, noiseBuf:null,
   soundOn:true, voiceOn:true, dim:1,
   init(){
     if(this.ctx){ if(this.ctx.state==="suspended") this.ctx.resume(); return; }
@@ -487,41 +493,163 @@ const audio = {
     const buf=C.createBuffer(1,C.sampleRate*2,C.sampleRate);
     const d=buf.getChannelData(0);
     for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
-    const src=C.createBufferSource(); src.buffer=buf; src.loop=true;
-    const f=C.createBiquadFilter(); f.type="bandpass"; f.frequency.value=900; f.Q.value=0.8;
-    const g=C.createGain(); g.gain.value=0;
-    src.connect(f); f.connect(g); g.connect(C.destination); src.start();
-    this.noiseFilter=f; this.noiseGain=g;
+    this.noiseBuf=buf;
     const o=C.createOscillator(); o.frequency.value=174;
     const og=C.createGain(); og.gain.value=0;
     o.connect(og); og.connect(C.destination); o.start();
     this.droneGain=og;
   },
-  /* faint breath sounds: filtered noise swell shaped to each half-cycle */
   breath(b){
     if(!this.ctx) return;
     const t=this.ctx.currentTime;
-    if(!this.soundOn){ this.noiseGain.gain.setTargetAtTime(0,t,.1); this.droneGain.gain.setTargetAtTime(0,t,.1); return; }
-    const inhale = b.phase==="Inhale";
-    const amp = (inhale?0.05:0.04)*Math.sin(Math.PI*b.frac)*this.dim;
-    this.noiseGain.gain.setTargetAtTime(amp,t,.12);
-    this.noiseFilter.frequency.setTargetAtTime(inhale?1350:620,t,.2);
-    this.droneGain.gain.setTargetAtTime((0.005+0.013*b.v)*this.dim,t,.2);
+    const amp = this.soundOn ? (0.004+0.011*b.v)*this.dim : 0;
+    this.droneGain.gain.setTargetAtTime(amp,t,.25);
   },
   silence(){
     if(!this.ctx) return;
-    const t=this.ctx.currentTime;
-    this.noiseGain.gain.setTargetAtTime(0,t,.15);
-    this.droneGain.gain.setTargetAtTime(0,t,.15);
+    this.droneGain.gain.setTargetAtTime(0,this.ctx.currentTime,.15);
     if("speechSynthesis" in window) speechSynthesis.cancel();
   },
-  speak(text){
+  speak(text, soft){
     if(!this.voiceOn || !("speechSynthesis" in window)) return;
+    if(soft && speechSynthesis.speaking) return;   /* whispers never interrupt teaching */
     const u=new SpeechSynthesisUtterance(text);
-    u.rate=0.86; u.pitch=0.8; u.volume=0.9;
-    speechSynthesis.cancel(); speechSynthesis.speak(u);
+    u.rate=0.86; u.pitch=0.8; u.volume=soft?0.55:0.9;
+    if(!soft) speechSynthesis.cancel();
+    speechSynthesis.speak(u);
   },
 };
+
+/* ============================ the sonic lexicon ============================
+   Every sound means one thing. The voice teaches the pairing once;
+   after that, the sounds ARE the instructions.                              */
+const cues = {
+  ok(){ return audio.ctx && audio.soundOn; },
+  g(peak){ const C=audio.ctx,g=C.createGain(); g.gain.value=0.0001; g.connect(C.destination); return g; },
+  noise(filterType, f0){
+    const C=audio.ctx;
+    const src=C.createBufferSource(); src.buffer=audio.noiseBuf; src.loop=true;
+    const f=C.createBiquadFilter(); f.type=filterType; f.frequency.value=f0; f.Q.value=0.9;
+    src.connect(f); return {src,f};
+  },
+  /* THE BELL — a turn in the session (phase change) */
+  bell(){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    [[660,.05],[990,.018]].forEach(([fr,p])=>{
+      const o=C.createOscillator(); o.frequency.value=fr;
+      const g=this.g(); o.connect(g);
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002,p*d),t+.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+1.5);
+      o.start(t); o.stop(t+1.6);
+    });
+  },
+  /* THE SWELL — ride the inhale; the wave moves in (rising water) */
+  swell(dur){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    const {src,f}=this.noise("bandpass",480);
+    f.frequency.linearRampToValueAtTime(1500,t+dur);
+    const g=this.g(); f.connect(g);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(0.05*d,t+dur*0.8);
+    g.gain.linearRampToValueAtTime(0.0001,t+dur);
+    src.start(t); src.stop(t+dur+.1);
+    const o=C.createOscillator(); o.frequency.setValueAtTime(196,t);
+    o.frequency.linearRampToValueAtTime(294,t+dur);
+    const og=this.g(); o.connect(og);
+    og.gain.linearRampToValueAtTime(0.014*d,t+dur*0.7);
+    og.gain.linearRampToValueAtTime(0.0001,t+dur);
+    o.start(t); o.stop(t+dur+.1);
+  },
+  /* THE CREST — the tide is rising; hold (suspended shimmer) */
+  crest(dur){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    const o=C.createOscillator(); o.frequency.value=880;
+    const lfo=C.createOscillator(); lfo.frequency.value=5;
+    const lg=C.createGain(); lg.gain.value=7;
+    lfo.connect(lg); lg.connect(o.frequency);
+    const g=this.g(); o.connect(g);
+    g.gain.linearRampToValueAtTime(0.02*d,t+.25);
+    g.gain.setValueAtTime(0.02*d,t+dur-.25);
+    g.gain.linearRampToValueAtTime(0.0001,t+dur);
+    o.start(t); o.stop(t+dur+.1); lfo.start(t); lfo.stop(t+dur+.1);
+    const o2=C.createOscillator(); o2.frequency.value=1320;
+    const g2=this.g(); o2.connect(g2);
+    g2.gain.linearRampToValueAtTime(0.008*d,t+.3);
+    g2.gain.linearRampToValueAtTime(0.0001,t+dur);
+    o2.start(t); o2.stop(t+dur+.1);
+  },
+  /* THE WASH — the wave crashes; pour the exhale out (falling water) */
+  wash(dur){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    const {src,f}=this.noise("lowpass",2200);
+    f.frequency.exponentialRampToValueAtTime(260,t+dur);
+    const g=this.g(); f.connect(g);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(0.065*d,t+.18);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    src.start(t); src.stop(t+dur+.1);
+  },
+  /* STILL WATER — rest, empty (one deep soft drop) */
+  stillWater(){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    const o=C.createOscillator(); o.frequency.value=88;
+    const g=this.g(); o.connect(g);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002,0.05*d),t+.04);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+.9);
+    o.start(t); o.stop(t+1);
+  },
+  /* THE DEEP — warmth found you; rest attention in it (warm low dyad) */
+  dyad(){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    [220,277].forEach(fr=>{
+      const o=C.createOscillator(); o.frequency.value=fr;
+      const g=this.g(); o.connect(g);
+      g.gain.linearRampToValueAtTime(0.028*d,t+1);
+      g.gain.setValueAtTime(0.028*d,t+2.2);
+      g.gain.linearRampToValueAtTime(0.0001,t+3.4);
+      o.start(t); o.stop(t+3.5);
+    });
+  },
+  /* THE GULL — you have drifted; come back (two high plinks) */
+  plink(){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    [0,.22].forEach(off=>{
+      const o=C.createOscillator(); o.frequency.value=1240;
+      const g=this.g(); o.connect(g);
+      g.gain.setValueAtTime(0.0001,t+off);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002,0.04*d),t+off+.015);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+off+.18);
+      o.start(t+off); o.stop(t+off+.25);
+    });
+  },
+  /* THE RELEASE — fork acknowledged; let it go (three falling notes) */
+  release(){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    [660,523,392].forEach((fr,idx)=>{
+      const o=C.createOscillator(); o.frequency.value=fr;
+      const g=this.g(); o.connect(g);
+      const t0=t+idx*.28;
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002,0.04*d),t0+.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+.4);
+      o.start(t0); o.stop(t0+.45);
+    });
+  },
+};
+/* the teaching order: name → meaning → the sound itself */
+const LEXICON = [
+  {name:"The Bell",    line:"The bell. A turn in the session.",                        cue:()=>cues.bell()},
+  {name:"The Swell",   line:"The swell. Ride the inhale — the wave is moving in.",     cue:()=>cues.swell(3)},
+  {name:"The Crest",   line:"The crest. The tide is rising. Hold.",                    cue:()=>cues.crest(2.5)},
+  {name:"The Wash",    line:"The wash. The wave is crashing. Pour the exhale out.",    cue:()=>cues.wash(4)},
+  {name:"Still Water", line:"Still water. Rest, empty.",                               cue:()=>cues.stillWater()},
+  {name:"The Deep",    line:"The deep. Warmth has found you. Rest attention in it.",   cue:()=>cues.dyad()},
+  {name:"The Gull",    line:"The gull. You have drifted. Come back.",                  cue:()=>cues.plink()},
+];
+const LEX_SLOT = 6.5;
+
 /* microphone: hear the user's actual breath */
 const mic = {
   stream:null, analyser:null, buf:null, level:0, active:false, lastHeard:0,
@@ -676,7 +804,7 @@ $("fantasyProceed").addEventListener("click", ()=>{
   show("s-log");
 });
 
-/* ============================ somatic (voiced) ============================ */
+/* ============================ somatic (voiced, wave language) ============================ */
 const SOMATIC_STAGES = [
   {d:24, p:"Find where it lives. The address, not the story."},
   {d:24, p:"Temperature. Pressure. Movement. Edges."},
@@ -703,6 +831,7 @@ function nextSomaticStage(){
     S.sessionResult="urge surfed · extinction trial banked";
     show("s-log"); return;
   }
+  cues.bell();
   paintSomatic();
 }
 function paintSomatic(){
@@ -740,7 +869,7 @@ $("kineticChoices").addEventListener("click", e=>{
   const paint=()=>{ $("kineticT").textContent=`${Math.floor(rem/60)}:${String(rem%60).padStart(2,"0")}`; };
   paint();
   const t=setInterval(()=>{ rem=Math.max(0,rem-1); paint();
-    if(rem===0){clearInterval(t); $("kineticTitle").textContent="Done. Signature overwritten."; audio.speak("Done.");} },1000);
+    if(rem===0){clearInterval(t); $("kineticTitle").textContent="Done. Signature overwritten."; cues.bell(); audio.speak("Done.");} },1000);
   activeTimers.push(t);
 });
 $("kineticDone").addEventListener("click", ()=>{ S.sessionResult="brute-force override"; show("s-log"); });
@@ -762,43 +891,47 @@ document.querySelectorAll("[data-pace]").forEach(b=>b.addEventListener("click", 
   document.querySelectorAll("[data-pace]").forEach(c=>c.setAttribute("aria-pressed", c===b?"true":"false"));
 }));
 function renderCommit(){
-  $("commitFine").textContent =
-    S.anchor==="A" ? "Anchor A: the guide fades at the taper — a kept promise, not a negotiation. Three forks in 90 s switches you to the abstract."
+  const base = "Seven sounds are taught before they are used — after that, the tide speaks for itself. ";
+  $("commitFine").textContent = base + (
+    S.anchor==="A" ? "Anchor A: the guide fades at the taper — a kept promise. Three forks in 90 s switches you to the abstract."
     : S.anchor==="B" ? "Anchor B: the form breathes when you breathe, and dims as stability builds."
-    : "Anchor C: eyes closed from the first sigh. Sound carries everything.";
+    : "Anchor C: eyes closed from the first sigh. Sound carries everything.");
 }
 
 /* ============================ session engine ============================ */
 const canvas=$("blob"); const ctx=canvas.getContext("2d");
 let sessionOn=false, rafId=null, sessionT0=0, phaseIdx=0, phaseT0=0;
 let mode="B", forkTimes=[], forkOverlayUntil=0, crossfadeStart=null;
-let lastCap="", micWarned=false;
+let lastCap="", micWarned=false, lastGull=0;
+let lastBreathPhase="", whisperCycles=0, sungOff=false, lexSlot=-1;
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function phases(){
   const m = S.pace==="full"?4:1;
   const A=S.anchor==="A", C=S.anchor==="C";
   return [
-    {id:"preload", d:26*m, caps:[[0,"Sit tall."],[7,"Three sighs — double inhale, long exhale."],[19,"Release jaw, tongue, pelvic floor."]]},
-    {id:"induction", d:40*m, caps:
-      A ? [[0,"Gaze between her eyes. Don't scan."],[12,"Join the breath."],[26,"A clock, not a character."]]
-      : C ? [[0,"Eyes closed."],[12,"Ride the sound of the breath."]]
-      : [[0,"Rest at the center. Soft focus."],[12,"Join the breath."]]},
+    {id:"preload", d:24*m, caps:[[0,"Sit tall."],[7,"Three sighs — double inhale, long exhale."],[17,"Release jaw, tongue, pelvic floor."]]},
+    {id:"lexicon", d:LEXICON.length*LEX_SLOT, caps:[]},   /* taught at full length in both pacings */
+    {id:"induction", d:42*m, caps:
+      A ? [[0,"Gaze between her eyes. The tide will call the turns."]]
+      : C ? [[0,"Eyes closed. The tide calls the turns now."]]
+      : [[0,"Rest at the center. The tide calls the turns."]]},
     {id:"pivot", d:80*m, caps:[
-      [0,"Something here is pleasant. Find where it registers in your body."],
-      [22,"Rest there."],
-      [46,"Each exhale, let the warmth widen."],
+      [0,"The deep — find where the warmth registers in your body."],
+      [24,"Rest in the warm current."],
+      [48,"Each wash, let it widen."],
       [64,"A storyline means fork."]]},
     {id:"taper", d:26*m, caps:
-      C ? [[0,"The warmth no longer needs the sound."]]
+      C ? [[0,"The tide can carry itself now."]]
       : [[0,"The warmth no longer needs the screen."]]},
-    {id:"stillness", d:9999, caps:[[0,"Let the warmth be the whole object."],[24,"End below when ready."]]},
+    {id:"stillness", d:9999, caps:[[0,"Still water. Let the warmth be the whole object."],[24,"End below when ready."]]},
   ];
 }
 let PH=[];
 $("beginSession").addEventListener("click", startSession);
 function startSession(){
-  PH = phases(); phaseIdx=0; forkTimes=[]; S.forks=0; crossfadeStart=null; lastCap=""; micWarned=false;
+  PH = phases(); phaseIdx=0; forkTimes=[]; S.forks=0; crossfadeStart=null;
+  lastCap=""; micWarned=false; lastGull=0; lastBreathPhase=""; whisperCycles=0; sungOff=false; lexSlot=-1;
   mode = S.anchor;
   audio.init(); audio.dim=1;
   show("s-session");
@@ -813,11 +946,14 @@ function sizeCanvas(){
 }
 addEventListener("resize", ()=>{ if(sessionOn) sizeCanvas(); });
 
-/* breath clock: 4 in / 6 out */
+/* the tide: RIDE 4s in · HOLD 2s crest · CRASH 6s out · STILL 2s empty (14s cycle, ~4.3/min) */
+const TIDE_HINT = {Ride:"the wave moves in", Hold:"the tide is rising", Crash:"the wave breaks", Still:"rest, empty"};
 function breathState(t){
-  const cyc=(t/1000)%10;
-  if(cyc<4) return {phase:"Inhale", frac:cyc/4, v:easeInOut(cyc/4), count:Math.floor(cyc)+1};
-  return {phase:"Exhale", frac:(cyc-4)/6, v:1-easeInOut((cyc-4)/6), count:Math.floor(cyc-4)+1};
+  const c=(t/1000)%14;
+  if(c<4)  return {phase:"Ride",  frac:c/4,       v:easeInOut(c/4),        dur:4};
+  if(c<6)  return {phase:"Hold",  frac:(c-4)/2,   v:1,                     dur:2};
+  if(c<12) return {phase:"Crash", frac:(c-6)/6,   v:1-easeInOut((c-6)/6),  dur:6};
+  return   {phase:"Still", frac:(c-12)/2, v:0,                     dur:2};
 }
 function easeInOut(x){ return x<.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; }
 
@@ -828,24 +964,60 @@ function loop(now){
   const pt=(now-phaseT0)/1000;
   if(pt>=ph.d && ph.id!=="stillness"){ advancePhase(now); return; }
 
-  const fixed=PH.slice(0,4).reduce((s,p)=>s+p.d,0);
+  const fixed=PH.slice(0,PH.length-1).reduce((s,p)=>s+p.d,0);
   const done=PH.slice(0,phaseIdx).reduce((s,p)=>s+p.d,0)+Math.min(pt,ph.d);
   $("phaseTrack").style.width = Math.min(100,(done/fixed)*100)+"%";
 
-  /* captions — spoken once, shown always */
-  const cap = [...ph.caps].reverse().find(c=>pt>=c[0]);
-  const capText = cap?cap[1]:"";
-  if(capText!==lastCap){ lastCap=capText; $("caption").textContent=capText; if(capText) audio.speak(capText); }
+  /* ---- lexicon: teach each sound, then play it ---- */
+  if(ph.id==="lexicon"){
+    const slot=Math.min(LEXICON.length-1, Math.floor(pt/LEX_SLOT));
+    if(slot!==lexSlot){
+      lexSlot=slot;
+      const L=LEXICON[slot];
+      $("lexName").style.display="block";
+      $("lexName").textContent=L.name;
+      $("caption").textContent=L.line;
+      audio.speak(L.line);
+      setTimeout(()=>{ if(sessionOn && PH[phaseIdx] && PH[phaseIdx].id==="lexicon") L.cue(); }, 2800);
+    }
+  } else {
+    $("lexName").style.display="none";
+    /* captions — spoken once, shown always */
+    const cap = [...ph.caps].reverse().find(c=>pt>=c[0]);
+    const capText = cap?cap[1]:"";
+    if(capText!==lastCap){ lastCap=capText; $("caption").textContent=capText; if(capText) audio.speak(capText); }
+  }
 
   const b=breathState(now-sessionT0);
-  const showBreath = ph.id!=="preload";
-  $("breathLine").style.display = showBreath?"":"none";
-  if(showBreath){ $("breathWord").textContent=b.phase; $("breathCount").textContent=b.count; }
+  const inTide = ph.id!=="preload" && ph.id!=="lexicon";
+
+  /* ---- tide cues fire at every turn of the breath ---- */
+  if(b.phase!==lastBreathPhase){
+    const entering=b.phase; lastBreathPhase=entering;
+    if(inTide){
+      if(entering==="Ride"){ cues.swell(4); if(ph.id==="induction") whisperCycles++; }
+      else if(entering==="Hold") cues.crest(2);
+      else if(entering==="Crash") cues.wash(6);
+      else cues.stillWater();
+      /* first cycles: the voice whispers the word over its sound, then retires */
+      if(ph.id==="induction" && whisperCycles>0 && whisperCycles<=2){
+        audio.speak(entering==="Ride"?"ride":entering==="Hold"?"hold":entering==="Crash"?"pour":"still", true);
+      } else if(ph.id==="induction" && whisperCycles===3 && entering==="Ride" && !sungOff){
+        sungOff=true; audio.speak("The sounds carry it now.");
+      }
+    }
+  }
+
+  $("breathLine").style.display = inTide?"":"none";
+  if(inTide){
+    $("breathWord").textContent=b.phase;
+    $("breathCount").textContent=TIDE_HINT[b.phase];
+  }
 
   $("forkBtn").style.visibility = (ph.id==="induction"||ph.id==="pivot")?"visible":"hidden";
   if(forkOverlayUntil && now>forkOverlayUntil){ forkOverlayUntil=0; $("forkOverlay").classList.remove("on"); }
 
-  /* mic: blend the user's real breath into the pulse; gate anchor A on silence */
+  /* mic: blend the real breath in; the gull calls when nothing is heard */
   let micBoost=0, breathHeard=false;
   if(mic.active){
     const lvl=mic.read();
@@ -853,9 +1025,11 @@ function loop(now){
     breathHeard = (now-mic.lastHeard)<4000;
     $("micDotI").style.background = breathHeard ? "var(--gold)" : "var(--faint)";
     $("micDotT").textContent = breathHeard ? "breath heard" : "listening";
+    if(inTide && !breathHeard && now-lastGull>20000){
+      lastGull=now; cues.plink(); audio.speak("Come back.", true);
+    }
   }
 
-  /* stillness dims sound with the light */
   audio.dim = ph.id==="stillness" ? Math.max(0.15, 1-pt/40) : 1;
   audio.breath(b);
 
@@ -866,6 +1040,8 @@ function advancePhase(now){
   phaseIdx++;
   phaseT0=now||performance.now();
   const ph=PH[phaseIdx];
+  cues.bell();                                    /* the bell marks every turn */
+  if(ph.id==="pivot"){ setTimeout(()=>{ if(sessionOn) cues.dyad(); }, 1200); }
   if(ph.id==="taper" && mode==="A"){ crossfadeStart=phaseT0; }
   if(ph.id==="stillness"){ $("advPhase").textContent="end session ›"; }
 }
@@ -916,6 +1092,7 @@ $("forkBtn").addEventListener("click", ()=>{
   forkTimes=forkTimes.filter(t=>now-t<90000);
   $("forkOverlay").classList.add("on");
   $("forkCountMsg").textContent=`fork ${S.forks} · no penalty`;
+  cues.release();
   audio.speak("Exhale. Palms. One breath.");
   forkOverlayUntil=now+6500;
   if(forkTimes.length>=3 && mode==="A"){
@@ -936,11 +1113,13 @@ function drawScene(now, b, ph, pt, prog, micBoost, breathHeard){
   ctx.clearRect(0,0,w,h);
   ctx.fillStyle="#05070C"; ctx.fillRect(0,0,w,h);
 
-  const preload = ph.id==="preload";
+  const preload = ph.id==="preload", lexicon = ph.id==="lexicon";
   let guideAlpha=0, blobAlpha=0;
-  if(!preload){
+  if(preload){ blobAlpha=0.12; }
+  else if(lexicon){ blobAlpha=0.3; }
+  else{
     if(mode==="A"){ guideAlpha=1; blobAlpha=0.18; }
-    else if(mode==="C"){ guideAlpha=0; blobAlpha=0.14; }   /* eyes closed: a faint ember, nothing to look at */
+    else if(mode==="C"){ guideAlpha=0; blobAlpha=0.14; }
     else { guideAlpha=0; blobAlpha=1; }
     if(crossfadeStart){
       const cf=Math.min(1,(now-crossfadeStart)/9000);
@@ -948,19 +1127,16 @@ function drawScene(now, b, ph, pt, prog, micBoost, breathHeard){
       if(cf>=1 && mode==="A") mode="B";
     }
     if(ph.id==="stillness"){ blobAlpha*= Math.max(0.12, 1-pt/40); guideAlpha=0; }
-    /* mic compliance gate: anchor A dims when no breath is heard */
     if(mode==="A" && mic.active && !breathHeard){
       guideAlpha*=0.3;
       if(!micWarned){ micWarned=true; showToast("no breath heard — the guide dims until it returns"); }
     } else if(breathHeard){ micWarned=false; }
-  } else {
-    blobAlpha=0.12;
   }
 
   if(blobAlpha>0.01){
     const cx=w/2, cy=h*0.46;
     const base=Math.min(w,h)*0.19;
-    const pulse = Math.min(1, 0.72+0.4*b.v + 0.25*micBoost);
+    const pulse = Math.min(1.15, 0.72+0.4*b.v + 0.25*micBoost);
     const r=base*pulse;
     const hue = 235 - 190*prog;
     const sat = 62 - 14*prog;
