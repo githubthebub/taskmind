@@ -458,6 +458,7 @@ const Session = {
       const delta = before - after;
       const farewell = c.farewells[Math.floor((State.data.sessions.length - 1) % c.farewells.length)];
       app.innerHTML = '';
+      const gem = GEMS[Math.floor(Math.random() * GEMS.length)];
       const out = el(`
         <div class="screen stack" style="text-align:center; align-items:center;">
           <div class="portrait-wrap" style="width:min(46vw,170px)">
@@ -466,6 +467,7 @@ const Session = {
           </div>
           <h2>${delta > 0 ? `Tension down ${delta} point${delta === 1 ? '' : 's'}.` : delta === 0 ? 'You showed up. That counts.' : 'Some days are like that. Showing up still counts.'}</h2>
           <div class="bubble" style="width:100%" data-bye></div>
+          <div class="card fade-slow" style="width:100%"><p class="dim" style="font-style:italic; font-family:var(--serif); font-size:1rem">“${gem}”</p></div>
           <button class="btn wide" data-home>Close &amp; go live your life</button>
         </div>`);
       app.appendChild(out);
@@ -656,14 +658,18 @@ const Surf = {
       const c = State.companion;
       app.innerHTML = '';
       const closeLine = pick(SURF_CLOSER);
+      const gem = GEMS[Math.floor(Math.random() * GEMS.length)];
+      const goalName = State.profile.goalName;
+      const goalAmount = State.profile.goalAmount || 0;
       const out = el(`
         <div class="screen stack" style="text-align:center;align-items:center;">
           <div class="stat" style="min-width:200px">
             <div class="num">${State.urgesSurfed()}</div>
             <div class="lbl">waves surfed, total</div>
           </div>
-          ${log.avoided ? `<div class="stat" style="min-width:200px"><div class="num">${fmtMoney(State.moneyRedirected())}</div><div class="lbl">redirected to your real life, total</div></div>` : ''}
+          ${log.avoided ? `<div class="stat" style="min-width:200px"><div class="num">${fmtMoney(State.moneyRedirected())}</div><div class="lbl">${goalName && goalAmount ? `toward ${goalName} — ${Math.min(100, Math.round(State.moneyRedirected() / goalAmount * 100))}% there` : 'redirected to your real life, total'}</div></div>` : ''}
           <div class="bubble" style="width:100%" data-b></div>
+          <div class="card fade-slow" style="width:100%"><p class="dim" style="font-style:italic; font-family:var(--serif); font-size:1rem">“${gem}”</p></div>
           <button class="btn wide" data-h>Close &amp; go live your life</button>
         </div>`);
       app.appendChild(out);

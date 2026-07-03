@@ -11,10 +11,15 @@ curl -fsSL "$base/hf_20260702_181043_fd67e02d-4a1c-4029-897c-6a1c63e504e1.png" -
 curl -fsSL "$base/hf_20260702_181046_453520db-45e2-420c-9dd7-9602f7021420.png" -o assets/noa.png
 curl -fsSL "$base/hf_20260702_181049_d71cab0b-51b0-44f4-91f0-8c7ae7f31df3.png" -o assets/kai.png
 
+curl -fsSL "$base/hf_20260703_115824_7ce4d64c-0d47-4730-ae38-426dc938746e.png" -o assets/amara.png
+curl -fsSL "$base/hf_20260703_115827_8da41db9-6ca3-40cd-9b70-b896c2c54478.png" -o assets/yuki.png
+
 # breathing video loops (480x640, ~6s, silent)
 curl -fsSL "$base/hf_20260702_184419_dbfabd7f-8bf9-4183-8bb0-47630cbf1e96.mp4" -o assets/sera.mp4
 curl -fsSL "$base/hf_20260702_184422_dceb591c-1892-4bc4-a0b4-cfdfb17d9fd6.mp4" -o assets/noa.mp4
 curl -fsSL "$base/hf_20260702_184424_55d4a78c-d2ea-4e6b-9783-b99b913da34a.mp4" -o assets/kai.mp4
+curl -fsSL "$base/hf_20260703_120643_e7f6f086-0c84-46ec-8012-0a2661466a7f.mp4" -o assets/amara.mp4
+curl -fsSL "$base/hf_20260703_120644_29bdbe9a-a9aa-4808-b880-3ad4c5a716d4.mp4" -o assets/yuki.mp4
 
 # voice clip library (reads assets/voices.js, saves to assets/voice/<companion>/<key>.mp3)
 if [ -f assets/voices.js ]; then

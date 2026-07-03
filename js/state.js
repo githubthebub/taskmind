@@ -10,9 +10,13 @@ const State = {
   defaults() {
     return {
       profile: {
-        companion: null,        // 'sera' | 'noa' | 'kai'
+        companion: null,        // companion id
         startPoint: null,       // onboarding self-assessment id
         monthlySpend: 0,        // what they told us they spend / month
+        name: '',               // what the companions call you (text surfaces only)
+        goalName: '',           // what the redirected money is for
+        goalAmount: 0,
+        lastMilestone: 0,       // highest milestone greeting already shown
         createdAt: Date.now()
       },
       settings: { voice: true, ambient: true },

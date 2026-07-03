@@ -22,13 +22,21 @@ nervous system instead of hooking it:
   peak → re-rate it), straight from relapse-prevention research. If the urge was a
   paid one, Haven counts the money you kept.
 
-## The characters
+## The cast
 
-Three companions — **Sera** (warmth, breath-led), **Noa** (stillness, body-led),
-**Kai** (grounded coaching). They're deliberately attractive, because that's the
-door people are already standing at. What's different is what's behind the door:
-they breathe with you on screen, their glow tracks your inhale and exhale, and
-they end every session by telling you to close the app.
+Five companions, each a specialist — because a cast beats a catalog:
+
+- **Sera** — warmth, breath-led calm
+- **Noa** — stillness, body-led quiet
+- **Amara** — the night voice: sleep rescue, NSDR, the loud hour after midnight
+- **Yuki** — dawn energy: doorway resets, walking practice, the 90-second turnaround
+- **Kai** — grounded coaching, stoic triage
+
+They're deliberately attractive, because that's the door people are already
+standing at. What's different is what's behind the door: they're breathing video
+loops with real AI voices, they notice when you come back (day 2, 3, 7, 14, 30),
+they pace every session to their own spoken lines — and they end every session
+by telling you to close the app.
 
 ## The promises (anti-dark-pattern manifesto)
 
@@ -38,6 +46,16 @@ they end every session by telling you to close the app.
 4. **Your data stays here.** Everything lives in `localStorage`. No account, no server.
 5. **The goal is graduation.** Success is you needing this less. There's a soft
    20-minute daily cap, and the companions enforce it by telling you to go outside.
+
+## The alchemy (Rory Sutherland was here)
+
+Same physiology, better clothes. Every psychological mechanism in the app is
+listed on the in-app "why this works" page, because a trick you can see is a
+tool and one you can't is a leash: story frames (the pilot's sigh, the emperor's
+triage), variable warmth (a different closing line every session), being noticed
+(milestone greetings), concrete money (your redirected spend fills a named goal,
+not an abstract counter), identity votes (stats framed as who you're becoming),
+and a cast of specialists instead of a feature list.
 
 ## Running it
 
