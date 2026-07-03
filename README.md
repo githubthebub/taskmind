@@ -8,12 +8,13 @@ Open `index.html` in a browser. No build, no dependencies, works offline.
 
 - **Breathing coach** — a blob (with feet) that inflates on the inhale, holds its breath with puffed cheeks through the hold, and deflates on the exhale.
 - **Emotional phase colors** — cool blue inhale, warm pink hold, fresh green exhale, carried through the label, glow, aura, orbit tracer, and legend.
-- **Per-phase sound** — a glide voice rises a fifth across the inhale, holds its note, then descends an octave across the exhale, with boundary chimes on a descending A-major triad (E5 / C♯5 / A4) over a soft 110 Hz / 432 Hz bed.
+- **Per-phase sound** — a glide voice rises a fifth across the inhale and descends an octave across the exhale as a clean single line; the holds get their own texture — a slow ~0.9 Hz shimmer plus a quiet second voice a fifth below, turning the sustain into a soft chord. Boundary chimes descend E5 / C♯5 / A4 / E4 over a soft 110 Hz / 432 Hz bed.
+- **Practice library** — four breath practices for different purposes, each with its source: 4-7-8 Downshift (sleep), Ānāpānasati 6·6 (bare mindfulness, Ānāpānasati Sutta MN 118 first tetrad), Passaddhi Long Exhale 4·2·10 (calming the bodily fabrication, MN 118 step four), and Box/Samavṛtti 4·4·4·4 with a hold on empty lungs (composure). Purposes are worded as tradition, not promised effects.
 - **Orbit tracer** — a phase-colored dot completes exactly one lap around the coach per phase.
 - **Mudra mode** — the coach gets hands; schematic diagrams show exactly which fingertips touch (Gyan, Dhyāna, Añjali, Prāṇa). Associations are worded as tradition, not promised effects.
 - **Coach personas** — Sage (warm, effort-first), Challenger (blunt, numbers-driven), Alchemist (psycho-logic reframes). Choice persists.
 - **Session debrief** — hard numbers: cycles completed and clock time.
-- **State profile panel** — four gauges (GABA, 5-HT, DA, NE) drifting from an alert baseline to a rest profile at the 5-minute mark. Permanently labeled *modeled trajectory — illustrative, not a measurement*: the app cannot measure neurotransmitters and does not pretend to.
+- **State profile panel** — four gauges (GABA, 5-HT, DA, NE) drifting from an alert baseline toward the selected practice's target profile at the 5-minute mark, with target tick marks on each gauge and a fill-up progress readout ("2:13 / 5:00 · 71% to profile"). Permanently labeled *modeled trajectory — illustrative, not a measurement*: the app cannot measure neurotransmitters and does not pretend to.
 
 ## Design invariants
 

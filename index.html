@@ -40,6 +40,7 @@
   /* ---------- phase color plumbing ---------- */
   #app[data-phase="inhale"] { --phase: var(--inhale); }
   #app[data-phase="hold"]   { --phase: var(--hold); }
+  #app[data-phase="hold2"]  { --phase: var(--hold); }
   #app[data-phase="exhale"] { --phase: var(--exhale); }
 
   /* ---------- coach stage ---------- */
@@ -71,11 +72,12 @@
   @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.08); } }
   .eye { transform-origin: center; animation: blink 5.4s infinite; transform-box: fill-box; }
 
-  /* hold face: puffed cheeks + pressed mouth, driven purely by data-phase */
+  /* hold faces, driven purely by data-phase:
+     full hold = puffed cheeks + pressed mouth; empty hold = pressed mouth only */
   .cheek, #mouthHold { opacity: 0; transition: opacity .25s; }
   #app[data-phase="hold"] .cheek { opacity: 1; animation: cheekPop .4s ease-out; }
-  #app[data-phase="hold"] #mouthHold { opacity: 1; }
-  #app[data-phase="hold"] #mouthCalm { opacity: 0; }
+  #app[data-phase="hold"] #mouthHold, #app[data-phase="hold2"] #mouthHold { opacity: 1; }
+  #app[data-phase="hold"] #mouthCalm, #app[data-phase="hold2"] #mouthCalm { opacity: 0; }
   @keyframes cheekPop { 0% { transform: scale(.4); } 70% { transform: scale(1.18); } 100% { transform: scale(1); } }
   .cheek { transform-origin: center; transform-box: fill-box; }
 
@@ -89,7 +91,7 @@
     color: var(--phase); text-shadow: 0 0 18px var(--phase);
     transition: color .8s, text-shadow .8s;
   }
-  #legend { display: flex; gap: 18px; font-size: 12px; color: var(--ink-dim); }
+  #legend { display: flex; gap: 18px; font-size: 12px; color: var(--ink-dim); flex-wrap: wrap; justify-content: center; }
   #legend span { display: inline-flex; align-items: center; gap: 6px; }
   #legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
   #legend .l-in i { background: var(--inhale); box-shadow: 0 0 6px var(--inhale); }
@@ -103,8 +105,8 @@
     max-width: 380px; text-align: center; min-height: 44px;
   }
 
-  /* ---------- persona chips ---------- */
-  #personas { display: flex; gap: 8px; }
+  /* ---------- chips (personas + practices) ---------- */
+  #personas, #practices { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
   .chip {
     background: var(--panel); border: 1px solid var(--panel-edge); color: var(--ink-dim);
     border-radius: 999px; padding: 7px 15px; font-size: 13px; cursor: pointer;
@@ -135,6 +137,14 @@
   .panel h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-dim); font-weight: 600; }
   .panel .note { font-size: 11px; color: var(--ink-dim); font-style: italic; }
 
+  /* practice panel */
+  #practicePanel .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  #practicePanel h3 { font-size: 18px; margin-bottom: 6px; }
+  #pRatio { font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; font-style: normal; letter-spacing: .06em; }
+  #pPurpose { font-size: 13px; line-height: 1.5; }
+  #pSource { font-size: 12px; color: var(--ink-dim); margin-top: 6px; }
+  #practicePanel .note { display: block; margin-top: 8px; }
+
   /* mudra panel */
   #mudraPanel .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   #mudraPanel .nav { display: flex; gap: 6px; }
@@ -151,11 +161,16 @@
   #mudraInfo .trad { font-size: 12px; color: var(--ink-dim); line-height: 1.4; }
 
   /* neuro state-profile panel */
-  #neuroPanel .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; gap: 10px; }
+  #neuroPanel .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 10px; }
+  #npProgress { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  #npBarWrap { flex: 1; height: 4px; background: var(--bg2); border-radius: 99px; overflow: hidden; }
+  #npBar { height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .5s linear; }
+  #npText { font-size: 11px; color: var(--ink-dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .gauge { display: grid; grid-template-columns: 52px 1fr 34px 110px; align-items: center; gap: 10px; margin-bottom: 10px; }
   .gauge .gname { font-size: 12px; font-weight: 600; color: var(--ink-dim); }
-  .gauge .gtrack { height: 8px; background: var(--bg2); border-radius: 99px; overflow: hidden; }
-  .gauge .gfill { height: 100%; border-radius: 99px; transition: width .5s linear; }
+  .gauge .gtrack { position: relative; height: 8px; background: var(--bg2); border-radius: 99px; }
+  .gauge .gfill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 99px; transition: width .5s linear; }
+  .gauge .gtick { position: absolute; top: -3px; bottom: -3px; width: 2px; background: rgba(232,236,248,.5); border-radius: 1px; }
   .gauge .gval { font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; }
   .gauge .gtag { font-size: 10px; color: var(--ink-dim); opacity: 0; transition: opacity 1.5s; letter-spacing: .04em; }
   .gauge .gtag.reached { opacity: 1; }
@@ -232,13 +247,11 @@
   </div>
 
   <div id="phaseLabel">&nbsp;</div>
-  <div id="legend">
-    <span class="l-in"><i></i>inhale · 4s</span>
-    <span class="l-ho"><i></i>hold · 7s</span>
-    <span class="l-ex"><i></i>exhale · 8s</span>
-  </div>
+  <div id="legend"></div>
 
   <div id="bubble"></div>
+
+  <div id="practices" role="group" aria-label="practice"></div>
 
   <div id="personas" role="group" aria-label="coach voice">
     <button class="chip" data-persona="sage">Sage</button>
@@ -252,6 +265,17 @@
   </div>
 
   <label class="toggleRow"><input type="checkbox" id="mudraToggle"> Mudra mode — give the coach hands to mimic</label>
+
+  <div class="panel show" id="practicePanel">
+    <div class="head">
+      <h2>Practice</h2>
+      <span class="note" id="pRatio"></span>
+    </div>
+    <h3 id="pName"></h3>
+    <p id="pPurpose"></p>
+    <p id="pSource"></p>
+    <span class="note">Purposes are described as tradition, not promised effects.</span>
+  </div>
 
   <div class="panel" id="mudraPanel">
     <div class="head">
@@ -277,6 +301,10 @@
       <h2>State profile</h2>
       <span class="note">modeled trajectory — illustrative, not a measurement</span>
     </div>
+    <div id="npProgress">
+      <div id="npBarWrap"><div id="npBar"></div></div>
+      <span id="npText">0:00 / 5:00</span>
+    </div>
     <div id="gauges"></div>
   </div>
 
@@ -295,48 +323,98 @@
   'use strict';
 
   /* ============ phase model ============ */
-  // Emotional color mapping: cool blue = incoming air, warm happy pink = the
-  // full held breath, fresh green = release. Committed here and in CSS vars.
-  const PHASES = [
-    { key: 'inhale', dur: 4, label: 'Inhale', color: '#5babff', chime: 659.25 }, // E5
-    { key: 'hold',   dur: 7, label: 'Hold',   color: '#ff7bac', chime: 554.37 }, // C#5
-    { key: 'exhale', dur: 8, label: 'Exhale', color: '#4cd98a', chime: 440.0  }, // A4
+  // Emotional color mapping (in CSS): cool blue = incoming air, warm happy
+  // pink = the held breath (full or empty), fresh green = release.
+  // Boundary chimes descend through an A-major world: E5 / C#5 / A4 / E4.
+  const PHASE_META = {
+    inhale: { label: 'Inhale',   legend: 'inhale',   cls: 'l-in', chime: 659.25 },
+    hold:   { label: 'Hold',     legend: 'hold',     cls: 'l-ho', chime: 554.37 },
+    exhale: { label: 'Exhale',   legend: 'exhale',   cls: 'l-ex', chime: 440.0  },
+    hold2:  { label: 'Hold out', legend: 'hold out', cls: 'l-ho', chime: 329.63 },
+  };
+
+  /* ============ practices ============ */
+  // Different breathwork for different purposes. Sources are named; purposes
+  // are worded as tradition, never as promised effects (honesty invariant).
+  const PRACTICES = [
+    { key: 'downshift', name: '4-7-8 Downshift', ratio: '4 · 7 · 8',
+      purpose: 'Downregulation toward sleep. The long exhale is the active ingredient; the hold lets the breath settle before it.',
+      source: 'Modern relaxing-breath ratio, pranayama-derived.',
+      phases: [ { key: 'inhale', dur: 4 }, { key: 'hold', dur: 7 }, { key: 'exhale', dur: 8 } ],
+      profile: { gaba: 9, ht: 4, da: 2, ne: 1 },
+      tags: { gaba: 'Sleep Onset', da: 'Inactive Reward', ne: 'Minimal Arousal' } },
+
+    { key: 'anapanasati', name: 'Ānāpānasati', ratio: '6 · 6',
+      purpose: 'Bare mindfulness of breathing — knowing a long breath as long, a short breath as short. No forcing: the count is a suggestion, the noticing is the practice. Traditionally the foundation from which the jhānas are developed.',
+      source: 'Ānāpānasati Sutta, MN 118 — first tetrad.',
+      phases: [ { key: 'inhale', dur: 6 }, { key: 'exhale', dur: 6 } ],
+      profile: { gaba: 6, ht: 7, da: 4, ne: 4 },
+      tags: { ht: 'Settled Attention' } },
+
+    { key: 'passaddhi', name: 'Passaddhi Long Exhale', ratio: '4 · 2 · 10',
+      purpose: '“He trains himself: calming the bodily fabrication, I breathe out.” A brief hold, then the longest exhale in the app — traditionally the step where breath practice turns into tranquility (passaddhi).',
+      source: 'Ānāpānasati Sutta, MN 118 — first tetrad, fourth step.',
+      phases: [ { key: 'inhale', dur: 4 }, { key: 'hold', dur: 2 }, { key: 'exhale', dur: 10 } ],
+      profile: { gaba: 8, ht: 5, da: 3, ne: 2 },
+      tags: { gaba: 'Deep Settling' } },
+
+    { key: 'box', name: 'Box (Samavṛtti)', ratio: '4 · 4 · 4 · 4',
+      purpose: 'Equal measure on all four sides, including a hold on empty lungs. Traditionally samavṛtti prāṇāyāma — for steadiness and composure under load rather than sleep.',
+      source: 'Yogic samavṛtti prāṇāyāma.',
+      phases: [ { key: 'inhale', dur: 4 }, { key: 'hold', dur: 4 }, { key: 'exhale', dur: 4 }, { key: 'hold2', dur: 4 } ],
+      profile: { gaba: 6, ht: 6, da: 5, ne: 3 },
+      tags: { ne: 'Steady Composure' } },
   ];
-  const CYCLE = PHASES.reduce((s, p) => s + p.dur, 0); // 19s
+
+  /* ============ state store ============ */
+  const store = {
+    get: (k, d) => { try { const v = localStorage.getItem('sp.' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set: (k, v) => { try { localStorage.setItem('sp.' + k, JSON.stringify(v)); } catch {} },
+  };
+  let practiceKey = store.get('practice', 'downshift');
+  if (!PRACTICES.some((p) => p.key === practiceKey)) practiceKey = 'downshift';
+  const practice = () => PRACTICES.find((p) => p.key === practiceKey);
+  const cycleLen = () => practice().phases.reduce((s, p) => s + p.dur, 0);
 
   function phaseAt(t) {
-    let u = ((t % CYCLE) + CYCLE) % CYCLE;
-    for (let i = 0; i < PHASES.length; i++) {
-      if (u < PHASES[i].dur) return { i, phase: PHASES[i], progress: u / PHASES[i].dur };
-      u -= PHASES[i].dur;
+    const phases = practice().phases;
+    const cl = cycleLen();
+    let u = ((t % cl) + cl) % cl;
+    for (let i = 0; i < phases.length; i++) {
+      if (u < phases[i].dur) return { i, key: phases[i].key, dur: phases[i].dur, progress: u / phases[i].dur };
+      u -= phases[i].dur;
     }
-    return { i: 0, phase: PHASES[0], progress: 0 };
+    return { i: 0, key: phases[0].key, dur: phases[0].dur, progress: 0 };
   }
 
-  // breath fullness 0..1: inflate on inhale, full through hold, deflate on exhale
+  // breath fullness 0..1: inflate on inhale, full through hold,
+  // deflate on exhale, empty through hold-out
   function fullnessAt(t) {
-    const { phase, progress } = phaseAt(t);
-    if (phase.key === 'inhale') return easeInOut(progress);
-    if (phase.key === 'hold') return 1;
-    return 1 - easeInOut(progress);
+    const { key, progress } = phaseAt(t);
+    if (key === 'inhale') return easeInOut(progress);
+    if (key === 'hold') return 1;
+    if (key === 'exhale') return 1 - easeInOut(progress);
+    return 0;
   }
   function easeInOut(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
   function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
 
-  /* ============ modeled neuro trajectory (pure) ============ */
-  // Drifts from an alert-arousal baseline to the target profile at exactly
-  // 300s, then holds. Illustrative only — the app cannot measure any of this.
+  /* ============ modeled state trajectory (pure) ============ */
+  // Drifts from an alert-arousal baseline to the selected practice's target
+  // profile at exactly 300s, then holds. Illustrative only — the app cannot
+  // measure any of this.
   const NEURO = [
-    { key: 'gaba', name: 'GABA', base: 3, target: 9, tag: 'Sleep Onset' },
-    { key: 'ht',   name: '5-HT', base: 5, target: 4, tag: '' },
-    { key: 'da',   name: 'DA',   base: 6, target: 2, tag: 'Inactive Reward' },
-    { key: 'ne',   name: 'NE',   base: 7, target: 1, tag: 'Minimal Arousal' },
+    { key: 'gaba', name: 'GABA', base: 3 },
+    { key: 'ht',   name: '5-HT', base: 5 },
+    { key: 'da',   name: 'DA',   base: 6 },
+    { key: 'ne',   name: 'NE',   base: 7 },
   ];
   const NEURO_T = 300;
   function trajectory(t) {
+    const prof = practice().profile;
     const e = t >= NEURO_T ? 1 : easeOutCubic(Math.max(0, t) / NEURO_T);
     const out = {};
-    for (const n of NEURO) out[n.key] = n.base + (n.target - n.base) * e;
+    for (const n of NEURO) out[n.key] = n.base + (prof[n.key] - n.base) * e;
     return out;
   }
 
@@ -345,19 +423,19 @@
     sage: {
       name: 'Sage',
       greet: 'Welcome back. Nothing to win here — just notice the breath. The noticing IS the skill.',
-      prompts: { inhale: 'Let the breath arrive on its own.', hold: 'Rest inside the pause. Nothing is missing.', exhale: 'Let it all the way out. Longer than feels natural.' },
+      prompts: { inhale: 'Let the breath arrive on its own.', hold: 'Rest inside the pause. Nothing is missing.', exhale: 'Let it all the way out. Longer than feels natural.', hold2: 'Empty, and at ease. Wait here.' },
       debrief: (c, mmss) => `${cyc(c)} of honest attention. However it felt, showing up was the practice.`,
     },
     challenger: {
       name: 'Challenger',
-      greet: "Alright. 4 in, 7 held, 8 out. Partial reps don't count. Go.",
-      prompts: { inhale: 'Four seconds. Fill it properly.', hold: "Hold it. You're fine. Discomfort isn't damage.", exhale: 'Eight full seconds out. No shortcuts.' },
+      greet: "Alright. Pick your ratio, then hit every side of it. Partial reps don't count. Go.",
+      prompts: { inhale: 'Fill it properly. All the way.', hold: "Hold it. You're fine. Discomfort isn't damage.", exhale: 'Full seconds out. No shortcuts.', hold2: 'Stay empty. Trust it. This is the rep.' },
       debrief: (c, mmss) => `${cyc(c)} verified, ${mmss} on the clock. That's the number. No cope — come back and beat it.`,
     },
     alchemist: {
       name: 'Alchemist',
       greet: 'Nineteen seconds of doing nothing — the most underpriced luxury in the world. Shall we spend lavishly?',
-      prompts: { inhale: 'Breathe in like it costs a fortune. It does — elsewhere.', hold: 'Holding is not waiting. It is owning the moment outright.', exhale: 'Another cycle banked. Compound interest, but for your nervous system.' },
+      prompts: { inhale: 'Breathe in like it costs a fortune. It does — elsewhere.', hold: 'Holding is not waiting. It is owning the moment outright.', exhale: 'Another cycle banked. Compound interest, but for your nervous system.', hold2: 'An empty pause — scarcity is exactly what makes the next breath valuable.' },
       debrief: (c, mmss) => `${cyc(c)} banked in ${mmss}. Most people would pay handsomely to feel like this; you merely sat still.`,
     },
   };
@@ -438,11 +516,15 @@
   }
 
   /* ============ audio ============ */
-  // Per-phase sound signatures over a soft 110Hz/432Hz bed:
-  //  - glide voice rises a fifth (264->396) across the inhale, holds its note,
-  //    then descends a full octave (396->198) across the exhale
-  //  - boundary chimes on a descending A-major triad: E5 / C#5 / A4
-  let AC = null, glide = null, glideGain = null;
+  // Per-phase sound signatures over a soft 110Hz/432Hz bed. The glide voice
+  // rises a fifth (264->396) across the inhale and descends an octave
+  // (396->198) across the exhale as a single clean line. The holds get their
+  // own texture so they can't be confused with the exhale: the held note
+  // gains a slow ~0.9Hz shimmer (tremolo) plus a quiet second voice a fifth
+  // below, turning the sustain into a soft chord. The empty hold sustains the
+  // low 198 with a fainter, slower version of the same texture.
+  // Boundary chimes: E5 (inhale) / C#5 (hold) / A4 (exhale) / E4 (hold out).
+  let AC = null, glide = null, glideGain = null, trem = null, lfo = null, lfoDepth = null, dyad = null, dyadGain = null;
   function audioInit() {
     if (AC) return;
     try {
@@ -452,55 +534,103 @@
       const bed2Gain = AC.createGain(); bed2Gain.gain.value = 0.35; bed2Gain.connect(bedGain);
       const bed2 = AC.createOscillator(); bed2.frequency.value = 432; bed2.connect(bed2Gain); bed2.start();
       glideGain = AC.createGain(); glideGain.gain.value = 0; glideGain.connect(AC.destination);
-      glide = AC.createOscillator(); glide.type = 'triangle'; glide.frequency.value = 264; glide.connect(glideGain); glide.start();
+      trem = AC.createGain(); trem.gain.value = 1; trem.connect(glideGain);
+      glide = AC.createOscillator(); glide.type = 'triangle'; glide.frequency.value = 264; glide.connect(trem); glide.start();
+      lfoDepth = AC.createGain(); lfoDepth.gain.value = 0; lfoDepth.connect(trem.gain);
+      lfo = AC.createOscillator(); lfo.frequency.value = 0.9; lfo.connect(lfoDepth); lfo.start();
+      dyadGain = AC.createGain(); dyadGain.gain.value = 0; dyadGain.connect(AC.destination);
+      dyad = AC.createOscillator(); dyad.type = 'sine'; dyad.frequency.value = 264; dyad.connect(dyadGain); dyad.start();
     } catch (e) { AC = null; }
   }
-  function audioPhase(phase) {
+  function audioPhase(key, dur) {
     if (!AC) return;
     const now = AC.currentTime;
-    // chime
+    // boundary chime
     const cg = AC.createGain(); cg.gain.setValueAtTime(0.05, now); cg.gain.exponentialRampToValueAtTime(0.0001, now + 1.2); cg.connect(AC.destination);
-    const ch = AC.createOscillator(); ch.frequency.value = phase.chime; ch.connect(cg); ch.start(now); ch.stop(now + 1.3);
-    // glide voice
+    const ch = AC.createOscillator(); ch.frequency.value = PHASE_META[key].chime; ch.connect(cg); ch.start(now); ch.stop(now + 1.3);
+    // glide voice + hold textures
     glideGain.gain.setTargetAtTime(0.03, now, 0.15);
     glide.frequency.cancelScheduledValues(now);
-    if (phase.key === 'inhale') { glide.frequency.setValueAtTime(264, now); glide.frequency.linearRampToValueAtTime(396, now + phase.dur); }
-    else if (phase.key === 'hold') { glide.frequency.setValueAtTime(396, now); }
-    else { glide.frequency.setValueAtTime(396, now); glide.frequency.linearRampToValueAtTime(198, now + phase.dur); }
+    if (key === 'inhale') {
+      glide.frequency.setValueAtTime(264, now); glide.frequency.linearRampToValueAtTime(396, now + dur);
+      lfoDepth.gain.setTargetAtTime(0, now, 0.1); dyadGain.gain.setTargetAtTime(0, now, 0.1);
+    } else if (key === 'hold') {
+      glide.frequency.setValueAtTime(396, now);
+      lfo.frequency.setValueAtTime(0.9, now);
+      lfoDepth.gain.setTargetAtTime(0.22, now, 0.3);
+      dyad.frequency.setValueAtTime(264, now); dyadGain.gain.setTargetAtTime(0.018, now, 0.4);
+    } else if (key === 'exhale') {
+      glide.frequency.setValueAtTime(396, now); glide.frequency.linearRampToValueAtTime(198, now + dur);
+      lfoDepth.gain.setTargetAtTime(0, now, 0.1); dyadGain.gain.setTargetAtTime(0, now, 0.1);
+    } else { // hold2: empty hold — low sustain, fainter and slower shimmer
+      glide.frequency.setValueAtTime(198, now);
+      lfo.frequency.setValueAtTime(0.55, now);
+      lfoDepth.gain.setTargetAtTime(0.14, now, 0.3);
+      dyad.frequency.setValueAtTime(132, now); dyadGain.gain.setTargetAtTime(0.012, now, 0.4);
+    }
   }
   function audioStop() {
     if (!AC) return;
-    glideGain.gain.setTargetAtTime(0, AC.currentTime, 0.3);
+    const now = AC.currentTime;
+    glideGain.gain.setTargetAtTime(0, now, 0.3);
+    dyadGain.gain.setTargetAtTime(0, now, 0.3);
+    lfoDepth.gain.setTargetAtTime(0, now, 0.3);
   }
 
   /* ============ DOM refs ============ */
   const $ = (s) => document.querySelector(s);
-  const app = $('#app'), phaseLabel = $('#phaseLabel'), bubble = $('#bubble');
+  const app = $('#app'), phaseLabel = $('#phaseLabel'), bubble = $('#bubble'), legend = $('#legend');
   const beginBtn = $('#beginBtn'), endBtn = $('#endBtn');
   const bodyScale = $('#bodyScale'), aura = $('#aura'), orbitDot = $('#orbitDot');
   const mudraToggle = $('#mudraToggle'), mudraPanel = $('#mudraPanel');
   const neuroPanel = $('#neuroPanel'), gaugesEl = $('#gauges'), debriefEl = $('#debrief');
+  const npBar = $('#npBar'), npText = $('#npText');
 
-  /* ============ state ============ */
-  const store = {
-    get: (k, d) => { try { const v = localStorage.getItem('sp.' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
-    set: (k, v) => { try { localStorage.setItem('sp.' + k, JSON.stringify(v)); } catch {} },
-  };
+  /* ============ session state ============ */
   let personaKey = store.get('persona', 'sage');
   if (!PERSONAS[personaKey]) personaKey = 'sage';
   let mudraIdx = store.get('mudra', 0) % MUDRAS.length;
   let running = false, startMs = 0, offset = 0, lastPhaseKey = null, raf = 0;
+  let cycleBase = 0, carriedCycles = 0; // cycle clock survives mid-session practice switches
   let frozenNeuro = null;
 
   /* ============ persona UI ============ */
   function renderPersonas() {
-    document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('on', c.dataset.persona === personaKey));
+    document.querySelectorAll('#personas .chip').forEach((c) => c.classList.toggle('on', c.dataset.persona === personaKey));
   }
   function say(text) { bubble.textContent = text; }
-  document.querySelectorAll('.chip').forEach((c) => c.addEventListener('click', () => {
+  document.querySelectorAll('#personas .chip').forEach((c) => c.addEventListener('click', () => {
     personaKey = c.dataset.persona; store.set('persona', personaKey);
     renderPersonas(); say(PERSONAS[personaKey].greet);
   }));
+
+  /* ============ practice UI ============ */
+  function renderLegend() {
+    legend.innerHTML = practice().phases.map((p) => {
+      const m = PHASE_META[p.key];
+      return `<span class="${m.cls}"><i></i>${m.legend} · ${p.dur}s</span>`;
+    }).join('');
+  }
+  function renderPracticePanel() {
+    const p = practice();
+    $('#pName').textContent = p.name;
+    $('#pRatio').textContent = p.ratio;
+    $('#pPurpose').textContent = p.purpose;
+    $('#pSource').textContent = p.source;
+    document.querySelectorAll('#practices .chip').forEach((c) => c.classList.toggle('on', c.dataset.practice === p.key));
+  }
+  function setPractice(key) {
+    if (key === practiceKey || !PRACTICES.some((p) => p.key === key)) return;
+    if (running) { carriedCycles += Math.floor((elapsed() - cycleBase) / cycleLen()); }
+    practiceKey = key; store.set('practice', key);
+    if (running) { cycleBase = elapsed(); lastPhaseKey = null; }
+    frozenNeuro = null;
+    renderLegend(); renderPracticePanel(); buildGauges(); renderNeuro(running ? elapsed() : 0);
+    const p = practice();
+    say(`${p.name} — ${p.ratio}. ${p.purpose.split('. ')[0]}.`.replace('..', '.'));
+  }
+  $('#practices').innerHTML = PRACTICES.map((p) => `<button class="chip" data-practice="${p.key}">${p.name}</button>`).join('');
+  document.querySelectorAll('#practices .chip').forEach((c) => c.addEventListener('click', () => setPractice(c.dataset.practice)));
 
   /* ============ mudra UI ============ */
   function renderMudra() {
@@ -521,34 +651,45 @@
     if (on) say(`${MUDRAS[mudraIdx].name}: ${MUDRAS[mudraIdx].cue}`);
   });
 
-  /* ============ neuro panel ============ */
+  /* ============ state-profile panel ============ */
   const NEURO_COLORS = { gaba: '#8d9bff', ht: '#ffd166', da: '#ff7bac', ne: '#5babff' };
   function buildGauges() {
+    const p = practice();
     gaugesEl.innerHTML = NEURO.map((n) => `
       <div class="gauge" data-k="${n.key}">
         <span class="gname">${n.name}</span>
-        <span class="gtrack"><span class="gfill" style="background:${NEURO_COLORS[n.key]}"></span></span>
+        <span class="gtrack">
+          <span class="gfill" style="background:${NEURO_COLORS[n.key]}"></span>
+          <span class="gtick" style="left:calc(${p.profile[n.key] * 10}% - 1px)"></span>
+        </span>
         <span class="gval">–</span>
-        <span class="gtag">${n.tag ? n.tag : ''}</span>
+        <span class="gtag">${p.tags[n.key] || ''}</span>
       </div>`).join('');
   }
+  function fmtTime(s) { return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`; }
   function renderNeuro(t) {
-    const vals = frozenNeuro || trajectory(t);
-    const reached = !frozenNeuro && t >= NEURO_T;
+    const p = practice();
+    const vals = frozenNeuro ? frozenNeuro.vals : trajectory(t);
+    const reached = frozenNeuro ? frozenNeuro.reached : t >= NEURO_T;
+    const pt = Math.min(frozenNeuro ? frozenNeuro.t : t, NEURO_T);
     for (const n of NEURO) {
       const g = gaugesEl.querySelector(`[data-k="${n.key}"]`);
+      if (!g) continue;
       const v = vals[n.key];
       g.querySelector('.gfill').style.width = (v * 10) + '%';
-      g.querySelector('.gval').textContent = (t >= NEURO_T ? n.target.toFixed(0) : v.toFixed(1)) + '/10';
-      if (n.tag) g.querySelector('.gtag').classList.toggle('reached', reached || (frozenNeuro && frozenNeuro.reached));
+      g.querySelector('.gval').textContent = (reached ? p.profile[n.key].toFixed(0) : v.toFixed(1)) + '/10';
+      if (p.tags[n.key]) g.querySelector('.gtag').classList.toggle('reached', reached);
     }
+    npBar.style.width = (pt / NEURO_T * 100) + '%';
+    npText.textContent = `${fmtTime(pt)} / 5:00 · ${Math.round(easeOutCubic(pt / NEURO_T) * 100)}% to profile`;
   }
 
   /* ============ session engine ============ */
   function elapsed() { return (performance.now() - startMs) / 1000 + offset; }
 
   function begin() {
-    running = true; offset = 0; startMs = performance.now(); lastPhaseKey = null; frozenNeuro = null;
+    running = true; offset = 0; startMs = performance.now(); lastPhaseKey = null;
+    cycleBase = 0; carriedCycles = 0; frozenNeuro = null;
     app.classList.add('live');
     beginBtn.style.display = 'none'; endBtn.style.display = '';
     debriefEl.classList.remove('show');
@@ -561,44 +702,44 @@
   function end() {
     running = false; cancelAnimationFrame(raf);
     const t = elapsed();
-    const vals = trajectory(t); vals.reached = t >= NEURO_T;
-    frozenNeuro = vals; // freeze the profile where it got to
+    frozenNeuro = { vals: trajectory(t), reached: t >= NEURO_T, t }; // freeze where it got to
     app.classList.remove('live'); app.setAttribute('data-phase', '');
     beginBtn.style.display = ''; endBtn.style.display = 'none';
     phaseLabel.innerHTML = '&nbsp;';
     bodyScale.style.transform = '';
     audioStop();
     // debrief with hard numbers
-    const cycles = Math.floor(t / CYCLE);
-    const mm = Math.floor(t / 60), ss = Math.floor(t % 60);
-    const mmss = `${mm}:${String(ss).padStart(2, '0')}`;
+    const cycles = carriedCycles + Math.floor((t - cycleBase) / cycleLen());
+    const mmss = fmtTime(t);
     $('#dCycles').textContent = cycles;
     $('#dCyclesLabel').textContent = cycles === 1 ? 'cycle' : 'cycles';
     $('#dTime').textContent = mmss;
     $('#dLine').textContent = PERSONAS[personaKey].debrief(cycles, mmss);
     debriefEl.classList.add('show');
     say(PERSONAS[personaKey].debrief(cycles, mmss));
+    renderNeuro(t);
     if (cycles >= 1) { app.classList.add('celebrate'); setTimeout(() => app.classList.remove('celebrate'), 1200); }
   }
 
   function tick() {
     if (!running) return;
     const t = elapsed();
-    const { phase, progress } = phaseAt(t);
+    const tc = t - cycleBase;
+    const { key, dur, progress } = phaseAt(tc);
 
-    if (phase.key !== lastPhaseKey) {
-      lastPhaseKey = phase.key;
-      app.setAttribute('data-phase', phase.key);
-      audioPhase(phase);
-      say(PERSONAS[personaKey].prompts[phase.key]);
+    if (key !== lastPhaseKey) {
+      lastPhaseKey = key;
+      app.setAttribute('data-phase', key);
+      audioPhase(key, dur);
+      say(PERSONAS[personaKey].prompts[key]);
     }
 
     // phase label with countdown, tinted by CSS var --phase
-    const remain = Math.ceil(phase.dur * (1 - progress));
-    phaseLabel.textContent = `${phase.label} · ${remain}`;
+    const remain = Math.ceil(dur * (1 - progress));
+    phaseLabel.textContent = `${PHASE_META[key].label} · ${remain}`;
 
-    // body inflates/holds/deflates with breath fullness
-    const f = fullnessAt(t);
+    // body inflates/holds/deflates/rests-empty with breath fullness
+    const f = fullnessAt(tc);
     bodyScale.style.transform = `scale(${1 + 0.13 * f})`;
     aura.setAttribute('r', String(88 + 14 * f));
     aura.style.opacity = String(0.18 + 0.2 * f);
@@ -616,6 +757,8 @@
   endBtn.addEventListener('click', end);
 
   /* ============ boot ============ */
+  renderLegend();
+  renderPracticePanel();
   buildGauges();
   renderPersonas();
   renderMudra();
@@ -624,7 +767,8 @@
 
   /* ============ test hooks ============ */
   window.__sp = {
-    PHASES, CYCLE, phaseAt, fullnessAt, trajectory,
+    PRACTICES, phaseAt, fullnessAt, trajectory, setPractice,
+    practice: () => practice(),
     jump: (sec) => { offset += sec; },
     isRunning: () => running,
   };
