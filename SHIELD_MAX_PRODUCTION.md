@@ -105,9 +105,12 @@ VisuospatialCompanion ──telemetry──▶ BehavioralMatrixEngine
 ## 3. Build & test protocol
 
 ```
-tsc                      # strict compile → dist/app.js (must be warning-free)
-node tests/run-tests.mjs # 17 logic tests (engine, vault, crucible math,
-                         # gating, exit eligibility, geometry, 4-7-8 timing)
+tsc                        # strict compile → dist/app.js (must be warning-free)
+node tests/run-tests.mjs   # 19 logic tests (engine incl. two-directional
+                           # hysteresis, vault self-heal, crucible math,
+                           # gating, exit eligibility, geometry, 4-7-8 timing)
+node tests/smoke-browser.mjs # headless boot, telemetry registration,
+                             # overflow audit at 320/768/1280px
 ```
 
 Serve locally with any static server (`python3 -m http.server`) or open
@@ -128,10 +131,10 @@ protocol).
 | # | Gate | Verification | Status |
 |---|---|---|---|
 | V1 | Compilation integrity | `tsc` exits 0 with zero diagnostics under `strict` | ✅ |
-| V2 | Logic correctness | `node tests/run-tests.mjs` → all tests pass | ✅ 17/17 |
+| V2 | Logic correctness | `node tests/run-tests.mjs` → all tests pass | ✅ 19/19 |
 | V3 | Zero-dependency audit | no `package.json` deps; grep for `http://`, `https://`, `fetch(`, `XMLHttpRequest`, `WebSocket`, `import(` in `src/` returns nothing; CSP pins `connect-src 'none'` | ✅ |
 | V4 | State-machine coverage | transition table covers [0,1] gap-free; each state entry maps to exactly one somatic action (asserted in tests) | ✅ |
-| V5 | Input-freeze guarantee | while `BreathingOverlay.isActive`, capture-phase traps swallow all pointer/key/wheel/touch events and `GameDirectives.frozen` gates every game input path | ✅ |
+| V5 | Input-freeze guarantee | while `BreathingOverlay.isActive`, capture-phase traps swallow all pointer/key/wheel/touch events, `GameDirectives.frozen` gates every game input path, the telemetry pump pauses, and the pattern deadline is suspended (no timeout on release) | ✅ |
 | V6 | Gating integrity | every reward bundle locked at `requiredClears − 1`, unlocked at threshold; re-verified at render and play time | ✅ |
 | V7 | Responsive layout | grid collapses ≤ 860 px; compact spacing ≤ 480 px; canvas is DPR-aware and resize-safe; overlays clamp via `vmin`/`ch`; no horizontal scroll at 320 px | ✅ |
 | V8 | Persistence integrity | vault round-trips across instances, survives corruption, bounds growth (200 sessions / 100 crucible entries) | ✅ |
@@ -149,6 +152,16 @@ findings are adversarially confirmed before any fix lands:
 4. **Logic red-team** — attacks engine thresholds, gating (V6), freeze paths (V5).
 
 Confirmed findings are fixed, then the full checklist re-runs from V1.
+
+**Validation log**
+- 2026-07-03 — fleet run #1 (compile/test, layout, interface lenses; red-team
+  lens run manually): 12 findings, all resolved — two-directional hysteresis
+  restored in `matchRule` (current state's widened band now takes precedence),
+  vault field-level self-heal, pattern deadline suspended while frozen,
+  telemetry placement double-count removed, crucible chart redraws on resize,
+  toast/label cosmetics, tautological hysteresis test replaced with real
+  two-directional assertions plus controls, dead API surface removed.
+  Checklist re-ran from V1: all gates green (19/19 logic, smoke clean).
 
 ## 5. Clinical design rationale (summary)
 

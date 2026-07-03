@@ -14,7 +14,7 @@ type FocusStateId = 'SLUGGISH' | 'BALANCED' | 'HYPER';
 interface MetricsSample {
   /** ms since session start */
   t: number;
-  /** placement / rotation actions per minute over the window */
+  /** steering, rotation and placement inputs per minute over the window */
   actionsPerMinute: number;
   /** misplacements ÷ total placements over the window (0..1) */
   errorRate: number;
@@ -22,13 +22,6 @@ interface MetricsSample {
   meanLatencyMs: number;
   /** fraction of the window with no input at all (0..1) */
   idleRatio: number;
-}
-
-/** Derived arousal reading the state engine transitions on. */
-interface ArousalReading {
-  /** normalized 0..1 composite arousal index */
-  index: number;
-  sample: MetricsSample;
 }
 
 /** A single row of the JSON state-transition table. */
@@ -57,7 +50,8 @@ interface StateChangeEvent {
   from: FocusStateId;
   to: FocusStateId;
   action: StateTransitionRule['action'];
-  reading: ArousalReading;
+  /** normalized 0..1 composite arousal index that tripped the rule */
+  arousalIndex: number;
 }
 
 type StateChangeListener = (ev: StateChangeEvent) => void;

@@ -62,11 +62,15 @@ await page.waitForTimeout(2200);
 const timer2 = await page.evaluate(() => document.querySelector('#hud-timer')?.textContent ?? '');
 if (timer2 === boot.timer1 || timer2 === '—') problems.push(`HUD timer not ticking (${boot.timer1} → ${timer2})`);
 
-// Interaction sanity: keyboard rotate/place must not throw and must register.
+// Interaction sanity: keyboard rotate/move must register in game telemetry.
 await page.keyboard.press('e');
 await page.keyboard.press('ArrowLeft');
 await page.keyboard.press(' ');
 await page.waitForTimeout(300);
+const apm = await page.evaluate(() =>
+  globalThis.SHIELD.app.game.sampleTelemetry(performance.now(), 5000).actionsPerMinute,
+);
+if (!(apm > 0)) problems.push(`keyboard input did not register in telemetry (apm=${apm})`);
 
 // Responsive audit: no horizontal document overflow at any breakpoint.
 for (const width of [320, 768, 1280]) {

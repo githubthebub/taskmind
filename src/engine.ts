@@ -80,12 +80,11 @@ class BehavioralMatrixEngine {
   }
 
   /**
-   * Ingest one telemetry sample. Returns the arousal reading so the HUD can
+   * Ingest one telemetry sample. Returns the arousal index so the HUD can
    * render it. Fires state-change listeners when a dwell-debounced rule trips.
    */
-  ingest(sample: MetricsSample): ArousalReading {
+  ingest(sample: MetricsSample): number {
     const index = computeArousalIndex(sample);
-    const reading: ArousalReading = { index, sample };
 
     if (this.lastSampleT !== null) {
       this.timeInState[this.state] += Math.max(0, sample.t - this.lastSampleT);
@@ -97,7 +96,7 @@ class BehavioralMatrixEngine {
     const target = this.matchRule(index);
     if (target === null || target.to === this.state) {
       this.candidate = null;
-      return reading;
+      return index;
     }
 
     if (this.candidate === null || this.candidate.to !== target.to) {
@@ -108,28 +107,27 @@ class BehavioralMatrixEngine {
       this.state = target.to;
       this.stateEnteredAt = sample.t;
       this.candidate = null;
-      const ev: StateChangeEvent = { from, to: target.to, action: target.action, reading };
+      const ev: StateChangeEvent = { from, to: target.to, action: target.action, arousalIndex: index };
       for (const listener of this.listeners) listener(ev);
     }
-    return reading;
+    return index;
   }
 
   /**
-   * Find the rule whose band contains the index, widening the current
-   * state's own band by the hysteresis margin so readings hovering at a
-   * boundary don't thrash.
+   * Find the rule whose band contains the index. The current state's own
+   * band, widened by the hysteresis margin, is checked first so that
+   * boundary-hugging readings prefer staying put in *both* directions —
+   * checking it inside the ordered scan would let a neighboring band
+   * capture the reading before the widened band was ever consulted.
    */
   private matchRule(index: number): StateTransitionRule | null {
     const h = this.config.hysteresis;
+    const applies = (rule: StateTransitionRule): boolean => rule.from === '*' || rule.from === this.state;
+    const current = this.config.rules.find((rule) => rule.to === this.state && applies(rule));
+    if (current !== undefined && index >= current.min - h && index < current.max + h) return current;
     for (const rule of this.config.rules) {
-      if (rule.from !== '*' && rule.from !== this.state) continue;
-      let lo = rule.min;
-      let hi = rule.max;
-      if (rule.to === this.state) {
-        lo -= h;
-        hi += h;
-      }
-      if (index >= lo && index < hi) return rule;
+      if (!applies(rule)) continue;
+      if (index >= rule.min && index < rule.max) return rule;
     }
     return null;
   }

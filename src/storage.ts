@@ -67,8 +67,20 @@ class FocusVault {
       if (typeof parsed !== 'object' || parsed === null || parsed.version !== VAULT_VERSION) {
         return FocusVault.emptySchema();
       }
-      // Merge over the empty schema so missing fields self-heal.
-      return { ...FocusVault.emptySchema(), ...parsed, version: VAULT_VERSION };
+      // Rebuild field-by-field: any field of the wrong shape self-heals to
+      // its empty value instead of poisoning the vault at runtime.
+      const count = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : 0);
+      const list = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
+      return {
+        version: VAULT_VERSION,
+        totalPatternsCleared: count(parsed.totalPatternsCleared),
+        totalSessions: count(parsed.totalSessions),
+        totalFocusMs: count(parsed.totalFocusMs),
+        bestStreak: count(parsed.bestStreak),
+        unlockedBundleIds: list<string>(parsed.unlockedBundleIds).filter((id) => typeof id === 'string'),
+        sessions: list<SessionRecord>(parsed.sessions),
+        crucibleEntries: list<CrucibleEntry>(parsed.crucibleEntries),
+      };
     } catch {
       return FocusVault.emptySchema();
     }

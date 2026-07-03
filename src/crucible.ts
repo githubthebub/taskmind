@@ -123,6 +123,8 @@ class CrucibleModule {
   private output: HTMLElement;
   private chartCanvas: HTMLCanvasElement;
   private vault: FocusVault;
+  private lastCurve: HedonicCurve | null = null;
+  private resizeTimer = 0;
 
   constructor(root: HTMLElement, vault: FocusVault) {
     this.vault = vault;
@@ -131,6 +133,15 @@ class CrucibleModule {
     this.output = root.querySelector('.crucible-output') as HTMLElement;
     this.chartCanvas = root.querySelector('.crucible-chart') as HTMLCanvasElement;
     this.runButton.addEventListener('click', () => this.run());
+    // The chart's backing store is sized at draw time; re-render it after
+    // resize/orientation changes so it never displays stretched.
+    window.addEventListener('resize', () => {
+      if (this.lastCurve === null) return;
+      clearTimeout(this.resizeTimer);
+      this.resizeTimer = window.setTimeout(() => {
+        if (this.lastCurve !== null) this.drawCurve(this.lastCurve);
+      }, 150);
+    });
   }
 
   run(): void {
@@ -176,6 +187,7 @@ class CrucibleModule {
   }
 
   private drawCurve(curve: HedonicCurve): void {
+    this.lastCurve = curve;
     const canvas = this.chartCanvas;
     const dpr = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1;
     const rect = canvas.getBoundingClientRect();
@@ -214,9 +226,10 @@ class CrucibleModule {
     // Axes and labels.
     ctx.fillStyle = 'rgba(226,232,240,0.75)';
     ctx.font = '11px system-ui, sans-serif';
-    ctx.textAlign = 'center';
     for (const month of [0, 3, 6, 9, 12]) {
-      ctx.fillText(`${month}mo`, x(month), h - 6);
+      // Right-align the final label so it doesn't clip past the canvas edge.
+      ctx.textAlign = month === 12 ? 'right' : 'center';
+      ctx.fillText(`${month}mo`, month === 12 ? x(12) + 8 : x(month), h - 6);
     }
     ctx.textAlign = 'left';
     ctx.fillText('satisfaction', 4, pad.top + 2);

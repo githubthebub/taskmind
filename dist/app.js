@@ -66,8 +66,20 @@ class FocusVault {
             if (typeof parsed !== 'object' || parsed === null || parsed.version !== VAULT_VERSION) {
                 return FocusVault.emptySchema();
             }
-            // Merge over the empty schema so missing fields self-heal.
-            return { ...FocusVault.emptySchema(), ...parsed, version: VAULT_VERSION };
+            // Rebuild field-by-field: any field of the wrong shape self-heals to
+            // its empty value instead of poisoning the vault at runtime.
+            const count = (v) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : 0);
+            const list = (v) => (Array.isArray(v) ? v : []);
+            return {
+                version: VAULT_VERSION,
+                totalPatternsCleared: count(parsed.totalPatternsCleared),
+                totalSessions: count(parsed.totalSessions),
+                totalFocusMs: count(parsed.totalFocusMs),
+                bestStreak: count(parsed.bestStreak),
+                unlockedBundleIds: list(parsed.unlockedBundleIds).filter((id) => typeof id === 'string'),
+                sessions: list(parsed.sessions),
+                crucibleEntries: list(parsed.crucibleEntries),
+            };
         }
         catch {
             return FocusVault.emptySchema();
@@ -134,9 +146,6 @@ class CalmAudio {
         if (this.ctx.state === 'suspended')
             void this.ctx.resume();
         return this.ctx;
-    }
-    get playing() {
-        return this.activeNodes.length > 0;
     }
     /** Play a generated calming drone described by a reward bundle's audio script. */
     playScript(script) {
@@ -287,12 +296,11 @@ class BehavioralMatrixEngine {
         return JSON.parse(JSON.stringify(this.config));
     }
     /**
-     * Ingest one telemetry sample. Returns the arousal reading so the HUD can
+     * Ingest one telemetry sample. Returns the arousal index so the HUD can
      * render it. Fires state-change listeners when a dwell-debounced rule trips.
      */
     ingest(sample) {
         const index = computeArousalIndex(sample);
-        const reading = { index, sample };
         if (this.lastSampleT !== null) {
             this.timeInState[this.state] += Math.max(0, sample.t - this.lastSampleT);
         }
@@ -303,7 +311,7 @@ class BehavioralMatrixEngine {
         const target = this.matchRule(index);
         if (target === null || target.to === this.state) {
             this.candidate = null;
-            return reading;
+            return index;
         }
         if (this.candidate === null || this.candidate.to !== target.to) {
             this.candidate = { to: target.to, since: sample.t };
@@ -313,29 +321,29 @@ class BehavioralMatrixEngine {
             this.state = target.to;
             this.stateEnteredAt = sample.t;
             this.candidate = null;
-            const ev = { from, to: target.to, action: target.action, reading };
+            const ev = { from, to: target.to, action: target.action, arousalIndex: index };
             for (const listener of this.listeners)
                 listener(ev);
         }
-        return reading;
+        return index;
     }
     /**
-     * Find the rule whose band contains the index, widening the current
-     * state's own band by the hysteresis margin so readings hovering at a
-     * boundary don't thrash.
+     * Find the rule whose band contains the index. The current state's own
+     * band, widened by the hysteresis margin, is checked first so that
+     * boundary-hugging readings prefer staying put in *both* directions —
+     * checking it inside the ordered scan would let a neighboring band
+     * capture the reading before the widened band was ever consulted.
      */
     matchRule(index) {
         const h = this.config.hysteresis;
+        const applies = (rule) => rule.from === '*' || rule.from === this.state;
+        const current = this.config.rules.find((rule) => rule.to === this.state && applies(rule));
+        if (current !== undefined && index >= current.min - h && index < current.max + h)
+            return current;
         for (const rule of this.config.rules) {
-            if (rule.from !== '*' && rule.from !== this.state)
+            if (!applies(rule))
                 continue;
-            let lo = rule.min;
-            let hi = rule.max;
-            if (rule.to === this.state) {
-                lo -= h;
-                hi += h;
-            }
-            if (index >= lo && index < hi)
+            if (index >= rule.min && index < rule.max)
                 return rule;
         }
         return null;
@@ -524,12 +532,6 @@ class VisuospatialCompanion {
         this.ctx = ctx;
         this.bindInput();
     }
-    get currentLevel() {
-        return this.level;
-    }
-    get currentStreak() {
-        return this.streak;
-    }
     get patternAccuracy() {
         return this.placements === 0 ? 1 : this.correctPlacements / this.placements;
     }
@@ -682,6 +684,9 @@ class VisuospatialCompanion {
                 return;
             const p = this.piece;
             let handled = true;
+            // Placement and swap log their own telemetry events inside
+            // tryPlace/discardPiece — counting them again would double-book tempo.
+            let selfLogging = false;
             switch (ev.key) {
                 case 'ArrowLeft':
                 case 'a':
@@ -708,9 +713,11 @@ class VisuospatialCompanion {
                 case ' ':
                 case 'Enter':
                     this.tryPlace();
+                    selfLogging = true;
                     break;
                 case 'x':
                     this.discardPiece();
+                    selfLogging = true;
                     break;
                 default:
                     handled = false;
@@ -718,7 +725,10 @@ class VisuospatialCompanion {
             if (handled) {
                 ev.preventDefault();
                 this.clampPiece();
-                this.registerAction();
+                if (selfLogging)
+                    this.trackFirstTouch();
+                else
+                    this.registerAction();
             }
         });
         this.canvas.addEventListener('pointermove', (ev) => {
@@ -736,11 +746,14 @@ class VisuospatialCompanion {
             if (this.directives.frozen || !this.running)
                 return;
             ev.preventDefault();
-            if (ev.button === 2)
+            if (ev.button === 2) {
                 this.rotatePiece(1);
-            else
+                this.registerAction();
+            }
+            else {
                 this.tryPlace();
-            this.registerAction();
+                this.trackFirstTouch();
+            }
         });
         this.canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
         this.canvas.addEventListener('wheel', (ev) => {
@@ -763,14 +776,14 @@ class VisuospatialCompanion {
         if (this.directives.frozen || !this.running)
             return;
         this.tryPlace();
-        this.registerAction();
+        this.trackFirstTouch();
     }
     /** Swap the current piece via on-screen touch controls. */
     uiDiscard() {
         if (this.directives.frozen || !this.running)
             return;
         this.discardPiece();
-        this.registerAction();
+        this.trackFirstTouch();
     }
     cellFromPointer(ev) {
         const rect = this.canvas.getBoundingClientRect();
@@ -782,7 +795,8 @@ class VisuospatialCompanion {
             return null;
         return { row, col };
     }
-    registerAction() {
+    /** First-input latency bookkeeping, shared by all input paths. */
+    trackFirstTouch() {
         const now = performance.now();
         if (this.piece !== null && !this.piece.touched) {
             this.piece.touched = true;
@@ -790,7 +804,10 @@ class VisuospatialCompanion {
             if (this.latencies.length > 50)
                 this.latencies = this.latencies.slice(-50);
         }
-        this.events.push({ t: now, kind: 'action' });
+    }
+    registerAction() {
+        this.trackFirstTouch();
+        this.events.push({ t: performance.now(), kind: 'action' });
     }
     rotatePiece(dir) {
         if (this.piece === null)
@@ -839,8 +856,12 @@ class VisuospatialCompanion {
     }
     // ── Simulation & rendering ───────────────────────────────────────────
     tick(now, dt) {
-        if (this.directives.frozen)
+        if (this.directives.frozen) {
+            // The countdown must not run while input is seized (breathing overlay),
+            // or a full 4-7-8 session would time the pattern out on release.
+            this.patternDeadline += dt;
             return;
+        }
         // Tempo multiplier accelerates the countdown and all animation pacing.
         this.patternDeadline -= dt * (this.directives.tempoMultiplier - 1);
         if (now >= this.patternDeadline) {
@@ -1042,12 +1063,25 @@ function computeHedonicCurve(milestone) {
 }
 class CrucibleModule {
     constructor(root, vault) {
+        this.lastCurve = null;
+        this.resizeTimer = 0;
         this.vault = vault;
         this.input = root.querySelector('.crucible-input');
         this.runButton = root.querySelector('.crucible-run');
         this.output = root.querySelector('.crucible-output');
         this.chartCanvas = root.querySelector('.crucible-chart');
         this.runButton.addEventListener('click', () => this.run());
+        // The chart's backing store is sized at draw time; re-render it after
+        // resize/orientation changes so it never displays stretched.
+        window.addEventListener('resize', () => {
+            if (this.lastCurve === null)
+                return;
+            clearTimeout(this.resizeTimer);
+            this.resizeTimer = window.setTimeout(() => {
+                if (this.lastCurve !== null)
+                    this.drawCurve(this.lastCurve);
+            }, 150);
+        });
     }
     run() {
         const milestone = this.input.value.trim();
@@ -1090,6 +1124,7 @@ class CrucibleModule {
         this.drawCurve(curve);
     }
     drawCurve(curve) {
+        this.lastCurve = curve;
         const canvas = this.chartCanvas;
         const dpr = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1;
         const rect = canvas.getBoundingClientRect();
@@ -1127,9 +1162,10 @@ class CrucibleModule {
         // Axes and labels.
         ctx.fillStyle = 'rgba(226,232,240,0.75)';
         ctx.font = '11px system-ui, sans-serif';
-        ctx.textAlign = 'center';
         for (const month of [0, 3, 6, 9, 12]) {
-            ctx.fillText(`${month}mo`, x(month), h - 6);
+            // Right-align the final label so it doesn't clip past the canvas edge.
+            ctx.textAlign = month === 12 ? 'right' : 'center';
+            ctx.fillText(`${month}mo`, month === 12 ? x(12) + 8 : x(month), h - 6);
         }
         ctx.textAlign = 'left';
         ctx.fillText('satisfaction', 4, pad.top + 2);
@@ -1463,9 +1499,9 @@ function shieldBoot() {
         if (breathing.isActive || document.body.classList.contains('session-ended'))
             return;
         const sample = game.sampleTelemetry(performance.now(), TELEMETRY_WINDOW_MS);
-        const reading = engine.ingest(sample);
-        arousalFill.style.width = `${Math.round(reading.index * 100)}%`;
-        arousalFill.dataset.band = reading.index < 0.33 ? 'low' : reading.index < 0.7 ? 'mid' : 'high';
+        const arousalIndex = engine.ingest(sample);
+        arousalFill.style.width = `${Math.round(arousalIndex * 100)}%`;
+        arousalFill.dataset.band = arousalIndex < 0.33 ? 'low' : arousalIndex < 0.7 ? 'mid' : 'high';
         exitDirector.maybePrompt(engine.currentState, engine.stateResidencyMs, patternsThisSession, (Date.now() - sessionStart) / 60000);
     }, TELEMETRY_INTERVAL_MS);
     // Tab switching for the right-hand panels.
@@ -1485,6 +1521,7 @@ function shieldBoot() {
     hudClears.textContent = String(vault.totalPatternsCleared);
     rewards.refresh();
     game.start();
+    SHIELD.app = { game };
 }
 if (typeof document !== 'undefined' && typeof window !== 'undefined') {
     if (document.readyState === 'loading') {

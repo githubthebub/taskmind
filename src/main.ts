@@ -30,6 +30,8 @@ interface ShieldExports {
   ExitDirector: typeof ExitDirector;
   rotatedShape: typeof rotatedShape;
   BREATH_478: typeof BREATH_478;
+  /** live app handles, populated at boot; used by the browser smoke test */
+  app?: { game: VisuospatialCompanion };
 }
 
 const SHIELD: ShieldExports = {
@@ -177,9 +179,9 @@ function shieldBoot(): void {
   window.setInterval(() => {
     if (breathing.isActive || document.body.classList.contains('session-ended')) return;
     const sample = game.sampleTelemetry(performance.now(), TELEMETRY_WINDOW_MS);
-    const reading = engine.ingest(sample);
-    arousalFill.style.width = `${Math.round(reading.index * 100)}%`;
-    arousalFill.dataset.band = reading.index < 0.33 ? 'low' : reading.index < 0.7 ? 'mid' : 'high';
+    const arousalIndex = engine.ingest(sample);
+    arousalFill.style.width = `${Math.round(arousalIndex * 100)}%`;
+    arousalFill.dataset.band = arousalIndex < 0.33 ? 'low' : arousalIndex < 0.7 ? 'mid' : 'high';
     exitDirector.maybePrompt(
       engine.currentState,
       engine.stateResidencyMs,
@@ -206,6 +208,7 @@ function shieldBoot(): void {
   hudClears.textContent = String(vault.totalPatternsCleared);
   rewards.refresh();
   game.start();
+  SHIELD.app = { game };
 }
 
 if (typeof document !== 'undefined' && typeof window !== 'undefined') {

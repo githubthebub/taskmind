@@ -97,14 +97,6 @@ class VisuospatialCompanion {
     this.bindInput();
   }
 
-  get currentLevel(): number {
-    return this.level;
-  }
-
-  get currentStreak(): number {
-    return this.streak;
-  }
-
   get patternAccuracy(): number {
     return this.placements === 0 ? 1 : this.correctPlacements / this.placements;
   }
@@ -266,6 +258,9 @@ class VisuospatialCompanion {
       if (this.directives.frozen || !this.running || this.piece === null) return;
       const p = this.piece;
       let handled = true;
+      // Placement and swap log their own telemetry events inside
+      // tryPlace/discardPiece — counting them again would double-book tempo.
+      let selfLogging = false;
       switch (ev.key) {
         case 'ArrowLeft':
         case 'a':
@@ -292,9 +287,11 @@ class VisuospatialCompanion {
         case ' ':
         case 'Enter':
           this.tryPlace();
+          selfLogging = true;
           break;
         case 'x':
           this.discardPiece();
+          selfLogging = true;
           break;
         default:
           handled = false;
@@ -302,7 +299,8 @@ class VisuospatialCompanion {
       if (handled) {
         ev.preventDefault();
         this.clampPiece();
-        this.registerAction();
+        if (selfLogging) this.trackFirstTouch();
+        else this.registerAction();
       }
     });
 
@@ -319,9 +317,13 @@ class VisuospatialCompanion {
     this.canvas.addEventListener('pointerdown', (ev) => {
       if (this.directives.frozen || !this.running) return;
       ev.preventDefault();
-      if (ev.button === 2) this.rotatePiece(1);
-      else this.tryPlace();
-      this.registerAction();
+      if (ev.button === 2) {
+        this.rotatePiece(1);
+        this.registerAction();
+      } else {
+        this.tryPlace();
+        this.trackFirstTouch();
+      }
     });
     this.canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
     this.canvas.addEventListener(
@@ -347,14 +349,14 @@ class VisuospatialCompanion {
   uiPlace(): void {
     if (this.directives.frozen || !this.running) return;
     this.tryPlace();
-    this.registerAction();
+    this.trackFirstTouch();
   }
 
   /** Swap the current piece via on-screen touch controls. */
   uiDiscard(): void {
     if (this.directives.frozen || !this.running) return;
     this.discardPiece();
-    this.registerAction();
+    this.trackFirstTouch();
   }
 
   private cellFromPointer(ev: PointerEvent): { row: number; col: number } | null {
@@ -367,14 +369,19 @@ class VisuospatialCompanion {
     return { row, col };
   }
 
-  private registerAction(): void {
+  /** First-input latency bookkeeping, shared by all input paths. */
+  private trackFirstTouch(): void {
     const now = performance.now();
     if (this.piece !== null && !this.piece.touched) {
       this.piece.touched = true;
       this.latencies.push(now - this.piece.spawnedAt);
       if (this.latencies.length > 50) this.latencies = this.latencies.slice(-50);
     }
-    this.events.push({ t: now, kind: 'action' });
+  }
+
+  private registerAction(): void {
+    this.trackFirstTouch();
+    this.events.push({ t: performance.now(), kind: 'action' });
   }
 
   private rotatePiece(dir: 1 | -1): void {
@@ -424,7 +431,12 @@ class VisuospatialCompanion {
   // ── Simulation & rendering ───────────────────────────────────────────
 
   private tick(now: number, dt: number): void {
-    if (this.directives.frozen) return;
+    if (this.directives.frozen) {
+      // The countdown must not run while input is seized (breathing overlay),
+      // or a full 4-7-8 session would time the pattern out on release.
+      this.patternDeadline += dt;
+      return;
+    }
     // Tempo multiplier accelerates the countdown and all animation pacing.
     this.patternDeadline -= dt * (this.directives.tempoMultiplier - 1);
     if (now >= this.patternDeadline) {

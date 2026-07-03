@@ -16,10 +16,6 @@ class CalmAudio {
     return this.ctx;
   }
 
-  get playing(): boolean {
-    return this.activeNodes.length > 0;
-  }
-
   /** Play a generated calming drone described by a reward bundle's audio script. */
   playScript(script: { baseHz: number; beatHz: number; seconds: number }): void {
     const ctx = this.ensureCtx();

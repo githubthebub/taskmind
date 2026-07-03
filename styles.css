@@ -307,7 +307,9 @@ body.session-ended .ended-screen { display: flex; }
   position: fixed;
   left: 50%;
   bottom: 1.2rem;
-  transform: translate(-50%, 150%);
+  /* 100% of own height + the bottom offset + border, so even a short empty
+     pill is fully off-screen before the first toast fires */
+  transform: translate(-50%, calc(100% + 1.5rem));
   background: var(--panel);
   border: 1px solid var(--accent);
   color: var(--text);

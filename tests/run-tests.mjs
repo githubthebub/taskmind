@@ -89,16 +89,36 @@ test('re-entering BALANCED demands EXIT_PROMPT', () => {
   assert(back && back.action === 'EXIT_PROMPT', 'BALANCED entry must demand exit prompt');
 });
 
-test('hysteresis prevents thrash at the band boundary', () => {
+// index = 0.4·(apm/40) with zero error, 3s latency, 0.6 idle → index = apm/100.
+const indexSample = (t, hundredths) =>
+  ({ t, actionsPerMinute: hundredths, errorRate: 0, meanLatencyMs: 3000, idleRatio: 0.6 });
+
+test('downward hysteresis holds BALANCED on a sustained boundary-hugging reading', () => {
   const engine = new S.BehavioralMatrixEngine();
   const events = [];
   engine.onStateChange((ev) => events.push(ev));
-  // Craft samples that hover fractionally around the 0.33 boundary.
-  const nearBoundary = (t, apm) => ({ t, actionsPerMinute: apm, errorRate: 0, meanLatencyMs: 3000, idleRatio: 0.6 });
-  for (let t = 0, i = 0; t <= 30000; t += 1000, i++) {
-    engine.ingest(nearBoundary(t, i % 2 === 0 ? 32.2 : 33.8)); // index ≈ 0.322 / 0.338
-  }
-  assert(events.length <= 1, `boundary hover must not thrash (got ${events.length} transitions)`);
+  // 0.30 is below the 0.33 SLUGGISH boundary but inside BALANCED's
+  // hysteresis-widened band (0.33 − 0.05 = 0.28): must hold indefinitely.
+  for (let t = 0; t <= 30000; t += 1000) engine.ingest(indexSample(t, 30));
+  assert(events.length === 0, `index 0.30 must not leave BALANCED (got ${events.length} transitions)`);
+  // Control: 0.25 is outside the widened band and must transition — proving
+  // the hold above was the hysteresis margin, not a dead rule.
+  for (let t = 31000; t <= 40000; t += 1000) engine.ingest(indexSample(t, 25));
+  assert(engine.currentState === 'SLUGGISH', 'index 0.25 must still reach SLUGGISH');
+});
+
+test('downward hysteresis holds HYPER at the 0.70 boundary', () => {
+  const engine = new S.BehavioralMatrixEngine();
+  for (let t = 0; t <= 5000; t += 1000) engine.ingest(hyperSample(t));
+  assert(engine.currentState === 'HYPER', 'precondition: engine must be HYPER');
+  // errorRate 0.5→0.25, tempo 0.4, alacrity 0.02: index ≈ 0.67 ≥ 0.70 − 0.05.
+  const idx067 = (t) => ({ t, actionsPerMinute: 40, errorRate: 0.5, meanLatencyMs: 2700, idleRatio: 0.6 });
+  for (let t = 6000; t <= 30000; t += 1000) engine.ingest(idx067(t));
+  assert(engine.currentState === 'HYPER', 'index 0.67 must stay inside HYPER’s widened band');
+  // Control: 0.60 is outside the widened band and must drop to BALANCED.
+  const idx060 = (t) => ({ t, actionsPerMinute: 40, errorRate: 0.4, meanLatencyMs: 3000, idleRatio: 0.6 });
+  for (let t = 31000; t <= 45000; t += 1000) engine.ingest(idx060(t));
+  assert(engine.currentState === 'BALANCED', 'index 0.60 must still exit HYPER');
 });
 
 test('time-in-state accounting accumulates', () => {
@@ -137,6 +157,23 @@ test('vault self-heals from corrupted storage', () => {
   assert(v.totalPatternsCleared === 0, 'corrupt vault must reset cleanly');
   v.recordPatternCleared(1);
   assert(new S.FocusVault(backend).totalPatternsCleared === 1, 'vault must be writable after heal');
+});
+
+test('vault self-heals wrong-typed fields in a version-matched payload', () => {
+  const backend = new S.MemoryBackend();
+  backend.setItem(
+    'shieldmax.vault.v1',
+    JSON.stringify({ version: 1, unlockedBundleIds: null, sessions: 'oops', totalPatternsCleared: 3, bestStreak: -2 }),
+  );
+  const v = new S.FocusVault(backend);
+  assert(v.totalPatternsCleared === 3, 'valid fields must survive');
+  assert(Array.isArray(v.unlockedBundleIds) && v.unlockedBundleIds.length === 0, 'null id list must heal to []');
+  assert(v.snapshot().bestStreak === 0, 'negative counters must heal to 0');
+  v.recordSession({
+    startedAt: 0, endedAt: 1, patternsCleared: 1, bestAccuracy: 1,
+    timeInStateMs: { SLUGGISH: 0, BALANCED: 1, HYPER: 0 }, exitedIntentionally: true,
+  });
+  assert(v.snapshot().sessions.length === 1, 'sessions must be writable after heal');
 });
 
 test('session log is bounded at 200 entries', () => {
