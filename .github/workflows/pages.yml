@@ -4,10 +4,12 @@ name: Deploy to GitHub Pages
 # (secure https context) where the camera / getUserMedia actually works —
 # unlike the sandboxed artifact preview, which blocks camera access.
 
+# Only deploys from main (once Pages is enabled in repo Settings) or on manual
+# dispatch — so it doesn't spam failing checks on the feature-branch PR before
+# Pages has been turned on. See CYBERNETIC_JHANA_ENGINE.md "Run it".
 on:
   push:
     branches:
-      - claude/cybernetic-biofeedback-engine-ktuuvh
       - main
   workflow_dispatch:
 
