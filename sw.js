@@ -3,7 +3,7 @@
  * serves cache-first thereafter. There are no runtime network dependencies —
  * this cache IS the entire application.
  */
-const CACHE = 'stillpoint-v3';
+const CACHE = 'stillpoint-v4';
 const SHELL = [
   './',
   './index.html',
@@ -27,6 +27,7 @@ const SHELL = [
   './dist/ui/promptGrid.js',
   './dist/ui/neuroPanel.js',
   './dist/ui/mudraPanel.js',
+  './dist/ui/personaPicker.js',
   './dist/ui/hud.js',
 ];
 

@@ -175,6 +175,8 @@ body {
 
 .skin  { fill: #f2e3d0; }
 .belly { fill: #fbf3e6; }
+.foot  { fill: #eed9bf; stroke: #d9bf9e; stroke-width: 1; }
+.toe-line { stroke: #d9bf9e; stroke-width: 1.6; stroke-linecap: round; }
 
 .eyes circle { fill: #33302c; }
 .eyes .glint { fill: #ffffff; }
@@ -322,6 +324,45 @@ body {
 }
 .prompt-text.visible { opacity: 1; transform: none; }
 
+/* ---------- persona picker ---------- */
+
+.persona-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.persona-chips {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-raise);
+  border: 1px solid #24344c;
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.persona-chip {
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-dim);
+  background: none;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: color 200ms, background 200ms;
+}
+.persona-chip:hover { color: var(--ink); }
+.persona-chip.on {
+  color: #0b1626;
+  background: linear-gradient(135deg, var(--inhale), var(--accent));
+}
+.persona-chip:focus-visible { outline: 2px solid var(--inhale); outline-offset: 2px; }
+
+.persona-tagline { font-size: 0.66rem; color: var(--ink-dim); font-style: italic; }
+
 /* ---------- mudra mode ---------- */
 
 .coach-pane {
@@ -401,6 +442,42 @@ body {
 }
 .mudra-name { font-weight: 800; font-size: 1rem; }
 .mudra-sanskrit { font-size: 0.68rem; color: var(--ink-dim); font-style: italic; }
+
+.mudra-diagram {
+  display: flex;
+  justify-content: center;
+}
+.mudra-diagram svg {
+  width: 130px;
+  height: auto;
+}
+.dg-palm { fill: #eed9bf; stroke: #d9bf9e; stroke-width: 1.5; }
+.dg-finger {
+  fill: none;
+  stroke: #eed9bf;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+.dg-thumb { stroke-width: 8; }
+.dg-ext { stroke: var(--inhale); }
+.dg-touch { stroke: var(--accent); }
+.dg-contact {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+.dg-contact-line {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+.dg-label {
+  fill: var(--ink-dim);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 
 .mudra-cue {
   margin: 0;

@@ -289,6 +289,41 @@ their fixes — the log is append-only.
   advances between frames.
 - **G1 compile**: PASS · **G2 smoke (extended)**: PASS.
 
+### Pass 5 — 2026-07-03 · feet, clear mudra diagrams, and the three-founder voice system
+
+- **Design lens:** the coach was re-imagined as if co-founded by three
+  sensibilities — a compassionate psychiatrist-coach (already the default
+  voice), a blunt numbers-first debater, and a behavioral economist who
+  treats calm as the most underpriced luxury in the world. Personas are
+  *inspired-by* archetypes; no real person is named in-app.
+- **Persona system** (`ui/personaPicker.ts`, `data/dialogue.ts` restructured
+  to persona × pool): three switchable coach voices with identical protocol,
+  gating, and honesty rules — only the register changes.
+  - *Sage*: warm, steady, effort-first (previous voice, unchanged).
+  - *Challenger*: blunt and numbers-driven — "partial reps don't count",
+    "the counter doesn't lie", "no cope — reset and go again".
+  - *Alchemist*: psycho-logic reframes — "compound interest, but for your
+    nervous system", "a milestone you couldn't buy — which is precisely why
+    it's worth something".
+  Selection persists locally (`personaId`); switching re-greets in the new
+  voice immediately.
+- **Session debrief**: ending a session with ≥1 cycle now reports hard
+  numbers (cycles, verified, clock time) phrased in the active voice's
+  register — the "real numbers" instinct applied to all three personas.
+- **Feet**: the coach has feet (peeking from under the body, hopping with
+  the celebrate animation).
+- **Clear mudras**: the panel now renders a schematic palm-up finger diagram
+  per mudra — touching fingertips curl to the thumb with a dashed contact
+  ring, extended fingers are highlighted straight, bowl/palms variants for
+  Dhyāna/Añjali, plus an orientation caption. The coach's own hand layers
+  were enlarged (~30%) with thicker strokes and clearer loops.
+- Service-worker shell +`personaPicker.js`, cache v4.
+- Smoke test extended: feet present; gyan diagram shows exactly one curled
+  finger + contact ring; persona chips ×3, switch persists to localStorage;
+  debrief line verified after a 1-cycle session (with pluralization fix
+  caught by the first run: "1 cycles" → "1 cycle").
+- **G1 compile**: PASS · **G2 smoke (extended)**: PASS.
+
 <!-- Append new passes above this line; never rewrite history. -->
 
 ---

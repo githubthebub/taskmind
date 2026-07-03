@@ -118,6 +118,15 @@ function avatarSvg(): string {
       <circle class="orbit-dot" cx="100" cy="11" r="4.5"/>
     </g>
     <g class="body">
+      <!-- feet peek out from under the body -->
+      <g class="feet">
+        <ellipse class="foot" cx="76" cy="169" rx="14" ry="7"/>
+        <ellipse class="foot" cx="124" cy="169" rx="14" ry="7"/>
+        <path class="toe-line" d="M70 165 l0 4"/>
+        <path class="toe-line" d="M76 164 l0 5"/>
+        <path class="toe-line" d="M118 165 l0 4"/>
+        <path class="toe-line" d="M124 164 l0 5"/>
+      </g>
       <ellipse cx="100" cy="112" rx="62" ry="58" class="skin"/>
       <ellipse cx="100" cy="130" rx="40" ry="26" class="belly"/>
       <!-- ears/leaf tuft grows with level (CSS reveals per data-level) -->
@@ -160,44 +169,45 @@ function avatarSvg(): string {
 
       <!-- mudra hand layers (revealed via data-mudra) -->
       <g class="hands hands-gyan">
-        <path class="hand-arm" d="M52 128 Q42 142 52 152"/>
-        <path class="hand-arm" d="M148 128 Q158 142 148 152"/>
-        <ellipse class="hand-palm" cx="56" cy="154" rx="9" ry="6.5"/>
-        <ellipse class="hand-palm" cx="144" cy="154" rx="9" ry="6.5"/>
-        <circle class="hand-loop" cx="61" cy="150" r="3.4"/>
-        <circle class="hand-loop" cx="139" cy="150" r="3.4"/>
-        <path class="hand-line" d="M50 150 l-7 -4"/>
-        <path class="hand-line" d="M49 154 l-8 0"/>
-        <path class="hand-line" d="M50 158 l-7 4"/>
-        <path class="hand-line" d="M150 150 l7 -4"/>
-        <path class="hand-line" d="M151 154 l8 0"/>
-        <path class="hand-line" d="M150 158 l7 4"/>
+        <path class="hand-arm" d="M50 126 Q36 140 46 154"/>
+        <path class="hand-arm" d="M150 126 Q164 140 154 154"/>
+        <ellipse class="hand-palm" cx="52" cy="158" rx="12" ry="8.5"/>
+        <ellipse class="hand-palm" cx="148" cy="158" rx="12" ry="8.5"/>
+        <circle class="hand-loop" cx="59" cy="152" r="4.6"/>
+        <circle class="hand-loop" cx="141" cy="152" r="4.6"/>
+        <path class="hand-line" d="M44 152 l-9 -5"/>
+        <path class="hand-line" d="M42 158 l-10 0"/>
+        <path class="hand-line" d="M44 163 l-9 5"/>
+        <path class="hand-line" d="M156 152 l9 -5"/>
+        <path class="hand-line" d="M158 158 l10 0"/>
+        <path class="hand-line" d="M156 163 l9 5"/>
       </g>
       <g class="hands hands-dhyana">
-        <path class="hand-arm" d="M54 128 Q58 150 80 156"/>
-        <path class="hand-arm" d="M146 128 Q142 150 120 156"/>
-        <ellipse class="hand-palm" cx="100" cy="157" rx="19" ry="7"/>
-        <ellipse class="hand-palm hand-palm-upper" cx="100" cy="153" rx="13" ry="5"/>
-        <circle class="hand-thumb" cx="96" cy="148" r="2.2"/>
-        <circle class="hand-thumb" cx="104" cy="148" r="2.2"/>
+        <path class="hand-arm" d="M52 126 Q56 150 78 158"/>
+        <path class="hand-arm" d="M148 126 Q144 150 122 158"/>
+        <ellipse class="hand-palm" cx="100" cy="159" rx="23" ry="8.5"/>
+        <ellipse class="hand-palm hand-palm-upper" cx="100" cy="154" rx="16" ry="6"/>
+        <circle class="hand-thumb" cx="95" cy="148" r="2.8"/>
+        <circle class="hand-thumb" cx="105" cy="148" r="2.8"/>
       </g>
       <g class="hands hands-anjali">
-        <path class="hand-arm" d="M60 134 Q75 148 93 146"/>
-        <path class="hand-arm" d="M140 134 Q125 148 107 146"/>
-        <rect class="hand-palm" x="93.5" y="132" width="6" height="24" rx="3"/>
-        <rect class="hand-palm" x="100.5" y="132" width="6" height="24" rx="3"/>
+        <path class="hand-arm" d="M58 132 Q74 150 91 148"/>
+        <path class="hand-arm" d="M142 132 Q126 150 109 148"/>
+        <rect class="hand-palm" x="91" y="128" width="8.5" height="30" rx="4"/>
+        <rect class="hand-palm" x="100.5" y="128" width="8.5" height="30" rx="4"/>
+        <path class="hand-line" d="M100 130 l0 26"/>
       </g>
       <g class="hands hands-prana">
-        <path class="hand-arm" d="M52 128 Q42 142 52 152"/>
-        <path class="hand-arm" d="M148 128 Q158 142 148 152"/>
-        <ellipse class="hand-palm" cx="56" cy="154" rx="9" ry="6.5"/>
-        <ellipse class="hand-palm" cx="144" cy="154" rx="9" ry="6.5"/>
-        <circle class="hand-loop" cx="60" cy="152" r="3.4"/>
-        <circle class="hand-loop" cx="140" cy="152" r="3.4"/>
-        <path class="hand-line" d="M53 148 l-3 -10"/>
-        <path class="hand-line" d="M57 147 l-1 -10"/>
-        <path class="hand-line" d="M147 148 l3 -10"/>
-        <path class="hand-line" d="M143 147 l1 -10"/>
+        <path class="hand-arm" d="M50 126 Q36 140 46 154"/>
+        <path class="hand-arm" d="M150 126 Q164 140 154 154"/>
+        <ellipse class="hand-palm" cx="52" cy="158" rx="12" ry="8.5"/>
+        <ellipse class="hand-palm" cx="148" cy="158" rx="12" ry="8.5"/>
+        <circle class="hand-loop" cx="57" cy="155" r="4.6"/>
+        <circle class="hand-loop" cx="143" cy="155" r="4.6"/>
+        <path class="hand-line" d="M48 150 l-4 -13"/>
+        <path class="hand-line" d="M54 149 l-1 -13"/>
+        <path class="hand-line" d="M152 150 l4 -13"/>
+        <path class="hand-line" d="M146 149 l1 -13"/>
       </g>
     </g>
     <g class="sparkles">

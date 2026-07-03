@@ -12,6 +12,7 @@ import { BreathRing } from './ui/breathRing.js';
 import { PromptGrid } from './ui/promptGrid.js';
 import { NeuroPanel } from './ui/neuroPanel.js';
 import { MudraPanel } from './ui/mudraPanel.js';
+import { PersonaPicker } from './ui/personaPicker.js';
 import { Hud } from './ui/hud.js';
 import type { AvatarEvent, BreathPhase } from './types.js';
 
@@ -39,6 +40,10 @@ const mudra = new MudraPanel(el('mudra'), (m) => {
   store.update({ mudraMode: m !== null, mudraId: m ? m.id : store.get().mudraId });
   if (m) avatar.say(m.cue, 8000);
 });
+const persona = new PersonaPicker(el('persona'), (p) => {
+  store.update({ personaId: p });
+  avatar.say(dialogue.next(p, 'welcome'), 6000); // hear the new voice immediately
+});
 
 const startBtn = el('start-btn') as HTMLButtonElement;
 const hapticsToggle = el('haptics-toggle') as HTMLInputElement;
@@ -53,7 +58,7 @@ machine.onChange((_id, node) => {
   avatar.applyState(node);
   const sparse = SPARSE_POOLS.has(node.dialoguePool);
   if (!sparse || breath.cycles === 0 || breath.cycles % 3 === 0) {
-    avatar.say(dialogue.next(node.dialoguePool));
+    avatar.say(dialogue.next(persona.persona, node.dialoguePool));
   }
 });
 
@@ -100,7 +105,7 @@ bus.on('focusBroken', () => sendAvatar('FOCUS_BROKEN'));
 
 bus.on('milestone', (m) => {
   sendAvatar('MILESTONE_REACHED');
-  avatar.say(`${dialogue.next('milestone')} (${m.title})`, 6500);
+  avatar.say(`${dialogue.next(persona.persona, 'milestone')} (${m.title})`, 6500);
   avatar.celebrate();
 });
 
@@ -114,6 +119,23 @@ bus.on('progress', (p) => hud.render(p));
 
 // ---- Controls ----
 
+/** Session debrief: hard numbers, phrased in the active voice's register. */
+function debriefLine(cycles: number, verified: number, seconds: number): string {
+  const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  const n = (count: number) => `${count} cycle${count === 1 ? '' : 's'}`;
+  switch (persona.persona) {
+    case 'challenger':
+      return `Debrief: ${n(cycles)}, ${verified} verified, ${clock} on the clock. Real numbers. Run it back tomorrow.`;
+    case 'alchemist':
+      return `Receipt: ${verified} verified ${verified === 1 ? 'cycle' : 'cycles'} of calm in ${clock}, for the price of nothing. Best trade you'll make today.`;
+    case 'sage':
+      return `Session: ${n(cycles)}, ${verified} verified, ${clock} steady. Notice how you feel — that's yours.`;
+  }
+}
+
+let sessionStartedAt = 0;
+let verifiedAtStart = 0;
+
 startBtn.addEventListener('click', () => {
   if (breath.running) {
     const cycles = breath.cycles;
@@ -126,8 +148,13 @@ startBtn.addEventListener('click', () => {
     avatar.setIdle();
     startBtn.textContent = 'Begin';
     startBtn.classList.remove('active');
+    const verified = store.get().verifiedCycles - verifiedAtStart;
+    const seconds = Math.round((performance.now() - sessionStartedAt) / 1000);
+    if (cycles > 0) avatar.say(debriefLine(cycles, verified, seconds), 9000);
   } else {
     void audio.resume(); // inside the user gesture, for autoplay policy
+    sessionStartedAt = performance.now();
+    verifiedAtStart = store.get().verifiedCycles;
     neuro.reset();
     neuro.show();
     breath.start();
@@ -157,8 +184,9 @@ audio.setEnabled(initial.audioEnabled);
 avatar.setLevel(initial.companionLevel);
 mudra.restore(initial.mudraMode, initial.mudraId);
 if (initial.mudraMode) avatar.setMudra(initial.mudraId);
+persona.set(initial.personaId);
 hud.render(initial);
-avatar.say(dialogue.next('welcome'), 6000);
+avatar.say(dialogue.next(initial.personaId, 'welcome'), 6000);
 
 if (!haptics.available) {
   hapticsToggle.disabled = true;

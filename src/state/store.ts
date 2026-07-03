@@ -13,6 +13,7 @@ export const DEFAULT_PROGRESS: ProgressState = {
   audioEnabled: true,
   mudraMode: false,
   mudraId: 'gyan',
+  personaId: 'sage',
 };
 
 /**

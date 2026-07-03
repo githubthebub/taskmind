@@ -10,6 +10,7 @@ export const DEFAULT_PROGRESS = {
     audioEnabled: true,
     mudraMode: false,
     mudraId: 'gyan',
+    personaId: 'sage',
 };
 /**
  * Local-only persistence. Everything lives in localStorage on this device;

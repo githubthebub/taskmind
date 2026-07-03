@@ -96,7 +96,19 @@ export interface ProgressState {
   /** Mudra mode: show hand-position guidance on the coach. */
   readonly mudraMode: boolean;
   readonly mudraId: string;
+  /** Which coach voice speaks. */
+  readonly personaId: PersonaId;
 }
+
+/**
+ * Coach voices. Same protocol, same gating, same honesty rules — different
+ * register: 'sage' is warm and effort-first, 'challenger' is blunt and
+ * numbers-driven, 'alchemist' reframes the practice as psycho-logic.
+ */
+export type PersonaId = 'sage' | 'challenger' | 'alchemist';
+
+/** Fingers that can pinch against the thumb in a mudra diagram. */
+export type MudraFinger = 'index' | 'middle' | 'ring' | 'pinky';
 
 /** A hand position the coach demonstrates for the user to mimic. */
 export interface Mudra {
@@ -107,6 +119,10 @@ export interface Mudra {
   readonly tradition: string;
   /** Concrete physical instruction the user can follow. */
   readonly cue: string;
+  /** Diagram family: fingertip pinch, cupped bowl, or pressed palms. */
+  readonly kind: 'pinch' | 'bowl' | 'palms';
+  /** For 'pinch': which fingertips meet the thumb. */
+  readonly touching?: readonly MudraFinger[];
 }
 
 /** One cognitive-reframing prompt shown during practice. */

@@ -44,12 +44,20 @@ try {
   const idleLabel = await page.textContent('.ring-label');
   if (idleLabel?.trim() !== 'Ready') fail(`idle label was "${idleLabel}"`);
 
-  // 2b. Mudra mode: toggle on shows hands, arrows cycle, toggle off hides.
+  // 2a. The coach has feet.
+  if (!(await page.$('.feet .foot'))) fail('avatar feet missing');
+
+  // 2b. Mudra mode: toggle on shows hands + finger diagram, arrows cycle,
+  // toggle off hides.
   await page.click('.mudra-toggle');
   if ((await page.getAttribute('.avatar-svg-wrap', 'data-mudra')) !== 'gyan') {
     fail('mudra mode did not show gyan hands');
   }
   if (await page.isHidden('.hands-gyan')) fail('gyan hand layer not visible');
+  if (!(await page.$('.mudra-diagram .dg-contact'))) fail('gyan diagram missing contact ring');
+  if ((await page.$$eval('.mudra-diagram .dg-touch', (els) => els.length)) !== 1) {
+    fail('gyan diagram should curl exactly one finger to the thumb');
+  }
   await page.click('.mudra-arrow[data-dir="1"]');
   if ((await page.getAttribute('.avatar-svg-wrap', 'data-mudra')) !== 'dhyana') {
     fail('mudra arrow did not advance to dhyana');
@@ -58,6 +66,17 @@ try {
   if (await page.getAttribute('.avatar-svg-wrap', 'data-mudra')) {
     fail('mudra hands still shown after toggle off');
   }
+
+  // 2c. Persona voices: three chips, switching persists and re-greets.
+  if ((await page.$$eval('.persona-chip', (els) => els.length)) !== 3) {
+    fail('expected 3 persona chips');
+  }
+  await page.click('.persona-chip[data-persona="challenger"]');
+  const storedPersona = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('taskmind.progress.v1') ?? '{}').personaId,
+  );
+  if (storedPersona !== 'challenger') fail(`persona not persisted: ${storedPersona}`);
+  await page.click('.persona-chip[data-persona="sage"]');
 
   // 3. Start a session; inhale phase begins.
   await page.click('#start-btn');
@@ -122,6 +141,10 @@ try {
   await page.waitForTimeout(400);
   if ((await page.textContent('.ring-label'))?.trim() !== 'Ready') {
     fail('session did not return to idle');
+  }
+  const debrief = await page.textContent('.avatar-bubble');
+  if (!/1 cycle, 1 verified/.test(debrief ?? '')) {
+    fail(`debrief missing or wrong: "${debrief}"`);
   }
   const sessions = await page.evaluate(
     () => JSON.parse(localStorage.getItem('taskmind.progress.v1') ?? '{}').sessionsCompleted,

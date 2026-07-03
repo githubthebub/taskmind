@@ -11,6 +11,8 @@ export const MUDRAS = [
         sanskrit: 'Gyāna Mudrā — seal of knowledge',
         tradition: 'The classic seat of Kundalini and meditation practice: receptive, grounded, alert.',
         cue: 'Rest your hands on your knees, palms up. Touch each index fingertip to its thumb; let the other three fingers extend softly.',
+        kind: 'pinch',
+        touching: ['index'],
     },
     {
         id: 'dhyana',
@@ -18,6 +20,7 @@ export const MUDRAS = [
         sanskrit: 'Dhyāna Mudrā — seal of absorption',
         tradition: 'The traditional posture for jhāna practice — deep, settled absorption in the breath.',
         cue: 'Cup your right hand inside your left at your lap, palms up, thumb tips lightly touching. Let the whole shape rest — no grip anywhere.',
+        kind: 'bowl',
     },
     {
         id: 'anjali',
@@ -25,6 +28,7 @@ export const MUDRAS = [
         sanskrit: 'Añjali Mudrā — palms at the heart',
         tradition: 'Centering and gratitude; classically used to open or close a sitting.',
         cue: 'Press your palms gently together at the center of your chest, fingers up, forearms relaxed. Equal pressure left and right.',
+        kind: 'palms',
     },
     {
         id: 'prana',
@@ -32,6 +36,8 @@ export const MUDRAS = [
         sanskrit: 'Prāṇa Mudrā — seal of vitality',
         tradition: 'Associated with vitality and steadiness; pairs well with the long exhale.',
         cue: 'Touch ring and little fingertips to each thumb; extend index and middle fingers. Hands rest on your knees, palms up.',
+        kind: 'pinch',
+        touching: ['ring', 'pinky'],
     },
 ];
 export function mudraById(id) {
