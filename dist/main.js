@@ -11,6 +11,7 @@ import { AvatarView } from './ui/avatar.js';
 import { BreathRing } from './ui/breathRing.js';
 import { PromptGrid } from './ui/promptGrid.js';
 import { NeuroPanel } from './ui/neuroPanel.js';
+import { MudraPanel } from './ui/mudraPanel.js';
 import { Hud } from './ui/hud.js';
 function el(id) {
     const node = document.getElementById(id);
@@ -30,6 +31,12 @@ const ring = new BreathRing(el('ring'));
 const prompts = new PromptGrid(el('prompts'));
 const neuro = new NeuroPanel(el('neuro'));
 const hud = new Hud(el('hud'));
+const mudra = new MudraPanel(el('mudra'), (m) => {
+    avatar.setMudra(m ? m.id : null);
+    store.update({ mudraMode: m !== null, mudraId: m ? m.id : store.get().mudraId });
+    if (m)
+        avatar.say(m.cue, 8000);
+});
 const startBtn = el('start-btn');
 const hapticsToggle = el('haptics-toggle');
 const audioToggle = el('audio-toggle');
@@ -98,6 +105,7 @@ startBtn.addEventListener('click', () => {
         ring.reset();
         prompts.clear();
         neuro.freeze();
+        avatar.setIdle();
         startBtn.textContent = 'Begin';
         startBtn.classList.remove('active');
     }
@@ -127,6 +135,9 @@ audioToggle.checked = initial.audioEnabled;
 haptics.setEnabled(initial.hapticsEnabled);
 audio.setEnabled(initial.audioEnabled);
 avatar.setLevel(initial.companionLevel);
+mudra.restore(initial.mudraMode, initial.mudraId);
+if (initial.mudraMode)
+    avatar.setMudra(initial.mudraId);
 hud.render(initial);
 avatar.say(dialogue.next('welcome'), 6000);
 if (!haptics.available) {

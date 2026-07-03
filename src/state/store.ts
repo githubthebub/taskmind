@@ -11,6 +11,8 @@ export const DEFAULT_PROGRESS: ProgressState = {
   milestonesReached: [],
   hapticsEnabled: true,
   audioEnabled: true,
+  mudraMode: false,
+  mudraId: 'gyan',
 };
 
 /**

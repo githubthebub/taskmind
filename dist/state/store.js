@@ -8,6 +8,8 @@ export const DEFAULT_PROGRESS = {
     milestonesReached: [],
     hapticsEnabled: true,
     audioEnabled: true,
+    mudraMode: false,
+    mudraId: 'gyan',
 };
 /**
  * Local-only persistence. Everything lives in localStorage on this device;

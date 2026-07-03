@@ -44,6 +44,21 @@ try {
   const idleLabel = await page.textContent('.ring-label');
   if (idleLabel?.trim() !== 'Ready') fail(`idle label was "${idleLabel}"`);
 
+  // 2b. Mudra mode: toggle on shows hands, arrows cycle, toggle off hides.
+  await page.click('.mudra-toggle');
+  if ((await page.getAttribute('.avatar-svg-wrap', 'data-mudra')) !== 'gyan') {
+    fail('mudra mode did not show gyan hands');
+  }
+  if (await page.isHidden('.hands-gyan')) fail('gyan hand layer not visible');
+  await page.click('.mudra-arrow[data-dir="1"]');
+  if ((await page.getAttribute('.avatar-svg-wrap', 'data-mudra')) !== 'dhyana') {
+    fail('mudra arrow did not advance to dhyana');
+  }
+  await page.click('.mudra-toggle');
+  if (await page.getAttribute('.avatar-svg-wrap', 'data-mudra')) {
+    fail('mudra hands still shown after toggle off');
+  }
+
   // 3. Start a session; inhale phase begins.
   await page.click('#start-btn');
   await page.waitForTimeout(600);
@@ -52,6 +67,14 @@ try {
   }
   const expr = await page.getAttribute('.avatar-svg-wrap', 'data-expression');
   if (expr !== 'focused') fail(`avatar expression during inhale was "${expr}"`);
+
+  // 3b. Phase-locked animation: live mode on, orbit tracer advancing.
+  const wrapClass = await page.getAttribute('.avatar-svg-wrap', 'class');
+  if (!wrapClass?.includes('live')) fail('avatar not in live (phase-locked) mode');
+  const orbitA = await page.getAttribute('.orbit', 'transform');
+  await page.waitForTimeout(700);
+  const orbitB = await page.getAttribute('.orbit', 'transform');
+  if (orbitA === orbitB) fail(`orbit tracer not advancing (${orbitA})`);
 
   // 4. First boundary (4s): inhale -> hold.
   await page.waitForFunction(

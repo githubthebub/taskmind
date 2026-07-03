@@ -147,6 +147,31 @@ body {
   0%, 100% { opacity: 0.1; }
   50% { opacity: 0.22; }
 }
+/* During a session the aura is phase-locked to the breath, not free-running. */
+.avatar-svg-wrap.live .aura {
+  animation: none;
+  opacity: var(--aura-op, 0.14);
+}
+
+/* Orbiting phase tracer: one lap per phase, colored by phase. */
+.orbit-track {
+  fill: none;
+  stroke: var(--ring-track);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 5;
+  opacity: 0;
+  transition: opacity 600ms;
+}
+.orbit-dot {
+  fill: var(--aura, #8ecdf7);
+  opacity: 0;
+  transition: opacity 600ms;
+}
+.avatar-svg-wrap.live .orbit-track { opacity: 0.7; }
+.avatar-svg-wrap.live .orbit-dot { opacity: 1; }
+[data-phase="inhale"] .orbit-dot { fill: var(--inhale); }
+[data-phase="hold"] .orbit-dot { fill: var(--hold); }
+[data-phase="exhale"] .orbit-dot { fill: var(--exhale); }
 
 .skin  { fill: #f2e3d0; }
 .belly { fill: #fbf3e6; }
@@ -196,6 +221,30 @@ body {
 [data-level="5"] .spark.s1 { display: block; }
 [data-level="6"] .leaf-1, [data-level="6"] .leaf-2, [data-level="6"] .leaf-3,
 [data-level="6"] .spark { display: block; }
+
+/* Mudra hand layers — revealed by a single data-mudra attribute. */
+.hands { display: none; }
+[data-mudra="gyan"] .hands-gyan,
+[data-mudra="dhyana"] .hands-dhyana,
+[data-mudra="anjali"] .hands-anjali,
+[data-mudra="prana"] .hands-prana { display: block; }
+
+.hand-arm {
+  fill: none;
+  stroke: #e5cfb4;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+.hand-palm { fill: #eed9bf; stroke: #d9bf9e; stroke-width: 1; }
+.hand-palm-upper { fill: #f6e8d3; }
+.hand-loop { fill: none; stroke: #33302c; stroke-width: 2.2; }
+.hand-line {
+  fill: none;
+  stroke: #33302c;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+.hand-thumb { fill: #d9bf9e; }
 
 .avatar-svg-wrap.celebrate .body { animation: hop 700ms cubic-bezier(.34, 1.56, .64, 1); }
 @keyframes hop {
@@ -272,6 +321,101 @@ body {
   transition: opacity 700ms ease, transform 700ms ease;
 }
 .prompt-text.visible { opacity: 1; transform: none; }
+
+/* ---------- mudra mode ---------- */
+
+.coach-pane {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.mudra-panel {
+  width: min(88vw, 320px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.mudra-toggle {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-dim);
+  background: var(--bg-raise);
+  border: 1px solid #24344c;
+  border-radius: 999px;
+  padding: 7px 18px;
+  cursor: pointer;
+  transition: color 200ms, border-color 200ms;
+}
+.mudra-toggle:hover { color: var(--ink); }
+.mudra-toggle.on {
+  color: var(--accent);
+  border-color: #2e5a4c;
+}
+.mudra-toggle:focus-visible {
+  outline: 2px solid var(--inhale);
+  outline-offset: 3px;
+}
+
+.mudra-detail {
+  width: 100%;
+  background: var(--bg-raise);
+  border: 1px solid #24344c;
+  border-radius: var(--radius);
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mudra-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mudra-arrow {
+  font: inherit;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--ink-dim);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 2px 10px;
+  cursor: pointer;
+}
+.mudra-arrow:hover { color: var(--ink); }
+.mudra-arrow:focus-visible { outline: 2px solid var(--inhale); }
+
+.mudra-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 0;
+}
+.mudra-name { font-weight: 800; font-size: 1rem; }
+.mudra-sanskrit { font-size: 0.68rem; color: var(--ink-dim); font-style: italic; }
+
+.mudra-cue {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ink);
+  text-align: center;
+}
+.mudra-tradition {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: var(--ink-dim);
+  text-align: center;
+}
 
 /* ---------- neurochemical state profile (modeled) ---------- */
 

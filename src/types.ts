@@ -93,6 +93,20 @@ export interface ProgressState {
   /** User toggles. */
   readonly hapticsEnabled: boolean;
   readonly audioEnabled: boolean;
+  /** Mudra mode: show hand-position guidance on the coach. */
+  readonly mudraMode: boolean;
+  readonly mudraId: string;
+}
+
+/** A hand position the coach demonstrates for the user to mimic. */
+export interface Mudra {
+  readonly id: string;
+  readonly name: string;
+  readonly sanskrit: string;
+  /** Traditional association, stated as tradition — not as a promised effect. */
+  readonly tradition: string;
+  /** Concrete physical instruction the user can follow. */
+  readonly cue: string;
 }
 
 /** One cognitive-reframing prompt shown during practice. */

@@ -255,6 +255,40 @@ their fixes — the log is append-only.
   target profile at `PROFILE_TARGET_MS`.
 - **G1 compile**: PASS · **G2 smoke (extended)**: PASS.
 
+### Pass 4 — 2026-07-03 · per-phase sound, phase-locked animation, orbit tracer, mudra mode
+
+- **Audio — distinct sound per phase** (`engine/audio.ts`): added Layer C, a
+  triangle "phase voice" that glides UP a fifth (264→396Hz) across the whole
+  inhale, holds its plateau through the hold, and glides DOWN a full octave
+  (396→198Hz) across the whole exhale — pitch direction alone identifies the
+  phase. Each boundary also rings a soft one-shot chime on a descending
+  A-major triad (E5 inhale / C#5 hold / A4 exhale). Glide durations come from
+  the active protocol via the `sessionStart` payload, not hardcoded timing.
+- **Phase-locked animation** (`ui/avatar.ts`): body scale and aura brightness
+  now follow one shared "fullness" curve (0 = exhaled, 1 = inhaled) driven by
+  the live tick; during a session the aura's free-running idle animation is
+  disabled (`.live`) and replaced by the phase-locked value. `setIdle()`
+  restores the idle look on session end.
+- **Orbit tracer**: a dot orbits the coach on a dashed track, completing
+  exactly one lap per phase (rotation = phaseProgress × 360°), colored by the
+  current phase. Visible only while live.
+- **Mudra mode** (`data/mudras.ts`, `ui/mudraPanel.ts`, hand layers in
+  `ui/avatar.ts`): the coach demonstrates hand positions the user mimics —
+  Gyan (classic Kundalini/meditation seat), Dhyāna (traditional jhāna
+  absorption posture), Añjali (centering), Prāṇa (vitality). Each entry pairs
+  a stylized hand-layer on the avatar (single `data-mudra` attribute, CSS
+  reveal) with a concrete physical cue and its traditional association.
+  Selection + mode persist locally (`mudraMode`/`mudraId`, merged
+  backward-compatibly into the v1 schema defaults).
+  **Invariant #6 compliance:** associations are worded as tradition
+  ("classically used for…", "traditional posture for…"), never as promised
+  effects — no "awakening guaranteed" claims anywhere in copy.
+- Service-worker shell updated (+`mudras.js`, +`mudraPanel.js`; cache v3).
+- Smoke test extended: mudra toggle shows/cycles/hides hand layers; live
+  phase-locked mode engages on session start; orbit tracer measurably
+  advances between frames.
+- **G1 compile**: PASS · **G2 smoke (extended)**: PASS.
+
 <!-- Append new passes above this line; never rewrite history. -->
 
 ---

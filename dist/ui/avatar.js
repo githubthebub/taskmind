@@ -1,9 +1,15 @@
 /**
  * The coach avatar: a layered inline SVG. Expression is selected by toggling
  * layer groups via a data-expression attribute (CSS does the show/hide), so
- * the DOM is built once and never re-created. The body scales subtly with the
- * live breath tick so the coach visibly breathes WITH the user, and the aura
- * ring deepens with companion level.
+ * the DOM is built once and never re-created.
+ *
+ * Phase-locked animation: the body scales with the live breath tick (inflate
+ * on inhale, still on hold, deflate on exhale), the aura brightens and dims
+ * with the same curve, and an orbiting tracer dot completes exactly one lap
+ * around the coach per phase — its color keyed to the current phase.
+ *
+ * Mudra mode: hand-position layers (one per mudra) the user can mimic,
+ * toggled via a single data-mudra attribute.
  */
 const LEVEL_AURAS = ['#8ecdf7', '#7ee0c0', '#ffd97a', '#ff9ecb', '#c9a6ff', '#7af0ff'];
 export class AvatarView {
@@ -17,6 +23,7 @@ export class AvatarView {
     `;
         this.bubble = this.root.querySelector('.avatar-bubble');
         this.svgWrap = this.root.querySelector('.avatar-svg-wrap');
+        this.orbit = this.root.querySelector('.orbit');
         this.setExpression('warm');
         this.setLevel(1);
     }
@@ -31,6 +38,13 @@ export class AvatarView {
         const aura = LEVEL_AURAS[Math.min(level, LEVEL_AURAS.length) - 1];
         this.svgWrap.style.setProperty('--aura', aura);
         this.svgWrap.dataset.level = String(level);
+    }
+    /** Show mudra hands (or hide them with null). */
+    setMudra(mudraId) {
+        if (mudraId)
+            this.svgWrap.dataset.mudra = mudraId;
+        else
+            delete this.svgWrap.dataset.mudra;
     }
     say(line, holdMs = 5200) {
         if (!line)
@@ -47,16 +61,33 @@ export class AvatarView {
             this.bubble.hidden = true;
         }, holdMs);
     }
-    /** Breathe with the user: scale follows the live phase progress. */
+    /**
+     * Phase-locked motion, driven by the shared tick stream:
+     * body scale + aura brightness follow the breath curve, and the tracer dot
+     * makes one full orbit per phase.
+     */
     syncBreath(tick) {
-        let scale = 1;
+        this.svgWrap.classList.add('live');
+        this.svgWrap.dataset.phase = tick.phase;
+        // 0 = fully exhaled, 1 = fully inhaled.
+        let fullness = 0;
         if (tick.phase === 'inhale')
-            scale = 1 + 0.05 * tick.phaseProgress;
+            fullness = tick.phaseProgress;
         else if (tick.phase === 'hold')
-            scale = 1.05;
+            fullness = 1;
         else if (tick.phase === 'exhale')
-            scale = 1.05 - 0.05 * tick.phaseProgress;
-        this.svgWrap.style.setProperty('--breath-scale', scale.toFixed(4));
+            fullness = 1 - tick.phaseProgress;
+        this.svgWrap.style.setProperty('--breath-scale', (1 + 0.05 * fullness).toFixed(4));
+        this.svgWrap.style.setProperty('--aura-op', (0.1 + 0.16 * fullness).toFixed(3));
+        const deg = (tick.phaseProgress * 360).toFixed(1);
+        this.orbit.setAttribute('transform', `rotate(${deg} 100 104)`);
+    }
+    /** Return to the idle look after a session ends. */
+    setIdle() {
+        this.svgWrap.classList.remove('live');
+        delete this.svgWrap.dataset.phase;
+        this.svgWrap.style.setProperty('--breath-scale', '1');
+        this.orbit.setAttribute('transform', 'rotate(0 100 104)');
     }
     celebrate() {
         this.svgWrap.classList.remove('celebrate');
@@ -68,6 +99,10 @@ function avatarSvg() {
     return `
   <svg viewBox="0 0 200 200" class="avatar-svg" aria-hidden="true">
     <circle class="aura" cx="100" cy="104" r="86"/>
+    <g class="orbit" transform="rotate(0 100 104)">
+      <circle class="orbit-track" cx="100" cy="104" r="93"/>
+      <circle class="orbit-dot" cx="100" cy="11" r="4.5"/>
+    </g>
     <g class="body">
       <ellipse cx="100" cy="112" rx="62" ry="58" class="skin"/>
       <ellipse cx="100" cy="130" rx="40" ry="26" class="belly"/>
@@ -107,6 +142,48 @@ function avatarSvg() {
       <g class="blush">
         <ellipse cx="66" cy="118" rx="8" ry="4.5"/>
         <ellipse cx="134" cy="118" rx="8" ry="4.5"/>
+      </g>
+
+      <!-- mudra hand layers (revealed via data-mudra) -->
+      <g class="hands hands-gyan">
+        <path class="hand-arm" d="M52 128 Q42 142 52 152"/>
+        <path class="hand-arm" d="M148 128 Q158 142 148 152"/>
+        <ellipse class="hand-palm" cx="56" cy="154" rx="9" ry="6.5"/>
+        <ellipse class="hand-palm" cx="144" cy="154" rx="9" ry="6.5"/>
+        <circle class="hand-loop" cx="61" cy="150" r="3.4"/>
+        <circle class="hand-loop" cx="139" cy="150" r="3.4"/>
+        <path class="hand-line" d="M50 150 l-7 -4"/>
+        <path class="hand-line" d="M49 154 l-8 0"/>
+        <path class="hand-line" d="M50 158 l-7 4"/>
+        <path class="hand-line" d="M150 150 l7 -4"/>
+        <path class="hand-line" d="M151 154 l8 0"/>
+        <path class="hand-line" d="M150 158 l7 4"/>
+      </g>
+      <g class="hands hands-dhyana">
+        <path class="hand-arm" d="M54 128 Q58 150 80 156"/>
+        <path class="hand-arm" d="M146 128 Q142 150 120 156"/>
+        <ellipse class="hand-palm" cx="100" cy="157" rx="19" ry="7"/>
+        <ellipse class="hand-palm hand-palm-upper" cx="100" cy="153" rx="13" ry="5"/>
+        <circle class="hand-thumb" cx="96" cy="148" r="2.2"/>
+        <circle class="hand-thumb" cx="104" cy="148" r="2.2"/>
+      </g>
+      <g class="hands hands-anjali">
+        <path class="hand-arm" d="M60 134 Q75 148 93 146"/>
+        <path class="hand-arm" d="M140 134 Q125 148 107 146"/>
+        <rect class="hand-palm" x="93.5" y="132" width="6" height="24" rx="3"/>
+        <rect class="hand-palm" x="100.5" y="132" width="6" height="24" rx="3"/>
+      </g>
+      <g class="hands hands-prana">
+        <path class="hand-arm" d="M52 128 Q42 142 52 152"/>
+        <path class="hand-arm" d="M148 128 Q158 142 148 152"/>
+        <ellipse class="hand-palm" cx="56" cy="154" rx="9" ry="6.5"/>
+        <ellipse class="hand-palm" cx="144" cy="154" rx="9" ry="6.5"/>
+        <circle class="hand-loop" cx="60" cy="152" r="3.4"/>
+        <circle class="hand-loop" cx="140" cy="152" r="3.4"/>
+        <path class="hand-line" d="M53 148 l-3 -10"/>
+        <path class="hand-line" d="M57 147 l-1 -10"/>
+        <path class="hand-line" d="M147 148 l3 -10"/>
+        <path class="hand-line" d="M143 147 l1 -10"/>
       </g>
     </g>
     <g class="sparkles">
