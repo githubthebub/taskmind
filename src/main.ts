@@ -10,6 +10,7 @@ import { MilestoneTracker } from './engine/milestones.js';
 import { AvatarView } from './ui/avatar.js';
 import { BreathRing } from './ui/breathRing.js';
 import { PromptGrid } from './ui/promptGrid.js';
+import { NeuroPanel } from './ui/neuroPanel.js';
 import { Hud } from './ui/hud.js';
 import type { AvatarEvent, BreathPhase } from './types.js';
 
@@ -30,6 +31,7 @@ const dialogue = new DialogueRotator();
 const avatar = new AvatarView(el('avatar'));
 const ring = new BreathRing(el('ring'));
 const prompts = new PromptGrid(el('prompts'));
+const neuro = new NeuroPanel(el('neuro'));
 const hud = new Hud(el('hud'));
 
 const startBtn = el('start-btn') as HTMLButtonElement;
@@ -66,6 +68,7 @@ bus.on('sessionStart', () => sendAvatar('SESSION_START'));
 bus.on('tick', (tick) => {
   ring.update(tick);
   avatar.syncBreath(tick);
+  neuro.update(tick.elapsedMs);
 });
 
 bus.on('transition', ({ from, to, cycleCount }) => {
@@ -113,10 +116,13 @@ startBtn.addEventListener('click', () => {
     sendAvatar('SESSION_END');
     ring.reset();
     prompts.clear();
+    neuro.freeze();
     startBtn.textContent = 'Begin';
     startBtn.classList.remove('active');
   } else {
     void audio.resume(); // inside the user gesture, for autoplay policy
+    neuro.reset();
+    neuro.show();
     breath.start();
     startBtn.textContent = 'End session';
     startBtn.classList.add('active');

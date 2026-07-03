@@ -236,6 +236,25 @@ their fixes — the log is append-only.
     specifiers end in `.js`.
 - **G4 re-verify**: `tsc` PASS · smoke PASS after fix.
 
+### Pass 3 — 2026-07-03 · modeled neurochemical state profile
+
+- **Feature:** `src/ui/neuroPanel.ts` — four gauges (GABA, Serotonin/5-HT,
+  Dopamine/DA, Norepinephrine/NE) drift from an alert-arousal baseline
+  (3/5/6/7) toward the target sleep-onset profile across the first five
+  minutes of a session, landing exactly on **GABA 9/10 (Sleep Onset),
+  5-HT 4/10, DA 2/10 (Inactive Reward), NE 1/10 (Minimal Arousal)** at
+  5:00 and holding. Panel freezes (dimmed) at session end, resets on the
+  next start. Ease-out trajectory so early minutes show visible movement.
+- **Invariant #6 compliance:** the panel header carries a permanent qualifier
+  — "modeled trajectory — illustrative, not a measurement". The app measures
+  nothing; the gauges visualize the state the practice targets. Any change
+  that drops this qualifier violates invariant #6.
+- Service-worker shell updated (`dist/ui/neuroPanel.js` added, cache bumped
+  to `stillpoint-v2`); smoke test extended: panel hidden at boot, visible in
+  session, and the pure trajectory function verified to land exactly on the
+  target profile at `PROFILE_TARGET_MS`.
+- **G1 compile**: PASS · **G2 smoke (extended)**: PASS.
+
 <!-- Append new passes above this line; never rewrite history. -->
 
 ---

@@ -83,6 +83,17 @@ try {
     fail('first-contact milestone not recorded');
   }
 
+  // 6b. Modeled state profile: hidden at idle-boot, visible in session, and
+  // the pure trajectory function must land exactly on the target profile at
+  // the 5-minute mark (checked directly against the compiled module).
+  if (await page.isHidden('.neuro-panel')) fail('neuro panel not visible during session');
+  const profile = await import('../dist/ui/neuroPanel.js');
+  const landed = profile.GAUGES.map((g) => [g.label, profile.gaugeValue(g, profile.PROFILE_TARGET_MS)]);
+  const expected = { GABA: 9, 'Serotonin (5-HT)': 4, 'Dopamine (DA)': 2, 'Norepinephrine (NE)': 1 };
+  for (const [label, v] of landed) {
+    if (v !== expected[label]) fail(`profile at 5:00 — ${label} expected ${expected[label]}, got ${v}`);
+  }
+
   // 7. End session cleanly.
   await page.click('#start-btn');
   await page.waitForTimeout(400);
