@@ -338,6 +338,23 @@ their fixes — the log is append-only.
   slight curve (which also reads better).
 - **G1 compile**: PASS · **G2 smoke (extended)**: PASS.
 
+### Pass 7 — 2026-07-03 · emotional phase colors, scene-wide
+
+- **Palette decision:** phase colors now follow felt temperature — cool blue
+  (`#79c4ff`) for the inhaled air, warm happy pink (`#ff97a8`, replacing the
+  old violet) for the full held breath, releasing green (`#74e6b6`) for the
+  exhale. Blue and green brightened slightly for presence on the dark ground.
+- **Made obvious:** the live phase is stamped on `<body>` (`data-phase`),
+  resolving one `--phase` token that tints the whole scene — the ring stroke,
+  the instruction label, a soft radial glow behind the pacer, the orbit
+  tracer, and the coach's aura (level-colored when idle, phase-colored while
+  live) all draw from it, so coach and pacer read as one system. Tint clears
+  on session end.
+- Smoke test extended: `body[data-phase]` present during hold and cleared
+  after stop; ring label's computed color verified equal to `--hold` during
+  the hold phase.
+- **G1 compile**: PASS · **G2 smoke (extended)**: PASS.
+
 <!-- Append new passes above this line; never rewrite history. -->
 
 ---

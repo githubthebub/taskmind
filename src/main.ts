@@ -83,7 +83,11 @@ bus.on('tick', (tick) => {
 });
 
 bus.on('transition', ({ from, to, cycleCount }) => {
-  if (to === 'idle') return;
+  if (to === 'idle') {
+    delete document.body.dataset.phase;
+    return;
+  }
+  document.body.dataset.phase = to; // scene-wide phase tint (CSS --phase)
   if (from === 'exhale' && to === 'inhale' && cycleCount > 0) {
     sendAvatar('CYCLE_COMPLETE');
     avatar.celebrate();

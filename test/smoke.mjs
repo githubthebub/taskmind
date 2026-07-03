@@ -102,6 +102,18 @@ try {
     { timeout: 6000 },
   );
 
+  // 4a. Scene-wide phase tint: body carries the phase, label takes the color.
+  if ((await page.getAttribute('body', 'data-phase')) !== 'hold') {
+    fail('body data-phase not set during hold');
+  }
+  const labelColor = await page.$eval('.ring-label', (e) => getComputedStyle(e).color);
+  const holdColor = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue('--hold').trim(),
+  );
+  const hex = holdColor.replace('#', '');
+  const rgb = `rgb(${parseInt(hex.slice(0, 2), 16)}, ${parseInt(hex.slice(2, 4), 16)}, ${parseInt(hex.slice(4, 6), 16)})`;
+  if (labelColor !== rgb) fail(`hold label color ${labelColor}, expected ${rgb}`);
+
   // 4b. During the hold, the coach holds its breath too: puffed cheeks and
   // pressed mouth visible, the expression mouth hidden.
   if (await page.isHidden('.cheeks')) fail('cheeks not puffed during hold');
@@ -150,6 +162,9 @@ try {
   await page.waitForTimeout(400);
   if ((await page.textContent('.ring-label'))?.trim() !== 'Ready') {
     fail('session did not return to idle');
+  }
+  if (await page.getAttribute('body', 'data-phase')) {
+    fail('body data-phase not cleared after session end');
   }
   const debrief = await page.textContent('.avatar-bubble');
   if (!/1 cycle, 1 verified/.test(debrief ?? '')) {

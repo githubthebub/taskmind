@@ -9,12 +9,20 @@
   --ink: #e8eef7;
   --ink-dim: #93a1b5;
   --accent: #7ee0c0;
-  --inhale: #8ecdf7;
-  --hold: #c9a6ff;
-  --exhale: #7ee0c0;
+  /* Emotional phase mapping: cool blue air coming in, warm happy pink for
+     the full held breath, releasing green on the way out. */
+  --inhale: #79c4ff;
+  --hold: #ff97a8;
+  --exhale: #74e6b6;
+  --phase: var(--accent);
   --ring-track: #223046;
   --radius: 18px;
 }
+
+/* The live phase tints the whole scene, not just the ring stroke. */
+body[data-phase="inhale"] { --phase: var(--inhale); }
+body[data-phase="hold"]   { --phase: var(--hold); }
+body[data-phase="exhale"] { --phase: var(--exhale); }
 
 * { box-sizing: border-box; }
 
@@ -147,9 +155,11 @@ body {
   0%, 100% { opacity: 0.1; }
   50% { opacity: 0.22; }
 }
-/* During a session the aura is phase-locked to the breath, not free-running. */
+/* During a session the aura is phase-locked to the breath, not free-running,
+   and takes on the current phase color so coach and pacer read as one. */
 .avatar-svg-wrap.live .aura {
   animation: none;
+  fill: var(--phase);
   opacity: var(--aura-op, 0.14);
 }
 
@@ -282,9 +292,23 @@ body {
 
 .breath-ring {
   position: relative;
+  z-index: 0;
   width: min(78vw, 330px);
   aspect-ratio: 1;
 }
+/* Soft phase-colored glow behind the pacer while a session runs. */
+.breath-ring::after {
+  content: '';
+  position: absolute;
+  inset: -14%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--phase) 0%, transparent 62%);
+  opacity: 0;
+  transition: opacity 900ms ease;
+  pointer-events: none;
+}
+body[data-phase] .breath-ring::after { opacity: 0.22; }
 .breath-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 
 .ring-track {
@@ -315,6 +339,7 @@ body {
   pointer-events: none;
 }
 .ring-label { font-size: clamp(1.15rem, 4vw, 1.5rem); font-weight: 700; }
+body[data-phase] .ring-label { color: var(--phase); }
 .ring-count { font-size: 0.8rem; color: var(--ink-dim); min-height: 1.1em; }
 
 /* ---------- prompts ---------- */
