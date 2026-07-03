@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Choice Architecture Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ground:#0B0E14;
+    --surface:#141926;
+    --surface2:#1B2233;
+    --line:#252D42;
+    --ink:#E9E4D8;
+    --muted:#7C8398;
+    --faint:#4A5169;
+    --gold:#D9A441;
+    --gold-dim:#8A6B2E;
+    --blue:#6E86C0;
+    --ember:#C4604E;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"SF Mono","Cascadia Code",Consolas,"Liberation Mono",monospace;
+  }
+  /* This instrument is deliberately single-theme: a night tool. */
+  :root[data-theme="light"] body{ background:var(--ground); }
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:var(--sans);
+    min-height:100dvh;
+    display:flex;
+    justify-content:center;
+    line-height:1.5;
+  }
+  .app{
+    width:100%;
+    max-width:470px;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  /* ---------- chrome ---------- */
+  header.bar{
+    display:flex;align-items:baseline;justify-content:space-between;
+    padding:18px 20px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .wordmark{
+    font-family:var(--mono);font-size:11px;letter-spacing:.22em;
+    color:var(--muted);text-transform:uppercase;
+  }
+  .wordmark b{color:var(--gold);font-weight:600}
+  .bar-stats{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.08em}
+  .screen{display:none;flex:1;flex-direction:column;padding:24px 20px 32px}
+  .screen.on{display:flex}
+  h1{
+    font-family:var(--serif);font-weight:500;font-size:26px;line-height:1.25;
+    margin:0 0 6px;text-wrap:balance;letter-spacing:.01em;
+  }
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 26px;max-width:38ch}
+  .eyebrow{
+    font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--gold);margin:0 0 10px;
+  }
+  button{font:inherit;cursor:pointer;color:inherit;background:none;border:none;padding:0}
+  button:focus-visible,.chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+  .btn{
+    display:block;width:100%;text-align:center;
+    background:var(--gold);color:#100C04;
+    font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    padding:15px 16px;border-radius:3px;
+  }
+  .btn:hover{background:#E7B655}
+  .btn.ghost{background:none;color:var(--muted);border:1px solid var(--line)}
+  .btn.ghost:hover{color:var(--ink);border-color:var(--faint)}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn-row{display:flex;flex-direction:column;gap:10px;margin-top:auto;padding-top:26px}
+  .back{
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--faint);
+    text-transform:uppercase;margin-bottom:20px;align-self:flex-start;
+  }
+  .back:hover{color:var(--muted)}
+  /* ---------- intake ---------- */
+  .dial-wrap{margin:6px 0 26px}
+  .dial-num{
+    font-family:var(--mono);font-size:64px;line-height:1;color:var(--ink);
+    font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:10px;
+  }
+  .dial-num small{font-size:12px;color:var(--faint);letter-spacing:.14em;text-transform:uppercase}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;
+    background:linear-gradient(90deg,var(--blue),var(--gold) 60%,var(--ember));
+    margin:22px 0 4px;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;
+    background:var(--ink);border:3px solid var(--ground);box-shadow:0 0 0 1px var(--faint);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;border-radius:50%;background:var(--ink);
+    border:3px solid var(--ground);box-shadow:0 0 0 1px var(--faint);
+  }
+  .field-label{
+    font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--muted);margin:22px 0 10px;
+  }
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    border:1px solid var(--line);border-radius:3px;padding:9px 13px;
+    font-size:13px;color:var(--muted);background:var(--surface);
+  }
+  .chip[aria-pressed="true"]{border-color:var(--gold);color:var(--ink);background:var(--surface2)}
+  .toggle-line{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:22px;
+    border-top:1px solid var(--line);padding-top:16px;font-size:13.5px;color:var(--muted)}
+  .switch{
+    width:40px;height:22px;border-radius:12px;background:var(--surface2);
+    border:1px solid var(--line);position:relative;flex:none;
+  }
+  .switch::after{
+    content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+    background:var(--faint);transition:transform .15s,background .15s;
+  }
+  .switch[aria-pressed="true"]::after{transform:translateX(18px);background:var(--gold)}
+  /* ---------- matrix ---------- */
+  .sysnote{
+    font-family:var(--mono);font-size:11px;color:var(--blue);line-height:1.6;
+    border-left:2px solid var(--blue);padding:2px 0 2px 12px;margin:0 0 18px;
+  }
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:4px;
+    padding:16px 16px 14px;margin-bottom:12px;text-align:left;width:100%;
+    display:block;transition:border-color .12s;
+  }
+  .card:hover{border-color:var(--faint)}
+  .card.dim{opacity:.72}
+  .card-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .card h2{font-family:var(--serif);font-size:18px;font-weight:500;margin:0}
+  .card .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--faint);text-transform:uppercase;white-space:nowrap}
+  .scores{display:flex;gap:18px;margin:10px 0 8px;font-variant-numeric:tabular-nums}
+  .score{font-family:var(--mono)}
+  .score .v{font-size:19px;color:var(--ink)}
+  .score .v.warn{color:var(--ember)}
+  .score .v.good{color:var(--gold)}
+  .score .k{display:block;font-size:9px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase;margin-top:2px}
+  .spark{flex:1;align-self:center;min-width:0}
+  .spark svg{display:block;width:100%;height:34px}
+  .forecast{font-size:12.5px;color:var(--muted);margin:6px 0 0;line-height:1.55}
+  .yourdata{
+    font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:9px;
+    border-top:1px dashed var(--line);padding-top:8px;letter-spacing:.04em;
+  }
+  .yourdata em{color:var(--gold-dim);font-style:normal}
+  .card .warnline{font-family:var(--mono);font-size:10px;color:var(--ember);margin-top:8px;letter-spacing:.06em}
+  /* ---------- configurator ---------- */
+  .opt{
+    background:var(--surface);border:1px solid var(--line);border-radius:4px;
+    padding:16px;margin-bottom:12px;text-align:left;width:100%;display:block;
+  }
+  .opt:hover{border-color:var(--faint)}
+  .opt.locked{opacity:.45;cursor:not-allowed}
+  .opt h3{font-family:var(--serif);font-size:17px;font-weight:500;margin:0 0 4px}
+  .opt p{font-size:12.5px;color:var(--muted);margin:0;line-height:1.55}
+  .opt .lockmsg{font-family:var(--mono);font-size:10px;color:var(--ember);margin-top:8px;letter-spacing:.06em}
+  .pace{display:flex;gap:8px;margin-top:4px}
+  .pace .chip{flex:1;text-align:center}
+  /* ---------- commit ---------- */
+  .vow{
+    font-family:var(--serif);font-size:21px;line-height:1.55;margin:30px 0;
+    padding-left:16px;border-left:2px solid var(--gold);text-wrap:balance;
+  }
+  .fineprint{font-family:var(--mono);font-size:11px;color:var(--faint);line-height:1.7}
+  /* ---------- session ---------- */
+  #s-session{padding:0;background:#05070C}
+  .stage{
+    position:relative;flex:1;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;overflow:hidden;min-height:70dvh;
+  }
+  #blob{position:absolute;inset:0;width:100%;height:100%}
+  #guide{position:absolute;inset:0;margin:auto;width:min(64%,270px);aspect-ratio:200/250;transition:opacity 2.5s ease}
+  #guide .stroke{fill:none;stroke:#8E93A8;stroke-width:1.6;stroke-linecap:round}
+  #guide .glabella{fill:var(--gold)}
+  #guide .halo{fill:var(--gold);opacity:.14}
+  .asset-note{
+    position:absolute;top:14px;left:0;right:0;text-align:center;
+    font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:#39405A;text-transform:uppercase;
+  }
+  .breath-line{
+    position:absolute;bottom:118px;left:0;right:0;text-align:center;pointer-events:none;
+  }
+  .breath-word{font-family:var(--serif);font-size:22px;letter-spacing:.06em;color:var(--ink)}
+  .breath-count{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+  .caption{
+    position:absolute;bottom:54px;left:24px;right:24px;text-align:center;
+    font-family:var(--serif);font-size:16.5px;line-height:1.5;color:#C9C2B2;
+    text-shadow:0 1px 8px #000;min-height:52px;transition:opacity .8s;
+  }
+  .session-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 16px 16px;background:#05070C;border-top:1px solid #10141F;
+  }
+  .fork-btn{
+    font-family:var(--mono);font-size:12px;letter-spacing:.22em;color:var(--ember);
+    border:1px solid #4A2B25;border-radius:3px;padding:12px 22px;text-transform:uppercase;
+  }
+  .fork-btn:hover{border-color:var(--ember)}
+  .tiny{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase}
+  .tiny:hover{color:var(--muted)}
+  .phase-track{
+    position:absolute;top:0;left:0;height:2px;background:var(--gold);opacity:.55;width:0%;
+  }
+  .fork-overlay{
+    position:absolute;inset:0;background:rgba(5,7,12,.92);display:none;
+    flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;z-index:5;
+  }
+  .fork-overlay.on{display:flex}
+  .fork-overlay .big{font-family:var(--serif);font-size:24px;line-height:1.45;text-wrap:balance}
+  .fork-overlay .sub2{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:14px;letter-spacing:.1em}
+  .toast{
+    position:absolute;top:44px;left:24px;right:24px;text-align:center;z-index:6;
+    font-family:var(--mono);font-size:11px;color:var(--blue);letter-spacing:.08em;
+    opacity:0;transition:opacity .6s;
+  }
+  .toast.on{opacity:1}
+  /* ---------- somatic / kinetic ---------- */
+  .ring-wrap{display:flex;justify-content:center;margin:34px 0 10px}
+  .ring{width:170px;height:170px;border-radius:50%;border:1px solid var(--blue);
+    display:flex;align-items:center;justify-content:center;position:relative}
+  .ring::before{content:"";position:absolute;inset:-14px;border-radius:50%;
+    border:1px solid rgba(110,134,192,.25)}
+  .ring .t{font-family:var(--mono);font-size:30px;font-variant-numeric:tabular-nums}
+  .stage-prompt{
+    font-family:var(--serif);font-size:19px;line-height:1.55;text-align:center;
+    min-height:92px;margin:22px auto 0;max-width:34ch;text-wrap:balance;
+  }
+  .stage-idx{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--faint);
+    text-transform:uppercase;text-align:center;margin-top:16px}
+  /* ---------- log ---------- */
+  .slider-block{margin:20px 0}
+  .slider-block .head{display:flex;justify-content:space-between;align-items:baseline}
+  .slider-block .head .n{font-family:var(--mono);font-size:22px;color:var(--gold);font-variant-numeric:tabular-nums}
+  .done-quote{
+    font-family:var(--serif);font-size:20px;line-height:1.6;margin:34px 0;
+    padding-left:16px;border-left:2px solid var(--blue);color:var(--ink);text-wrap:balance;
+  }
+  .receipt{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:2;letter-spacing:.04em}
+  .receipt b{color:var(--ink);font-weight:500}
+  @media (prefers-reduced-motion: reduce){
+    .switch::after{transition:none}
+    #guide{transition:opacity .5s}
+  }
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="wordmark">Choice <b>Architecture</b> Engine</div>
+    <div class="bar-stats" id="barStats"></div>
+  </header>
+
+  <!-- ============ INTAKE ============ -->
+  <section class="screen on" id="s-home">
+    <p class="eyebrow">Trigger intake · ≤ 5 seconds</p>
+    <h1>Something has surfaced. Name its heat.</h1>
+    <p class="sub">Labeling the state is already the first intervention — it moves the signal from the amygdala to the cortex.</p>
+    <div class="dial-wrap">
+      <div class="dial-num"><span id="dialV">6</span><small>intensity</small></div>
+      <input type="range" id="intensity" min="1" max="10" value="6" aria-label="Urge intensity, 1 to 10">
+    </div>
+    <div class="field-label">Trigger vector</div>
+    <div class="chips" id="vectors">
+      <button class="chip" data-v="visual" aria-pressed="false">Visual cue</button>
+      <button class="chip" data-v="memory" aria-pressed="true">Memory</button>
+      <button class="chip" data-v="somatic" aria-pressed="false">Spontaneous-somatic</button>
+      <button class="chip" data-v="boredom" aria-pressed="false">Boredom-drift</button>
+    </div>
+    <div class="toggle-line">
+      <span>Under 6 hours of sleep last night</span>
+      <button class="switch" id="sleepSw" aria-pressed="false" aria-label="Sleep debt toggle"></button>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="toMatrix">Open the matrix</button>
+    </div>
+  </section>
+
+  <!-- ============ MATRIX ============ -->
+  <section class="screen" id="s-matrix">
+    <button class="back" data-go="s-home">‹ Re-assess</button>
+    <p class="eyebrow">Dynamic assessment matrix</p>
+    <h1>Four doors. All of them open.</h1>
+    <p class="sub">Nothing here is forbidden. Each path is costed; reading the forecasts is itself the intervention. Card order is randomized — the numbers persuade, not the layout.</p>
+    <div class="sysnote" id="matrixNotes"></div>
+    <div id="cards"></div>
+  </section>
+
+  <!-- ============ FANTASY ============ -->
+  <section class="screen" id="s-fantasy">
+    <button class="back" data-go="s-matrix">‹ Back to the matrix</button>
+    <p class="eyebrow">Path 1 · The Fantasy Loop</p>
+    <h1>You may walk through this door. Here is the toll.</h1>
+    <p class="sub" id="fantasyForecast"></p>
+    <div class="fineprint" id="fantasyData"></div>
+    <div class="btn-row">
+      <button class="btn" data-go="s-matrix">Return to the matrix</button>
+      <button class="btn ghost" id="fantasyProceed">Proceed with eyes open — log it</button>
+    </div>
+  </section>
+
+  <!-- ============ SOMATIC ============ -->
+  <section class="screen" id="s-somatic">
+    <button class="back" id="somaticAbort">‹ Abort</button>
+    <p class="eyebrow">Path 2 · The Somatic Pivot</p>
+    <div class="ring-wrap"><div class="ring" id="somaticRing"><span class="t" id="somaticT">0:00</span></div></div>
+    <div class="stage-prompt" id="somaticPrompt"></div>
+    <div class="stage-idx" id="somaticIdx"></div>
+    <div class="btn-row">
+      <button class="btn ghost tiny-adv" id="somaticSkip">Advance stage ›</button>
+    </div>
+  </section>
+
+  <!-- ============ KINETIC ============ -->
+  <section class="screen" id="s-kinetic">
+    <button class="back" data-go="s-matrix">‹ Back</button>
+    <p class="eyebrow">Path 4 · The Kinetic Discharge</p>
+    <h1 id="kineticTitle">Choose the override.</h1>
+    <p class="sub" id="kineticSub">State change by brute physiology. No extinction learning — this is the emergency brake, not the practice.</p>
+    <div id="kineticChoices">
+      <button class="opt" data-k="cold"><h3>Cold exposure — 90 seconds</h3><p>Cold water to the face and neck, or a cold shower. The catecholamine release overwrites the arousal signature.</p></button>
+      <button class="opt" data-k="move"><h3>Maximal movement — 3 minutes</h3><p>Squats, burpees, anything to failure. Consumes the sympathetic charge directly.</p></button>
+    </div>
+    <div class="ring-wrap" id="kineticRingWrap" style="display:none"><div class="ring"><span class="t" id="kineticT">1:30</span></div></div>
+    <div class="btn-row" id="kineticDoneRow" style="display:none">
+      <button class="btn" id="kineticDone">Done — log the aftermath</button>
+    </div>
+  </section>
+
+  <!-- ============ CONFIGURATOR ============ -->
+  <section class="screen" id="s-config">
+    <button class="back" data-go="s-matrix">‹ Back to the matrix</button>
+    <p class="eyebrow">Visual engine configurator</p>
+    <h1>Choose the anchor that will outbid the imagery.</h1>
+    <p class="sub">You do not beat a high-salience stimulus with a low-salience instruction. You beat it with one that is structurally incapable of narrative.</p>
+    <button class="opt" id="optA">
+      <h3>A · The Grounded Aesthetic</h3>
+      <p>A guide delivering the count, face and breath only. Perfectly looped — no next scene, so elaboration has nothing to grip. Fades at the taper mark, no exceptions.</p>
+      <div class="lockmsg" id="optALock" style="display:none">LOCKED — trigger vector was visual. Like-for-like substitution is highest-risk. Choose the abstract.</div>
+    </button>
+    <button class="opt" id="optB">
+      <h3>B · The Cosmic Abstract</h3>
+      <p>Luminous form pulsing with your breath at resonance frequency. Blue-violet, brightening toward gold as stability builds — the nimitta rehearsal.</p>
+    </button>
+    <div class="field-label">Session pacing</div>
+    <div class="pace">
+      <button class="chip" data-pace="demo" aria-pressed="true">Demo · ~4 min</button>
+      <button class="chip" data-pace="full" aria-pressed="false">Full · ~16 min</button>
+    </div>
+  </section>
+
+  <!-- ============ COMMIT ============ -->
+  <section class="screen" id="s-commit">
+    <button class="back" data-go="s-config">‹ Reconfigure</button>
+    <p class="eyebrow">Pre-commitment · one tap</p>
+    <div class="vow">If imagery or storyline arises, then I return to the count on the very next inhale.</div>
+    <div class="fineprint" id="commitFine"></div>
+    <div class="btn-row">
+      <button class="btn" id="beginSession">I commit — begin</button>
+    </div>
+  </section>
+
+  <!-- ============ SESSION ============ -->
+  <section class="screen" id="s-session">
+    <div class="stage" id="stage">
+      <div class="phase-track" id="phaseTrack"></div>
+      <canvas id="blob"></canvas>
+      <svg id="guide" viewBox="0 0 200 250" style="opacity:0" aria-hidden="true">
+        <circle class="halo" cx="100" cy="76" r="26"></circle>
+        <ellipse class="stroke" cx="100" cy="92" rx="50" ry="60"></ellipse>
+        <path class="stroke" d="M72 96 q9 7 18 0"></path>
+        <path class="stroke" d="M110 96 q9 7 18 0"></path>
+        <path class="stroke" d="M100 106 l-3 12 q3 3 6 0"></path>
+        <path class="stroke" d="M90 134 q10 6 20 0"></path>
+        <g id="shoulders">
+          <path class="stroke" d="M84 150 L82 170"></path>
+          <path class="stroke" d="M116 150 L118 170"></path>
+          <path class="stroke" d="M18 246 Q58 178 100 174 Q142 178 182 246"></path>
+        </g>
+        <circle class="glabella" cx="100" cy="76" r="3.4"></circle>
+      </svg>
+      <div class="asset-note" id="assetNote" style="display:none">Stand-in · cinematic guide loop renders here · 8s seamless · zero progression</div>
+      <div class="toast" id="toast"></div>
+      <div class="breath-line" id="breathLine" style="display:none">
+        <div class="breath-word" id="breathWord">Inhale</div>
+        <div class="breath-count" id="breathCount">2</div>
+      </div>
+      <div class="caption" id="caption"></div>
+      <div class="fork-overlay" id="forkOverlay">
+        <div class="big">Exhale fully.<br>Attention to the palms.<br>One whole breath.</div>
+        <div class="sub2" id="forkCountMsg"></div>
+      </div>
+    </div>
+    <div class="session-foot">
+      <button class="tiny" id="sessionAbort">✕ abort</button>
+      <button class="fork-btn" id="forkBtn" style="visibility:hidden">Fork</button>
+      <button class="tiny" id="advPhase">advance ›</button>
+    </div>
+  </section>
+
+  <!-- ============ LOG ============ -->
+  <section class="screen" id="s-log">
+    <p class="eyebrow">Episode log · 15 seconds</p>
+    <h1>The data is the point.</h1>
+    <p class="sub">These two numbers recalibrate every forecast the matrix will ever show you.</p>
+    <div class="slider-block">
+      <div class="head"><span class="field-label" style="margin:0">Calm now</span><span class="n" id="calmV">6</span></div>
+      <input type="range" id="calm" min="1" max="10" value="6" aria-label="Calm, 1 to 10">
+    </div>
+    <div class="slider-block">
+      <div class="head"><span class="field-label" style="margin:0">Mental clarity</span><span class="n" id="clarityV">6</span></div>
+      <input type="range" id="clarity" min="1" max="10" value="6" aria-label="Clarity, 1 to 10">
+    </div>
+    <div class="field-label">The urge, right now</div>
+    <div class="chips" id="urgeChips">
+      <button class="chip" data-u="gone" aria-pressed="false">Gone</button>
+      <button class="chip" data-u="faded" aria-pressed="true">Faded</button>
+      <button class="chip" data-u="present" aria-pressed="false">Still present</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="saveLog">Save episode</button>
+    </div>
+  </section>
+
+  <!-- ============ DONE ============ -->
+  <section class="screen" id="s-done">
+    <p class="eyebrow">Episode closed</p>
+    <h1 id="doneH">Logged.</h1>
+    <div class="done-quote" id="doneQuote"></div>
+    <div class="receipt" id="doneReceipt"></div>
+    <div class="btn-row">
+      <button class="btn ghost" data-go="s-home">Return to intake</button>
+    </div>
+  </section>
+</div>
+
+<script>
+"use strict";
+/* ============================ state ============================ */
+const S = {
+  intensity: 6,
+  vector: "memory",
+  sleepDebt: false,
+  path: null,          // fantasy | somatic | visual | kinetic
+  anchor: null,        // A | B
+  pace: "demo",
+  forks: 0,
+  sessionResult: "",   // free note for the receipt
+};
+const PATH_NAMES = {fantasy:"The Fantasy Loop", somatic:"The Somatic Pivot", visual:"The Visual Guide Core", kinetic:"The Kinetic Discharge"};
+const store = {
+  load(){ try{ return JSON.parse(localStorage.getItem("cae_log")||"[]"); }catch(e){ return []; } },
+  save(list){ try{ localStorage.setItem("cae_log", JSON.stringify(list.slice(-120))); }catch(e){} },
+  add(entry){ const l=this.load(); l.push(entry); this.save(l); },
+};
+const $ = id => document.getElementById(id);
+
+/* ============================ router ============================ */
+let activeTimers = [];
+function clearTimers(){ activeTimers.forEach(t=>clearInterval(t)); activeTimers=[]; stopSessionLoop(); }
+function show(id){
+  clearTimers();
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
+  $(id).classList.add("on");
+  window.scrollTo(0,0);
+  updateBar();
+}
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.go)));
+function updateBar(){
+  const l = store.load();
+  const aSessions = l.filter(e=>e.path==="visual"&&e.anchor==="A");
+  let trend = "";
+  if(aSessions.length>=2){
+    const last = aSessions[aSessions.length-1].forks, prev = aSessions[aSessions.length-2].forks;
+    trend = last<prev ? " · forks ↓" : last>prev ? " · forks ↑" : " · forks →";
+  }
+  $("barStats").textContent = l.length ? `${l.length} logged${trend}` : "no episodes yet";
+}
+updateBar();
+
+/* ============================ intake ============================ */
+$("intensity").addEventListener("input", e=>{ S.intensity=+e.target.value; $("dialV").textContent=S.intensity; });
+$("vectors").addEventListener("click", e=>{
+  const b = e.target.closest(".chip"); if(!b) return;
+  S.vector = b.dataset.v;
+  $("vectors").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", c===b?"true":"false"));
+});
+$("sleepSw").addEventListener("click", ()=>{
+  S.sleepDebt=!S.sleepDebt;
+  $("sleepSw").setAttribute("aria-pressed", S.sleepDebt?"true":"false");
+});
+$("toMatrix").addEventListener("click", ()=>{ renderMatrix(); show("s-matrix"); });
+
+/* ============================ scoring ============================ */
+function computeMatrix(){
+  const i=S.intensity, hour=new Date().getHours();
+  const night = hour>=22 || hour<2;
+  const notes=[];
+  const P = {
+    fantasy:{ utility:1.5, jhana:5,
+      fc:"Phasic dopamine climb while the narrative extends itself. If completed: prolactin trough, 12–48 h motivation dip, cue-reactivity up for days. If not: rehearsed and strengthened for next time. Clarity occupied either way.",
+      spark:[3,8,10,9,4,1,1,2,2,2], tag:"indulgence · fully costed" },
+    somatic:{ utility:(i>=8?6:8), jhana:(i>=8?40:55),
+      fc:"Drop the narration; observe heat, pressure, movement — never content. Peak passes in 90 s–4 min. An extinction trial instead of a consolidation trial. Retained charge reads afterward as usable energy.",
+      spark:[3,5,6,4,5,6,7,7,7,7], tag:"interoceptive redirect" },
+    visual:{ utility:(i>=7?9:6), jhana:(i>=7?70:60),
+      fc:"External anchor salient enough to win the bidding war, coupled to breath at resonance pace. Arousal is not discharged — it is re-bound. Elevated pleasant affect for 1–3 h after.",
+      spark:[3,4,3,5,7,8,8,8,8,7], tag:"anchored entrainment" },
+    kinetic:{ utility:(night?5:7), jhana:30,
+      fc:"90 s cold or 3 min maximal effort. Fastest urge-kill on the board; no extinction learning — the cue was escaped, not defused. Emergency brake, not a habit.",
+      spark:[3,9,2,1,3,4,4,4,4,4], tag:"somatic override" },
+  };
+  if(S.sleepDebt){
+    Object.values(P).forEach(p=>p.jhana=Math.max(3,p.jhana-15));
+    notes.push("Sleep debt detected — all absorption probabilities −15 pts. The forecasts know.");
+  }
+  if(night) notes.push("Sleep-adjacent hours — Kinetic Discharge demoted (pre-sleep catecholamines).");
+  if(S.vector==="visual") notes.push("Visual trigger vector — Grounded Aesthetic anchor is locked out this episode.");
+  if(S.vector==="boredom"){
+    const b = store.load().filter(e=>e.vector==="boredom");
+    notes.push(b.length?`Boredom vector — ${b.length} prior boredom-vector episodes on file. Most dissolve in under 2 minutes.`:"Boredom vector — this urge is likely a boredom proxy.");
+  }
+  if(i>=8) notes.push("Intensity ≥ 8 — Somatic Pivot demoted; salience-matched anchor promoted.");
+  return {P, notes};
+}
+function sparkline(points, hot){
+  const w=90,h=32, max=10;
+  const step=w/(points.length-1);
+  const pts = points.map((p,idx)=>`${(idx*step).toFixed(1)},${(h-3-(p/max)*(h-6)).toFixed(1)}`).join(" ");
+  const col = hot ? "#C4604E" : "#6E86C0";
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <line x1="0" y1="${h-3-(3/max)*(h-6)}" x2="${w}" y2="${h-3-(3/max)*(h-6)}" stroke="#252D42" stroke-width="1" stroke-dasharray="2 3"/>
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.5"/>
+    <circle cx="${w}" cy="${(h-3-(points[points.length-1]/max)*(h-6)).toFixed(1)}" r="2.4" fill="${col}"/>
+  </svg>`;
+}
+function yourData(path){
+  const l = store.load().filter(e=>e.path===path).slice(-5);
+  if(!l.length) return `<div class="yourdata">Your data: none yet — the numbers above are priors awaiting your evidence.</div>`;
+  const avg = a=> (a.reduce((s,e)=>s+e,0)/a.length).toFixed(1);
+  return `<div class="yourdata">Your last ${l.length}: post-clarity <em>${avg(l.map(e=>e.clarity))}</em> · post-calm <em>${avg(l.map(e=>e.calm))}</em></div>`;
+}
+function renderMatrix(){
+  const {P,notes} = computeMatrix();
+  $("matrixNotes").innerHTML = notes.length ? notes.map(n=>"▸ "+n).join("<br>") : "▸ Baseline conditions — no modifiers active.";
+  const order = ["fantasy","somatic","visual","kinetic"].sort(()=>Math.random()-.5);
+  $("cards").innerHTML = order.map(k=>{
+    const p=P[k], hot=k==="fantasy";
+    const uCls = p.utility<=3?"warn":p.utility>=8?"good":"";
+    const jCls = p.jhana<=10?"warn":p.jhana>=55?"good":"";
+    return `<button class="card ${hot?'dim':''}" data-path="${k}">
+      <div class="card-top"><h2>${PATH_NAMES[k]}</h2><span class="tag">${p.tag}</span></div>
+      <div class="scores">
+        <span class="score"><span class="v ${uCls}">${p.utility}</span><span class="k">utility /10</span></span>
+        <span class="score"><span class="v ${jCls}">${p.jhana}%</span><span class="k">jhāna access</span></span>
+        <span class="spark">${sparkline(p.spark, hot)}</span>
+      </div>
+      <p class="forecast">${p.fc}</p>
+      ${k==="visual" && S.vector!=="visual" ? '<div class="warnline">carries the board’s only relapse-vector warning — see configurator</div>':""}
+      ${yourData(k)}
+    </button>`;
+  }).join("");
+  $("cards").querySelectorAll(".card").forEach(c=>c.addEventListener("click",()=>choosePath(c.dataset.path)));
+}
+function choosePath(k){
+  S.path=k; S.forks=0; S.anchor=null; S.sessionResult="";
+  if(k==="fantasy"){ renderFantasy(); show("s-fantasy"); }
+  else if(k==="somatic"){ show("s-somatic"); runSomatic(); }
+  else if(k==="kinetic"){ resetKinetic(); show("s-kinetic"); }
+  else { renderConfig(); show("s-config"); }
+}
+
+/* ============================ fantasy ============================ */
+function renderFantasy(){
+  $("fantasyForecast").textContent = "Short-term relief is real and the forecast says so. So is the toll: refractory trough or rebound restlessness, 12–48 h of degraded drive, and a re-consolidated cue→reward loop that will bid harder next time.";
+  const l = store.load().filter(e=>e.path==="fantasy");
+  $("fantasyData").innerHTML = l.length
+    ? `Your record: ${l.length} walk-through${l.length>1?"s":""} logged. Average post-clarity: ${(l.reduce((s,e)=>s+e.clarity,0)/l.length).toFixed(1)} / 10. Nothing this app generates is as persuasive as your own numbers.`
+    : "Your record: no walk-throughs logged. If you proceed, the aftermath gets written down — that is the deal.";
+}
+$("fantasyProceed").addEventListener("click", ()=>{
+  S.sessionResult="eyes-open choice · no judgment · the aftermath is data";
+  show("s-log");
+});
+
+/* ============================ somatic ============================ */
+const SOMATIC_STAGES = [
+  {d:24, p:"Find where the sensation actually lives. Pelvis, spine, chest — go to the address, not the story."},
+  {d:24, p:"Observe its qualities. Temperature. Pressure. Movement. Edges. Never content."},
+  {d:28, p:"It is a wave. Watch it crest without touching the narrative. You are the shore, not the swimmer."},
+  {d:24, p:"Check again. Is it still solid — or is it heat and tingling with no owner? Let it disperse upward."},
+];
+let somaticStage=0, somaticElapsed=0;
+function runSomatic(){
+  somaticStage=0; somaticElapsed=0;
+  paintSomatic();
+  const t = setInterval(()=>{
+    somaticElapsed++;
+    const st=SOMATIC_STAGES[somaticStage];
+    if(somaticElapsed>=st.d){ nextSomaticStage(); } else { paintSomaticClock(); }
+  },1000);
+  activeTimers.push(t);
+}
+function nextSomaticStage(){
+  somaticElapsed=0; somaticStage++;
+  if(somaticStage>=SOMATIC_STAGES.length){
+    clearTimers();
+    S.sessionResult="urge surfed · extinction trial banked";
+    show("s-log"); return;
+  }
+  paintSomatic();
+}
+function paintSomatic(){
+  $("somaticPrompt").textContent = SOMATIC_STAGES[somaticStage].p;
+  $("somaticIdx").textContent = `stage ${somaticStage+1} of ${SOMATIC_STAGES.length}`;
+  paintSomaticClock();
+}
+function paintSomaticClock(){
+  const rem = SOMATIC_STAGES[somaticStage].d - somaticElapsed;
+  $("somaticT").textContent = `0:${String(rem).padStart(2,"0")}`;
+  const b = 1+0.03*Math.sin(somaticElapsed*0.9);
+  $("somaticRing").style.transform = `scale(${b})`;
+}
+$("somaticSkip").addEventListener("click", nextSomaticStage);
+$("somaticAbort").addEventListener("click", ()=>show("s-matrix"));
+
+/* ============================ kinetic ============================ */
+function resetKinetic(){
+  $("kineticChoices").style.display="";
+  $("kineticRingWrap").style.display="none";
+  $("kineticDoneRow").style.display="none";
+  $("kineticTitle").textContent="Choose the override.";
+}
+$("kineticChoices").addEventListener("click", e=>{
+  const b=e.target.closest(".opt"); if(!b) return;
+  const secs = b.dataset.k==="cold"?90:180;
+  $("kineticChoices").style.display="none";
+  $("kineticRingWrap").style.display="";
+  $("kineticDoneRow").style.display="";
+  $("kineticTitle").textContent = b.dataset.k==="cold" ? "Cold. Ninety seconds. Go." : "Move. Three minutes. Go.";
+  let rem=secs;
+  const paint=()=>{ $("kineticT").textContent=`${Math.floor(rem/60)}:${String(rem%60).padStart(2,"0")}`; };
+  paint();
+  const t=setInterval(()=>{ rem=Math.max(0,rem-1); paint(); if(rem===0){clearInterval(t); $("kineticTitle").textContent="Done. The signature is overwritten.";} },1000);
+  activeTimers.push(t);
+});
+$("kineticDone").addEventListener("click", ()=>{ S.sessionResult="brute-force override · escaped, not defused"; show("s-log"); });
+
+/* ============================ configurator ============================ */
+function renderConfig(){
+  const locked = S.vector==="visual";
+  $("optA").classList.toggle("locked", locked);
+  $("optALock").style.display = locked?"":"none";
+}
+$("optA").addEventListener("click", ()=>{
+  if(S.vector==="visual") return;
+  S.anchor="A"; renderCommit(); show("s-commit");
+});
+$("optB").addEventListener("click", ()=>{ S.anchor="B"; renderCommit(); show("s-commit"); });
+document.querySelectorAll("[data-pace]").forEach(b=>b.addEventListener("click", ()=>{
+  S.pace=b.dataset.pace;
+  document.querySelectorAll("[data-pace]").forEach(c=>c.setAttribute("aria-pressed", c===b?"true":"false"));
+}));
+function renderCommit(){
+  const mult = S.pace==="full"?4:1;
+  $("commitFine").innerHTML =
+    (S.anchor==="A"
+      ? `Anchor A selected. The guide fades at the taper mark — ${Math.round(2.4*mult)} min in — regardless of how it feels. That is a kept promise, not an in-session negotiation.<br><br>`
+      : `Anchor B selected. The form breathes when you breathe. It will dim as stability builds.<br><br>`)
+    + `Fork rule: three forks inside 90 seconds and the engine switches to the abstract without comment. The bridge will have been outbid — no shame in the data.`;
+}
+
+/* ============================ session engine ============================ */
+const canvas=$("blob"); const ctx=canvas.getContext("2d");
+let sessionOn=false, rafId=null, sessionT0=0, phaseIdx=0, phaseT0=0;
+let mode="B";           // current visual mode
+let forkTimes=[], forkOverlayUntil=0, crossfadeStart=null, sessionDone=false;
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function phases(){
+  const m = S.pace==="full"?4:1;
+  const A = S.anchor==="A";
+  return [
+    {id:"preload", d:26*m, caps:[[0,"Sit tall. Lift the sternum."],[7,"Three physiological sighs — double inhale, long slow exhale."],[19,"Release the jaw. The tongue. The pelvic floor."]]},
+    {id:"induction", d:40*m, caps: A
+      ? [[0,"Fix your gaze between her eyes. Soft focus. Do not scan."],[10,"Join the breath already in progress."],[24,"She is a clock, not a character."]]
+      : [[0,"Rest your gaze at the center of the form. Soft focus."],[10,"Join the breath already in progress."],[24,"Let the pulse carry the count for you."]]},
+    {id:"pivot", d:80*m, caps:[[0,"Something in this is pleasant. Find where the pleasantness registers in your body."],[18,"Chest, face, hands. Rest attention there — the screen is background now."],[42,"On each exhale, let the warmth widen. No pictures."],[62,"If anything acquires a next — a plot — that is the fork. Tap it, no drama."]]},
+    {id:"taper", d:26*m, caps: A
+      ? [[0,"The warmth no longer needs the screen."],[12,"The rhythm survives the object."]]
+      : [[0,"The warmth no longer needs the screen."],[12,"Let the light dim itself."]]},
+    {id:"stillness", d:9999, caps:[[0,"Close the eyes. Let the warmth be the whole object."],[20,"When you are ready, end the session below."]]},
+  ];
+}
+let PH=[];
+$("beginSession").addEventListener("click", startSession);
+function startSession(){
+  PH = phases(); phaseIdx=0; forkTimes=[]; S.forks=0; sessionDone=false; crossfadeStart=null;
+  mode = S.anchor;
+  show("s-session");
+  sizeCanvas();
+  sessionOn=true; sessionT0=performance.now(); phaseT0=sessionT0;
+  $("advPhase").textContent="advance ›";
+  loop(sessionT0);
+}
+function sizeCanvas(){
+  const r=$("stage").getBoundingClientRect();
+  canvas.width=r.width*devicePixelRatio; canvas.height=r.height*devicePixelRatio;
+}
+addEventListener("resize", ()=>{ if(sessionOn) sizeCanvas(); });
+
+/* breath: 4 in / 6 out, continuous clock */
+function breathState(t){
+  const cyc=(t/1000)%10;
+  if(cyc<4) return {phase:"Inhale", v:easeInOut(cyc/4), count:Math.floor(cyc)+1};
+  return {phase:"Exhale", v:1-easeInOut((cyc-4)/6), count:Math.floor(cyc-4)+1};
+}
+function easeInOut(x){ return x<.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; }
+
+function loop(now){
+  if(!sessionOn) return;
+  rafId=requestAnimationFrame(loop);
+  const ph=PH[phaseIdx];
+  const pt=(now-phaseT0)/1000;
+  const total=(now-sessionT0)/1000;
+  if(pt>=ph.d && ph.id!=="stillness"){ advancePhase(now); return; }
+
+  /* progress track (through taper) */
+  const fixed=PH.slice(0,4).reduce((s,p)=>s+p.d,0);
+  const done=PH.slice(0,phaseIdx).reduce((s,p)=>s+p.d,0)+Math.min(pt,ph.d);
+  $("phaseTrack").style.width = Math.min(100,(done/fixed)*100)+"%";
+
+  /* captions */
+  const cap = [...ph.caps].reverse().find(c=>pt>=c[0]);
+  $("caption").textContent = cap?cap[1]:"";
+
+  /* breath readout */
+  const b=breathState(now-sessionT0);
+  const showBreath = ph.id!=="preload";
+  $("breathLine").style.display = showBreath?"":"none";
+  if(showBreath){ $("breathWord").textContent=b.phase; $("breathCount").textContent=b.count; }
+
+  /* fork availability */
+  $("forkBtn").style.visibility = (ph.id==="induction"||ph.id==="pivot")?"visible":"hidden";
+
+  /* fork overlay expiry */
+  if(forkOverlayUntil && now>forkOverlayUntil){ forkOverlayUntil=0; $("forkOverlay").classList.remove("on"); }
+
+  /* visuals */
+  const prog = Math.min(1, done/fixed);           // 0..1 through fixed phases
+  drawScene(now, b, ph, pt, prog);
+  playTone(b);
+}
+function advancePhase(now){
+  phaseIdx++;
+  phaseT0=now||performance.now();
+  const ph=PH[phaseIdx];
+  if(ph.id==="taper" && mode==="A"){ crossfadeStart=phaseT0; }
+  if(ph.id==="stillness"){ $("advPhase").textContent="end session ›"; }
+}
+$("advPhase").addEventListener("click", ()=>{
+  if(PH[phaseIdx].id==="stillness"){ endSession(); } else { advancePhase(); }
+});
+$("sessionAbort").addEventListener("click", ()=>{ sessionOn=false; stopTone(); show("s-matrix"); });
+function endSession(){
+  sessionOn=false; stopTone();
+  S.sessionResult = mode==="B"&&S.anchor==="A"
+    ? "anchor A bridged to abstract · corridor completed"
+    : "entrainment session completed";
+  show("s-log");
+}
+function stopSessionLoop(){ if(rafId){cancelAnimationFrame(rafId); rafId=null;} sessionOn=false; stopTone(); }
+
+/* ---------- fork ---------- */
+$("forkBtn").addEventListener("click", ()=>{
+  const now=performance.now();
+  forkTimes.push(now); S.forks++;
+  forkTimes=forkTimes.filter(t=>now-t<90000);
+  $("forkOverlay").classList.add("on");
+  $("forkCountMsg").textContent=`fork ${S.forks} noted · no penalty`;
+  forkOverlayUntil=now+6500;
+  if(forkTimes.length>=3 && mode==="A"){
+    mode="B"; crossfadeStart=now;
+    showToast("Bridge outbid — switching to the abstract. The data has no opinion of you.");
+  }
+});
+let toastTimer=null;
+function showToast(msg){
+  $("toast").textContent=msg; $("toast").classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>$("toast").classList.remove("on"),5200);
+}
+
+/* ---------- drawing ---------- */
+function drawScene(now, b, ph, pt, prog){
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle="#05070C"; ctx.fillRect(0,0,w,h);
+
+  const preload = ph.id==="preload";
+  let guideAlpha=0, blobAlpha=0;
+  if(!preload){
+    if(mode==="A"){ guideAlpha=1; blobAlpha=0.18; }
+    else { guideAlpha=0; blobAlpha=1; }
+    if(crossfadeStart){
+      const cf=Math.min(1,(now-crossfadeStart)/9000);
+      guideAlpha=(1-cf); blobAlpha=0.18+0.82*cf;
+      if(cf>=1 && mode==="A") mode="B";
+    }
+    if(ph.id==="stillness"){ blobAlpha*= Math.max(0.14, 1-pt/40); guideAlpha=0; }
+  } else {
+    /* preload: a single dim ember, barely breathing */
+    blobAlpha=0.12;
+  }
+
+  /* blob */
+  if(blobAlpha>0.01){
+    const cx=w/2, cy=h*0.46;
+    const base=Math.min(w,h)*0.19;
+    const r=base*(0.72+0.4*b.v);
+    const hue = 235 - 190*prog;                    /* violet-blue → gold */
+    const sat = 62 - 14*prog;
+    const t=now/1000;
+    const wob = reduceMotion?0:1;
+    ctx.save();
+    ctx.globalAlpha=blobAlpha;
+    for(let ring=4;ring>=1;ring--){
+      const rr=r*(0.55+ring*0.28) + wob*Math.sin(t*0.7+ring)*base*0.04;
+      const g=ctx.createRadialGradient(cx,cy,rr*0.05,cx,cy,rr);
+      g.addColorStop(0,`hsla(${hue},${sat}%,${72-ring*6}%,${0.5/ring})`);
+      g.addColorStop(1,`hsla(${hue},${sat}%,30%,0)`);
+      ctx.fillStyle=g;
+      ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2); ctx.fill();
+    }
+    /* core */
+    const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,r*0.6);
+    cg.addColorStop(0,`hsla(${hue},${sat+8}%,86%,${0.75})`);
+    cg.addColorStop(1,`hsla(${hue},${sat}%,55%,0)`);
+    ctx.fillStyle=cg;
+    ctx.beginPath(); ctx.arc(cx,cy,r*0.6,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  /* guide */
+  $("guide").style.opacity=guideAlpha.toFixed(2);
+  $("assetNote").style.display = guideAlpha>0.4 ? "" : "none";
+  if(guideAlpha>0.01){
+    const sh=$("shoulders");
+    const s=1+0.018*b.v;
+    sh.setAttribute("transform",`translate(0 ${-(s-1)*160}) scale(1 ${s})`);
+    document.querySelector("#guide .halo").setAttribute("r",(22+8*b.v).toFixed(1));
+  }
+}
+
+/* ---------- optional breath tone ---------- */
+let audioCtx=null, osc=null, gainNode=null, toneOn=false;
+function playTone(b){
+  if(!toneOn||!gainNode) return;
+  gainNode.gain.setTargetAtTime(0.012+0.028*b.v, audioCtx.currentTime, 0.15);
+}
+function stopTone(){ if(gainNode){ gainNode.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.1);} }
+/* double-tap the header stats to toggle the tone — deliberately buried; sound is seasoning */
+$("barStats").addEventListener("dblclick", ()=>{
+  if(!audioCtx){
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    osc=audioCtx.createOscillator(); gainNode=audioCtx.createGain();
+    osc.frequency.value=174; gainNode.gain.value=0;
+    osc.connect(gainNode).connect(audioCtx.destination); osc.start();
+  }
+  toneOn=!toneOn; if(!toneOn) stopTone();
+  showToast(toneOn?"breath tone on":"breath tone off");
+});
+
+/* ============================ log ============================ */
+$("calm").addEventListener("input",e=>$("calmV").textContent=e.target.value);
+$("clarity").addEventListener("input",e=>$("clarityV").textContent=e.target.value);
+let urgeNow="faded";
+$("urgeChips").addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b) return;
+  urgeNow=b.dataset.u;
+  $("urgeChips").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c===b?"true":"false"));
+});
+$("saveLog").addEventListener("click", ()=>{
+  const entry={
+    ts:Date.now(), path:S.path, anchor:S.anchor, intensity:S.intensity, vector:S.vector,
+    forks:S.forks, calm:+$("calm").value, clarity:+$("clarity").value, urge:urgeNow,
+  };
+  store.add(entry);
+  renderDone(entry);
+  show("s-done");
+});
+function renderDone(e){
+  const quotes={
+    fantasy:"Chosen with open eyes. The aftermath is now evidence — the matrix will quote it back to you.",
+    somatic:"The wave crested and passed without being fed. That was an extinction trial. They compound.",
+    visual:"The energy was not suppressed. It was re-bound to a new object. The corridor gets shorter every time.",
+    kinetic:"Signature overwritten. Remember: the brake stops the car — it doesn't teach the driver.",
+  };
+  $("doneQuote").textContent=quotes[e.path];
+  const n=store.load().length;
+  $("doneReceipt").innerHTML =
+    `path <b>${PATH_NAMES[e.path]}${e.anchor?" · anchor "+e.anchor:""}</b><br>`+
+    `intensity in <b>${e.intensity}</b> → calm out <b>${e.calm}</b> · clarity <b>${e.clarity}</b><br>`+
+    (e.path==="visual"?`forks <b>${e.forks}</b> · the trend matters more than the count<br>`:"")+
+    `urge now <b>${e.urge}</b> · episode <b>#${n}</b> in your evidence base`+
+    (S.sessionResult?`<br>note <b>${S.sessionResult}</b>`:"");
+}
+</script>
+
+</html>
