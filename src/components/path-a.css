@@ -12,6 +12,13 @@
 .path-select-header {
   gap: 10px;
   padding-top: 12px;
+  align-items: center;
+  text-align: center;
+}
+
+.path-select-buddy {
+  width: 92px;
+  height: 92px;
 }
 
 .path-select-list {

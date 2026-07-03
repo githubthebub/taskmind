@@ -160,12 +160,22 @@ export interface MudraShape {
 
 export type EyeState = 'open' | 'soft' | 'closed' | 'shambhavi-lock';
 
+/**
+ * Expressive mood for the blob face — the app's gentle companion character.
+ * 'holding' puffs the cheeks (kumbhaka buddy); 'blissful' is the brightest
+ * expression and must not be used late in Path A settling, where expressions
+ * may only get calmer ('serene').
+ */
+export type FaceMood = 'neutral' | 'happy' | 'holding' | 'blissful' | 'serene';
+
 /** Figure motion mode — Path A settling must move toward 'still', never busier. */
 export type FigureMotion = 'active' | 'settling' | 'still';
 
 export interface SeatedBodyProps {
   mudra: MudraId;
   eyeState: EyeState;
+  /** Face expression; defaults from motion (active→neutral, else serene). */
+  mood?: FaceMood;
   /** 0..1 breath cycle position for subtle torso animation; omit for none. */
   breathPhase?: number;
   /** Chakra to highlight on the figure (Path C/D visualization target). */
@@ -185,6 +195,9 @@ export interface FaceBlobProps {
   eyeState: EyeState;
   /** 0..1; higher = softer, more settled expression. */
   calm: number;
+  mood?: FaceMood;
+  /** Breaths per minute — the blob puffs along as a breathing buddy. */
+  breathBpm?: number;
   transitionMs?: number;
 }
 

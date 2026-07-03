@@ -90,11 +90,70 @@
   fill: var(--ink, #e8e4da);
 }
 
-.fb-closed-arc {
+/* Tiny catchlight that makes the round eyes read as bright and alive. */
+.fb-iris-shine {
+  fill: var(--bg, #10131a);
+  opacity: 0.85;
+}
+
+.fb-closed-arc,
+.fb-happy-arc {
   stroke: var(--ink, #e8e4da);
   stroke-width: 2;
   stroke-linecap: round;
   fill: none;
+}
+
+/* Soft periodic blink — long pauses, quick close. Never runs when still. */
+.fb-blink {
+  animation: fbBlink 5.4s ease-in-out infinite;
+  transform-origin: 0 0;
+}
+@keyframes fbBlink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95%, 97% { transform: scaleY(0.08); }
+}
+
+.fb-blush {
+  fill: #c98a7d;
+  transition: opacity var(--fig-ms, 800ms) ease-in-out;
+}
+
+/* Cheek puffs while holding the breath — the kumbhaka buddy. */
+.fb-puff {
+  fill: var(--ink, #e8e4da);
+  fill-opacity: 0.12;
+  stroke: var(--ink, #e8e4da);
+  stroke-opacity: 0.4;
+  stroke-width: 1.2;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.fb-mouth-o {
+  fill: none;
+  stroke: var(--ink, #e8e4da);
+  stroke-width: 2;
+}
+
+/* Breathing-buddy puff: the whole face swells gently at the pacing tempo. */
+.fb-breathing {
+  animation: fbBreath var(--fb-breath, 1s) ease-in-out infinite;
+  transform-origin: 50px 55px;
+}
+@keyframes fbBreath {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(1.05); }
+}
+
+.fb-sparkle {
+  fill: var(--accent, #d4a35a);
+  opacity: 0;
+  animation: fbTwinkle 2.4s ease-in-out infinite;
+}
+@keyframes fbTwinkle {
+  0%, 100% { opacity: 0; }
+  40% { opacity: 0.9; }
 }
 
 .fb-mouth {
@@ -142,8 +201,17 @@
   opacity: 0.8;
 }
 .seated-body[data-motion='still'] .fb-idle,
+.seated-body[data-motion='still'] .fb-blink,
+.seated-body[data-motion='still'] .fb-sparkle,
 .seated-body[data-motion='still'] .sb-chakra-halo {
   animation: none;
+}
+.seated-body[data-motion='still'] .fb-sparkle {
+  opacity: 0;
+}
+/* Settling: blinking slows down before it stops. */
+.seated-body[data-motion='settling'] .fb-blink {
+  animation-duration: 9s;
 }
 @keyframes sbSway {
   from { transform: rotate(-0.5deg); }

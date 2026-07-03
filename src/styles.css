@@ -163,6 +163,12 @@ label.check input { margin-top: 4px; accent-color: var(--accent); }
   z-index: 50;
 }
 
+/* The blob companion on home / completion screens. */
+.app-buddy {
+  width: 104px;
+  height: 104px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }

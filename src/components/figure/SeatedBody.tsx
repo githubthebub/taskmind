@@ -75,6 +75,7 @@ const ANKLE_D = 'M 136 346 C 146 340 158 340 166 346';
 export default function SeatedBody({
   mudra,
   eyeState,
+  mood,
   breathPhase,
   glowChakra,
   motion,
@@ -130,7 +131,12 @@ export default function SeatedBody({
           aria-hidden="true"
           style={{ left: '50%', top: '15.5%', width: '31%', transform: 'translate(-50%, -50%)' }}
         >
-          <FaceBlob eyeState={eyeState} calm={calm} transitionMs={ms} />
+          <FaceBlob
+            eyeState={eyeState}
+            calm={calm}
+            mood={mood ?? (motion === 'active' ? 'neutral' : 'serene')}
+            transitionMs={ms}
+          />
         </div>
 
         {(['left', 'right'] as const).map((side) => {

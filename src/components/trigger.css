@@ -34,6 +34,34 @@
   gap: 20px;
 }
 
+/* Breathing buddy: the blob sits centered over the pulse/glow ring. */
+.trigger-buddy-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trigger-buddy {
+  width: 120px;
+  height: 120px;
+}
+
+.trigger-buddy-ring .trigger-buddy {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 104px;
+  height: 104px;
+}
+
+.trigger-buddy-small {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto;
+}
+
 .trigger-pulse {
   width: 160px;
   height: 160px;

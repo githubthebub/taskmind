@@ -1,5 +1,6 @@
 import type { TriggerOutcome, TriggerStageProps, TriggerTechnique } from '../types';
 import { useTriggerEngine } from '../engine/triggerEngine';
+import FaceBlob from './figure/FaceBlob';
 import './trigger.css';
 
 /**
@@ -85,6 +86,9 @@ export default function TriggerStage({
       <main className="trigger-main">
         {engine.phase === 'idle' && (
           <div className="card stack trigger-intro">
+            <div className="trigger-buddy trigger-buddy-small" aria-hidden="true">
+              <FaceBlob eyeState="open" calm={0.3} mood="happy" />
+            </div>
             <h2>{copy.name}</h2>
             <p className="dim">{copy.how}</p>
             <p className="faint">
@@ -107,12 +111,17 @@ export default function TriggerStage({
 
         {engine.phase === 'breathing' && (
           <div className="trigger-visual">
-            <div
-              className="trigger-pulse"
-              style={{ animationDuration: `${60 / engine.bpm}s` }}
-              aria-hidden="true"
-            />
-            <p className="prompt-text dim">Breathe with the pulse.</p>
+            <div className="trigger-buddy-ring">
+              <div
+                className="trigger-pulse"
+                style={{ animationDuration: `${60 / engine.bpm}s` }}
+                aria-hidden="true"
+              />
+              <div className="trigger-buddy" aria-hidden="true">
+                <FaceBlob eyeState="soft" calm={0.2} mood="neutral" breathBpm={engine.bpm} />
+              </div>
+            </div>
+            <p className="prompt-text dim">Breathe together — it&rsquo;s keeping pace with you.</p>
             <p className="faint trigger-breath-count">
               breath {currentBreath} of {trigger.breathsPerRound}
             </p>
@@ -121,7 +130,12 @@ export default function TriggerStage({
 
         {engine.phase === 'retention' && (
           <div className="trigger-visual">
-            <div className="trigger-glow" aria-hidden="true" />
+            <div className="trigger-buddy-ring">
+              <div className="trigger-glow" aria-hidden="true" />
+              <div className="trigger-buddy" aria-hidden="true">
+                <FaceBlob eyeState="closed" calm={0.6} mood="holding" />
+              </div>
+            </div>
             <p className="prompt-text">Hold, softly. Empty, and at ease.</p>
             {engine.softCapReached && (
               <p className="trigger-softcap">Whenever you&rsquo;re ready, let it go.</p>
@@ -138,16 +152,24 @@ export default function TriggerStage({
 
         {engine.phase === 'between-rounds' && (
           <div className="trigger-visual">
-            <div className="trigger-glow trigger-glow-dim" aria-hidden="true" />
+            <div className="trigger-buddy-ring">
+              <div className="trigger-glow trigger-glow-dim" aria-hidden="true" />
+              <div className="trigger-buddy" aria-hidden="true">
+                <FaceBlob eyeState="soft" calm={0.7} mood="serene" />
+              </div>
+            </div>
             <p className="prompt-text dim">Let the breath find its own way back.</p>
           </div>
         )}
 
         {engine.phase === 'awaiting-choice' && (
           <div className="card stack trigger-choice">
+            <div className="trigger-buddy trigger-buddy-small" aria-hidden="true">
+              <FaceBlob eyeState="open" calm={0.4} mood="happy" />
+            </div>
             <p className="prompt-text">
               That&rsquo;s {engine.roundsCompleted} round
-              {engine.roundsCompleted === 1 ? '' : 's'}.
+              {engine.roundsCompleted === 1 ? '' : 's'} — well sat.
             </p>
             <p className="dim">
               Nothing needs to have happened yet — this often takes its own time.

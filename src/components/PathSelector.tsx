@@ -1,4 +1,5 @@
 import type { ContinuationPath, PathSelectorProps } from '../types';
+import FaceBlob from './figure/FaceBlob';
 import './path-a.css';
 
 /**
@@ -72,6 +73,13 @@ export default function PathSelector({
   return (
     <div className="screen path-select">
       <header className="stack path-select-header">
+        <div className="path-select-buddy" aria-hidden="true">
+          <FaceBlob
+            eyeState={reportedRapture ? 'open' : 'soft'}
+            calm={0.4}
+            mood={reportedRapture ? 'blissful' : 'happy'}
+          />
+        </div>
         <h1>{headline}</h1>
         <p className="dim">{subline}</p>
       </header>

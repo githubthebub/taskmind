@@ -79,6 +79,10 @@ export default function FastSettle({ sound, eyesClosed, onComplete }: PathScreen
   // a static dhyāna mudrā the whole time — still, and out of the way.
   const motion: FigureMotion = factorIndex <= 1 ? 'settling' : 'still';
   const eyeState: EyeState = factorIndex <= 1 ? 'soft' : 'closed';
+  // Expression only ever gets calmer as settling deepens — never brighter.
+  const mood = (['blissful', 'happy', 'serene', 'serene'] as const)[
+    Math.min(factorIndex, LAST_FACTOR)
+  ];
 
   if (eyesClosed) {
     // Audio-only live mode: near-black veil, no figure, no prompts on screen —
@@ -134,6 +138,7 @@ export default function FastSettle({ sound, eyesClosed, onComplete }: PathScreen
             <SeatedBody
               mudra="dhyana"
               eyeState={eyeState}
+              mood={mood}
               motion={motion}
               glowChakra={null}
               transitionMs={4000}

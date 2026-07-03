@@ -17,6 +17,7 @@ import ComboPath from './components/ComboPath';
 import MudraLegend from './components/MudraLegend';
 import SessionLogView from './components/SessionLogView';
 import SettingsScreen from './components/SettingsScreen';
+import FaceBlob from './components/figure/FaceBlob';
 import { createSoundEngine } from './audio/soundEngine';
 import { appendEntry, newSessionId } from './engine/sessionLog';
 import {
@@ -239,6 +240,9 @@ export default function App() {
     case 'complete':
       return (
         <div className="screen screen-centered">
+          <div className="app-buddy" aria-hidden="true">
+            <FaceBlob eyeState="closed" calm={0.7} mood="blissful" />
+          </div>
           <h1>Session complete</h1>
           {lastEntry && (
             <div className="card stack" style={{ minWidth: '280px', textAlign: 'left' }}>
@@ -261,7 +265,7 @@ export default function App() {
               </p>
             </div>
           )}
-          <p className="dim">However it went, it counts. See you next sit.</p>
+          <p className="dim">However it went, it counts — well sat. See you next time.</p>
           <button className="btn btn-primary" onClick={() => setScreen('home')}>
             Done
           </button>
@@ -296,9 +300,14 @@ export default function App() {
     default:
       return (
         <div className="screen screen-centered">
+          <div className="app-buddy" aria-hidden="true">
+            <FaceBlob eyeState="open" calm={0.3} mood="happy" />
+          </div>
           <h1>Stillpoint</h1>
           <p className="dim" style={{ maxWidth: '400px' }}>
-            Breath-led practice: generate the spark, then choose where to take it.
+            {progression.sessionsCompleted === 0
+              ? 'Hello — I’ll sit with you. Generate the spark, then choose where to take it.'
+              : 'Welcome back. Generate the spark, then choose where to take it.'}
           </p>
           <div className="stack" style={{ width: '100%', maxWidth: '360px' }}>
             <button className="btn btn-primary btn-block" onClick={beginSession}>
@@ -320,8 +329,9 @@ export default function App() {
             </div>
           </div>
           <p className="faint" style={{ maxWidth: '420px' }}>
-            {progression.sessionsCompleted} session{progression.sessionsCompleted === 1 ? '' : 's'} completed
-            · mudra tier {progression.mudraTier}
+            {progression.sessionsCompleted === 0
+              ? 'Your first sit is waiting — no experience needed.'
+              : `${progression.sessionsCompleted} sit${progression.sessionsCompleted === 1 ? '' : 's'} together · mudra tier ${progression.mudraTier}`}
           </p>
           <p className="faint" style={{ maxWidth: '420px' }}>
             Practice seated or lying down only — never standing, never near water,
