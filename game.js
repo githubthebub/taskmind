@@ -66,6 +66,7 @@ function makeMon(speciesKey, level, moveNames) {
   return {
     species: speciesKey,
     name: SPECIES[speciesKey].name,
+    gender: speciesKey === 'NIDOKING' ? 'm' : (rand(2) ? 'm' : 'f'),
     level,
     stats,
     hp: stats.hp,
@@ -93,9 +94,19 @@ const game = {
   collected: {},
   beaten: {},
   quest: 0,
+  money: 31650,
+  seen: {},
+  caught: {},
+  playFrames: 0,
+  trainerId: 30716,
   steps: 0,
   frame: 0,
 };
+
+function playTimeStr() {
+  const totalMin = Math.floor(game.playFrames / 3600); // ~60fps
+  return Math.floor(totalMin / 60) + ':' + String(totalMin % 60).padStart(2, '0');
+}
 
 function newGame() {
   game.party = STARTING_PARTY.map(p => makeMon(p.species, p.level, p.moves));
@@ -103,6 +114,12 @@ function newGame() {
   game.map = 'oneisland'; game.px = 13; game.py = 49; game.dir = 'up';
   game.gotGift = false;
   game.collected = {}; game.beaten = {}; game.quest = 0;
+  game.money = 31650;
+  game.seen = {}; game.caught = {};
+  game.playFrames = 0;
+  game.trainerId = 10000 + rand(89999);
+  // your champion's team is already registered in the dex
+  for (const p of game.party) { game.seen[p.species] = true; game.caught[p.species] = true; }
   R3D.setMap(game.map);
   MUSIC.play('overworld');
   startDialog([
@@ -119,6 +136,8 @@ function saveGame() {
     map: game.map, px: game.px, py: game.py, dir: game.dir,
     party: game.party, bag: game.bag, gotGift: game.gotGift,
     collected: game.collected, beaten: game.beaten, quest: game.quest,
+    money: game.money, seen: game.seen, caught: game.caught,
+    playFrames: game.playFrames, trainerId: game.trainerId,
   };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); return true; }
   catch (e) { return false; }
@@ -131,6 +150,11 @@ function loadGame() {
     game.collected = game.collected || {};
     game.beaten = game.beaten || {};
     game.quest = game.quest || 0;
+    game.money = game.money === undefined ? 31650 : game.money;
+    game.seen = game.seen || {}; game.caught = game.caught || {};
+    game.playFrames = game.playFrames || 0;
+    game.trainerId = game.trainerId || 30716;
+    for (const p of game.party) { game.seen[p.species] = true; game.caught[p.species] = true; }
     R3D.setMap(game.map);
     MUSIC.play(mapTrack());
     return true;
@@ -360,7 +384,7 @@ function updateFade() {
 }
 
 // ---------- Menu ----------
-const menu = { idx: 0, items: ['POKeMON', 'BAG', 'SAVE', 'EXIT'] };
+const menu = { idx: 0, items: ['POKeDEX', 'POKeMON', 'BAG', 'CHAMPION', 'SAVE', 'EXIT'] };
 function openMenu() { menu.idx = 0; game.state = 'menu'; blip(800); }
 function updateMenu() {
   if (tapUp()) { menu.idx = (menu.idx + menu.items.length - 1) % menu.items.length; blip(700); }
@@ -369,13 +393,80 @@ function updateMenu() {
   if (!tapA()) return;
   blip(900);
   const sel = menu.items[menu.idx];
-  if (sel === 'POKeMON') { party.idx = 0; party.mode = 'view'; game.state = 'party'; }
+  if (sel === 'POKeDEX') { game.state = 'dex'; }
+  else if (sel === 'POKeMON') { party.idx = 0; party.mode = 'view'; game.state = 'party'; }
   else if (sel === 'BAG') { bagUI.idx = 0; bagUI.mode = 'menu'; game.state = 'bag'; }
+  else if (sel === 'CHAMPION') { game.state = 'card'; }
   else if (sel === 'SAVE') {
     const ok = saveGame();
     startDialog(ok ? ['Saved the game!'] : ['Save failed...']);
   }
   else game.state = 'world';
+}
+
+// ---------- Pokedex ----------
+const DEX_ORDER = ['BLASTOISE', 'PIDGEOT', 'RAICHU', 'ALAKAZAM', 'SNORLAX', 'NIDOKING',
+  'SPEAROW', 'FEAROW', 'PONYTA', 'RAPIDASH', 'GEODUDE', 'MEOWTH'];
+function updateDex() { if (tapA() || tapB()) { blip(700); game.state = 'menu'; } }
+function drawDex() {
+  px(0, 0, VW, VH, '#8c2020');
+  px(4, 4, VW - 8, VH - 8, '#c03028');
+  drawInfoBox(8, 8, VW - 16, 18);
+  const seen = DEX_ORDER.filter(s => game.seen[s]).length;
+  const caught = DEX_ORDER.filter(s => game.caught[s]).length;
+  text('POKeDEX', 14, 13, '#40342c', 8);
+  text('SEEN ' + seen + '  OWN ' + caught, 130, 13, '#40342c', 7);
+  DEX_ORDER.forEach((sp, i) => {
+    const col = Math.floor(i / 6), row = i % 6;
+    const x = 10 + col * 112, y = 30 + row * 21;
+    px(x, y, 108, 19, '#f8f0d8');
+    px(x, y + 17, 108, 2, '#d8c8a0');
+    text(String(i + 1).padStart(3, '0'), x + 3, y + 6, '#786858', 7);
+    if (game.seen[sp]) {
+      drawMon(sp, x + 20, y + 1, 17);
+      text(SPECIES[sp].name, x + 40, y + 6, '#40342c', 7);
+      if (game.caught[sp]) {
+        // caught marker: mini pokeball
+        px(x + 98, y + 6, 6, 6, '#2a2020');
+        px(x + 99, y + 7, 4, 2, '#d83828');
+        px(x + 99, y + 9, 4, 2, '#f0f0f0');
+      }
+    } else {
+      text('----------', x + 40, y + 6, '#a89888', 7);
+    }
+  });
+}
+
+// ---------- Trainer Card ----------
+const BADGE_COLORS = ['#98a8b8', '#4890d8', '#e8a030', '#58b878', '#e858a0', '#d8c030', '#c05848', '#58c8c0'];
+function updateCard() { if (tapA() || tapB()) { blip(700); game.state = 'menu'; } }
+function drawCard() {
+  px(0, 0, VW, VH, '#2858a8');
+  px(6, 10, VW - 12, VH - 24, '#e8b830');
+  px(9, 13, VW - 18, VH - 30, '#f8f0d8');
+  px(9, 13, VW - 18, 20, '#e05848');
+  text('TRAINER CARD', 16, 19, '#f8f0d8', 9);
+  text('IDNo. ' + game.trainerId, 158, 20, '#f8e0c0', 7);
+  text('NAME:', 20, 44, '#584838', 8);
+  text('CHAMPION', 70, 44, '#302820', 8);
+  text('MONEY:', 20, 60, '#584838', 8);
+  text('$' + game.money, 70, 60, '#302820', 8);
+  text('POKeDEX:', 20, 76, '#584838', 8);
+  text(DEX_ORDER.filter(s => game.caught[s]).length + ' OWNED', 82, 76, '#302820', 8);
+  text('TIME:', 20, 92, '#584838', 8);
+  text(playTimeStr(), 70, 92, '#302820', 8);
+  text('BADGES:', 20, 110, '#584838', 8);
+  // eight Kanto badges, all earned
+  BADGE_COLORS.forEach((c, i) => {
+    const bx = 22 + i * 25, by = 122;
+    px(bx + 2, by, 10, 10, '#40342c');
+    px(bx + 3, by + 1, 8, 8, c);
+    if (i % 4 === 0) px(bx + 5, by + 3, 4, 4, '#f8f0d8');
+    if (i % 4 === 1) { px(bx + 3, by + 4, 8, 2, '#40342c'); }
+    if (i % 4 === 2) { px(bx + 6, by + 1, 2, 8, '#40342c'); }
+    if (i % 4 === 3) { px(bx + 5, by + 3, 4, 4, '#40342c'); px(bx + 6, by + 4, 2, 2, c); }
+  });
+  text('POKeMON LEAGUE CHAMPION', 60, 138, '#786858', 7);
 }
 
 // ---------- Party screen ----------
@@ -478,6 +569,8 @@ function startTrainerBattle(npc) {
 function beginBattle(foe, introMsgs) {
   battle.foe = foe;
   battle.foe.stages = freshStages();
+  game.seen[foe.species] = true;
+  for (const m of battle.trainerParty) game.seen[m.species] = true;
   battle.activeIdx = game.party.findIndex(p => p.hp > 0);
   for (const p of game.party) p.stages = freshStages();
   battle.phase = 'msg';
@@ -486,14 +579,35 @@ function beginBattle(foe, introMsgs) {
   battle.foeAnim = 0; battle.playerAnim = 0;
   battle.dispFoe = foe.hp; battle.dispPm = playerMonHp(); battle.dispExp = -1;
   blip(200, .15, .06); blip(150, .2, .06);
-  fadeOut(() => {
+  MUSIC.play('battle');
+  startSwipe(() => {
     game.state = 'battle';
-    MUSIC.play('battle');
     introMsgs.forEach((m, i) => {
       queueMsg(m, i === introMsgs.length - 1 ? () => { battle.phase = 'menu'; } : null);
     });
-    fade.alpha = 0;
   });
+}
+
+// ---------- battle entry swipe (radar-sweep wipe, GBA style) ----------
+const swipe = { p: 0, cb: null };
+function startSwipe(cb) { swipe.p = 0; swipe.cb = cb; game.state = 'swipe'; }
+function updateSwipe() {
+  swipe.p += 0.045;
+  if (swipe.p >= 1.25) { const cb = swipe.cb; swipe.cb = null; if (cb) cb(); }
+}
+function drawSwipe() {
+  drawWorld();
+  const cx = VW / 2, cy = VH / 2, R = 190;
+  ctx.fillStyle = '#101018';
+  // two sweeping arms for a pinwheel feel
+  for (const off of [0, Math.PI]) {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R, -Math.PI / 2 + off, -Math.PI / 2 + off + Math.min(1, swipe.p) * Math.PI);
+    ctx.closePath();
+    ctx.fill();
+  }
+  if (swipe.p >= 1) px(0, 0, VW, VH, '#101018');
 }
 
 function playerMonHp() {
@@ -852,7 +966,15 @@ function afterFoeFainted() {
     const finish = () => {
       queueMsg('You defeated ' + battle.trainer.name + '!', () => {
         game.beaten[tr.id] = true;
-        endBattle(() => startDialog(tr.win));
+        const prize = tr.prize || 0;
+        if (prize > 0) {
+          game.money += prize;
+          blip(1100, .08);
+          queueMsg('You got $' + prize + ' for winning!', () => endBattle(() => startDialog(tr.win)));
+          battle.phase = 'msg';
+        } else {
+          endBattle(() => startDialog(tr.win));
+        }
       });
       battle.phase = 'msg';
     };
@@ -953,8 +1075,12 @@ function throwBall(bonus) {
     chainMsgs(shakeMsgs, () => {
       if (shakes === 4) {
         blip(1200, .15);
+        game.caught[foe.species] = true;
         queueMsg('Gotcha! ' + foe.name + ' was caught!', () => {
-          queueMsg(foe.name + ' was sent to BILL\'s PC.', () => endBattle());
+          queueMsg(foe.name + '\'s data was added to the', () => {
+            queueMsg('POKeDEX. It was sent to BILL\'s PC.', () => endBattle());
+            battle.phase = 'msg';
+          });
           battle.phase = 'msg';
         });
       } else {
@@ -1059,6 +1185,18 @@ function drawExpBar(x, y, w, cur, max) {
   px(x + 1, y + 1, Math.max(0, Math.round((w - 2) * clamp(cur / max, 0, 1))), 1, '#48a0f8');
 }
 
+// tiny pixel gender icons (male: blue arrow, female: pink cross)
+function drawGender(x, y, g) {
+  if (g === 'm') {
+    const c = '#3868c8';
+    px(x + 1, y + 3, 3, 3, c); px(x + 4, y + 2, 1, 1, c); px(x + 5, y + 1, 1, 1, c);
+    px(x + 3, y + 1, 3, 1, c); px(x + 5, y + 1, 1, 3, c);
+  } else if (g === 'f') {
+    const c = '#e05878';
+    px(x + 2, y + 1, 3, 3, c); px(x + 3, y + 4, 1, 3, c); px(x + 2, y + 5, 3, 1, c);
+  }
+}
+
 function drawDialogBox() {
   drawBox(2, VH - 42, VW - 4, 40);
   const pageLines = dialog.lines.slice(dialog.page, dialog.page + 2);
@@ -1102,6 +1240,7 @@ function drawParty() {
     if (sel) { ctx.strokeStyle = '#e85838'; ctx.lineWidth = 2; ctx.strokeRect(7, y + 1, VW - 14, 19); }
     drawMon(p.species, 7, y + 1, 19);
     text(p.name, 30, y + 2, '#383838');
+    drawGender(30 + p.name.length * 4.9, y + 1, p.gender);
     text('Lv' + p.level, 100, y + 2);
     drawHPBar(140, y + 4, 66, p.hp, p.stats.hp, true);
     text(p.hp + '/' + p.stats.hp, 153, y + 11, '#484848', 7);
@@ -1153,6 +1292,7 @@ function drawBattleUI() {
   if (foe) {
     drawInfoBox(4, 4, 108, 28);
     text(foe.name, 9, 8, '#40342c', 7);
+    drawGender(9 + foe.name.length * 4.3, 7, foe.gender);
     text('Lv' + foe.level, 82, 8, '#40342c', 7);
     drawHPBar(9, 19, 94, battle.dispFoe, foe.stats.hp, true);
     if (foe.status) text(foe.status, 86, 25, '#c04838', 6);
@@ -1168,6 +1308,7 @@ function drawBattleUI() {
   if (pm) {
     drawInfoBox(VW - 116, 74, 112, 40);
     text(pm.name, VW - 110, 78, '#40342c', 7);
+    drawGender(VW - 110 + pm.name.length * 4.3, 77, pm.gender);
     text('Lv' + pm.level, VW - 40, 78, '#40342c', 7);
     drawHPBar(VW - 110, 89, 100, battle.dispPm, pm.stats.hp, true);
     text(Math.round(battle.dispPm) + '/' + pm.stats.hp, VW - 68, 97, '#484038', 7);
@@ -1251,6 +1392,20 @@ function drawEnding() {
 }
 
 // ---------- Title ----------
+const title = { idx: 0, mode: 'logo' }; // logo | menu
+function savePreview() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SAVE_KEY));
+    if (!s || !s.party) return null;
+    const min = Math.floor((s.playFrames || 0) / 3600);
+    return {
+      time: Math.floor(min / 60) + ':' + String(min % 60).padStart(2, '0'),
+      dex: Object.keys(s.caught || {}).length,
+      lead: s.party[0] && s.party[0].species,
+    };
+  } catch (e) { return null; }
+}
+
 function drawTitle() {
   px(0, 0, VW, VH, '#183048');
   // sea + islands silhouette
@@ -1262,23 +1417,54 @@ function drawTitle() {
   const ph = Math.floor(game.frame / 25) % 2;
   px(20 + ph * 3, 125, 24, 2, '#3a6a95'); px(150 - ph * 4, 138, 30, 2, '#3a6a95');
 
-  text('POKeMON', 62, 24, '#f8d030', 24);
-  text('POKeMON', 60, 22, '#c04838', 24);
-  text('FIRERED: SEVII EDITION', 52, 52, '#f8f8f8', 10);
-  text('~ One Island Adventure ~', 62, 66, '#88b8d8', 8);
-  drawMon('BLASTOISE', 30, 72, 52);
-  drawMon('PIDGEOT', 162, 72, 52);
-  if (Math.floor(game.frame / 30) % 2 === 0) {
-    text(hasSave() ? 'ENTER: CONTINUE   N: NEW GAME' : 'PRESS ENTER', hasSave() ? 32 : 86, 142, '#f8f8f8', 8);
+  if (title.mode === 'logo' || !hasSave()) {
+    text('POKeMON', 62, 24, '#f8d030', 24);
+    text('POKeMON', 60, 22, '#c04838', 24);
+    text('FIRERED: SEVII EDITION', 52, 52, '#f8f8f8', 10);
+    text('~ One Island Adventure ~', 62, 66, '#88b8d8', 8);
+    drawMon('BLASTOISE', 30, 72, 52);
+    drawMon('PIDGEOT', 162, 72, 52);
+    if (Math.floor(game.frame / 30) % 2 === 0) text('PRESS ENTER', 86, 142, '#f8f8f8', 8);
+    return;
   }
+  // save-select screen with CONTINUE info box
+  const sv = savePreview();
+  text('POKeMON FIRERED: SEVII EDITION', 30, 8, '#88b8d8', 8);
+  drawBox(14, 22, VW - 28, 62);
+  text('CONTINUE', 24, 28, '#383838', 8);
+  if (title.idx === 0) text('▶', 16, 28, '#e85838', 8);
+  if (sv) {
+    text('PLAYER', 30, 42, '#586878', 7);
+    text('CHAMPION', 100, 42, '#383838', 7);
+    text('TIME', 30, 54, '#586878', 7);
+    text(sv.time, 100, 54, '#383838', 7);
+    text('POKeDEX', 30, 66, '#586878', 7);
+    text(sv.dex + ' OWNED', 100, 66, '#383838', 7);
+    text('BADGES', 160, 42, '#586878', 7);
+    BADGE_COLORS.forEach((c, i) => px(160 + i * 8, 54, 6, 6, c));
+    if (sv.lead) drawMon(sv.lead, 196, 60, 22);
+  }
+  drawBox(14, 90, 110, 20);
+  text('NEW GAME', 34, 96, '#383838', 8);
+  if (title.idx === 1) text('▶', 22, 96, '#e85838', 8);
 }
 
 function updateTitle() {
   game.frame++;
-  if (tapped('n', 'N')) { blip(900); newGame(); return; }
+  if (title.mode === 'logo') {
+    if (tapped('n', 'N')) { blip(900); newGame(); return; }
+    if (tapA()) {
+      blip(900);
+      if (hasSave()) { title.mode = 'menu'; title.idx = 0; }
+      else newGame();
+    }
+    return;
+  }
+  if (tapUp() || tapDown()) { title.idx = 1 - title.idx; blip(700); }
+  if (tapB()) { title.mode = 'logo'; return; }
   if (tapA()) {
     blip(900);
-    if (hasSave() && loadGame()) { game.state = 'world'; }
+    if (title.idx === 0 && loadGame()) game.state = 'world';
     else newGame();
   }
 }
@@ -1287,6 +1473,7 @@ function updateTitle() {
 function frame() {
   ctx.clearRect(0, 0, VW, VH); // UI layer is transparent over the 3D canvas
   if (tapped('m', 'M')) { MUSIC.ensure(); MUSIC.toggleMute(); blip(MUSIC.muted ? 300 : 900, .05); }
+  if (game.state !== 'title') game.playFrames++;
   switch (game.state) {
     case 'title': updateTitle(); drawTitle(); break;
     case 'world': updateWorld(); drawWorld(); break;
@@ -1300,6 +1487,9 @@ function frame() {
     case 'bag': updateBag(); drawBag(); break;
     case 'battle': updateBattle(); drawBattle(); break;
     case 'ending': updateEnding(); drawEnding(); break;
+    case 'dex': updateDex(); drawDex(); break;
+    case 'card': updateCard(); drawCard(); break;
+    case 'swipe': updateSwipe(); if (game.state === 'swipe') drawSwipe(); break;
     case 'fade':
       updateFade();
       if (fade.bg === 'battle' && battle.foe) drawBattle(); else drawWorld();
@@ -1315,6 +1505,12 @@ function frame() {
 }
 
 R3D.init(document.getElementById('gl'));
+
+// on-screen console buttons (mouse/touch) feed the same key state
+window.pressVirtual = function (key, down) {
+  if (down) { if (!keys[key]) pressed[key] = true; keys[key] = true; }
+  else keys[key] = false;
+};
 
 // debug hook for automated testing
 window.GAME = { game, battle, startWildBattle, startTrainerBattle, makeMon, newGame };

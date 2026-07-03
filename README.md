@@ -66,6 +66,24 @@ exploring in the postgame).
 
 ![Ending](docs/ending.png)
 
+## Post-League save file
+
+The whole game plays like picking up a completed cartridge:
+
+- **Handheld console shell** around the screen — working D-pad, A/B, START,
+  SELECT, and RUN buttons (mouse and touch), so it plays on a phone too
+- **CONTINUE screen** on the title with your player, play time, Pokédex count,
+  badges, and lead Pokémon
+- **Trainer Card** (start menu → CHAMPION) with ID, money, play time, and all
+  eight Kanto badges
+- **Pokédex** with seen/owned tracking across the island's twelve species
+- **Prize money** from trainers, gender icons on every Pokémon, and a spiral
+  wipe into battles
+
+![Continue](docs/continue.png)
+![Trainer Card](docs/trainer-card.png)
+![Pokédex](docs/pokedex.png)
+
 ## Music & feel
 
 - Original **chiptune soundtrack** synthesized live with WebAudio — overworld,
