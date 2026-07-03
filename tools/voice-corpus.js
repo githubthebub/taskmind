@@ -42,6 +42,10 @@ for (const p of D.PRACTICES) {
     if (step.t === 'still') addAll(step.text);
     if (step.t === 'breath' && step.coach) step.coach.forEach(addAll);
     if (step.t === 'scan') step.regions.forEach(r => addAll(r.text));
+    if (step.t === 'choose') {
+      addAll(step.prompt);
+      step.options.forEach(o => addAll(o.reply));
+    }
   }
 }
 

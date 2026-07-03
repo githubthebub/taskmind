@@ -301,6 +301,7 @@ const Session = {
       if (step.t === 'breath') return this._breath(ui, step, next);
       if (step.t === 'still')  return this._still(ui, step, next);
       if (step.t === 'scan')   return this._scan(ui, step, next);
+      if (step.t === 'choose') return this._choose(ui, step, next);
       next();
     };
     next();
@@ -324,6 +325,36 @@ const Session = {
         setTimeout(proceed, hold);
       }
     });
+  },
+
+  /* interactive fork: companion asks, you pick, they respond */
+  _choose(ui, step, next) {
+    ui.zone.innerHTML = '';
+    speak(step.prompt);
+    typewrite(ui.bubble, step.prompt, 32, null);
+    const chips = el('<div class="chips" style="justify-content:center"></div>');
+    step.options.forEach(opt => {
+      const ch = el(`<button class="chip">${opt.label}</button>`);
+      ch.onclick = () => {
+        chips.querySelectorAll('.chip').forEach(x => { x.disabled = true; x.classList.remove('on'); });
+        ch.classList.add('on');
+        const voice = speak(opt.reply);
+        typewrite(ui.bubble, opt.reply, 32, () => {
+          const hold = Math.max(2600, opt.reply.length * 40);
+          const proceed = () => { if (this.active) next(); };
+          if (voice.spoke) {
+            let advanced = false;
+            const go = () => { if (!advanced) { advanced = true; setTimeout(proceed, 900); } };
+            voice.done.then(go);
+            setTimeout(go, hold + 15000);
+          } else {
+            setTimeout(proceed, hold);
+          }
+        });
+      };
+      chips.appendChild(ch);
+    });
+    ui.zone.appendChild(chips);
   },
 
   _still(ui, step, next) {

@@ -173,6 +173,33 @@ const PATTERNS = {
       { name: 'Inhale', kind: 'in', secs: 4, cue: 'In — toward the feeling, not away.' },
       { name: 'Exhale', kind: 'out', secs: 8, cue: 'Out — let the wave pass through you.' }
     ]
+  },
+  box: {
+    label: 'Box breathing',
+    phases: [
+      { name: 'Inhale', kind: 'in', secs: 4, cue: 'In for four…' },
+      { name: 'Hold', kind: 'hold', secs: 4, cue: 'Hold — soft, not clenched.' },
+      { name: 'Exhale', kind: 'out', secs: 4, cue: 'Out for four…' },
+      { name: 'Empty', kind: 'hold', secs: 4, cue: 'Rest empty. Nothing needed.' }
+    ]
+  },
+  nadi: {
+    label: 'Alternate nostril',
+    phases: [
+      { name: 'Left in', kind: 'in', secs: 4, cue: 'Thumb closes the right nostril — inhale left.' },
+      { name: 'Hold', kind: 'hold', secs: 4, cue: 'Close both. Hold softly.' },
+      { name: 'Right out', kind: 'out', secs: 6, cue: 'Release the thumb — exhale right.' },
+      { name: 'Right in', kind: 'in', secs: 4, cue: 'Inhale right.' },
+      { name: 'Hold', kind: 'hold', secs: 4, cue: 'Close both again.' },
+      { name: 'Left out', kind: 'out', secs: 6, cue: 'Ring finger lifts — exhale left.' }
+    ]
+  },
+  tipp: {
+    label: 'Paced crisis breathing',
+    phases: [
+      { name: 'Inhale', kind: 'in', secs: 4, cue: 'In through the nose.' },
+      { name: 'Exhale', kind: 'out', secs: 7, cue: 'Out slow — longer than in, no matter what.' }
+    ]
   }
 };
 
@@ -221,7 +248,7 @@ const PRACTICES = [
     subtitle: 'Long exhale 4·8 · ~4 min',
     minutes: 4,
     kind: 'breath',
-    group: 'unwind',
+    group: 'breath',
     blurb: 'Your body has an actual off switch — the vagus nerve — and the exhale is its handle. Four seconds in, eight out, and the heart has no choice but to slow. This is the one to reach for when "just relax" isn’t an instruction your body accepts.',
     script: [
       { t: 'say', text: {
@@ -258,7 +285,7 @@ const PRACTICES = [
     subtitle: 'Coherent breathing · ~4 min',
     minutes: 4,
     kind: 'breath',
-    group: 'unwind',
+    group: 'breath',
     blurb: 'There is one breathing pace — about five and a half breaths a minute — where heart, lungs, and blood pressure fall into a single rhythm, like rocking a boat until the water goes flat. Monks found it by feel; HRV labs found it by measurement. Same tide.',
     script: [
       { t: 'say', text: {
@@ -328,7 +355,7 @@ const PRACTICES = [
     subtitle: 'Vagal humming · ~3 min',
     minutes: 3,
     kind: 'breath',
-    group: 'unwind',
+    group: 'breath',
     blurb: 'Cats purr. Monks chant om. Grandmothers hum at the stove. Same trick: vibration where the vagus nerve runs past the throat, an exhale that stretches itself, calm from the inside out. The most portable nervous-system tool ever shipped with a human body.',
     script: [
       { t: 'say', text: {
@@ -518,7 +545,7 @@ const PRACTICES = [
     subtitle: 'Dichotomy of control · ~3 min',
     minutes: 3,
     kind: 'scan',
-    group: 'deep',
+    group: 'mind',
     champion: 'kai',
     blurb: 'A Roman emperor ran the known world with this one move: sort everything into what is yours to control and what never was, then put the second pile down. Two thousand years later it’s the spine of modern CBT. Three minutes of ancient triage for a modern loop.',
     script: [
@@ -540,6 +567,385 @@ const PRACTICES = [
         kai: "That's the drill. Two piles, carry one. Marcus did it nightly by lamplight; you've got an app and better lighting. No excuses.",
         amara: "Lighter, hm? Keep only your pile tonight. The rest of it will exhaust somebody else — it doesn't have to be you.",
         yuki: "Done! One pile down, one small action up. That's the entire operating system for a calm life, no subscription required." } }
+    ]
+  },
+
+  /* ---------- CBT ---------- */
+  {
+    id: 'courtroom',
+    title: 'The Courtroom',
+    subtitle: 'CBT · put a thought on trial · ~4 min',
+    minutes: 4,
+    kind: 'scan',
+    group: 'mind',
+    champion: 'kai',
+    blurb: 'The core move of cognitive behavioral therapy, the most-tested talk therapy on record: treat a thought as a defendant, not a verdict. You’ll be surprised how few of your 2 a.m. prosecutors survive cross-examination.',
+    script: [
+      { t: 'say', text: {
+        sera: "We're going to do something lawyers do and anxious minds don't: check the evidence. Bring up the thought that's been beating you up.",
+        noa: "A thought walked in claiming to be a fact. We're going to check its papers.",
+        kai: "CBT drill — the courtroom. That harsh thought gets a trial today instead of an automatic conviction. Bring it in.",
+        amara: "Tonight a thought gets a trial instead of a verdict, love. Bring me the one that keeps reading you charges.",
+        yuki: "Courtroom time! That mean little thought has been sentencing you without a hearing. Not today. Bring it in." } },
+      { t: 'scan', regions: [
+        { name: 'The charge', secs: 35, text: "State the thought exactly, like a charge being read: 'I'll always be alone.' 'I have no discipline.' 'She was the only good thing.' Word for word — vague charges can't be tried." },
+        { name: 'Evidence for', secs: 40, text: "Prosecution first, honestly: what real evidence supports it? Actual events, not feelings. Feelings are witnesses, not proof — 'I feel it' has convicted more innocent people than any lie." },
+        { name: 'Evidence against', secs: 45, text: "Now the defense, and be as thorough as you'd be for a friend: times it wasn't true. Exceptions. The messages you did answer, the weeks that went fine, the people who stayed. The defense usually has more files than you expected." },
+        { name: 'Cross-examine', secs: 40, text: "Ask the thought three questions. Would I say this to someone I love? Am I confusing one bad chapter with the whole book? If my best friend said this about themselves, what would I say back?" },
+        { name: 'The verdict', secs: 40, text: "Now re-write the charge as what the evidence actually supports — usually something like 'I'm struggling with this right now, and I'm working on it.' Less dramatic. More true. Truth tends to be boring; that's how you recognize it." }
+      ] },
+      { t: 'say', text: {
+        sera: "Notice the sentence that survived is one you can actually live with. That's not positive thinking — that's accurate thinking. It just happens to be kinder.",
+        noa: "The thought still exists. It just lost its badge. It can talk; it can no longer sentence.",
+        kai: "Case closed. Do this enough and the harsh thoughts start showing up with better evidence — or not showing up at all.",
+        amara: "See how the true version is softer than the loud version? It almost always is. Carry the true one to bed.",
+        yuki: "Verdict's in and it's way less dramatic than the charge! That's CBT in a nutshell: reality is usually the gentler story." } }
+    ]
+  },
+  {
+    id: 'patterns',
+    title: 'Name the Pattern',
+    subtitle: 'CBT · spot your distortion · ~3 min',
+    minutes: 3,
+    kind: 'scan',
+    group: 'mind',
+    champion: 'noa',
+    blurb: 'Anxious minds run about ten stock plays, and psychologists have named them all — catastrophizing, mind-reading, all-or-nothing. A named pattern loses half its power: you stop being in the movie and start seeing the projector.',
+    script: [
+      { t: 'say', text: {
+        sera: "Your mind has a few favorite tricks it plays on you. Today we learn their names — because a trick with a name stops working as well.",
+        noa: "The mind runs perhaps ten plays, endlessly recycled. Learn to call them by name and you stop mistaking them for news.",
+        kai: "Pattern recognition drill. Anxious thoughts aren't creative — they're reruns. We're learning the episode titles.",
+        amara: "Come, let me show you the machinery. The thoughts that run you at night are old scripts with names, love — and named things shrink.",
+        yuki: "Okay, fun one! Your brain has like ten stock moves and psychologists named all of them ages ago. Once you can call the play, it stops working on you." } },
+      { t: 'choose', prompt: "Think of the thought that's been bothering you most this week. Which of these does it smell like?",
+        options: [
+          { label: 'It predicts disaster', reply: "That's catastrophizing — the mind fast-forwarding to the worst ending and calling it a preview. Ask it: what's the boring, most-likely ending? The boring one almost always wins." },
+          { label: 'It knows what others think', reply: "Mind-reading. You've cast yourself as a telepath, and only ever receiving bad news. Nobody transmits that clearly — you're hearing your own signal, echoed." },
+          { label: "It says 'always' or 'never'", reply: "All-or-nothing thinking — the mind's cheapest filter. Life runs on 'sometimes' and 'lately'; 'always' and 'never' are almost always false on the evidence." },
+          { label: "It says it's all my fault", reply: "Personalization — billing yourself for weather. Most outcomes have a dozen parents; you were one at most. Split the invoice honestly." }
+        ] },
+      { t: 'scan', regions: [
+        { name: 'Rewind the week', secs: 40, text: "Now scan the last few days for two more times the same pattern ran. Same play, different scenery. Seeing the rerun is the skill — it turns 'the truth' back into 'a habit.'" },
+        { name: 'The tell', secs: 35, text: "Find your tell: the body feeling that comes just before the pattern runs — the stomach drop, the chest grip. That feeling is the projector warming up. Catch the tell, and you're ahead of the movie." }
+      ] },
+      { t: 'say', text: {
+        sera: "You don't have to argue with a rerun. Just say its name, and let it play to an empty theater.",
+        noa: "Named. Filed. The pattern will run again — and you will be watching it, not starring in it.",
+        kai: "Good rep. Naming the play beats arguing the score. Next time it runs, just call it — out loud if you have to.",
+        amara: "Now you know its name, you'll hear the difference between the script and your own voice. They never did sound alike.",
+        yuki: "Pattern named! Next time it starts you get to go 'ah, this one again' — which is honestly the most satisfying sentence in mental health." } }
+    ]
+  },
+  {
+    id: 'opposite',
+    title: 'Opposite Action',
+    subtitle: 'DBT · act against the urge · ~3 min',
+    minutes: 3,
+    kind: 'scan',
+    group: 'mind',
+    champion: 'yuki',
+    blurb: 'From dialectical behavior therapy: when an emotion’s advice would make your life smaller — isolate, avoid, lash out — do the exact opposite, on purpose, with your whole body. Emotions are lawyers, not judges; this is how you overrule them.',
+    script: [
+      { t: 'say', text: {
+        sera: "Sometimes a feeling gives advice that makes everything worse — hide, avoid, give up. This practice is about lovingly doing the exact opposite.",
+        noa: "Emotions advise. They do not command. When the advice shrinks your life, the practice is precise disobedience.",
+        kai: "DBT skill: opposite action. When the emotion's game plan is 'make your life smaller,' you run the reverse play — full commitment, no half reps.",
+        amara: "Some feelings, love, are terrible advisors — they always vote for the cave. Tonight we practice politely outvoting them.",
+        yuki: "This is the judo one! When a mood says 'stay in, give up, don't text back' — we do the literal opposite, with enthusiasm. It works stupidly well." } },
+      { t: 'scan', regions: [
+        { name: 'Catch the advice', secs: 35, text: "Find the emotion running the show right now, and state its advice plainly: 'Loneliness says message her.' 'Shame says hide all weekend.' 'Anger says send the text.' Emotion, then advice." },
+        { name: 'Check the advice', secs: 35, text: "One honest question: if you follow it, does your life get bigger or smaller? Some advice is good — fear of a real cliff, guilt about a real wrong. But if it shrinks you, it's overruled." },
+        { name: 'Build the opposite', secs: 40, text: "Now construct the exact opposite, concretely. Hide becomes 'text a friend to get food.' Message her becomes 'gym, now, phone in the locker.' Give up becomes 'do the smallest next step tonight.' Pick yours." },
+        { name: 'All the way', secs: 35, text: "The catch: opposite action only works at full commitment — posture, face, voice, all of it. Half-hearted opposite is just the original mood wearing a costume. Decide to do yours completely, and set the exact time." }
+      ] },
+      { t: 'say', text: {
+        sera: "The feeling doesn't have to change first — that's the secret. The action goes first, and the feeling follows it home.",
+        noa: "You are not arguing with the emotion. You are outvoting it with your legs.",
+        kai: "Overruled and scheduled — that's the rep. Emotions respect action the way waves respect swimmers: eventually, they carry you.",
+        amara: "Do your opposite tonight exactly as planned, hm? The mood will sulk for twenty minutes and then quietly change its vote. They always do.",
+        yuki: "Opposite locked in! Fun fact: the mood almost never survives contact with the opposite action. It's the closest thing feelings have to an off button." } }
+    ]
+  },
+  {
+    id: 'rain',
+    title: 'RAIN',
+    subtitle: 'Self-compassion · ~5 min',
+    minutes: 5,
+    kind: 'scan',
+    group: 'mind',
+    champion: 'sera',
+    blurb: 'Recognize, Allow, Investigate, Nurture — the four-step sequence from the mindfulness world for meeting a hard feeling without either drowning in it or running from it. The step everyone skips is the last one; it’s also the one that works.',
+    script: [
+      { t: 'say', text: {
+        sera: "This one is for the feelings you usually run from — straight into the scroll. Four steps, and the last one is the kindness you keep giving everyone but yourself.",
+        noa: "RAIN. Four movements for a feeling you've been avoiding. Avoidance feeds it; attention, strangely, does not.",
+        kai: "RAIN protocol. Counterintuitive but proven: you defuse a hard feeling by moving toward it in a specific way. Four steps, no skipping the fourth.",
+        amara: "Come here with the heavy one — the feeling you've been outrunning all day. We're going to sit with it properly. It's smaller than it acts, I promise.",
+        yuki: "The gentle one! Four steps for a feeling that's been chasing you. Spoiler: when you finally turn around, it's usually more tired than you are." } },
+      { t: 'scan', regions: [
+        { name: 'Recognize', secs: 40, text: "R — recognize. What is actually here, right now? Name it simply: loneliness. Shame. Boredom with teeth. Naming it out loud, even in a whisper, moves it from the fog into the room." },
+        { name: 'Allow', secs: 45, text: "A — allow. This is the strange one: let it be here, without fixing, without a scroll, without an exit. Say 'this belongs' — not forever, just for this minute. Resistance is the rope in tug-of-war; allowing is dropping the rope." },
+        { name: 'Investigate', secs: 45, text: "I — investigate, in the body, not the story. Where does it live — throat, chest, gut? Tight or hollow? Hot or heavy? Meet it like a sensation, not a biography. The story is where it breeds; the body is where it ends." },
+        { name: 'Nurture', secs: 45, text: "N — nurture. Put a hand where the feeling lives — actually do it, this is not a metaphor. Warm palm, real weight. Say what you'd say to a friend carrying this: 'Of course this hurts. You're okay. I've got you.' Your nervous system can't tell your kindness from anyone else's — it just receives it." },
+        { name: 'After the rain', secs: 30, text: "Take one slow breath and notice what's different — usually not gone, just quieter, like weather after rain. That's enough. That was the whole assignment." }
+      ] },
+      { t: 'say', text: {
+        sera: "You just gave yourself what you've been paying strangers on the internet for. It was in your own hand the whole time — literally.",
+        noa: "The feeling was never the problem. The running was. You just stopped running for five minutes, and look.",
+        kai: "That's the hardest rep in this whole app and you just did it. Meeting the feeling beats every escape hatch ever built.",
+        amara: "There, love. That's how you hold yourself. Practice it here and one night you'll do it at 2 a.m. without me.",
+        yuki: "You did the brave one! Everyone thinks the moving practices are hard — nope. Sitting with the feeling and being nice to yourself? Black belt stuff." } }
+    ]
+  },
+
+  /* ---------- DBT crisis ---------- */
+  {
+    id: 'circuit',
+    title: 'The Circuit Breaker',
+    subtitle: 'DBT crisis skills · ~4 min',
+    minutes: 4,
+    kind: 'breath',
+    group: 'now',
+    champion: 'kai',
+    blurb: 'For the 9-out-of-10 moments when "just breathe" sounds like an insult. Borrowed from DBT’s crisis toolkit (TIPP): cold on the face to trip the dive reflex, hard movement to burn the adrenaline, then paced breathing once the body will accept it. Physiology first; feelings later.',
+    script: [
+      { t: 'say', text: {
+        sera: "This one's for when it's really bad — when calm advice feels like a joke. We go through the body's emergency hardware instead. Stay with me.",
+        noa: "Crisis protocol. When the alarm is this loud, we don't negotiate with it — we trip the physical switches underneath it.",
+        kai: "Circuit breaker time. This is the 9-out-of-10 protocol: we're not talking you down, we're powering the alarm down. Hardware first.",
+        amara: "It's big right now, I know. We're not going to think our way out — we're going to use the body's own emergency exits. I'll walk you to each one.",
+        yuki: "Okay — big feelings, hardware solutions! Your body literally has built-in circuit breakers. We're flipping them in order. With me!" } },
+      { t: 'say', text: "First switch, if you can reach it: cold water on the face, or a cold can against the cheekbones, thirty seconds. It trips the mammalian dive reflex — heart rate drops whether your thoughts agree or not. Go if you can; I'll wait right here." },
+      { t: 'still', secs: 35, text: "Cold on the face if available. Otherwise, press your palms hard against your eyes and cheeks." },
+      { t: 'say', text: "Second switch: burn the fuel. Twenty seconds of hard movement, right now — squats, wall push, sprint in place. Adrenaline is fuel, and fuel burns off. Go." },
+      { t: 'still', secs: 25, text: "Move hard. Legs, arms, anything. The shaking after is the system discharging — that's success." },
+      { t: 'say', text: "Now the breath will actually land. In for four, out for seven — longer out than in, no matter what." },
+      { t: 'breath', pattern: 'tipp', cycles: 10, coach: [
+        "That's it. The heart is coming down with the exhale.",
+        "Shoulders drop on the out-breath. Every time.",
+        "You're through the worst sixty seconds already.",
+        "Squeeze your fists on the inhale… release completely on the exhale.",
+        "Again — tense on the in… and let everything go on the out.",
+        "The alarm is quieter. Notice that. Your body is a good machine.",
+        "Longer out than in. That's the only rule left.",
+        "Two more. You rode it.",
+        "Last one — the slowest exhale you've got."
+      ] },
+      { t: 'say', text: {
+        sera: "You just came down from a nine without anyone's help and without spending a cent. Remember the order: cold, move, breathe. It's yours forever.",
+        noa: "The storm passed through the body, not around it. Cold, movement, breath — carry the sequence.",
+        kai: "That's the full circuit. Memorize the order — cold, burn, breathe — because next time you might not have the app, and now you don't need it.",
+        amara: "There you are, back in your body. Cold, movement, breath — three switches, always installed, wherever you are.",
+        yuki: "You DID it — that was a nine and you rode it down manually! Cold, move, breathe. Tattoo the order somewhere. Metaphorically!" } }
+    ]
+  },
+
+  /* ---------- somatic ---------- */
+  {
+    id: 'shake',
+    title: 'Shake It Out',
+    subtitle: 'Somatic discharge · ~3 min · stand up',
+    minutes: 3,
+    kind: 'scan',
+    group: 'now',
+    champion: 'yuki',
+    blurb: 'Watch a duck after a fight: it flaps hard for ten seconds, then glides off like nothing happened. Mammals discharge stress by shaking; humans invented dignity and got anxiety. Three undignified minutes, straight from somatic therapy.',
+    script: [
+      { t: 'say', text: {
+        sera: "Fair warning: this one looks ridiculous and feels wonderful. We're going to shake the stress out of the body the way animals do — because it works.",
+        noa: "Animals shake off a threat and move on. Humans store it in the shoulders and call it Tuesday. Stand up; we're doing it the animal way.",
+        kai: "Somatic discharge drill. Every mammal shakes off stress except us — we suppress it and wonder why our backs hurt. Stand up, we're reclaiming the hardware.",
+        amara: "Up you get, love. We're going to shake the day off — literally, like a wet dog. Nobody's watching. And if they are, they're just jealous.",
+        yuki: "THE SHAKE ONE! Best three minutes in the app. Stand up, doors closed if you're shy — we're about to look extremely silly and feel extremely great." } },
+      { t: 'scan', regions: [
+        { name: 'Hands & arms', secs: 30, text: "Start with the hands — shake them like you're flinging water off. Let it climb into the forearms, the elbows, loose and floppy. No rhythm, no technique. Sloppier is better." },
+        { name: 'Shoulders', secs: 30, text: "Now the shoulders — bounce them, roll them, let the arms flail. This is where you've been filing the stress. Shake the filing cabinet." },
+        { name: 'Legs', secs: 30, text: "One leg at a time — shake it out like a footballer before kickoff. Then the other. Then bounce on both, heels dropping, teeth unclenched, jaw loose." },
+        { name: 'Everything', secs: 35, text: "Now everything at once — full-body wobble, add a sound if you dare, a horse-lips exhale, a groan. Ten more seconds of maximum undignified commitment. This is the duck flapping. Go." },
+        { name: 'And… still', secs: 30, text: "Stop. Stand completely still, eyes soft. Feel the buzzing — hands, arms, chest. That hum is the discharge finishing, the current leaving the wire. Just watch it fade." }
+      ] },
+      { t: 'say', text: {
+        sera: "That buzzing calm? Animals get it free after every scare. Now you do too.",
+        noa: "The tremor is the body completing what the day interrupted. Done. Carry the quiet.",
+        kai: "Discharge complete. Thirty years of tension science in three silly minutes — the body never needed the dignity anyway.",
+        amara: "Mm, look at you, all shaken loose. The body holds nothing it's allowed to finish. Remember that.",
+        yuki: "And THAT'S why the duck never needs therapy! Feel the buzz? That's stress leaving the building. Best trade ever: dignity for peace." } }
+    ]
+  },
+  {
+    id: 'orient',
+    title: 'Orienting',
+    subtitle: 'Somatic grounding · ~3 min',
+    minutes: 3,
+    kind: 'scan',
+    group: 'now',
+    champion: 'noa',
+    blurb: 'From Somatic Experiencing: panic is the body forgetting where it is. The fix is embarrassingly literal — turn the head slowly and actually look at the room, the way every animal does when it steps into a clearing. The amygdala believes the neck, not the news.',
+    script: [
+      { t: 'say', text: {
+        sera: "When the mind spins, it forgets it's in a room. This practice is just… looking around, slowly, until the body remembers it's safe. Deceptively simple, weirdly powerful.",
+        noa: "An animal enters a clearing and looks — slowly, all the way around. Only then does it graze. Your body has been skipping that step for years. We're putting it back.",
+        kai: "Orienting drill. The threat system trusts the neck and the eyes, not your opinions. We're going to show it the actual room instead of the imagined one.",
+        amara: "Come back to the room, love. The mind's been somewhere terrible that doesn't exist; the fix is to slowly show it where you actually are.",
+        yuki: "The looking-around one! Sounds too simple, works every time. We're literally just going to check the room like a cautious cat. Ready?" } },
+      { t: 'scan', regions: [
+        { name: 'Let the neck lead', secs: 40, text: "Slowly — much slower than feels natural — turn your head to the right and let your eyes land on whatever's there. Not scanning: looking. Let the eyes rest on one thing until it becomes boring. Boring is the goal; boring means safe." },
+        { name: 'All the way around', secs: 45, text: "Keep turning, pausing wherever the eyes want to stay. A doorframe. A lamp. The window. If something is pleasant to look at, give it extra seconds — the system files pleasant as proof." },
+        { name: 'Behind you', secs: 35, text: "Turn and check behind you — really. This is the part every prey animal does and every anxious human skips. Nothing there. Let the body register that: nothing there." },
+        { name: 'Name five things', secs: 40, text: "Now name five things you can see, out loud or in a whisper. Old trick, real mechanism: naming drags the brain out of the threat simulation and into the actual, furnished, harmless room." },
+        { name: 'Land', secs: 30, text: "Let the gaze go soft and wide now, taking in the whole room at once. Feel your weight on the chair or floor. The room has been safe this entire time. Now the body knows it too." }
+      ] },
+      { t: 'say', text: {
+        sera: "The panic was a story about somewhere else. The room was the truth. You just taught your body to check.",
+        noa: "The clearing is safe. The animal can graze. That is the entire teaching, and it never stops working.",
+        kai: "That's orienting — the oldest security system on earth, and you just rebooted it. Use it anywhere: five slow looks beat five hundred fast thoughts.",
+        amara: "See? The room never joined the emergency. Next time the mind spins at night, turn on a dim light and just… look around slowly. It works at 2 a.m. too.",
+        yuki: "Room: checked. Body: convinced. It's honestly my favorite cheat code — the neck is wired straight into the calm switch and nobody tells you!" } }
+    ]
+  },
+  {
+    id: 'butterfly',
+    title: 'The Butterfly Hug',
+    subtitle: 'Bilateral tapping · ~4 min',
+    minutes: 4,
+    kind: 'breath',
+    group: 'breath',
+    champion: 'sera',
+    blurb: 'Cross your arms, hands on opposite shoulders, and tap left-right, slow as a resting heartbeat. Developed for trauma relief work after disasters, the alternating rhythm gives the brain a metronome and the body a hug — you happen to be giving both to yourself.',
+    script: [
+      { t: 'say', text: {
+        sera: "This one is a hug you give yourself that also happens to be a proven calming technique. Cross your arms over your chest, hands resting on opposite shoulders — like folding your own wings.",
+        noa: "Cross the arms. Hands to opposite shoulders. The posture alone changes the state; the tapping finishes it.",
+        kai: "Bilateral stimulation drill — the butterfly hug. Looks soft, works hard: used by disaster-relief therapists worldwide. Arms crossed, hands on opposite shoulders.",
+        amara: "Arms crossed over the chest, love, hands on your shoulders — yes, like holding yourself. Because that's exactly what this is, with engineering underneath.",
+        yuki: "The self-hug one! Arms crossed, hands on opposite shoulders, like you're your own weighted blanket. There's real science under the cozy, promise." } },
+      { t: 'say', text: "Now tap — left hand, right hand, left, right — slow and steady, about one tap per second, like a resting heartbeat. Keep it going while we breathe." },
+      { t: 'breath', pattern: 'longExhale', cycles: 12, coach: [
+        "Tap left, right… slow as a sleepy drummer.",
+        "Let the eyes close if they want. The rhythm holds you.",
+        "The alternating beat gives the busy half of your brain a job. That's why the quiet arrives.",
+        "Shoulders soften under your own hands.",
+        "If a memory or worry drifts up, let it pass between the taps.",
+        "Halfway. Notice the warmth where your hands rest.",
+        "This is what soothing is, mechanically. And you're doing it to yourself.",
+        "Slower taps now, if they want to slow.",
+        "Let the tapping get lighter… barely a touch.",
+        "Two more breaths, taps fading.",
+        "Let the hands finally rest still on your shoulders."
+      ] },
+      { t: 'still', secs: 15, text: "Hands resting where they are. Just the weight, the warmth, the breath." },
+      { t: 'say', text: {
+        sera: "You just soothed yourself the way someone should have when you were small. That circuitry never expires — it was waiting.",
+        noa: "The hands were yours. The calm is too. No middleman required.",
+        kai: "Rep logged. Portable, invisible if you tap your thighs instead, and it works in airports, meetings, and 3 a.m. Use it.",
+        amara: "That's the one I'd send home with everyone, love. A hug with a heartbeat in it, and both of them yours.",
+        yuki: "Self-hug: deployed! You can do the stealth version on your knees under any desk. Nobody knows. Everybody should." } }
+    ]
+  },
+
+  /* ---------- pranayama & mudra ---------- */
+  {
+    id: 'square',
+    title: 'The Square',
+    subtitle: 'Box breathing · ~4 min',
+    minutes: 4,
+    kind: 'breath',
+    group: 'breath',
+    champion: 'kai',
+    blurb: 'Four in, four hold, four out, four empty. The yogis called it sama vritti — equal fluctuation; Navy SEALs adopted it because it keeps aim steady under fire. The holds are the training: comfort with the pause is comfort with not reacting.',
+    script: [
+      { t: 'say', text: {
+        sera: "The square: four sides, all equal — in, hold, out, and rest. The holds are the interesting part; that's where you practice being okay with pausing.",
+        noa: "Equal breath. Four, four, four, four. The yogis called it sama vritti; the point is the corners — the places where nothing moves and nothing needs to.",
+        kai: "Box breathing — the SEAL standard. Same drill before a night dive as before a hard conversation: four in, four hold, four out, four empty. Steadiness is trainable. Let's train.",
+        amara: "A square, love: in, hold, out, rest — four counts each. The holds teach the thing the scroll unteaches: that a pause is not an emergency.",
+        yuki: "Box breathing! The one the special forces guys do, which means you can absolutely do it on a Tuesday. Four beats a side, corners included. Let's draw squares." } },
+      { t: 'breath', pattern: 'box', cycles: 14, coach: [
+        "Trace it like a square: up one side, across the top…",
+        "The hold isn't held — it's rested. Jaw loose.",
+        "Down the exhale side… and rest along the bottom.",
+        "Corners are where the calm lives. Don't rush them.",
+        "If the empty hold feels edgy, that's the training working. Stay soft in it.",
+        "Halfway. The heart is syncing to the count.",
+        "Equal sides, equal mind — that's the old formula.",
+        "Notice: nothing happened in any of the pauses. Nothing ever does.",
+        "Let the square draw itself now.",
+        "Steady as a held rifle, calm as a held note.",
+        "Three more squares.",
+        "Two.",
+        "Last one — make its corners the softest yet."
+      ] },
+      { t: 'say', text: {
+        sera: "Feel that evenness? Everything level, nothing urgent. That's what your baseline can be.",
+        noa: "Equal in, equal out, and the pauses held nothing dangerous. Remember the corners.",
+        kai: "Solid squares. This is the one to run before anything high-stakes — interview, call, conversation. Steady breath, steady hands.",
+        amara: "Perfectly even, hm? The pause between things is where you actually live. The square just taught you to be at home there.",
+        yuki: "Squares: drawn! Pro tip — one square, eyes open, before you reply to any message that spiked your heart rate. Changes everything." } }
+    ]
+  },
+  {
+    id: 'nadi',
+    title: 'Nadi Shodhana',
+    subtitle: 'Alternate-nostril breathing · ~4 min',
+    minutes: 4,
+    kind: 'breath',
+    group: 'breath',
+    champion: 'amara',
+    blurb: 'The classical pranayama: thumb and ring finger alternating nostrils, weaving the breath left and right. Three thousand years of yogis prescribed it for a scattered mind; modern studies find it lowers blood pressure and sharpens attention. The finger-work itself is half the medicine — busy hands, anchored mind.',
+    script: [
+      { t: 'say', text: {
+        sera: "An old one now — older than every app and most religions. Right hand up: thumb will close the right nostril, ring finger the left. We weave the breath side to side.",
+        noa: "Nadi shodhana. Three millennia of practice behind one gesture: thumb, ring finger, alternating gates. The weaving is the point — attention cannot wander while it steers.",
+        kai: "Alternate-nostril breathing. Yes, it looks mystical; the mechanism is solid — slow nasal breathing plus a coordination task that pins your attention. Right hand up: thumb on right nostril, ring finger standing by.",
+        amara: "The old weaving breath, love. Thumb closes the right side, ring finger the left, and the breath goes back and forth like a shuttle on a loom. Yogis called it cleaning the channels. Let's clean.",
+        yuki: "Fancy finger breathing! Ancient tech, fully functional. Thumb blocks right, ring finger blocks left, breath zigzags. It's like a fidget toy and a meditation had a baby. Hand up!" } },
+      { t: 'say', text: "Follow the ring on screen — it says which side breathes. Gentle pressure, quiet breath, no force. If the fingers get confused, smile and rejoin on the next inhale." },
+      { t: 'breath', pattern: 'nadi', cycles: 6, coach: [
+        "Left in… hold… right out. One weave done.",
+        "Keep the touch light — the nostril barely needs closing.",
+        "Let the held moments be soft. Nothing is being gripped.",
+        "The mind can't weave and wander at once. That's the design.",
+        "Halfway. Notice how even the two sides have become."
+      ] },
+      { t: 'still', secs: 15, text: "Hand down. Breathe normally through both sides and notice the strange, clean evenness." },
+      { t: 'say', text: {
+        sera: "Both channels open, mind swept. Whatever you call the mechanism, the evenness is real — enjoy it.",
+        noa: "The loom is still; the thread is even. This is what 'centered' actually feels like, beneath the metaphor.",
+        kai: "Good work. Ancient protocol, measurable effects — lower blood pressure, sharper focus. The old guys knew things.",
+        amara: "Mm, feel that balance? Three thousand years of tired minds ended their evenings exactly this way. You're in long, good company.",
+        yuki: "Channels: officially shodhana'd! Feel how weirdly symmetrical your head is right now? That's the stuff. The ancients did NOT skip breath day." } }
+    ]
+  },
+  {
+    id: 'mudra',
+    title: 'The Anchored Hand',
+    subtitle: 'Mudra & breath · ~4 min',
+    minutes: 4,
+    kind: 'scan',
+    group: 'breath',
+    champion: 'amara',
+    blurb: 'Mudras — the hand seals of yoga and Buddhist practice. The honest mechanism: the fingertips are some of the most nerve-dense real estate you own, and a deliberate hand position gives the mind a physical anchor it can find again anywhere — a meeting, a bus, a hard phone call. Ritual is technology; this one fits in a pocket.',
+    script: [
+      { t: 'say', text: {
+        sera: "Something quieter now: the hands. Yoga's hand seals — mudras — are really anchors: give the fingers a deliberate shape, and the mind ties itself to it.",
+        noa: "Mudra. A shape the hand holds so the mind has somewhere to live. The fingertips are dense with nerves; the old practice simply uses the wiring.",
+        kai: "Hand-anchor drill. Strip the mysticism and mudras are elegant engineering: nerve-dense fingertips, deliberate position, portable focus cue. Train it here, deploy it anywhere.",
+        amara: "The hands now, love. The old seals — mudras. Think of them as knots you tie in the body so the calm has something to hold onto later.",
+        yuki: "Hand shapes with superpowers! Okay, honest version: fingertip nerves plus intention equals a portable calm button. Still counts as magic in my book. Hands ready!" } },
+      { t: 'scan', regions: [
+        { name: 'Gyan mudra', secs: 45, text: "Rest your hands on your thighs, palms up. Touch each index fingertip to its thumb, lightly — a circle, not a pinch. This is gyan mudra, the classic. Feel the exact point of contact: a tiny pulse, a warmth. Keep the breath slow and let all your attention live in those two small circles." },
+        { name: 'The pulse', secs: 40, text: "Press the fingertips together a little more firmly on the inhale, soften on the exhale. Notice you can feel your heartbeat there if you wait for it. A heartbeat, found in a fingertip, on a slow breath — that's the whole toolkit, hiding in plain sight." },
+        { name: 'Anjali', secs: 45, text: "Now bring the palms together at the chest — anjali, the gesture every culture reinvented, from prayer to namaste to 'please.' Press gently, feel palm against palm, warmth building. There's a reason humans everywhere landed on this shape: pressure across both palms is bilateral, centering, and instantly familiar to the body." },
+        { name: 'Shuni', secs: 40, text: "Back to the thighs, palms up. Now middle finger to thumb — shuni mudra, traditionally the seal of patience. Use it as that: while it's held, you're practicing being someone who can wait. Slow exhale. The urge to check the phone can sit outside the circle." },
+        { name: 'Choose your anchor', secs: 35, text: "Pick the one that felt best — index, middle, or palms together. That's your anchor now. The training: hold it here in calm, so the shape remembers the calm — and later, in line or in traffic or mid-craving, the shape can carry you back." }
+      ] },
+      { t: 'say', text: {
+        sera: "Now your calm has a handle on it — literally in hand. Use it somewhere ordinary today, and feel it pull.",
+        noa: "The seal is set. A shape practiced in stillness returns you to stillness. That is all a ritual is, and it is enough.",
+        kai: "Anchor trained. This is state-conditioning, same as any athlete's pre-shot routine — except yours is invisible and always installed.",
+        amara: "Keep that little circle in your pocket, love. Tonight, if the phone starts calling to you, make the shape first — then decide.",
+        yuki: "Anchor acquired! Secret calm button, zero batteries, works in meetings. The ancients really were just walking around with cheat codes." } }
     ]
   }
 ];

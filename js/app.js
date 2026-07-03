@@ -322,13 +322,14 @@ const App = {
 
     /* grouped catalog; the night section leads late in the evening */
     let groups = [
-      ['now', 'Right now · under five minutes'],
-      ['unwind', 'Unwind'],
+      ['now', 'Right now · fast resets'],
+      ['breath', 'Breath & body'],
+      ['mind', 'Working with the mind'],
       ['deep', 'Go deeper'],
       ['night', 'For the night']
     ];
     const h = new Date().getHours();
-    if (h >= 21 || h < 5) groups = [groups[3], groups[0], groups[1], groups[2]];
+    if (h >= 21 || h < 5) groups.unshift(groups.pop());
 
     const list = home.querySelector('[data-practices]');
     groups.forEach(([gid, glabel]) => {
