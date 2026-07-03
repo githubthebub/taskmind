@@ -322,6 +322,12 @@ input[type="range"]::-webkit-slider-thumb {
 
 .fade-slow { animation: fadeUp 1.6s ease both; }
 
+@media (prefers-reduced-motion: reduce) {
+  .bg-particles span, .portrait.ambient, .sos-wave,
+  .wave-stage .w1, .wave-stage .w2, .portrait-fallback::before { animation: none !important; }
+  .screen, .fade-slow { animation-duration: .01s; }
+}
+
 @media (max-width: 480px) {
   main { padding: 20px 14px 130px; }
   h1 { font-size: 1.7rem; }

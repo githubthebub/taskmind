@@ -330,6 +330,12 @@ input[type="range"]::-webkit-slider-thumb {
 
 .fade-slow { animation: fadeUp 1.6s ease both; }
 
+@media (prefers-reduced-motion: reduce) {
+  .bg-particles span, .portrait.ambient, .sos-wave,
+  .wave-stage .w1, .wave-stage .w2, .portrait-fallback::before { animation: none !important; }
+  .screen, .fade-slow { animation-duration: .01s; }
+}
+
 @media (max-width: 480px) {
   main { padding: 20px 14px 130px; }
   h1 { font-size: 1.7rem; }
@@ -1090,7 +1096,7 @@ const State = {
         monthlySpend: 0,        // what they told us they spend / month
         createdAt: Date.now()
       },
-      settings: { voice: true },
+      settings: { voice: true, ambient: true },
       sessions: [],             // {ts, practiceId, minutes, before, after}
       urges: [],                // {ts, type, spotName, before, after, avoided}
       checkins: []              // {ts, tension}
@@ -1279,43 +1285,129 @@ function lineKey(text) {
 }
 
 let _voiceAudio = null;
+let _voiceDone = null;   // resolver of the in-flight speak() promise
+
+function _resolveVoice() {
+  if (_voiceDone) { const r = _voiceDone; _voiceDone = null; r(); }
+  Ambient.duck(false);
+}
 
 function stopSpeech() {
   if (_voiceAudio) { _voiceAudio.pause(); _voiceAudio = null; }
   if (window.speechSynthesis) speechSynthesis.cancel();
+  _resolveVoice();
 }
 
-function speakSynth(text) {
-  if (!window.speechSynthesis) return;
+function speakSynth(text, res) {
+  if (!window.speechSynthesis) { res(); return; }
   const u = new SpeechSynthesisUtterance(text);
   u.rate = 0.86; u.pitch = 1.0; u.volume = 0.9;
+  u.onend = u.onerror = () => res();
   speechSynthesis.speak(u);
 }
 
 /* Speak with the companion's pre-generated AI voice clip when the library
    has it (local file first, then the hosted copy), else fall back to the
-   browser's speech synthesis. Nothing is generated at runtime. */
-function speak(text) {
-  if (!State.data.settings.voice) return;
+   browser's speech synthesis. Nothing is generated at runtime.
+   Returns { spoke, done } — done resolves when the line has finished. */
+function speak(text, cidOverride) {
+  if (!State.data.settings.voice) return { spoke: false, done: Promise.resolve() };
   stopSpeech();
-  const cid = State.profile.companion || 'sera';
+  const cid = cidOverride || State.profile.companion || 'sera';
   const lib = (typeof VOICE_LIB !== 'undefined' && VOICE_LIB[cid]) || null;
   const key = lineKey(text);
+  const done = new Promise(res => { _voiceDone = res; });
+  const finish = () => _resolveVoice();
+  Ambient.duck(true);
+
   if (lib && lib[key]) {
     const audio = new Audio();
     _voiceAudio = audio;
     let stage = 0;                                  // 0 = local file, 1 = hosted
+    audio.onended = () => { if (audio === _voiceAudio) finish(); };
     audio.onerror = () => {
       if (audio !== _voiceAudio) return;
       if (stage === 0) { stage = 1; audio.src = lib[key]; audio.play().catch(() => {}); }
-      else speakSynth(text);
+      else speakSynth(text, finish);
     };
     audio.src = `assets/voice/${cid}/${key}.mp3`;
     audio.play().catch(() => {});
-    return;
+    return { spoke: true, done };
   }
-  speakSynth(text);
+  speakSynth(text, finish);
+  return { spoke: true, done };
 }
+
+/* ---------- ambient sound bed ----------
+   Procedural brown noise through a slow lowpass — a distant-tide texture.
+   The filter opens with the inhale and settles with the exhale; the whole
+   bed ducks while a companion is speaking. No audio assets, no cost. */
+const Ambient = {
+  ctx: null, gain: null, filter: null, running: false,
+
+  start() {
+    if (State.data.settings.ambient === false) return;
+    try {
+      if (!this.ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        this.ctx = new AC();
+        const len = this.ctx.sampleRate * 4;
+        const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        let last = 0;
+        for (let i = 0; i < len; i++) {
+          const white = Math.random() * 2 - 1;
+          last = (last + 0.02 * white) / 1.02;
+          d[i] = last * 3.5;
+        }
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf; src.loop = true;
+        this.filter = this.ctx.createBiquadFilter();
+        this.filter.type = 'lowpass'; this.filter.frequency.value = 320; this.filter.Q.value = 0.4;
+        this.gain = this.ctx.createGain();
+        this.gain.gain.value = 0;
+        src.connect(this.filter); this.filter.connect(this.gain); this.gain.connect(this.ctx.destination);
+        src.start();
+      }
+      this.ctx.resume();
+      this.running = true;
+      this.gain.gain.setTargetAtTime(0.05, this.ctx.currentTime, 2);
+    } catch (e) { /* no audio available — silence is also calm */ }
+  },
+
+  stop() {
+    if (this.gain) this.gain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.8);
+    this.running = false;
+  },
+
+  setBreath(v) {
+    if (this.running && this.filter) {
+      this.filter.frequency.setTargetAtTime(280 + 260 * v, this.ctx.currentTime, 0.15);
+    }
+  },
+
+  duck(speaking) {
+    if (this.running && this.gain) {
+      this.gain.gain.setTargetAtTime(speaking ? 0.018 : 0.05, this.ctx.currentTime, 0.4);
+    }
+  }
+};
+
+/* ---------- screen wake lock (sessions run eyes-closed) ---------- */
+const Wake = {
+  lock: null,
+  async on() {
+    try { this.lock = await (navigator.wakeLock && navigator.wakeLock.request('screen')); }
+    catch (e) { this.lock = null; }
+  },
+  off() {
+    try { if (this.lock) this.lock.release(); } catch (e) { /* already gone */ }
+    this.lock = null;
+  }
+};
+
+function pulse() { if (navigator.vibrate) navigator.vibrate(12); }
 
 function typewrite(node, text, msPerChar, done) {
   node.textContent = '';
@@ -1336,7 +1428,9 @@ function typewrite(node, text, msPerChar, done) {
 }
 
 function setBreathVar(v) {
-  document.documentElement.style.setProperty('--breath', String(Math.max(0, Math.min(1, v))));
+  const clamped = Math.max(0, Math.min(1, v));
+  document.documentElement.style.setProperty('--breath', String(clamped));
+  Ambient.setBreath(clamped);
 }
 
 function fmtMoney(n) {
@@ -1395,7 +1489,12 @@ const Session = {
     const go = el('<button class="btn wide">Begin</button>');
     pre.appendChild(go);
     pre.querySelector('[data-x]').onclick = () => this.abort();
-    go.onclick = () => { this.active.before = tension; this._run(); };
+    go.onclick = () => {
+      this.active.before = tension;
+      Ambient.start();
+      Wake.on();
+      this._run();
+    };
     app.appendChild(pre);
   },
 
@@ -1417,6 +1516,7 @@ const Session = {
           <span class="brand">${this.active.practice.title}</span>
           <span class="row" style="gap:14px">
             <button class="linklike" data-voice>${State.data.settings.voice ? 'voice on' : 'voice off'}</button>
+            <button class="linklike" data-amb>${State.data.settings.ambient === false ? 'sound off' : 'sound on'}</button>
             <button class="linklike" data-x>end</button>
           </span>
         </div>
@@ -1434,6 +1534,13 @@ const Session = {
       State.save();
       vbtn.textContent = State.data.settings.voice ? 'voice on' : 'voice off';
       if (!State.data.settings.voice) stopSpeech();
+    };
+    const abtn = stage.querySelector('[data-amb]');
+    abtn.onclick = () => {
+      State.data.settings.ambient = State.data.settings.ambient === false;
+      State.save();
+      abtn.textContent = State.data.settings.ambient ? 'sound on' : 'sound off';
+      if (State.data.settings.ambient) Ambient.start(); else Ambient.stop();
     };
     app.appendChild(stage);
     return {
@@ -1463,10 +1570,20 @@ const Session = {
   _say(ui, step, next) {
     ui.zone.innerHTML = '';
     const text = pick(step.text);
-    speak(text);
+    const voice = speak(text);
     typewrite(ui.bubble, text, 34, () => {
       const hold = step.hold != null ? step.hold : Math.max(2200, text.length * 42);
-      setTimeout(() => { if (this.active) next(); }, hold);
+      const proceed = () => { if (this.active) next(); };
+      if (voice.spoke) {
+        // pace to the voice: advance shortly after the companion finishes,
+        // with a generous safety timeout in case audio stalls
+        let advanced = false;
+        const go = () => { if (!advanced) { advanced = true; setTimeout(proceed, 800); } };
+        voice.done.then(go);
+        setTimeout(go, hold + 15000);
+      } else {
+        setTimeout(proceed, hold);
+      }
     });
   },
 
@@ -1519,6 +1636,7 @@ const Session = {
       onPhase: (phase, cycle, cycles) => {
         phaseEl.textContent = phase.name;
         countEl.textContent = `breath ${cycle + 1} of ${cycles}`;
+        pulse();
       },
       onProgress: (frac, phase) => {
         lastFullness = breathFullness(frac, phase, lastFullness);
@@ -1733,8 +1851,10 @@ const Surf = {
     };
     showLine();
 
+    Ambient.start();
+    Wake.on();
     const engine = new BreathEngine(PATTERNS.surf, 8, {
-      onPhase: p => { phaseEl.textContent = p.name; },
+      onPhase: p => { phaseEl.textContent = p.name; pulse(); },
       onProgress: (frac, phase) => {
         lastFullness = breathFullness(frac, phase, lastFullness);
         setBreathVar(lastFullness);
@@ -1991,11 +2111,16 @@ const App = {
         const cardEl = el(`
           <div class="card click row" style="align-items:flex-start">
             ${this.portraitImg(c, 'portrait-sm')}
-            <div class="stack" style="gap:4px">
+            <div class="stack" style="gap:6px; flex:1">
               <div class="row" style="gap:10px"><h3>${c.name}</h3><span class="faint">${c.role}</span></div>
               <p class="dim" style="font-size:.93rem">${c.bio}</p>
+              <button class="linklike" data-hear style="align-self:flex-start; padding-left:0">&#9654; hear ${c.name}'s voice</button>
             </div>
           </div>`);
+        cardEl.querySelector('[data-hear]').onclick = e => {
+          e.stopPropagation();
+          speak(WELCOME_LINES[c.id], c.id);
+        };
         cardEl.onclick = () => {
           State.profile.companion = c.id;
           State.save();
@@ -2031,6 +2156,9 @@ const App = {
   home() {
     const c = State.companion;
     if (!c) return this.onboard();
+    stopSpeech();
+    Ambient.stop();
+    Wake.off();
     this.applyTheme();
     const app = document.getElementById('app');
     document.getElementById('sosBtn').classList.remove('hidden');

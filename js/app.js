@@ -171,11 +171,16 @@ const App = {
         const cardEl = el(`
           <div class="card click row" style="align-items:flex-start">
             ${this.portraitImg(c, 'portrait-sm')}
-            <div class="stack" style="gap:4px">
+            <div class="stack" style="gap:6px; flex:1">
               <div class="row" style="gap:10px"><h3>${c.name}</h3><span class="faint">${c.role}</span></div>
               <p class="dim" style="font-size:.93rem">${c.bio}</p>
+              <button class="linklike" data-hear style="align-self:flex-start; padding-left:0">&#9654; hear ${c.name}'s voice</button>
             </div>
           </div>`);
+        cardEl.querySelector('[data-hear]').onclick = e => {
+          e.stopPropagation();
+          speak(WELCOME_LINES[c.id], c.id);
+        };
         cardEl.onclick = () => {
           State.profile.companion = c.id;
           State.save();
@@ -211,6 +216,9 @@ const App = {
   home() {
     const c = State.companion;
     if (!c) return this.onboard();
+    stopSpeech();
+    Ambient.stop();
+    Wake.off();
     this.applyTheme();
     const app = document.getElementById('app');
     document.getElementById('sosBtn').classList.remove('hidden');
