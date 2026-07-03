@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stillpoint</title>
+</head>
+<body>
+<style>
+  :root {
+    --bg: #0b1020;
+    --bg2: #101731;
+    --ink: #e8ecf8;
+    --ink-dim: #8b93ad;
+    --panel: #141b33;
+    --panel-edge: #232d52;
+    --accent: #9aa8ff;
+    --inhale: #5babff;
+    --hold: #ff7bac;
+    --exhale: #4cd98a;
+    --phase: var(--ink-dim);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body {
+    background: radial-gradient(120% 90% at 50% 0%, var(--bg2), var(--bg) 70%);
+    color: var(--ink);
+    font-family: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
+    display: flex; justify-content: center;
+    padding: 28px 16px 64px;
+    transition: background 1.2s ease;
+  }
+  #app { width: 100%; max-width: 460px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+
+  /* ---------- header ---------- */
+  header { text-align: center; }
+  header h1 { font-size: 26px; letter-spacing: 0.24em; font-weight: 600; text-transform: uppercase; }
+  header p { color: var(--ink-dim); font-size: 13px; margin-top: 6px; }
+
+  /* ---------- phase color plumbing ---------- */
+  #app[data-phase="inhale"] { --phase: var(--inhale); }
+  #app[data-phase="hold"]   { --phase: var(--hold); }
+  #app[data-phase="exhale"] { --phase: var(--exhale); }
+
+  /* ---------- coach stage ---------- */
+  #stage { position: relative; width: 300px; height: 300px; }
+  #phaseGlow {
+    position: absolute; inset: -30px; border-radius: 50%;
+    background: radial-gradient(circle, var(--phase) 0%, transparent 62%);
+    opacity: 0; transition: opacity 1s ease; filter: blur(6px);
+    pointer-events: none;
+  }
+  #app.live #phaseGlow { opacity: 0.22; }
+  #stage svg { width: 100%; height: 100%; display: block; }
+
+  /* orbit track + tracer: one lap per phase, phase-colored */
+  #orbitTrack { fill: none; stroke: var(--panel-edge); stroke-width: 1.5; stroke-dasharray: 3 7; opacity: 0; transition: opacity .8s; }
+  #orbitDot   { fill: var(--phase); opacity: 0; transition: opacity .8s, fill .8s; filter: drop-shadow(0 0 6px var(--phase)); }
+  #app.live #orbitTrack, #app.live #orbitDot { opacity: 1; }
+
+  /* aura tints to phase color while live */
+  #aura { transition: fill .9s ease; }
+  #app.live #aura { fill: var(--phase); }
+
+  /* idle glow breathes only when NOT in a session */
+  @keyframes idleGlow { 0%,100% { opacity: .18; } 50% { opacity: .34; } }
+  #aura { animation: idleGlow 5s ease-in-out infinite; }
+  #app.live #aura { animation: none; }
+
+  /* blink */
+  @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.08); } }
+  .eye { transform-origin: center; animation: blink 5.4s infinite; transform-box: fill-box; }
+
+  /* hold face: puffed cheeks + pressed mouth, driven purely by data-phase */
+  .cheek, #mouthHold { opacity: 0; transition: opacity .25s; }
+  #app[data-phase="hold"] .cheek { opacity: 1; animation: cheekPop .4s ease-out; }
+  #app[data-phase="hold"] #mouthHold { opacity: 1; }
+  #app[data-phase="hold"] #mouthCalm { opacity: 0; }
+  @keyframes cheekPop { 0% { transform: scale(.4); } 70% { transform: scale(1.18); } 100% { transform: scale(1); } }
+  .cheek { transform-origin: center; transform-box: fill-box; }
+
+  /* mudra hands hidden unless mudra mode is on */
+  #hands { opacity: 0; transition: opacity .5s; }
+  #app.mudra-on #hands { opacity: 1; }
+
+  /* ---------- phase label & legend ---------- */
+  #phaseLabel {
+    font-size: 24px; font-weight: 700; letter-spacing: .06em; min-height: 32px;
+    color: var(--phase); text-shadow: 0 0 18px var(--phase);
+    transition: color .8s, text-shadow .8s;
+  }
+  #legend { display: flex; gap: 18px; font-size: 12px; color: var(--ink-dim); }
+  #legend span { display: inline-flex; align-items: center; gap: 6px; }
+  #legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  #legend .l-in i { background: var(--inhale); box-shadow: 0 0 6px var(--inhale); }
+  #legend .l-ho i { background: var(--hold);   box-shadow: 0 0 6px var(--hold); }
+  #legend .l-ex i { background: var(--exhale); box-shadow: 0 0 6px var(--exhale); }
+
+  /* ---------- speech bubble ---------- */
+  #bubble {
+    background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 14px;
+    padding: 12px 16px; font-size: 14px; line-height: 1.45; color: var(--ink);
+    max-width: 380px; text-align: center; min-height: 44px;
+  }
+
+  /* ---------- persona chips ---------- */
+  #personas { display: flex; gap: 8px; }
+  .chip {
+    background: var(--panel); border: 1px solid var(--panel-edge); color: var(--ink-dim);
+    border-radius: 999px; padding: 7px 15px; font-size: 13px; cursor: pointer;
+    font-family: inherit; transition: all .2s;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip.on { color: var(--ink); border-color: var(--accent); background: #1b2547; }
+
+  /* ---------- controls ---------- */
+  #controls { display: flex; gap: 10px; }
+  button.primary {
+    background: linear-gradient(135deg, #4257c4, #5b6ee0); color: white; border: 0;
+    border-radius: 12px; padding: 12px 32px; font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: inherit; letter-spacing: .04em;
+  }
+  button.ghost {
+    background: transparent; color: var(--ink-dim); border: 1px solid var(--panel-edge);
+    border-radius: 12px; padding: 12px 20px; font-size: 14px; cursor: pointer; font-family: inherit;
+  }
+  button.ghost:hover { color: var(--ink); border-color: var(--accent); }
+
+  /* ---------- panels ---------- */
+  .panel {
+    width: 100%; background: var(--panel); border: 1px solid var(--panel-edge);
+    border-radius: 16px; padding: 16px; display: none;
+  }
+  .panel.show { display: block; }
+  .panel h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-dim); font-weight: 600; }
+  .panel .note { font-size: 11px; color: var(--ink-dim); font-style: italic; }
+
+  /* mudra panel */
+  #mudraPanel .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  #mudraPanel .nav { display: flex; gap: 6px; }
+  #mudraPanel .nav button {
+    background: var(--bg2); border: 1px solid var(--panel-edge); color: var(--ink);
+    width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 15px;
+  }
+  #mudraBody { display: flex; gap: 16px; align-items: center; }
+  #mudraDiagram { flex: 0 0 130px; }
+  #mudraDiagram svg { width: 130px; height: 118px; display: block; }
+  #mudraDiagram .cap { font-size: 10px; color: var(--ink-dim); text-align: center; margin-top: 4px; }
+  #mudraInfo h3 { font-size: 18px; margin-bottom: 4px; }
+  #mudraInfo .cue { font-size: 13px; line-height: 1.4; margin-bottom: 6px; }
+  #mudraInfo .trad { font-size: 12px; color: var(--ink-dim); line-height: 1.4; }
+
+  /* neuro state-profile panel */
+  #neuroPanel .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; gap: 10px; }
+  .gauge { display: grid; grid-template-columns: 52px 1fr 34px 110px; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .gauge .gname { font-size: 12px; font-weight: 600; color: var(--ink-dim); }
+  .gauge .gtrack { height: 8px; background: var(--bg2); border-radius: 99px; overflow: hidden; }
+  .gauge .gfill { height: 100%; border-radius: 99px; transition: width .5s linear; }
+  .gauge .gval { font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; }
+  .gauge .gtag { font-size: 10px; color: var(--ink-dim); opacity: 0; transition: opacity 1.5s; letter-spacing: .04em; }
+  .gauge .gtag.reached { opacity: 1; }
+
+  /* debrief */
+  #debrief .stats { display: flex; gap: 22px; margin: 12px 0; }
+  #debrief .stat b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; }
+  #debrief .stat span { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .08em; }
+  #debrief .line { font-size: 14px; line-height: 1.5; }
+
+  /* toggle */
+  .toggleRow { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-dim); }
+  .toggleRow input { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+
+  /* celebrate hop for the feet */
+  @keyframes hop { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  #app.celebrate #coachGroup { animation: hop .5s ease-in-out 2; }
+</style>
+
+<div id="app" data-phase="">
+  <header>
+    <h1>Stillpoint</h1>
+    <p>Nineteen seconds of doing nothing — the most underpriced luxury in the world.</p>
+  </header>
+
+  <div id="stage">
+    <div id="phaseGlow"></div>
+    <svg viewBox="0 0 300 300" aria-label="breathing coach">
+      <!-- orbit: one lap per phase -->
+      <circle id="orbitTrack" cx="150" cy="150" r="128"></circle>
+      <circle id="orbitDot" cx="150" cy="22" r="6"></circle>
+
+      <g id="coachGroup">
+        <circle id="aura" cx="150" cy="152" r="88" fill="#5b6ee0" opacity="0.25"></circle>
+        <g id="coachBody">
+          <!-- feet: toes peeking from under the body -->
+          <g id="feet">
+            <g>
+              <ellipse cx="122" cy="222" rx="17" ry="9" fill="#7c8cf0"/>
+              <circle cx="112" cy="219" r="3.4" fill="#a7b3ff"/>
+              <circle cx="121" cy="217.4" r="3.4" fill="#a7b3ff"/>
+              <circle cx="130" cy="219" r="3.4" fill="#a7b3ff"/>
+            </g>
+            <g>
+              <ellipse cx="178" cy="222" rx="17" ry="9" fill="#7c8cf0"/>
+              <circle cx="170" cy="219" r="3.4" fill="#a7b3ff"/>
+              <circle cx="179" cy="217.4" r="3.4" fill="#a7b3ff"/>
+              <circle cx="188" cy="219" r="3.4" fill="#a7b3ff"/>
+            </g>
+          </g>
+          <!-- body: scaled by breath fullness from JS -->
+          <g id="bodyScale" style="transform-origin: 150px 158px;">
+            <ellipse cx="150" cy="152" rx="66" ry="62" fill="#8d9bff"/>
+            <ellipse cx="150" cy="150" rx="66" ry="62" fill="url(#bodyGrad)"/>
+            <!-- face -->
+            <circle class="eye" cx="128" cy="140" r="6.5" fill="#1b2244"/>
+            <circle class="eye" cx="172" cy="140" r="6.5" fill="#1b2244"/>
+            <circle class="cheek" cx="118" cy="158" r="11" fill="#ffb3c9" opacity="0"></circle>
+            <circle class="cheek" cx="182" cy="158" r="11" fill="#ffb3c9" opacity="0"></circle>
+            <path id="mouthCalm" d="M138 162 Q150 172 162 162" stroke="#1b2244" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <path id="mouthHold" d="M140 165 Q150 169 160 165" stroke="#1b2244" stroke-width="5" fill="none" stroke-linecap="round"/>
+          </g>
+          <!-- mudra hands: swapped per selected mudra from JS -->
+          <g id="hands"></g>
+        </g>
+      </g>
+      <defs>
+        <radialGradient id="bodyGrad" cx="40%" cy="32%" r="80%">
+          <stop offset="0%" stop-color="#b9c3ff"/>
+          <stop offset="100%" stop-color="#7583ea"/>
+        </radialGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <div id="phaseLabel">&nbsp;</div>
+  <div id="legend">
+    <span class="l-in"><i></i>inhale · 4s</span>
+    <span class="l-ho"><i></i>hold · 7s</span>
+    <span class="l-ex"><i></i>exhale · 8s</span>
+  </div>
+
+  <div id="bubble"></div>
+
+  <div id="personas" role="group" aria-label="coach voice">
+    <button class="chip" data-persona="sage">Sage</button>
+    <button class="chip" data-persona="challenger">Challenger</button>
+    <button class="chip" data-persona="alchemist">Alchemist</button>
+  </div>
+
+  <div id="controls">
+    <button id="beginBtn" class="primary">Begin</button>
+    <button id="endBtn" class="ghost" style="display:none">End session</button>
+  </div>
+
+  <label class="toggleRow"><input type="checkbox" id="mudraToggle"> Mudra mode — give the coach hands to mimic</label>
+
+  <div class="panel" id="mudraPanel">
+    <div class="head">
+      <h2>Mudra</h2>
+      <div class="nav">
+        <button id="mudraPrev" aria-label="previous mudra">‹</button>
+        <button id="mudraNext" aria-label="next mudra">›</button>
+      </div>
+    </div>
+    <div id="mudraBody">
+      <div id="mudraDiagram"></div>
+      <div id="mudraInfo">
+        <h3></h3>
+        <div class="cue"></div>
+        <div class="trad"></div>
+      </div>
+    </div>
+    <p class="note" style="margin-top:10px">Associations are described as tradition, not promised effects.</p>
+  </div>
+
+  <div class="panel" id="neuroPanel">
+    <div class="head">
+      <h2>State profile</h2>
+      <span class="note">modeled trajectory — illustrative, not a measurement</span>
+    </div>
+    <div id="gauges"></div>
+  </div>
+
+  <div class="panel" id="debrief">
+    <h2>Debrief</h2>
+    <div class="stats">
+      <div class="stat"><b id="dCycles">0</b><span id="dCyclesLabel">cycles</span></div>
+      <div class="stat"><b id="dTime">0:00</b><span>on the clock</span></div>
+    </div>
+    <div class="line" id="dLine"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ============ phase model ============ */
+  // Emotional color mapping: cool blue = incoming air, warm happy pink = the
+  // full held breath, fresh green = release. Committed here and in CSS vars.
+  const PHASES = [
+    { key: 'inhale', dur: 4, label: 'Inhale', color: '#5babff', chime: 659.25 }, // E5
+    { key: 'hold',   dur: 7, label: 'Hold',   color: '#ff7bac', chime: 554.37 }, // C#5
+    { key: 'exhale', dur: 8, label: 'Exhale', color: '#4cd98a', chime: 440.0  }, // A4
+  ];
+  const CYCLE = PHASES.reduce((s, p) => s + p.dur, 0); // 19s
+
+  function phaseAt(t) {
+    let u = ((t % CYCLE) + CYCLE) % CYCLE;
+    for (let i = 0; i < PHASES.length; i++) {
+      if (u < PHASES[i].dur) return { i, phase: PHASES[i], progress: u / PHASES[i].dur };
+      u -= PHASES[i].dur;
+    }
+    return { i: 0, phase: PHASES[0], progress: 0 };
+  }
+
+  // breath fullness 0..1: inflate on inhale, full through hold, deflate on exhale
+  function fullnessAt(t) {
+    const { phase, progress } = phaseAt(t);
+    if (phase.key === 'inhale') return easeInOut(progress);
+    if (phase.key === 'hold') return 1;
+    return 1 - easeInOut(progress);
+  }
+  function easeInOut(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
+  function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+
+  /* ============ modeled neuro trajectory (pure) ============ */
+  // Drifts from an alert-arousal baseline to the target profile at exactly
+  // 300s, then holds. Illustrative only — the app cannot measure any of this.
+  const NEURO = [
+    { key: 'gaba', name: 'GABA', base: 3, target: 9, tag: 'Sleep Onset' },
+    { key: 'ht',   name: '5-HT', base: 5, target: 4, tag: '' },
+    { key: 'da',   name: 'DA',   base: 6, target: 2, tag: 'Inactive Reward' },
+    { key: 'ne',   name: 'NE',   base: 7, target: 1, tag: 'Minimal Arousal' },
+  ];
+  const NEURO_T = 300;
+  function trajectory(t) {
+    const e = t >= NEURO_T ? 1 : easeOutCubic(Math.max(0, t) / NEURO_T);
+    const out = {};
+    for (const n of NEURO) out[n.key] = n.base + (n.target - n.base) * e;
+    return out;
+  }
+
+  /* ============ personas ============ */
+  const PERSONAS = {
+    sage: {
+      name: 'Sage',
+      greet: 'Welcome back. Nothing to win here — just notice the breath. The noticing IS the skill.',
+      prompts: { inhale: 'Let the breath arrive on its own.', hold: 'Rest inside the pause. Nothing is missing.', exhale: 'Let it all the way out. Longer than feels natural.' },
+      debrief: (c, mmss) => `${cyc(c)} of honest attention. However it felt, showing up was the practice.`,
+    },
+    challenger: {
+      name: 'Challenger',
+      greet: "Alright. 4 in, 7 held, 8 out. Partial reps don't count. Go.",
+      prompts: { inhale: 'Four seconds. Fill it properly.', hold: "Hold it. You're fine. Discomfort isn't damage.", exhale: 'Eight full seconds out. No shortcuts.' },
+      debrief: (c, mmss) => `${cyc(c)} verified, ${mmss} on the clock. That's the number. No cope — come back and beat it.`,
+    },
+    alchemist: {
+      name: 'Alchemist',
+      greet: 'Nineteen seconds of doing nothing — the most underpriced luxury in the world. Shall we spend lavishly?',
+      prompts: { inhale: 'Breathe in like it costs a fortune. It does — elsewhere.', hold: 'Holding is not waiting. It is owning the moment outright.', exhale: 'Another cycle banked. Compound interest, but for your nervous system.' },
+      debrief: (c, mmss) => `${cyc(c)} banked in ${mmss}. Most people would pay handsomely to feel like this; you merely sat still.`,
+    },
+  };
+  function cyc(c) { return c === 1 ? '1 cycle' : `${c} cycles`; }
+
+  /* ============ mudras ============ */
+  const MUDRAS = [
+    { key: 'gyan', name: 'Gyan', touch: [1],
+      cue: 'Index fingertip touches the thumb tip; the other three fingers extend straight.',
+      trad: 'The classic meditation seat — used across Kundalini and seated practice, traditionally associated with clarity and receptivity.' },
+    { key: 'dhyana', name: 'Dhyāna', custom: 'dhyana',
+      cue: 'Hands cupped in the lap like a bowl, right over left, thumb tips lightly touching.',
+      trad: 'The traditional absorption posture of jhāna practice.' },
+    { key: 'anjali', name: 'Añjali', custom: 'anjali',
+      cue: 'Palms pressed together at the heart, fingers pointing up.',
+      trad: 'Traditionally a gesture of gathering the attention and offering it.' },
+    { key: 'prana', name: 'Prāṇa', touch: [3, 4],
+      cue: 'Ring and little fingertips touch the thumb; index and middle extend straight.',
+      trad: 'The vitality seal — traditionally paired with long, slow exhales.' },
+  ];
+
+  // Schematic diagram: palm-up finger map. Fingers that touch the thumb curl
+  // to a dashed contact ring; extended fingers are drawn straight and highlighted.
+  function mudraDiagramSVG(m) {
+    if (m.custom === 'dhyana') {
+      return `<svg viewBox="0 0 130 118">
+        <path d="M18 78 Q65 118 112 78" fill="none" stroke="#8d9bff" stroke-width="7" stroke-linecap="round"/>
+        <path d="M26 88 Q65 120 104 88" fill="none" stroke="#5b6ee0" stroke-width="7" stroke-linecap="round"/>
+        <path d="M50 62 Q65 50 80 62" fill="none" stroke="#ffd166" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="65" cy="55" r="5" fill="none" stroke="#ffd166" stroke-width="2" stroke-dasharray="3 3"/>
+      </svg><div class="cap">dashed ring = thumb tips touch</div>`;
+    }
+    if (m.custom === 'anjali') {
+      return `<svg viewBox="0 0 130 118">
+        <path d="M58 112 L58 34 Q65 22 65 34 L65 112" fill="#8d9bff"/>
+        <path d="M72 112 L72 34 Q65 22 65 34 L65 112" fill="#5b6ee0"/>
+        <line x1="65" y1="30" x2="65" y2="112" stroke="#ffd166" stroke-width="2" stroke-dasharray="4 3"/>
+      </svg><div class="cap">palms pressed — dashed contact line</div>`;
+    }
+    // touch-type mudra: 4 fingers indexed 1..4 (index..little), thumb at left
+    const baseX = [40, 62, 84, 104]; // finger root x for index, middle, ring, little
+    const tipY = [18, 12, 16, 26];
+    let fingers = '';
+    for (let f = 1; f <= 4; f++) {
+      const x = baseX[f - 1], ty = tipY[f - 1];
+      if (m.touch.includes(f)) {
+        // curled across the palm to the contact ring near the thumb tip
+        fingers += `<path d="M${x} 78 Q${x - 6} 46 34 60" fill="none" stroke="#8d9bff" stroke-width="8" stroke-linecap="round" opacity="0.9"/>`;
+      } else {
+        fingers += `<line x1="${x}" y1="80" x2="${x}" y2="${ty}" stroke="#ffd166" stroke-width="8" stroke-linecap="round"/>`;
+      }
+    }
+    return `<svg viewBox="0 0 130 118">
+      <ellipse cx="68" cy="96" rx="44" ry="28" fill="#5b6ee0"/>
+      <path d="M28 96 Q14 78 26 62" fill="none" stroke="#8d9bff" stroke-width="9" stroke-linecap="round"/>
+      ${fingers}
+      <circle class="contact" cx="31" cy="60" r="8" fill="none" stroke="#ffd166" stroke-width="2" stroke-dasharray="3 3"/>
+    </svg><div class="cap">dashed ring = fingertips touch thumb</div>`;
+  }
+
+  // simplified hands on the coach itself
+  function coachHandsSVG(m) {
+    if (m.custom === 'anjali') {
+      return `<g><path d="M146 186 L146 158 Q150 152 150 158 L150 186" fill="#b9c3ff"/><path d="M154 186 L154 158 Q150 152 150 158 L150 186" fill="#93a1f5"/></g>`;
+    }
+    if (m.custom === 'dhyana') {
+      return `<g><path d="M118 190 Q150 208 182 190" fill="none" stroke="#b9c3ff" stroke-width="9" stroke-linecap="round"/><path d="M144 184 Q150 179 156 184" fill="none" stroke="#93a1f5" stroke-width="5" stroke-linecap="round"/></g>`;
+    }
+    // touch-type: two hands at the sides, a ring where finger meets thumb + extended fingers
+    const ext = [1, 2, 3, 4].filter(f => !m.touch.includes(f)).length;
+    let lines = '';
+    for (let i = 0; i < ext; i++) {
+      const a = -0.5 + i * 0.42;
+      lines += `<line x1="0" y1="0" x2="${Math.sin(a) * 17}" y2="${-Math.cos(a) * 17}" stroke="#b9c3ff" stroke-width="4.5" stroke-linecap="round"/>`;
+    }
+    const hand = `<circle r="8" fill="#93a1f5"/><circle r="4.5" cx="-6" cy="-6" fill="none" stroke="#ffd166" stroke-width="2.4"/>${lines}`;
+    return `<g><g transform="translate(88,196)">${hand}</g><g transform="translate(212,196) scale(-1,1)">${hand}</g></g>`;
+  }
+
+  /* ============ audio ============ */
+  // Per-phase sound signatures over a soft 110Hz/432Hz bed:
+  //  - glide voice rises a fifth (264->396) across the inhale, holds its note,
+  //    then descends a full octave (396->198) across the exhale
+  //  - boundary chimes on a descending A-major triad: E5 / C#5 / A4
+  let AC = null, glide = null, glideGain = null;
+  function audioInit() {
+    if (AC) return;
+    try {
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+      const bedGain = AC.createGain(); bedGain.gain.value = 0.02; bedGain.connect(AC.destination);
+      const bed1 = AC.createOscillator(); bed1.frequency.value = 110; bed1.connect(bedGain); bed1.start();
+      const bed2Gain = AC.createGain(); bed2Gain.gain.value = 0.35; bed2Gain.connect(bedGain);
+      const bed2 = AC.createOscillator(); bed2.frequency.value = 432; bed2.connect(bed2Gain); bed2.start();
+      glideGain = AC.createGain(); glideGain.gain.value = 0; glideGain.connect(AC.destination);
+      glide = AC.createOscillator(); glide.type = 'triangle'; glide.frequency.value = 264; glide.connect(glideGain); glide.start();
+    } catch (e) { AC = null; }
+  }
+  function audioPhase(phase) {
+    if (!AC) return;
+    const now = AC.currentTime;
+    // chime
+    const cg = AC.createGain(); cg.gain.setValueAtTime(0.05, now); cg.gain.exponentialRampToValueAtTime(0.0001, now + 1.2); cg.connect(AC.destination);
+    const ch = AC.createOscillator(); ch.frequency.value = phase.chime; ch.connect(cg); ch.start(now); ch.stop(now + 1.3);
+    // glide voice
+    glideGain.gain.setTargetAtTime(0.03, now, 0.15);
+    glide.frequency.cancelScheduledValues(now);
+    if (phase.key === 'inhale') { glide.frequency.setValueAtTime(264, now); glide.frequency.linearRampToValueAtTime(396, now + phase.dur); }
+    else if (phase.key === 'hold') { glide.frequency.setValueAtTime(396, now); }
+    else { glide.frequency.setValueAtTime(396, now); glide.frequency.linearRampToValueAtTime(198, now + phase.dur); }
+  }
+  function audioStop() {
+    if (!AC) return;
+    glideGain.gain.setTargetAtTime(0, AC.currentTime, 0.3);
+  }
+
+  /* ============ DOM refs ============ */
+  const $ = (s) => document.querySelector(s);
+  const app = $('#app'), phaseLabel = $('#phaseLabel'), bubble = $('#bubble');
+  const beginBtn = $('#beginBtn'), endBtn = $('#endBtn');
+  const bodyScale = $('#bodyScale'), aura = $('#aura'), orbitDot = $('#orbitDot');
+  const mudraToggle = $('#mudraToggle'), mudraPanel = $('#mudraPanel');
+  const neuroPanel = $('#neuroPanel'), gaugesEl = $('#gauges'), debriefEl = $('#debrief');
+
+  /* ============ state ============ */
+  const store = {
+    get: (k, d) => { try { const v = localStorage.getItem('sp.' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set: (k, v) => { try { localStorage.setItem('sp.' + k, JSON.stringify(v)); } catch {} },
+  };
+  let personaKey = store.get('persona', 'sage');
+  if (!PERSONAS[personaKey]) personaKey = 'sage';
+  let mudraIdx = store.get('mudra', 0) % MUDRAS.length;
+  let running = false, startMs = 0, offset = 0, lastPhaseKey = null, raf = 0;
+  let frozenNeuro = null;
+
+  /* ============ persona UI ============ */
+  function renderPersonas() {
+    document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('on', c.dataset.persona === personaKey));
+  }
+  function say(text) { bubble.textContent = text; }
+  document.querySelectorAll('.chip').forEach((c) => c.addEventListener('click', () => {
+    personaKey = c.dataset.persona; store.set('persona', personaKey);
+    renderPersonas(); say(PERSONAS[personaKey].greet);
+  }));
+
+  /* ============ mudra UI ============ */
+  function renderMudra() {
+    const m = MUDRAS[mudraIdx];
+    $('#mudraDiagram').innerHTML = mudraDiagramSVG(m);
+    $('#mudraInfo h3').textContent = m.name;
+    $('#mudraInfo .cue').textContent = m.cue;
+    $('#mudraInfo .trad').textContent = m.trad;
+    $('#hands').innerHTML = coachHandsSVG(m);
+  }
+  $('#mudraPrev').addEventListener('click', () => { mudraIdx = (mudraIdx + MUDRAS.length - 1) % MUDRAS.length; store.set('mudra', mudraIdx); renderMudra(); say(`${MUDRAS[mudraIdx].name}: ${MUDRAS[mudraIdx].cue}`); });
+  $('#mudraNext').addEventListener('click', () => { mudraIdx = (mudraIdx + 1) % MUDRAS.length; store.set('mudra', mudraIdx); renderMudra(); say(`${MUDRAS[mudraIdx].name}: ${MUDRAS[mudraIdx].cue}`); });
+  mudraToggle.addEventListener('change', () => {
+    const on = mudraToggle.checked;
+    app.classList.toggle('mudra-on', on);
+    mudraPanel.classList.toggle('show', on);
+    store.set('mudraOn', on);
+    if (on) say(`${MUDRAS[mudraIdx].name}: ${MUDRAS[mudraIdx].cue}`);
+  });
+
+  /* ============ neuro panel ============ */
+  const NEURO_COLORS = { gaba: '#8d9bff', ht: '#ffd166', da: '#ff7bac', ne: '#5babff' };
+  function buildGauges() {
+    gaugesEl.innerHTML = NEURO.map((n) => `
+      <div class="gauge" data-k="${n.key}">
+        <span class="gname">${n.name}</span>
+        <span class="gtrack"><span class="gfill" style="background:${NEURO_COLORS[n.key]}"></span></span>
+        <span class="gval">–</span>
+        <span class="gtag">${n.tag ? n.tag : ''}</span>
+      </div>`).join('');
+  }
+  function renderNeuro(t) {
+    const vals = frozenNeuro || trajectory(t);
+    const reached = !frozenNeuro && t >= NEURO_T;
+    for (const n of NEURO) {
+      const g = gaugesEl.querySelector(`[data-k="${n.key}"]`);
+      const v = vals[n.key];
+      g.querySelector('.gfill').style.width = (v * 10) + '%';
+      g.querySelector('.gval').textContent = (t >= NEURO_T ? n.target.toFixed(0) : v.toFixed(1)) + '/10';
+      if (n.tag) g.querySelector('.gtag').classList.toggle('reached', reached || (frozenNeuro && frozenNeuro.reached));
+    }
+  }
+
+  /* ============ session engine ============ */
+  function elapsed() { return (performance.now() - startMs) / 1000 + offset; }
+
+  function begin() {
+    running = true; offset = 0; startMs = performance.now(); lastPhaseKey = null; frozenNeuro = null;
+    app.classList.add('live');
+    beginBtn.style.display = 'none'; endBtn.style.display = '';
+    debriefEl.classList.remove('show');
+    neuroPanel.classList.add('show');
+    audioInit();
+    if (AC && AC.state === 'suspended') AC.resume();
+    tick();
+  }
+
+  function end() {
+    running = false; cancelAnimationFrame(raf);
+    const t = elapsed();
+    const vals = trajectory(t); vals.reached = t >= NEURO_T;
+    frozenNeuro = vals; // freeze the profile where it got to
+    app.classList.remove('live'); app.setAttribute('data-phase', '');
+    beginBtn.style.display = ''; endBtn.style.display = 'none';
+    phaseLabel.innerHTML = '&nbsp;';
+    bodyScale.style.transform = '';
+    audioStop();
+    // debrief with hard numbers
+    const cycles = Math.floor(t / CYCLE);
+    const mm = Math.floor(t / 60), ss = Math.floor(t % 60);
+    const mmss = `${mm}:${String(ss).padStart(2, '0')}`;
+    $('#dCycles').textContent = cycles;
+    $('#dCyclesLabel').textContent = cycles === 1 ? 'cycle' : 'cycles';
+    $('#dTime').textContent = mmss;
+    $('#dLine').textContent = PERSONAS[personaKey].debrief(cycles, mmss);
+    debriefEl.classList.add('show');
+    say(PERSONAS[personaKey].debrief(cycles, mmss));
+    if (cycles >= 1) { app.classList.add('celebrate'); setTimeout(() => app.classList.remove('celebrate'), 1200); }
+  }
+
+  function tick() {
+    if (!running) return;
+    const t = elapsed();
+    const { phase, progress } = phaseAt(t);
+
+    if (phase.key !== lastPhaseKey) {
+      lastPhaseKey = phase.key;
+      app.setAttribute('data-phase', phase.key);
+      audioPhase(phase);
+      say(PERSONAS[personaKey].prompts[phase.key]);
+    }
+
+    // phase label with countdown, tinted by CSS var --phase
+    const remain = Math.ceil(phase.dur * (1 - progress));
+    phaseLabel.textContent = `${phase.label} · ${remain}`;
+
+    // body inflates/holds/deflates with breath fullness
+    const f = fullnessAt(t);
+    bodyScale.style.transform = `scale(${1 + 0.13 * f})`;
+    aura.setAttribute('r', String(88 + 14 * f));
+    aura.style.opacity = String(0.18 + 0.2 * f);
+
+    // orbit tracer: exactly one lap per phase
+    const ang = progress * Math.PI * 2 - Math.PI / 2;
+    orbitDot.setAttribute('cx', String(150 + 128 * Math.cos(ang)));
+    orbitDot.setAttribute('cy', String(150 + 128 * Math.sin(ang)));
+
+    renderNeuro(t);
+    raf = requestAnimationFrame(tick);
+  }
+
+  beginBtn.addEventListener('click', begin);
+  endBtn.addEventListener('click', end);
+
+  /* ============ boot ============ */
+  buildGauges();
+  renderPersonas();
+  renderMudra();
+  if (store.get('mudraOn', false)) { mudraToggle.checked = true; mudraToggle.dispatchEvent(new Event('change')); }
+  say(PERSONAS[personaKey].greet);
+
+  /* ============ test hooks ============ */
+  window.__sp = {
+    PHASES, CYCLE, phaseAt, fullnessAt, trajectory,
+    jump: (sec) => { offset += sec; },
+    isRunning: () => running,
+  };
+})();
+</script>
+</body>
+</html>
