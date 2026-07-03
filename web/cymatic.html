@@ -321,6 +321,27 @@
   }
   .mic-status b{color:var(--piti);font-weight:400}
   .mic-status.err{color:var(--danger)}
+  .ledger{
+    display:flex;align-items:center;justify-content:center;gap:12px;
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);flex-wrap:wrap;margin-top:-14px;
+  }
+  .ledger .lg-label{color:var(--anchor)}
+  .lg-dots{display:inline-flex;gap:5px}
+  .lg-dots i{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--raised-2);border:1px solid var(--line);display:inline-block;
+    transition:background .4s,box-shadow .4s;
+  }
+  .lg-dots i.on{background:var(--anchor);border-color:var(--anchor);box-shadow:0 0 6px color-mix(in srgb,var(--anchor) 60%,transparent)}
+  .lg-meta{color:var(--muted-2);text-transform:none;letter-spacing:.02em;font-size:.7rem}
+  .lg-reset{
+    appearance:none;background:none;border:none;color:var(--muted-2);
+    font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
+    cursor:pointer;text-decoration:underline;opacity:.55;
+  }
+  .lg-reset:hover{opacity:1;color:var(--muted)}
+  .lg-reset:focus-visible{outline:2px solid var(--piti);outline-offset:2px}
 
   /* ---------- legend ---------- */
   .legend{
@@ -471,6 +492,13 @@
   </div>
   <div class="mic-status" id="micStatus"></div>
 
+  <div class="ledger" id="ledger">
+    <span class="lg-label">Anchor strength</span>
+    <span class="lg-dots" id="lgDots"></span>
+    <span class="lg-meta" id="lgMeta">new</span>
+    <button type="button" class="lg-reset" id="lgReset" title="Clear conditioning progress on this device">reset</button>
+  </div>
+
   <div class="legend">
     <div class="voice" id="voiceAnchor" style="--vc:var(--anchor)">
       <div class="name"><span class="dot"></span>Anchor <span class="en">the ground</span></div>
@@ -511,7 +539,7 @@
     </div>
   </div>
 
-  <div class="fine" id="fine">a prototype of the Cymatic engine — metronomic pacer, optional mic breath-tracking</div>
+  <div class="fine" id="fine">a prototype of the Cymatic engine — HRTF 3D audio · optional mic breath-tracking · progress saved on this device</div>
 </div>
 
 <script>
@@ -600,6 +628,15 @@
   function buildGraph(){
     ctx=new (window.AudioContext||window.webkitAudioContext)();
 
+    // listener at origin, facing -z, up +y (for HRTF spatialisation of Pīti)
+    const L=ctx.listener;
+    if(L.positionX){
+      L.positionX.value=0; L.positionY.value=0; L.positionZ.value=0;
+      if(L.forwardX){ L.forwardX.value=0; L.forwardY.value=0; L.forwardZ.value=-1; L.upX.value=0; L.upY.value=1; L.upZ.value=0; }
+    } else if(L.setPosition){
+      L.setPosition(0,0,0); if(L.setOrientation) L.setOrientation(0,0,-1,0,1,0);
+    }
+
     const userVol=ctx.createGain(); userVol.gain.value=volToGain(volEl.value);
     const limiter=ctx.createDynamicsCompressor();
     limiter.threshold.value=-3; limiter.knee.value=2; limiter.ratio.value=20;
@@ -627,32 +664,46 @@
     anchorGain.connect(master);
     [oscL,oscR,harm,anchorLFO].forEach(o=>o.start());
 
-    // PĪTI: inhale-gated shimmer — decorrelated L/R noise + high partials, sweeping LPF
-    const noiseBuf=makeNoise(ctx,2.7);
-    const nL=ctx.createBufferSource(), nR=ctx.createBufferSource();
-    nL.buffer=noiseBuf; nR.buffer=noiseBuf; nL.loop=nR.loop=true; nR.playbackRate.value=1.013;
-    const panL=ctx.createStereoPanner(), panR=ctx.createStereoPanner();
-    panL.pan.value=-0.75; panR.pan.value=0.75;
-    const airHP=ctx.createBiquadFilter(); airHP.type="highpass"; airHP.frequency.value=600;
-    const airG=ctx.createGain(); airG.gain.value=0.25;
-    nL.connect(panL).connect(airHP); nR.connect(panR).connect(airHP); airHP.connect(airG);
-    const partialBus=ctx.createGain(); partialBus.gain.value=0.16;
-    [4,6,9,13].forEach((m,idx)=>{
-      const o=ctx.createOscillator(); o.type="sine"; o.frequency.value=110*m;
-      const g=ctx.createGain(); g.gain.value=(1/(idx+1))*0.5;
-      const pan=ctx.createStereoPanner(); pan.pan.value=(idx%2?1:-1)*0.4;
-      o.connect(g).connect(pan).connect(partialBus); o.start();
-    });
+    // PĪTI: HRTF-spatialised shimmer — voices fan outward and rise in 3D on the inhale
     const pitiLPF=ctx.createBiquadFilter(); pitiLPF.type="lowpass"; pitiLPF.frequency.value=800; pitiLPF.Q.value=0.7;
     const pitiGain=ctx.createGain(); pitiGain.gain.value=0;
-    airG.connect(pitiLPF); partialBus.connect(pitiLPF);
     pitiLPF.connect(pitiGain).connect(master);
-    nL.start(); nR.start();
+
+    const spatial=[]; // { panner, dir:[x,y,z] } — dir is the unit heading; radius/lift animate per frame
+    function mkPanner(){
+      const p=ctx.createPanner();
+      p.panningModel="HRTF"; p.distanceModel="inverse";
+      p.refDistance=1; p.maxDistance=24; p.rolloffFactor=0.4;
+      if(p.orientationX){ p.orientationX.value=0; p.orientationY.value=0; p.orientationZ.value=-1; }
+      p.connect(pitiLPF);
+      return p;
+    }
+    function spawnVoice(src, dir){
+      const pan=mkPanner(); src.connect(pan);
+      setPannerPos(pan, dir[0]*0.7, dir[1]*0.7, dir[2]*0.7, ctx.currentTime, 0.001);
+      spatial.push({panner:pan, dir});
+    }
+
+    // two decorrelated noise "air" voices — low and to the sides
+    const noiseBuf=makeNoise(ctx,2.7);
+    [[-0.7,0.15,-0.7,1.0],[0.7,0.15,-0.7,1.013]].forEach(d=>{
+      const n=ctx.createBufferSource(); n.buffer=noiseBuf; n.loop=true; n.playbackRate.value=d[3];
+      const hp=ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=600;
+      const g=ctx.createGain(); g.gain.value=0.22;
+      n.connect(hp).connect(g); spawnVoice(g,[d[0],d[1],d[2]]); n.start();
+    });
+    // four partials of the 110 series — placed higher; these rise most on the inhale
+    const partialDirs=[[-0.45,0.55,-0.55],[0.45,0.55,-0.55],[0.0,0.9,-0.35],[0.0,0.25,-1.0]];
+    [4,6,9,13].forEach((m,idx)=>{
+      const o=ctx.createOscillator(); o.type="sine"; o.frequency.value=110*m;
+      const g=ctx.createGain(); g.gain.value=(1/(idx+1))*0.4;
+      o.connect(g); spawnVoice(g,partialDirs[idx]); o.start();
+    });
 
     // SUKHA bus (event pulses land here)
     const sukhaBus=ctx.createGain(); sukhaBus.gain.value=1; sukhaBus.connect(master);
 
-    Object.assign(nodes,{userVol,envelope,master,oscL,oscR,harm,anchorGain,pitiLPF,pitiGain,sukhaBus});
+    Object.assign(nodes,{userVol,envelope,master,oscL,oscR,harm,anchorGain,pitiLPF,pitiGain,sukhaBus,spatial});
   }
 
   function makeNoise(ctx,secs){
@@ -685,6 +736,39 @@
   }
 
   const volToGain=v=>Math.pow(v/100,1.6)*0.9;
+
+  function setPannerPos(p,x,y,z,at,tc){
+    if(p.positionX){
+      p.positionX.setTargetAtTime(x,at,tc||0.06);
+      p.positionY.setTargetAtTime(y,at,tc||0.06);
+      p.positionZ.setTargetAtTime(z,at,tc||0.06);
+    } else if(p.setPosition){ p.setPosition(x,y,z); }
+  }
+
+  // ============ conditioning ledger (local-only) ============
+  const LKEY="cymatic.ledger.v1";
+  let anchorEmphasis=1;
+  function loadLedger(){
+    try{ return JSON.parse(localStorage.getItem(LKEY))||{sessions:0,strength:0,last:null}; }
+    catch(e){ return {sessions:0,strength:0,last:null}; }
+  }
+  function saveLedger(){ try{ localStorage.setItem(LKEY,JSON.stringify(ledger)); }catch(e){} }
+  let ledger=loadLedger();
+  const strengthWord=s => s<0.2?"forming":s<0.45?"taking hold":s<0.7?"strengthening":s<0.9?"strong":"deeply set";
+  function renderLedger(){
+    anchorEmphasis=1+ledger.strength*0.2;   // the anchor grows more present as conditioning deepens
+    const total=5, filled=Math.round(ledger.strength*total);
+    lgDots.innerHTML=Array.from({length:total},(_,i)=>`<i class="${i<filled?"on":""}"></i>`).join("");
+    lgMeta.textContent = ledger.sessions===0
+      ? "new — finish a session to begin conditioning the anchor"
+      : `${ledger.sessions} session${ledger.sessions>1?"s":""} paired · the anchor is ${strengthWord(ledger.strength)}`;
+  }
+  function recordCompletion(){
+    ledger.sessions+=1;
+    ledger.strength=ledger.strength+(1-ledger.strength)*0.16;   // diminishing-returns conditioning curve
+    try{ ledger.last=new Date().toISOString(); }catch(e){}
+    saveLedger(); renderLedger();
+  }
 
   // ============ mic breath tracker ============
   const mic={active:false,stream:null,analyser:null,data:null,
@@ -772,13 +856,18 @@
     if(ctx){
       const at=ctx.currentTime, tc=0.05;
       nodes.master.gain.setTargetAtTime(s.master,at,tc);
-      nodes.anchorGain.gain.setTargetAtTime(s.anchor*0.5,at,0.2);
+      nodes.anchorGain.gain.setTargetAtTime(s.anchor*0.5*anchorEmphasis,at,0.2);
       nodes.oscL.frequency.setTargetAtTime(s.car-s.df/2,at,0.15);
       nodes.oscR.frequency.setTargetAtTime(s.car+s.df/2,at,0.15);
       nodes.harm.frequency.setTargetAtTime(s.car*2,at,0.2);
       nodes.pitiGain.gain.setTargetAtTime(clamp(s.piti*env*pitiMul,0,1.2),at,0.05);
       const cutoff=300+(s.cut-300)*env;
       nodes.pitiLPF.frequency.setTargetAtTime(Math.max(180,cutoff),at,0.06);
+      // Pīti expands in 3D: voices push outward (radius) and lift upward with the inhale
+      const radius=0.7+1.7*env, lift=0.7*env;
+      for(const v of nodes.spatial){
+        setPannerPos(v.panner, v.dir[0]*radius, v.dir[1]*radius+lift, v.dir[2]*radius, at, 0.08);
+      }
     }
 
     drawOrb(tSec,orbBreath,s);
@@ -836,6 +925,7 @@
   const tCarrier=el("tCarrier"),tBeat=el("tBeat"),tBreath=el("tBreath");
   const tElapsed=el("tElapsed"),tTotal=el("tTotal"),phaseLabel=el("phaseLabel"),cue=el("cue");
   const trackEl=el("track"),namesEl=el("phaseNames"),micStatus=el("micStatus");
+  const lgDots=el("lgDots"),lgMeta=el("lgMeta"),lgReset=el("lgReset");
   const voiceEls={anchor:el("voiceAnchor"),piti:el("voicePiti"),sukha:el("voiceSukha")};
   let segFills=[],nameSpans=[],bounds=[];
 
@@ -923,6 +1013,7 @@
     cue.textContent=modeName==="sleep"?"silence · sleep well":"silence · rest as long as you like";
     cue.classList.remove("in","out");
     if(ctx) nodes.master.gain.setTargetAtTime(0,ctx.currentTime,0.4);
+    recordCompletion();
     idleLoop();
   }
   function stopHard(){
@@ -976,7 +1067,11 @@
     const dpr=Math.min(2,window.devicePixelRatio||1);
     cv.width=Math.round(rect.width*dpr); cv.height=Math.round(rect.height*dpr);
   }
+  lgReset.addEventListener("click",()=>{
+    ledger={sessions:0,strength:0,last:null}; saveLedger(); renderLedger();
+  });
+
   window.addEventListener("resize",fitCanvas);
-  fitCanvas(); buildTimeline(); idleLoop();
+  fitCanvas(); buildTimeline(); renderLedger(); idleLoop();
 })();
 </script>
