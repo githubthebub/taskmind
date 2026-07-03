@@ -59,7 +59,7 @@
     font-family:var(--serif);font-weight:500;font-size:26px;line-height:1.25;
     margin:0 0 6px;text-wrap:balance;letter-spacing:.01em;
   }
-  .sub{color:var(--muted);font-size:13.5px;margin:0 0 26px;max-width:38ch}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 22px;max-width:38ch}
   .eyebrow{
     font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;
     color:var(--gold);margin:0 0 10px;
@@ -130,7 +130,7 @@
   }
   .card{
     background:var(--surface);border:1px solid var(--line);border-radius:4px;
-    padding:16px 16px 14px;margin-bottom:12px;text-align:left;width:100%;
+    padding:15px 16px 13px;margin-bottom:12px;text-align:left;width:100%;
     display:block;transition:border-color .12s;
   }
   .card:hover{border-color:var(--faint)}
@@ -138,7 +138,7 @@
   .card-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
   .card h2{font-family:var(--serif);font-size:18px;font-weight:500;margin:0}
   .card .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--faint);text-transform:uppercase;white-space:nowrap}
-  .scores{display:flex;gap:18px;margin:10px 0 8px;font-variant-numeric:tabular-nums}
+  .scores{display:flex;gap:18px;margin:10px 0 6px;font-variant-numeric:tabular-nums}
   .score{font-family:var(--mono)}
   .score .v{font-size:19px;color:var(--ink)}
   .score .v.warn{color:var(--ember)}
@@ -146,28 +146,26 @@
   .score .k{display:block;font-size:9px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase;margin-top:2px}
   .spark{flex:1;align-self:center;min-width:0}
   .spark svg{display:block;width:100%;height:34px}
-  .forecast{font-size:12.5px;color:var(--muted);margin:6px 0 0;line-height:1.55}
+  .forecast{font-size:12.5px;color:var(--muted);margin:4px 0 0;line-height:1.5}
   .yourdata{
-    font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:9px;
-    border-top:1px dashed var(--line);padding-top:8px;letter-spacing:.04em;
+    font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:8px;letter-spacing:.04em;
   }
   .yourdata em{color:var(--gold-dim);font-style:normal}
-  .card .warnline{font-family:var(--mono);font-size:10px;color:var(--ember);margin-top:8px;letter-spacing:.06em}
   /* ---------- configurator ---------- */
   .opt{
     background:var(--surface);border:1px solid var(--line);border-radius:4px;
-    padding:16px;margin-bottom:12px;text-align:left;width:100%;display:block;
+    padding:15px 16px;margin-bottom:12px;text-align:left;width:100%;display:block;
   }
   .opt:hover{border-color:var(--faint)}
   .opt.locked{opacity:.45;cursor:not-allowed}
-  .opt h3{font-family:var(--serif);font-size:17px;font-weight:500;margin:0 0 4px}
-  .opt p{font-size:12.5px;color:var(--muted);margin:0;line-height:1.55}
+  .opt h3{font-family:var(--serif);font-size:17px;font-weight:500;margin:0 0 3px}
+  .opt p{font-size:12.5px;color:var(--muted);margin:0;line-height:1.5}
   .opt .lockmsg{font-family:var(--mono);font-size:10px;color:var(--ember);margin-top:8px;letter-spacing:.06em}
   .pace{display:flex;gap:8px;margin-top:4px}
   .pace .chip{flex:1;text-align:center}
   /* ---------- commit ---------- */
   .vow{
-    font-family:var(--serif);font-size:21px;line-height:1.55;margin:30px 0;
+    font-family:var(--serif);font-size:22px;line-height:1.55;margin:34px 0;
     padding-left:16px;border-left:2px solid var(--gold);text-wrap:balance;
   }
   .fineprint{font-family:var(--mono);font-size:11px;color:var(--faint);line-height:1.7}
@@ -175,7 +173,7 @@
   #s-session{padding:0;background:#05070C}
   .stage{
     position:relative;flex:1;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;overflow:hidden;min-height:70dvh;
+    align-items:center;justify-content:center;overflow:hidden;min-height:66dvh;
   }
   #blob{position:absolute;inset:0;width:100%;height:100%}
   #guide{position:absolute;inset:0;margin:auto;width:min(64%,270px);aspect-ratio:200/250;transition:opacity 2.5s ease}
@@ -187,18 +185,34 @@
     font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:#39405A;text-transform:uppercase;
   }
   .breath-line{
-    position:absolute;bottom:118px;left:0;right:0;text-align:center;pointer-events:none;
+    position:absolute;bottom:112px;left:0;right:0;text-align:center;pointer-events:none;
   }
   .breath-word{font-family:var(--serif);font-size:22px;letter-spacing:.06em;color:var(--ink)}
   .breath-count{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
   .caption{
-    position:absolute;bottom:54px;left:24px;right:24px;text-align:center;
-    font-family:var(--serif);font-size:16.5px;line-height:1.5;color:#C9C2B2;
+    position:absolute;bottom:50px;left:24px;right:24px;text-align:center;
+    font-family:var(--serif);font-size:17px;line-height:1.5;color:#C9C2B2;
     text-shadow:0 1px 8px #000;min-height:52px;transition:opacity .8s;
   }
+  .mic-dot{
+    position:absolute;top:16px;right:16px;font-family:var(--mono);font-size:9px;
+    letter-spacing:.16em;color:var(--faint);text-transform:uppercase;display:none;
+    align-items:center;gap:6px;
+  }
+  .mic-dot.on{display:flex}
+  .mic-dot i{width:8px;height:8px;border-radius:50%;background:var(--faint);display:inline-block}
+  .session-modes{
+    display:flex;justify-content:center;gap:8px;
+    padding:10px 16px 0;background:#05070C;
+  }
+  .mode-chip{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--faint);border:1px solid var(--line);border-radius:3px;padding:7px 12px;
+  }
+  .mode-chip[aria-pressed="true"]{color:var(--gold);border-color:var(--gold-dim)}
   .session-foot{
     display:flex;align-items:center;justify-content:space-between;
-    padding:12px 16px 16px;background:#05070C;border-top:1px solid #10141F;
+    padding:10px 16px 16px;background:#05070C;
   }
   .fork-btn{
     font-family:var(--mono);font-size:12px;letter-spacing:.22em;color:var(--ember);
@@ -231,8 +245,8 @@
     border:1px solid rgba(110,134,192,.25)}
   .ring .t{font-family:var(--mono);font-size:30px;font-variant-numeric:tabular-nums}
   .stage-prompt{
-    font-family:var(--serif);font-size:19px;line-height:1.55;text-align:center;
-    min-height:92px;margin:22px auto 0;max-width:34ch;text-wrap:balance;
+    font-family:var(--serif);font-size:20px;line-height:1.55;text-align:center;
+    min-height:92px;margin:22px auto 0;max-width:30ch;text-wrap:balance;
   }
   .stage-idx{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--faint);
     text-transform:uppercase;text-align:center;margin-top:16px}
@@ -260,9 +274,8 @@
 
   <!-- ============ INTAKE ============ -->
   <section class="screen on" id="s-home">
-    <p class="eyebrow">Trigger intake · ≤ 5 seconds</p>
-    <h1>Something has surfaced. Name its heat.</h1>
-    <p class="sub">Labeling the state is already the first intervention — it moves the signal from the amygdala to the cortex.</p>
+    <p class="eyebrow">Trigger intake</p>
+    <h1>Name its heat.</h1>
     <div class="dial-wrap">
       <div class="dial-num"><span id="dialV">6</span><small>intensity</small></div>
       <input type="range" id="intensity" min="1" max="10" value="6" aria-label="Urge intensity, 1 to 10">
@@ -275,7 +288,7 @@
       <button class="chip" data-v="boredom" aria-pressed="false">Boredom-drift</button>
     </div>
     <div class="toggle-line">
-      <span>Under 6 hours of sleep last night</span>
+      <span>Under 6 hours of sleep</span>
       <button class="switch" id="sleepSw" aria-pressed="false" aria-label="Sleep debt toggle"></button>
     </div>
     <div class="btn-row">
@@ -286,18 +299,18 @@
   <!-- ============ MATRIX ============ -->
   <section class="screen" id="s-matrix">
     <button class="back" data-go="s-home">‹ Re-assess</button>
-    <p class="eyebrow">Dynamic assessment matrix</p>
-    <h1>Four doors. All of them open.</h1>
-    <p class="sub">Nothing here is forbidden. Each path is costed; reading the forecasts is itself the intervention. Card order is randomized — the numbers persuade, not the layout.</p>
+    <p class="eyebrow">Assessment matrix</p>
+    <h1>Four doors. All open.</h1>
+    <p class="sub">Every path is costed. Pick one — the session starts immediately.</p>
     <div class="sysnote" id="matrixNotes"></div>
     <div id="cards"></div>
   </section>
 
   <!-- ============ FANTASY ============ -->
   <section class="screen" id="s-fantasy">
-    <button class="back" data-go="s-matrix">‹ Back to the matrix</button>
+    <button class="back" data-go="s-matrix">‹ Back</button>
     <p class="eyebrow">Path 1 · The Fantasy Loop</p>
-    <h1>You may walk through this door. Here is the toll.</h1>
+    <h1>Open door. Here is the toll.</h1>
     <p class="sub" id="fantasyForecast"></p>
     <div class="fineprint" id="fantasyData"></div>
     <div class="btn-row">
@@ -314,7 +327,7 @@
     <div class="stage-prompt" id="somaticPrompt"></div>
     <div class="stage-idx" id="somaticIdx"></div>
     <div class="btn-row">
-      <button class="btn ghost tiny-adv" id="somaticSkip">Advance stage ›</button>
+      <button class="btn ghost" id="somaticSkip">Advance stage ›</button>
     </div>
   </section>
 
@@ -323,33 +336,35 @@
     <button class="back" data-go="s-matrix">‹ Back</button>
     <p class="eyebrow">Path 4 · The Kinetic Discharge</p>
     <h1 id="kineticTitle">Choose the override.</h1>
-    <p class="sub" id="kineticSub">State change by brute physiology. No extinction learning — this is the emergency brake, not the practice.</p>
-    <div id="kineticChoices">
-      <button class="opt" data-k="cold"><h3>Cold exposure — 90 seconds</h3><p>Cold water to the face and neck, or a cold shower. The catecholamine release overwrites the arousal signature.</p></button>
-      <button class="opt" data-k="move"><h3>Maximal movement — 3 minutes</h3><p>Squats, burpees, anything to failure. Consumes the sympathetic charge directly.</p></button>
+    <div id="kineticChoices" style="margin-top:18px">
+      <button class="opt" data-k="cold"><h3>Cold — 90 seconds</h3><p>Water to the face and neck. Overwrites the signature.</p></button>
+      <button class="opt" data-k="move"><h3>Movement — 3 minutes</h3><p>Squats, burpees, to failure. Consumes the charge.</p></button>
     </div>
     <div class="ring-wrap" id="kineticRingWrap" style="display:none"><div class="ring"><span class="t" id="kineticT">1:30</span></div></div>
     <div class="btn-row" id="kineticDoneRow" style="display:none">
-      <button class="btn" id="kineticDone">Done — log the aftermath</button>
+      <button class="btn" id="kineticDone">Done — log it</button>
     </div>
   </section>
 
   <!-- ============ CONFIGURATOR ============ -->
   <section class="screen" id="s-config">
-    <button class="back" data-go="s-matrix">‹ Back to the matrix</button>
-    <p class="eyebrow">Visual engine configurator</p>
-    <h1>Choose the anchor that will outbid the imagery.</h1>
-    <p class="sub">You do not beat a high-salience stimulus with a low-salience instruction. You beat it with one that is structurally incapable of narrative.</p>
+    <button class="back" data-go="s-matrix">‹ Back</button>
+    <p class="eyebrow">Anchor select</p>
+    <h1>What will outbid the imagery?</h1>
     <button class="opt" id="optA">
       <h3>A · The Grounded Aesthetic</h3>
-      <p>A guide delivering the count, face and breath only. Perfectly looped — no next scene, so elaboration has nothing to grip. Fades at the taper mark, no exceptions.</p>
-      <div class="lockmsg" id="optALock" style="display:none">LOCKED — trigger vector was visual. Like-for-like substitution is highest-risk. Choose the abstract.</div>
+      <p>A guide, face and breath only. Perfectly looped — no next scene. Fades at the taper, no exceptions.</p>
+      <div class="lockmsg" id="optALock" style="display:none">LOCKED — visual trigger. Like-for-like is highest-risk.</div>
     </button>
     <button class="opt" id="optB">
       <h3>B · The Cosmic Abstract</h3>
-      <p>Luminous form pulsing with your breath at resonance frequency. Blue-violet, brightening toward gold as stability builds — the nimitta rehearsal.</p>
+      <p>Luminous form pulsing with your breath. Blue toward gold as stability builds.</p>
     </button>
-    <div class="field-label">Session pacing</div>
+    <button class="opt" id="optC">
+      <h3>C · The Sound Field</h3>
+      <p>Eyes closed. Faint breath-sound carries the pace; a low voice carries the turns. For tired eyes.</p>
+    </button>
+    <div class="field-label">Pacing</div>
     <div class="pace">
       <button class="chip" data-pace="demo" aria-pressed="true">Demo · ~4 min</button>
       <button class="chip" data-pace="full" aria-pressed="false">Full · ~16 min</button>
@@ -359,8 +374,8 @@
   <!-- ============ COMMIT ============ -->
   <section class="screen" id="s-commit">
     <button class="back" data-go="s-config">‹ Reconfigure</button>
-    <p class="eyebrow">Pre-commitment · one tap</p>
-    <div class="vow">If imagery or storyline arises, then I return to the count on the very next inhale.</div>
+    <p class="eyebrow">One tap</p>
+    <div class="vow">If imagery or storyline arises, I return to the count on the very next inhale.</div>
     <div class="fineprint" id="commitFine"></div>
     <div class="btn-row">
       <button class="btn" id="beginSession">I commit — begin</button>
@@ -386,7 +401,8 @@
         </g>
         <circle class="glabella" cx="100" cy="76" r="3.4"></circle>
       </svg>
-      <div class="asset-note" id="assetNote" style="display:none">Stand-in · cinematic guide loop renders here · 8s seamless · zero progression</div>
+      <div class="asset-note" id="assetNote" style="display:none">Stand-in · cinematic guide loop renders here</div>
+      <div class="mic-dot" id="micDot"><i id="micDotI"></i><span id="micDotT">listening</span></div>
       <div class="toast" id="toast"></div>
       <div class="breath-line" id="breathLine" style="display:none">
         <div class="breath-word" id="breathWord">Inhale</div>
@@ -394,9 +410,14 @@
       </div>
       <div class="caption" id="caption"></div>
       <div class="fork-overlay" id="forkOverlay">
-        <div class="big">Exhale fully.<br>Attention to the palms.<br>One whole breath.</div>
+        <div class="big">Exhale fully.<br>Palms.<br>One whole breath.</div>
         <div class="sub2" id="forkCountMsg"></div>
       </div>
+    </div>
+    <div class="session-modes">
+      <button class="mode-chip" id="tglSound" aria-pressed="true">sound</button>
+      <button class="mode-chip" id="tglVoice" aria-pressed="true">voice</button>
+      <button class="mode-chip" id="tglMic" aria-pressed="false">mic · hear my breath</button>
     </div>
     <div class="session-foot">
       <button class="tiny" id="sessionAbort">✕ abort</button>
@@ -407,9 +428,8 @@
 
   <!-- ============ LOG ============ -->
   <section class="screen" id="s-log">
-    <p class="eyebrow">Episode log · 15 seconds</p>
-    <h1>The data is the point.</h1>
-    <p class="sub">These two numbers recalibrate every forecast the matrix will ever show you.</p>
+    <p class="eyebrow">Episode log</p>
+    <h1>Two numbers. That's all.</h1>
     <div class="slider-block">
       <div class="head"><span class="field-label" style="margin:0">Calm now</span><span class="n" id="calmV">6</span></div>
       <input type="range" id="calm" min="1" max="10" value="6" aria-label="Calm, 1 to 10">
@@ -445,14 +465,8 @@
 "use strict";
 /* ============================ state ============================ */
 const S = {
-  intensity: 6,
-  vector: "memory",
-  sleepDebt: false,
-  path: null,          // fantasy | somatic | visual | kinetic
-  anchor: null,        // A | B
-  pace: "demo",
-  forks: 0,
-  sessionResult: "",   // free note for the receipt
+  intensity: 6, vector: "memory", sleepDebt: false,
+  path: null, anchor: null, pace: "demo", forks: 0, sessionResult: "",
 };
 const PATH_NAMES = {fantasy:"The Fantasy Loop", somatic:"The Somatic Pivot", visual:"The Visual Guide Core", kinetic:"The Kinetic Discharge"};
 const store = {
@@ -461,6 +475,82 @@ const store = {
   add(entry){ const l=this.load(); l.push(entry); this.save(l); },
 };
 const $ = id => document.getElementById(id);
+
+/* ============================ audio engine ============================ */
+const audio = {
+  ctx:null, noiseGain:null, noiseFilter:null, droneGain:null,
+  soundOn:true, voiceOn:true, dim:1,
+  init(){
+    if(this.ctx){ if(this.ctx.state==="suspended") this.ctx.resume(); return; }
+    const C = new (window.AudioContext||window.webkitAudioContext)();
+    this.ctx=C;
+    const buf=C.createBuffer(1,C.sampleRate*2,C.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+    const src=C.createBufferSource(); src.buffer=buf; src.loop=true;
+    const f=C.createBiquadFilter(); f.type="bandpass"; f.frequency.value=900; f.Q.value=0.8;
+    const g=C.createGain(); g.gain.value=0;
+    src.connect(f); f.connect(g); g.connect(C.destination); src.start();
+    this.noiseFilter=f; this.noiseGain=g;
+    const o=C.createOscillator(); o.frequency.value=174;
+    const og=C.createGain(); og.gain.value=0;
+    o.connect(og); og.connect(C.destination); o.start();
+    this.droneGain=og;
+  },
+  /* faint breath sounds: filtered noise swell shaped to each half-cycle */
+  breath(b){
+    if(!this.ctx) return;
+    const t=this.ctx.currentTime;
+    if(!this.soundOn){ this.noiseGain.gain.setTargetAtTime(0,t,.1); this.droneGain.gain.setTargetAtTime(0,t,.1); return; }
+    const inhale = b.phase==="Inhale";
+    const amp = (inhale?0.05:0.04)*Math.sin(Math.PI*b.frac)*this.dim;
+    this.noiseGain.gain.setTargetAtTime(amp,t,.12);
+    this.noiseFilter.frequency.setTargetAtTime(inhale?1350:620,t,.2);
+    this.droneGain.gain.setTargetAtTime((0.005+0.013*b.v)*this.dim,t,.2);
+  },
+  silence(){
+    if(!this.ctx) return;
+    const t=this.ctx.currentTime;
+    this.noiseGain.gain.setTargetAtTime(0,t,.15);
+    this.droneGain.gain.setTargetAtTime(0,t,.15);
+    if("speechSynthesis" in window) speechSynthesis.cancel();
+  },
+  speak(text){
+    if(!this.voiceOn || !("speechSynthesis" in window)) return;
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=0.86; u.pitch=0.8; u.volume=0.9;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  },
+};
+/* microphone: hear the user's actual breath */
+const mic = {
+  stream:null, analyser:null, buf:null, level:0, active:false, lastHeard:0,
+  async start(){
+    audio.init();
+    try{
+      this.stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false}});
+      const s=audio.ctx.createMediaStreamSource(this.stream);
+      this.analyser=audio.ctx.createAnalyser(); this.analyser.fftSize=1024;
+      s.connect(this.analyser);
+      this.buf=new Float32Array(1024);
+      this.active=true; this.lastHeard=performance.now();
+      return true;
+    }catch(e){ return false; }
+  },
+  read(){
+    if(!this.active) return 0;
+    this.analyser.getFloatTimeDomainData(this.buf);
+    let s=0; for(let i=0;i<this.buf.length;i++) s+=this.buf[i]*this.buf[i];
+    const rms=Math.sqrt(s/this.buf.length);
+    this.level=this.level*0.9+rms*0.1;
+    if(this.level>0.012) this.lastHeard=performance.now();
+    return this.level;
+  },
+  stop(){
+    if(this.stream) this.stream.getTracks().forEach(t=>t.stop());
+    this.stream=null; this.active=false; this.level=0;
+  },
+};
 
 /* ============================ router ============================ */
 let activeTimers = [];
@@ -505,29 +595,26 @@ function computeMatrix(){
   const notes=[];
   const P = {
     fantasy:{ utility:1.5, jhana:5,
-      fc:"Phasic dopamine climb while the narrative extends itself. If completed: prolactin trough, 12–48 h motivation dip, cue-reactivity up for days. If not: rehearsed and strengthened for next time. Clarity occupied either way.",
-      spark:[3,8,10,9,4,1,1,2,2,2], tag:"indulgence · fully costed" },
+      fc:"Spike now — trough or rebound later. The loop re-consolidates either way.",
+      spark:[3,8,10,9,4,1,1,2,2,2], tag:"indulgence · costed" },
     somatic:{ utility:(i>=8?6:8), jhana:(i>=8?40:55),
-      fc:"Drop the narration; observe heat, pressure, movement — never content. Peak passes in 90 s–4 min. An extinction trial instead of a consolidation trial. Retained charge reads afterward as usable energy.",
-      spark:[3,5,6,4,5,6,7,7,7,7], tag:"interoceptive redirect" },
+      fc:"Ride the sensation, drop the story. Peak passes in minutes; the loop weakens.",
+      spark:[3,5,6,4,5,6,7,7,7,7], tag:"interoceptive" },
     visual:{ utility:(i>=7?9:6), jhana:(i>=7?70:60),
-      fc:"External anchor salient enough to win the bidding war, coupled to breath at resonance pace. Arousal is not discharged — it is re-bound. Elevated pleasant affect for 1–3 h after.",
-      spark:[3,4,3,5,7,8,8,8,8,7], tag:"anchored entrainment" },
+      fc:"An anchor outbids the imagery; the charge is re-bound to breath. Warm afterglow.",
+      spark:[3,4,3,5,7,8,8,8,8,7], tag:"guided session" },
     kinetic:{ utility:(night?5:7), jhana:30,
-      fc:"90 s cold or 3 min maximal effort. Fastest urge-kill on the board; no extinction learning — the cue was escaped, not defused. Emergency brake, not a habit.",
-      spark:[3,9,2,1,3,4,4,4,4,4], tag:"somatic override" },
+      fc:"Fast kill by cold or effort. Escaped, not defused.",
+      spark:[3,9,2,1,3,4,4,4,4,4], tag:"override" },
   };
   if(S.sleepDebt){
     Object.values(P).forEach(p=>p.jhana=Math.max(3,p.jhana-15));
-    notes.push("Sleep debt detected — all absorption probabilities −15 pts. The forecasts know.");
+    notes.push("Sleep debt — absorption probabilities −15 pts.");
   }
-  if(night) notes.push("Sleep-adjacent hours — Kinetic Discharge demoted (pre-sleep catecholamines).");
-  if(S.vector==="visual") notes.push("Visual trigger vector — Grounded Aesthetic anchor is locked out this episode.");
-  if(S.vector==="boredom"){
-    const b = store.load().filter(e=>e.vector==="boredom");
-    notes.push(b.length?`Boredom vector — ${b.length} prior boredom-vector episodes on file. Most dissolve in under 2 minutes.`:"Boredom vector — this urge is likely a boredom proxy.");
-  }
-  if(i>=8) notes.push("Intensity ≥ 8 — Somatic Pivot demoted; salience-matched anchor promoted.");
+  if(night) notes.push("Sleep-adjacent hours — Kinetic demoted.");
+  if(S.vector==="visual") notes.push("Visual trigger — anchor A locked out this episode.");
+  if(S.vector==="boredom") notes.push("Boredom vector — likely a proxy urge. Most dissolve in under 2 minutes.");
+  if(i>=8) notes.push("Intensity ≥ 8 — Somatic demoted; anchored session promoted.");
   return {P, notes};
 }
 function sparkline(points, hot){
@@ -543,13 +630,13 @@ function sparkline(points, hot){
 }
 function yourData(path){
   const l = store.load().filter(e=>e.path===path).slice(-5);
-  if(!l.length) return `<div class="yourdata">Your data: none yet — the numbers above are priors awaiting your evidence.</div>`;
+  if(!l.length) return "";
   const avg = a=> (a.reduce((s,e)=>s+e,0)/a.length).toFixed(1);
-  return `<div class="yourdata">Your last ${l.length}: post-clarity <em>${avg(l.map(e=>e.clarity))}</em> · post-calm <em>${avg(l.map(e=>e.calm))}</em></div>`;
+  return `<div class="yourdata">your last ${l.length}: clarity <em>${avg(l.map(e=>e.clarity))}</em> · calm <em>${avg(l.map(e=>e.calm))}</em></div>`;
 }
 function renderMatrix(){
   const {P,notes} = computeMatrix();
-  $("matrixNotes").innerHTML = notes.length ? notes.map(n=>"▸ "+n).join("<br>") : "▸ Baseline conditions — no modifiers active.";
+  $("matrixNotes").innerHTML = notes.length ? notes.map(n=>"▸ "+n).join("<br>") : "▸ Baseline — no modifiers active.";
   const order = ["fantasy","somatic","visual","kinetic"].sort(()=>Math.random()-.5);
   $("cards").innerHTML = order.map(k=>{
     const p=P[k], hot=k==="fantasy";
@@ -563,7 +650,6 @@ function renderMatrix(){
         <span class="spark">${sparkline(p.spark, hot)}</span>
       </div>
       <p class="forecast">${p.fc}</p>
-      ${k==="visual" && S.vector!=="visual" ? '<div class="warnline">carries the board’s only relapse-vector warning — see configurator</div>':""}
       ${yourData(k)}
     </button>`;
   }).join("");
@@ -579,27 +665,28 @@ function choosePath(k){
 
 /* ============================ fantasy ============================ */
 function renderFantasy(){
-  $("fantasyForecast").textContent = "Short-term relief is real and the forecast says so. So is the toll: refractory trough or rebound restlessness, 12–48 h of degraded drive, and a re-consolidated cue→reward loop that will bid harder next time.";
+  $("fantasyForecast").textContent = "Real relief now. Then: the trough or the rebound, 12–48 h of dulled drive, and a loop that bids harder next time.";
   const l = store.load().filter(e=>e.path==="fantasy");
   $("fantasyData").innerHTML = l.length
-    ? `Your record: ${l.length} walk-through${l.length>1?"s":""} logged. Average post-clarity: ${(l.reduce((s,e)=>s+e.clarity,0)/l.length).toFixed(1)} / 10. Nothing this app generates is as persuasive as your own numbers.`
-    : "Your record: no walk-throughs logged. If you proceed, the aftermath gets written down — that is the deal.";
+    ? `Your record: ${l.length} walk-through${l.length>1?"s":""} · avg post-clarity ${(l.reduce((s,e)=>s+e.clarity,0)/l.length).toFixed(1)}/10.`
+    : "No walk-throughs logged. If you proceed, the aftermath gets written down — that is the deal.";
 }
 $("fantasyProceed").addEventListener("click", ()=>{
-  S.sessionResult="eyes-open choice · no judgment · the aftermath is data";
+  S.sessionResult="eyes-open choice";
   show("s-log");
 });
 
-/* ============================ somatic ============================ */
+/* ============================ somatic (voiced) ============================ */
 const SOMATIC_STAGES = [
-  {d:24, p:"Find where the sensation actually lives. Pelvis, spine, chest — go to the address, not the story."},
-  {d:24, p:"Observe its qualities. Temperature. Pressure. Movement. Edges. Never content."},
-  {d:28, p:"It is a wave. Watch it crest without touching the narrative. You are the shore, not the swimmer."},
-  {d:24, p:"Check again. Is it still solid — or is it heat and tingling with no owner? Let it disperse upward."},
+  {d:24, p:"Find where it lives. The address, not the story."},
+  {d:24, p:"Temperature. Pressure. Movement. Edges."},
+  {d:28, p:"It is a wave. Watch it crest. Don't feed it."},
+  {d:24, p:"Still solid — or just heat with no owner? Let it rise and disperse."},
 ];
 let somaticStage=0, somaticElapsed=0;
 function runSomatic(){
   somaticStage=0; somaticElapsed=0;
+  audio.init();
   paintSomatic();
   const t = setInterval(()=>{
     somaticElapsed++;
@@ -612,14 +699,17 @@ function nextSomaticStage(){
   somaticElapsed=0; somaticStage++;
   if(somaticStage>=SOMATIC_STAGES.length){
     clearTimers();
+    audio.speak("The wave passed. Log it.");
     S.sessionResult="urge surfed · extinction trial banked";
     show("s-log"); return;
   }
   paintSomatic();
 }
 function paintSomatic(){
-  $("somaticPrompt").textContent = SOMATIC_STAGES[somaticStage].p;
+  const p=SOMATIC_STAGES[somaticStage].p;
+  $("somaticPrompt").textContent = p;
   $("somaticIdx").textContent = `stage ${somaticStage+1} of ${SOMATIC_STAGES.length}`;
+  audio.speak(p);
   paintSomaticClock();
 }
 function paintSomaticClock(){
@@ -629,7 +719,7 @@ function paintSomaticClock(){
   $("somaticRing").style.transform = `scale(${b})`;
 }
 $("somaticSkip").addEventListener("click", nextSomaticStage);
-$("somaticAbort").addEventListener("click", ()=>show("s-matrix"));
+$("somaticAbort").addEventListener("click", ()=>{ audio.silence(); show("s-matrix"); });
 
 /* ============================ kinetic ============================ */
 function resetKinetic(){
@@ -645,13 +735,15 @@ $("kineticChoices").addEventListener("click", e=>{
   $("kineticRingWrap").style.display="";
   $("kineticDoneRow").style.display="";
   $("kineticTitle").textContent = b.dataset.k==="cold" ? "Cold. Ninety seconds. Go." : "Move. Three minutes. Go.";
+  audio.init(); audio.speak($("kineticTitle").textContent);
   let rem=secs;
   const paint=()=>{ $("kineticT").textContent=`${Math.floor(rem/60)}:${String(rem%60).padStart(2,"0")}`; };
   paint();
-  const t=setInterval(()=>{ rem=Math.max(0,rem-1); paint(); if(rem===0){clearInterval(t); $("kineticTitle").textContent="Done. The signature is overwritten.";} },1000);
+  const t=setInterval(()=>{ rem=Math.max(0,rem-1); paint();
+    if(rem===0){clearInterval(t); $("kineticTitle").textContent="Done. Signature overwritten."; audio.speak("Done.");} },1000);
   activeTimers.push(t);
 });
-$("kineticDone").addEventListener("click", ()=>{ S.sessionResult="brute-force override · escaped, not defused"; show("s-log"); });
+$("kineticDone").addEventListener("click", ()=>{ S.sessionResult="brute-force override"; show("s-log"); });
 
 /* ============================ configurator ============================ */
 function renderConfig(){
@@ -664,46 +756,51 @@ $("optA").addEventListener("click", ()=>{
   S.anchor="A"; renderCommit(); show("s-commit");
 });
 $("optB").addEventListener("click", ()=>{ S.anchor="B"; renderCommit(); show("s-commit"); });
+$("optC").addEventListener("click", ()=>{ S.anchor="C"; renderCommit(); show("s-commit"); });
 document.querySelectorAll("[data-pace]").forEach(b=>b.addEventListener("click", ()=>{
   S.pace=b.dataset.pace;
   document.querySelectorAll("[data-pace]").forEach(c=>c.setAttribute("aria-pressed", c===b?"true":"false"));
 }));
 function renderCommit(){
-  const mult = S.pace==="full"?4:1;
-  $("commitFine").innerHTML =
-    (S.anchor==="A"
-      ? `Anchor A selected. The guide fades at the taper mark — ${Math.round(2.4*mult)} min in — regardless of how it feels. That is a kept promise, not an in-session negotiation.<br><br>`
-      : `Anchor B selected. The form breathes when you breathe. It will dim as stability builds.<br><br>`)
-    + `Fork rule: three forks inside 90 seconds and the engine switches to the abstract without comment. The bridge will have been outbid — no shame in the data.`;
+  $("commitFine").textContent =
+    S.anchor==="A" ? "Anchor A: the guide fades at the taper — a kept promise, not a negotiation. Three forks in 90 s switches you to the abstract."
+    : S.anchor==="B" ? "Anchor B: the form breathes when you breathe, and dims as stability builds."
+    : "Anchor C: eyes closed from the first sigh. Sound carries everything.";
 }
 
 /* ============================ session engine ============================ */
 const canvas=$("blob"); const ctx=canvas.getContext("2d");
 let sessionOn=false, rafId=null, sessionT0=0, phaseIdx=0, phaseT0=0;
-let mode="B";           // current visual mode
-let forkTimes=[], forkOverlayUntil=0, crossfadeStart=null, sessionDone=false;
+let mode="B", forkTimes=[], forkOverlayUntil=0, crossfadeStart=null;
+let lastCap="", micWarned=false;
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function phases(){
   const m = S.pace==="full"?4:1;
-  const A = S.anchor==="A";
+  const A=S.anchor==="A", C=S.anchor==="C";
   return [
-    {id:"preload", d:26*m, caps:[[0,"Sit tall. Lift the sternum."],[7,"Three physiological sighs — double inhale, long slow exhale."],[19,"Release the jaw. The tongue. The pelvic floor."]]},
-    {id:"induction", d:40*m, caps: A
-      ? [[0,"Fix your gaze between her eyes. Soft focus. Do not scan."],[10,"Join the breath already in progress."],[24,"She is a clock, not a character."]]
-      : [[0,"Rest your gaze at the center of the form. Soft focus."],[10,"Join the breath already in progress."],[24,"Let the pulse carry the count for you."]]},
-    {id:"pivot", d:80*m, caps:[[0,"Something in this is pleasant. Find where the pleasantness registers in your body."],[18,"Chest, face, hands. Rest attention there — the screen is background now."],[42,"On each exhale, let the warmth widen. No pictures."],[62,"If anything acquires a next — a plot — that is the fork. Tap it, no drama."]]},
-    {id:"taper", d:26*m, caps: A
-      ? [[0,"The warmth no longer needs the screen."],[12,"The rhythm survives the object."]]
-      : [[0,"The warmth no longer needs the screen."],[12,"Let the light dim itself."]]},
-    {id:"stillness", d:9999, caps:[[0,"Close the eyes. Let the warmth be the whole object."],[20,"When you are ready, end the session below."]]},
+    {id:"preload", d:26*m, caps:[[0,"Sit tall."],[7,"Three sighs — double inhale, long exhale."],[19,"Release jaw, tongue, pelvic floor."]]},
+    {id:"induction", d:40*m, caps:
+      A ? [[0,"Gaze between her eyes. Don't scan."],[12,"Join the breath."],[26,"A clock, not a character."]]
+      : C ? [[0,"Eyes closed."],[12,"Ride the sound of the breath."]]
+      : [[0,"Rest at the center. Soft focus."],[12,"Join the breath."]]},
+    {id:"pivot", d:80*m, caps:[
+      [0,"Something here is pleasant. Find where it registers in your body."],
+      [22,"Rest there."],
+      [46,"Each exhale, let the warmth widen."],
+      [64,"A storyline means fork."]]},
+    {id:"taper", d:26*m, caps:
+      C ? [[0,"The warmth no longer needs the sound."]]
+      : [[0,"The warmth no longer needs the screen."]]},
+    {id:"stillness", d:9999, caps:[[0,"Let the warmth be the whole object."],[24,"End below when ready."]]},
   ];
 }
 let PH=[];
 $("beginSession").addEventListener("click", startSession);
 function startSession(){
-  PH = phases(); phaseIdx=0; forkTimes=[]; S.forks=0; sessionDone=false; crossfadeStart=null;
+  PH = phases(); phaseIdx=0; forkTimes=[]; S.forks=0; crossfadeStart=null; lastCap=""; micWarned=false;
   mode = S.anchor;
+  audio.init(); audio.dim=1;
   show("s-session");
   sizeCanvas();
   sessionOn=true; sessionT0=performance.now(); phaseT0=sessionT0;
@@ -716,11 +813,11 @@ function sizeCanvas(){
 }
 addEventListener("resize", ()=>{ if(sessionOn) sizeCanvas(); });
 
-/* breath: 4 in / 6 out, continuous clock */
+/* breath clock: 4 in / 6 out */
 function breathState(t){
   const cyc=(t/1000)%10;
-  if(cyc<4) return {phase:"Inhale", v:easeInOut(cyc/4), count:Math.floor(cyc)+1};
-  return {phase:"Exhale", v:1-easeInOut((cyc-4)/6), count:Math.floor(cyc-4)+1};
+  if(cyc<4) return {phase:"Inhale", frac:cyc/4, v:easeInOut(cyc/4), count:Math.floor(cyc)+1};
+  return {phase:"Exhale", frac:(cyc-4)/6, v:1-easeInOut((cyc-4)/6), count:Math.floor(cyc-4)+1};
 }
 function easeInOut(x){ return x<.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; }
 
@@ -729,34 +826,41 @@ function loop(now){
   rafId=requestAnimationFrame(loop);
   const ph=PH[phaseIdx];
   const pt=(now-phaseT0)/1000;
-  const total=(now-sessionT0)/1000;
   if(pt>=ph.d && ph.id!=="stillness"){ advancePhase(now); return; }
 
-  /* progress track (through taper) */
   const fixed=PH.slice(0,4).reduce((s,p)=>s+p.d,0);
   const done=PH.slice(0,phaseIdx).reduce((s,p)=>s+p.d,0)+Math.min(pt,ph.d);
   $("phaseTrack").style.width = Math.min(100,(done/fixed)*100)+"%";
 
-  /* captions */
+  /* captions — spoken once, shown always */
   const cap = [...ph.caps].reverse().find(c=>pt>=c[0]);
-  $("caption").textContent = cap?cap[1]:"";
+  const capText = cap?cap[1]:"";
+  if(capText!==lastCap){ lastCap=capText; $("caption").textContent=capText; if(capText) audio.speak(capText); }
 
-  /* breath readout */
   const b=breathState(now-sessionT0);
   const showBreath = ph.id!=="preload";
   $("breathLine").style.display = showBreath?"":"none";
   if(showBreath){ $("breathWord").textContent=b.phase; $("breathCount").textContent=b.count; }
 
-  /* fork availability */
   $("forkBtn").style.visibility = (ph.id==="induction"||ph.id==="pivot")?"visible":"hidden";
-
-  /* fork overlay expiry */
   if(forkOverlayUntil && now>forkOverlayUntil){ forkOverlayUntil=0; $("forkOverlay").classList.remove("on"); }
 
-  /* visuals */
-  const prog = Math.min(1, done/fixed);           // 0..1 through fixed phases
-  drawScene(now, b, ph, pt, prog);
-  playTone(b);
+  /* mic: blend the user's real breath into the pulse; gate anchor A on silence */
+  let micBoost=0, breathHeard=false;
+  if(mic.active){
+    const lvl=mic.read();
+    micBoost=Math.min(1,lvl*28);
+    breathHeard = (now-mic.lastHeard)<4000;
+    $("micDotI").style.background = breathHeard ? "var(--gold)" : "var(--faint)";
+    $("micDotT").textContent = breathHeard ? "breath heard" : "listening";
+  }
+
+  /* stillness dims sound with the light */
+  audio.dim = ph.id==="stillness" ? Math.max(0.15, 1-pt/40) : 1;
+  audio.breath(b);
+
+  const prog = Math.min(1, done/fixed);
+  drawScene(now, b, ph, pt, prog, micBoost, breathHeard);
 }
 function advancePhase(now){
   phaseIdx++;
@@ -768,15 +872,42 @@ function advancePhase(now){
 $("advPhase").addEventListener("click", ()=>{
   if(PH[phaseIdx].id==="stillness"){ endSession(); } else { advancePhase(); }
 });
-$("sessionAbort").addEventListener("click", ()=>{ sessionOn=false; stopTone(); show("s-matrix"); });
+$("sessionAbort").addEventListener("click", ()=>{ sessionOn=false; audio.silence(); mic.stop(); show("s-matrix"); });
 function endSession(){
-  sessionOn=false; stopTone();
-  S.sessionResult = mode==="B"&&S.anchor==="A"
-    ? "anchor A bridged to abstract · corridor completed"
+  sessionOn=false; audio.silence(); mic.stop();
+  S.sessionResult = mode==="B"&&S.anchor==="A" ? "anchor A bridged to abstract"
+    : S.anchor==="C" ? "sound-field session completed"
     : "entrainment session completed";
   show("s-log");
 }
-function stopSessionLoop(){ if(rafId){cancelAnimationFrame(rafId); rafId=null;} sessionOn=false; stopTone(); }
+function stopSessionLoop(){ if(rafId){cancelAnimationFrame(rafId); rafId=null;} sessionOn=false; if(audio.ctx) audio.silence(); }
+
+/* ---------- session toggles ---------- */
+$("tglSound").addEventListener("click", ()=>{
+  audio.soundOn=!audio.soundOn;
+  $("tglSound").setAttribute("aria-pressed", audio.soundOn?"true":"false");
+});
+$("tglVoice").addEventListener("click", ()=>{
+  audio.voiceOn=!audio.voiceOn;
+  if(!audio.voiceOn && "speechSynthesis" in window) speechSynthesis.cancel();
+  $("tglVoice").setAttribute("aria-pressed", audio.voiceOn?"true":"false");
+});
+$("tglMic").addEventListener("click", async ()=>{
+  if(mic.active){
+    mic.stop();
+    $("tglMic").setAttribute("aria-pressed","false");
+    $("micDot").classList.remove("on");
+    return;
+  }
+  const ok = await mic.start();
+  if(ok){
+    $("tglMic").setAttribute("aria-pressed","true");
+    $("micDot").classList.add("on");
+    showToast("listening — the pulse follows your actual breath");
+  } else {
+    showToast("mic unavailable — pacing by clock");
+  }
+});
 
 /* ---------- fork ---------- */
 $("forkBtn").addEventListener("click", ()=>{
@@ -784,11 +915,12 @@ $("forkBtn").addEventListener("click", ()=>{
   forkTimes.push(now); S.forks++;
   forkTimes=forkTimes.filter(t=>now-t<90000);
   $("forkOverlay").classList.add("on");
-  $("forkCountMsg").textContent=`fork ${S.forks} noted · no penalty`;
+  $("forkCountMsg").textContent=`fork ${S.forks} · no penalty`;
+  audio.speak("Exhale. Palms. One breath.");
   forkOverlayUntil=now+6500;
   if(forkTimes.length>=3 && mode==="A"){
     mode="B"; crossfadeStart=now;
-    showToast("Bridge outbid — switching to the abstract. The data has no opinion of you.");
+    showToast("bridge outbid — switching to the abstract");
   }
 });
 let toastTimer=null;
@@ -799,7 +931,7 @@ function showToast(msg){
 }
 
 /* ---------- drawing ---------- */
-function drawScene(now, b, ph, pt, prog){
+function drawScene(now, b, ph, pt, prog, micBoost, breathHeard){
   const w=canvas.width,h=canvas.height;
   ctx.clearRect(0,0,w,h);
   ctx.fillStyle="#05070C"; ctx.fillRect(0,0,w,h);
@@ -808,24 +940,29 @@ function drawScene(now, b, ph, pt, prog){
   let guideAlpha=0, blobAlpha=0;
   if(!preload){
     if(mode==="A"){ guideAlpha=1; blobAlpha=0.18; }
+    else if(mode==="C"){ guideAlpha=0; blobAlpha=0.14; }   /* eyes closed: a faint ember, nothing to look at */
     else { guideAlpha=0; blobAlpha=1; }
     if(crossfadeStart){
       const cf=Math.min(1,(now-crossfadeStart)/9000);
       guideAlpha=(1-cf); blobAlpha=0.18+0.82*cf;
       if(cf>=1 && mode==="A") mode="B";
     }
-    if(ph.id==="stillness"){ blobAlpha*= Math.max(0.14, 1-pt/40); guideAlpha=0; }
+    if(ph.id==="stillness"){ blobAlpha*= Math.max(0.12, 1-pt/40); guideAlpha=0; }
+    /* mic compliance gate: anchor A dims when no breath is heard */
+    if(mode==="A" && mic.active && !breathHeard){
+      guideAlpha*=0.3;
+      if(!micWarned){ micWarned=true; showToast("no breath heard — the guide dims until it returns"); }
+    } else if(breathHeard){ micWarned=false; }
   } else {
-    /* preload: a single dim ember, barely breathing */
     blobAlpha=0.12;
   }
 
-  /* blob */
   if(blobAlpha>0.01){
     const cx=w/2, cy=h*0.46;
     const base=Math.min(w,h)*0.19;
-    const r=base*(0.72+0.4*b.v);
-    const hue = 235 - 190*prog;                    /* violet-blue → gold */
+    const pulse = Math.min(1, 0.72+0.4*b.v + 0.25*micBoost);
+    const r=base*pulse;
+    const hue = 235 - 190*prog;
     const sat = 62 - 14*prog;
     const t=now/1000;
     const wob = reduceMotion?0:1;
@@ -839,7 +976,6 @@ function drawScene(now, b, ph, pt, prog){
       ctx.fillStyle=g;
       ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2); ctx.fill();
     }
-    /* core */
     const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,r*0.6);
     cg.addColorStop(0,`hsla(${hue},${sat+8}%,86%,${0.75})`);
     cg.addColorStop(1,`hsla(${hue},${sat}%,55%,0)`);
@@ -848,7 +984,6 @@ function drawScene(now, b, ph, pt, prog){
     ctx.restore();
   }
 
-  /* guide */
   $("guide").style.opacity=guideAlpha.toFixed(2);
   $("assetNote").style.display = guideAlpha>0.4 ? "" : "none";
   if(guideAlpha>0.01){
@@ -858,25 +993,6 @@ function drawScene(now, b, ph, pt, prog){
     document.querySelector("#guide .halo").setAttribute("r",(22+8*b.v).toFixed(1));
   }
 }
-
-/* ---------- optional breath tone ---------- */
-let audioCtx=null, osc=null, gainNode=null, toneOn=false;
-function playTone(b){
-  if(!toneOn||!gainNode) return;
-  gainNode.gain.setTargetAtTime(0.012+0.028*b.v, audioCtx.currentTime, 0.15);
-}
-function stopTone(){ if(gainNode){ gainNode.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.1);} }
-/* double-tap the header stats to toggle the tone — deliberately buried; sound is seasoning */
-$("barStats").addEventListener("dblclick", ()=>{
-  if(!audioCtx){
-    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    osc=audioCtx.createOscillator(); gainNode=audioCtx.createGain();
-    osc.frequency.value=174; gainNode.gain.value=0;
-    osc.connect(gainNode).connect(audioCtx.destination); osc.start();
-  }
-  toneOn=!toneOn; if(!toneOn) stopTone();
-  showToast(toneOn?"breath tone on":"breath tone off");
-});
 
 /* ============================ log ============================ */
 $("calm").addEventListener("input",e=>$("calmV").textContent=e.target.value);
@@ -898,19 +1014,18 @@ $("saveLog").addEventListener("click", ()=>{
 });
 function renderDone(e){
   const quotes={
-    fantasy:"Chosen with open eyes. The aftermath is now evidence — the matrix will quote it back to you.",
-    somatic:"The wave crested and passed without being fed. That was an extinction trial. They compound.",
-    visual:"The energy was not suppressed. It was re-bound to a new object. The corridor gets shorter every time.",
-    kinetic:"Signature overwritten. Remember: the brake stops the car — it doesn't teach the driver.",
+    fantasy:"Chosen with open eyes. The aftermath is evidence now.",
+    somatic:"The wave crested and passed unfed. Extinction trials compound.",
+    visual:"Not suppressed — re-bound. The corridor gets shorter every time.",
+    kinetic:"Overwritten. The brake stops the car; it doesn't teach the driver.",
   };
   $("doneQuote").textContent=quotes[e.path];
   const n=store.load().length;
   $("doneReceipt").innerHTML =
     `path <b>${PATH_NAMES[e.path]}${e.anchor?" · anchor "+e.anchor:""}</b><br>`+
-    `intensity in <b>${e.intensity}</b> → calm out <b>${e.calm}</b> · clarity <b>${e.clarity}</b><br>`+
-    (e.path==="visual"?`forks <b>${e.forks}</b> · the trend matters more than the count<br>`:"")+
-    `urge now <b>${e.urge}</b> · episode <b>#${n}</b> in your evidence base`+
-    (S.sessionResult?`<br>note <b>${S.sessionResult}</b>`:"");
+    `intensity in <b>${e.intensity}</b> → calm <b>${e.calm}</b> · clarity <b>${e.clarity}</b><br>`+
+    (e.path==="visual"?`forks <b>${e.forks}</b><br>`:"")+
+    `urge now <b>${e.urge}</b> · episode <b>#${n}</b>`;
 }
 </script>
 
