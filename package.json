@@ -1,0 +1,12 @@
+{
+  "name": "taskmind-somatic-engine",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline-first somatic engagement matrix: avatar-coached 4-7-8 breath training with haptic pacing, resonant audio layers, and milestone-gated progression. Zero cloud dependencies.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "serve": "node server.mjs"
+  }
+}

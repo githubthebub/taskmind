@@ -1,0 +1,16 @@
+{
+  "name": "Stillpoint — somatic focus trainer",
+  "short_name": "Stillpoint",
+  "description": "Offline breath-training companion: 4-7-8 pacing with an animated coach, haptic cues, and resonant audio.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0e1420",
+  "theme_color": "#0e1420",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230e1420'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%237ee0c0' stroke-width='6'/%3E%3Ccircle cx='50' cy='50' r='10' fill='%237ee0c0'/%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
