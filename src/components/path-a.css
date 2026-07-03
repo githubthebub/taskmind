@@ -1,0 +1,226 @@
+/* Path selector + Path A (Fast Settle).
+   Uses the shared tokens/primitives from styles.css. Everything here follows
+   the stimulation-taper invariant: as .taper-0 → .taper-3 progresses, visuals
+   only ever dim and animations only ever slow — nothing new appears, nothing
+   brightens, nothing speeds up. The global prefers-reduced-motion rule
+   disables all animation, leaving static shapes. */
+
+/* ------------------------------------------------------------------ */
+/* Path selector                                                       */
+/* ------------------------------------------------------------------ */
+
+.path-select-header {
+  gap: 10px;
+  padding-top: 12px;
+}
+
+.path-select-list {
+  gap: 14px;
+}
+
+/* Cards are buttons: full-width, generous padding = large tap targets. */
+.path-card {
+  font: inherit;
+  text-align: left;
+  width: 100%;
+  min-height: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--ink);
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+
+.path-card:hover,
+.path-card:focus-visible {
+  border-color: var(--ink-faint);
+  background: #1b2130;
+}
+
+.path-card:focus-visible {
+  outline: 1px solid var(--calm);
+  outline-offset: 2px;
+}
+
+.path-card:active {
+  transform: scale(0.99);
+}
+
+.path-card-title {
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+}
+
+.path-card-desc {
+  color: var(--ink-dim);
+  line-height: 1.5;
+}
+
+.path-card-tag {
+  color: var(--ink-faint);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.path-select-footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Path A — Fast Settle                                                */
+/* ------------------------------------------------------------------ */
+
+.fast-settle {
+  min-height: 100%;
+}
+
+.fast-settle-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+}
+
+/* Figure + aura. Both dim with the taper (via --stim from styles.css);
+   the aura also drifts more and more slowly. Nothing is ever added. */
+
+.settle-visuals {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 220px;
+  height: 220px;
+  opacity: calc(0.35 + 0.65 * var(--stim, 1));
+  transition: opacity 6s ease;
+}
+
+.settle-aura {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(127, 168, 160, 0.4),
+    rgba(127, 168, 160, 0.07) 58%,
+    transparent 72%
+  );
+  animation-name: settle-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  transition: opacity 6s ease;
+}
+
+/* Animation-duration and opacity keyed to taper level: slower and dimmer
+   at every step, never the reverse. */
+.taper-0 .settle-aura { animation-duration: 8s;  opacity: 0.85; }
+.taper-1 .settle-aura { animation-duration: 13s; opacity: 0.6; }
+.taper-2 .settle-aura { animation-duration: 20s; opacity: 0.38; }
+.taper-3 .settle-aura { animation-duration: 30s; opacity: 0.22; }
+
+@keyframes settle-drift {
+  from {
+    transform: scale(0.92);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+.settle-figure {
+  position: relative;
+  width: 160px;
+  height: 190px;
+}
+
+/* Prompt stays readable at every taper level; it softens rather than fades. */
+.settle-prompt {
+  max-width: 420px;
+  opacity: calc(0.72 + 0.28 * var(--stim, 1));
+  transition: opacity 6s ease;
+}
+
+.settle-factor-label {
+  letter-spacing: 0.08em;
+  opacity: calc(0.5 + 0.5 * var(--stim, 1));
+  transition: opacity 6s ease;
+}
+
+/* Soft continue tap — large target, quiet presence, dims with the taper. */
+.settle-continue {
+  min-height: 56px;
+  min-width: 240px;
+  font-size: 1rem;
+  color: var(--ink-dim);
+  opacity: calc(0.55 + 0.45 * var(--stim, 1));
+  transition: opacity 6s ease;
+}
+
+/* The always-visible Settled self-report tap. It never dims below full
+   legibility — it is the one thing the user must always be able to find. */
+.settle-tap-zone {
+  margin-top: auto;
+  align-items: center;
+}
+
+.settle-tap-label {
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+}
+
+.settle-tap-hint {
+  display: block;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #a8c4bf;
+}
+
+/* ------------------------------------------------------------------ */
+/* Eyes-closed / audio-only mode                                       */
+/* ------------------------------------------------------------------ */
+
+/* Two giant halves: upper advances, the entire lower half is the Settled
+   self-report tap. Near-black; a barely-visible hint in each zone; the
+   tapering audio cues carry the session. */
+
+.settle-veil-zone {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.settle-veil-advance {
+  border-bottom: 1px solid rgba(232, 228, 218, 0.05);
+}
+
+.settle-veil-hint {
+  font: inherit;
+  font-size: 0.85rem;
+  letter-spacing: 0.14em;
+  color: rgba(232, 228, 218, 0.1);
+  user-select: none;
+}
+
+.settle-veil-zone:focus-visible {
+  outline: 1px solid rgba(127, 168, 160, 0.35);
+  outline-offset: -6px;
+  border-radius: var(--radius-lg);
+}
+
+.settle-veil-zone:active .settle-veil-hint {
+  color: rgba(232, 228, 218, 0.18);
+}

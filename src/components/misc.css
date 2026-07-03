@@ -1,0 +1,238 @@
+/* Stillpoint — safety gate, session log, settings screens.
+   Uses the shared tokens/primitives from src/styles.css. */
+
+/* ---------------------------------------------------------------- */
+/* Safety gate                                                       */
+/* ---------------------------------------------------------------- */
+
+.gate-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gate-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 14px;
+  border-left: 2px solid var(--accent-soft);
+}
+
+.gate-item-label {
+  color: var(--ink);
+}
+
+.gate-item-detail {
+  color: var(--ink-dim);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+/* Large, forgiving checkbox targets — the whole card is tappable. */
+.gate-affirm {
+  background: var(--bg-raised);
+  border: 1px solid #232a38;
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.gate-affirm:hover {
+  border-color: var(--ink-faint);
+}
+.gate-affirm input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* "One of these applies" must be as prominent as "Begin". */
+.gate-big-btn {
+  padding: 16px 20px;
+  font-size: 1.05rem;
+  border-radius: var(--radius-lg);
+}
+
+.gate-alt {
+  border-color: var(--calm-soft);
+}
+
+.gate-static-line {
+  text-align: center;
+  color: var(--ink-dim);
+  line-height: 1.5;
+  padding: 12px 14px;
+  border: 1px dashed #2c3446;
+  border-radius: var(--radius);
+}
+
+.gate-hint {
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- */
+/* Session log                                                       */
+/* ---------------------------------------------------------------- */
+
+.log-table-wrap {
+  overflow-x: auto;
+  background: var(--bg-raised);
+  border: 1px solid #232a38;
+  border-radius: var(--radius);
+}
+
+.log-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.log-table th,
+.log-table td {
+  padding: 10px 14px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.log-table th {
+  color: var(--ink-faint);
+  font-weight: normal;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.log-table tbody tr {
+  border-top: 1px solid #232a38;
+}
+
+.log-empty {
+  text-align: center;
+  padding: 36px 18px;
+}
+
+/* ---------------------------------------------------------------- */
+/* Settings                                                          */
+/* ---------------------------------------------------------------- */
+
+.settings-section {
+  gap: 16px;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.settings-row-col {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.settings-row-col > .row-between {
+  width: 100%;
+}
+
+.settings-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  line-height: 1.4;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.stepper-btn {
+  font: inherit;
+  font-size: 1.25rem;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
+  border: 1px solid #2c3446;
+  background: var(--bg-sunken);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.25s ease, opacity 0.25s ease;
+}
+.stepper-btn:hover {
+  border-color: var(--ink-faint);
+}
+.stepper-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.stepper-value {
+  min-width: 38px;
+  text-align: center;
+  font-size: 1.05rem;
+}
+
+.seg {
+  display: flex;
+  border: 1px solid #2c3446;
+  border-radius: var(--radius);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.seg-btn {
+  font: inherit;
+  min-height: 44px;
+  padding: 10px 18px;
+  background: var(--bg-sunken);
+  border: none;
+  color: var(--ink-dim);
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+.seg-btn + .seg-btn {
+  border-left: 1px solid #2c3446;
+}
+.seg-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.seg-on {
+  background: var(--calm-soft);
+  color: #eef7f5;
+}
+
+.settings-toggle input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Dimmed, non-punitive presentation for practice-gated controls. */
+.settings-locked {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.settings-lock-note {
+  padding-left: 2px;
+}
+
+.settings-range {
+  width: 100%;
+  accent-color: var(--calm);
+  cursor: pointer;
+}
+
+.settings-footer {
+  border-top: 1px solid #232a38;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

@@ -1,0 +1,232 @@
+/* Path C (Extended Tantric) + Path D (Combo).
+   Uses the shared tokens/primitives from styles.css. Calm and dim throughout:
+   nothing flashes, nothing counts down, and the global prefers-reduced-motion
+   rule disables what little transition there is. */
+
+/* ------------------------------------------------------------------ */
+/* Layout                                                              */
+/* ------------------------------------------------------------------ */
+
+.tantric-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.tantric-stage-name {
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+
+.tantric-figure {
+  width: min(230px, 58vw);
+  margin: 4px auto;
+}
+
+.chakra-label {
+  color: var(--accent);
+  font-size: 0.9rem;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.tantric-mudra-block {
+  align-items: center;
+  gap: 8px;
+}
+
+.mudra-name {
+  text-align: center;
+}
+
+/* Large, forgiving tap target for the in-chain mudra advance. */
+.tantric-next-mudra {
+  min-height: 52px;
+  min-width: 220px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Framing note (Path D personal-synthesis banner)                     */
+/* ------------------------------------------------------------------ */
+
+.framing-note {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-color: var(--calm-soft);
+}
+
+.framing-text {
+  font-size: 0.92rem;
+}
+
+.framing-dismiss {
+  align-self: flex-end;
+  padding: 8px 14px;
+  min-height: 44px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Bandha panel                                                        */
+/* ------------------------------------------------------------------ */
+
+.bandha-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bandha-steps {
+  gap: 10px;
+}
+
+.bandha-step {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.bandha-order {
+  min-width: 1.2em;
+}
+
+.bandha-step-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bandha-name {
+  color: var(--ink);
+}
+
+.bandha-desc,
+.bandha-release-note,
+.bandha-hold-note {
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------ */
+/* Correspondence panel (Path D annotations)                           */
+/* ------------------------------------------------------------------ */
+
+.corr-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-sunken);
+}
+
+.corr-head {
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+.corr-badge {
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 4px 12px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+/* Genuine cross-tradition pairing — quiet sea-green. */
+.corr-badge-shared {
+  color: var(--calm);
+  border-color: var(--calm-soft);
+}
+
+/* App-specific pairing — deliberately dim, clearly not canonical. */
+.corr-badge-personal {
+  color: var(--ink-faint);
+  border-color: var(--ink-faint);
+}
+
+.corr-note {
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------ */
+/* Footer / navigation                                                 */
+/* ------------------------------------------------------------------ */
+
+.tantric-footer {
+  gap: 10px;
+}
+
+.tantric-continue {
+  min-height: 56px;
+  font-size: 1.05rem;
+}
+
+.tantric-footer-row {
+  justify-content: space-between;
+}
+
+.tantric-footer-row .btn {
+  min-height: 48px;
+}
+
+.tantric-selfnote {
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------ */
+/* Quiet completion moment                                             */
+/* ------------------------------------------------------------------ */
+
+.tantric-complete {
+  gap: 28px;
+}
+
+.tantric-complete-figure {
+  opacity: 0.55;
+}
+
+.tantric-close {
+  min-height: 52px;
+  min-width: 200px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Eyes-closed / audio-only live mode                                  */
+/* ------------------------------------------------------------------ */
+
+/* Whole screen advances (mudra-in-chain, then stage, then completion);
+   a thin bottom strip ends the session. Hints are barely-there — the
+   distinct sound cues carry every transition. */
+
+.tantric-veil-advance,
+.tantric-veil-end {
+  font: inherit;
+  border: none;
+  background: transparent;
+  color: #23262e;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tantric-veil-advance {
+  flex: 1;
+}
+
+.tantric-veil-end {
+  min-height: 76px;
+  border-top: 1px solid #14171d;
+}
+
+.tantric-veil-hint {
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+}

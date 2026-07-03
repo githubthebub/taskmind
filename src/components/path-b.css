@@ -1,0 +1,343 @@
+/* Path B — full ānāpānasati (16 steps, 4 tetrads).
+   Uses the shared tokens/primitives from styles.css. Everything stays dim,
+   slow, and quiet: the step instruction is the one bright thing on screen,
+   pacing is breath-counted and self-paced, and nothing counts down at the
+   user. The global prefers-reduced-motion rule disables all animation. */
+
+/* ------------------------------------------------------------------ */
+/* Entry choice (post-trigger only)                                     */
+/* ------------------------------------------------------------------ */
+
+.anp-entry-header {
+  gap: 10px;
+  padding-top: 12px;
+}
+
+.anp-entry-card {
+  font: inherit;
+  text-align: left;
+  width: 100%;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--ink);
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+
+.anp-entry-card:hover,
+.anp-entry-card:focus-visible {
+  border-color: var(--ink-faint);
+  background: #1b2130;
+}
+
+.anp-entry-card:focus-visible {
+  outline: 1px solid var(--calm);
+  outline-offset: 2px;
+}
+
+.anp-entry-card:active {
+  transform: scale(0.99);
+}
+
+.anp-entry-card-recommended {
+  border-color: var(--calm-soft);
+}
+
+.anp-entry-title {
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+}
+
+.anp-entry-desc {
+  color: var(--ink-dim);
+  line-height: 1.5;
+}
+
+.anp-entry-tag {
+  color: var(--calm);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+/* ------------------------------------------------------------------ */
+/* Practice screen                                                      */
+/* ------------------------------------------------------------------ */
+
+.anp-practice {
+  min-height: 100%;
+}
+
+.anp-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+/* Tetrad name in the dim header fades in gently on tetrad change. */
+.anp-tetrad-name {
+  animation: anp-fade-in 3s ease both;
+}
+
+@keyframes anp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.anp-figure {
+  position: relative;
+  width: 150px;
+  height: 175px;
+  opacity: 0.75;
+}
+
+/* The step instruction is the centerpiece. */
+.anp-instruction {
+  max-width: 460px;
+  animation: anp-fade-in 1.8s ease both;
+}
+
+.anp-attention {
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+}
+
+/* Tetrad interstitial: a slightly longer pause between tetrads where the
+   new tetrad's name fades slowly in. Tapping it continues early. */
+.anp-interstitial {
+  font: inherit;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  padding: 40px 20px;
+}
+
+.anp-interstitial-name {
+  font-size: 1.45rem;
+  letter-spacing: 0.06em;
+  animation: anp-fade-in 3.2s ease both;
+}
+
+.anp-interstitial-hint {
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+  animation: anp-fade-in 4s ease both;
+}
+
+/* ------------------------------------------------------------------ */
+/* Breath marking — large, unobtrusive, entirely optional               */
+/* ------------------------------------------------------------------ */
+
+.anp-breath-zone {
+  margin-top: auto;
+  align-items: center;
+}
+
+/* Big forgiving hit area, but visually quiet: this is not a call to
+   action, just somewhere for the hand to rest. */
+.anp-breath-tap {
+  font: inherit;
+  width: 100%;
+  min-height: 92px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid #232a38;
+  background: var(--bg-sunken);
+  color: var(--ink-dim);
+  cursor: pointer;
+  transition: border-color 0.4s ease, background 0.4s ease, transform 0.15s ease;
+}
+
+.anp-breath-tap:hover,
+.anp-breath-tap:focus-visible {
+  border-color: #2c3446;
+}
+
+.anp-breath-tap:focus-visible {
+  outline: 1px solid var(--calm-soft);
+  outline-offset: 2px;
+}
+
+.anp-breath-tap:active {
+  transform: scale(0.99);
+  background: #0e1117;
+}
+
+.anp-breath-label {
+  display: block;
+  font-size: 1.05rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.anp-breath-hint {
+  display: block;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+/* Faint per-step breath dots — a quiet trace, never a target to hit. */
+.anp-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  min-height: 8px;
+}
+
+.anp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #232a38;
+  transition: background 0.6s ease;
+}
+
+.anp-dot-marked {
+  background: var(--calm-soft);
+}
+
+/* ------------------------------------------------------------------ */
+/* Step navigation                                                      */
+/* ------------------------------------------------------------------ */
+
+.anp-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.anp-nav .btn {
+  min-height: 52px;
+}
+
+.anp-next {
+  min-width: 170px;
+  opacity: 0.7;
+  transition: opacity 1.5s ease, border-color 1.5s ease;
+}
+
+/* After breathsPerStep marked cycles (manual mode) the next affordance
+   quietly becomes a touch more present — an invitation, not a prompt. */
+.anp-next-ready {
+  opacity: 1;
+  border-color: var(--calm-soft);
+}
+
+.anp-finish-early {
+  align-self: center;
+}
+
+/* ------------------------------------------------------------------ */
+/* Reflection screen ("Looking back — optional")                        */
+/* ------------------------------------------------------------------ */
+
+.anp-reflect-list {
+  gap: 10px;
+}
+
+.anp-factor {
+  font: inherit;
+  text-align: left;
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  color: var(--ink);
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+
+.anp-factor:hover,
+.anp-factor:focus-visible {
+  border-color: var(--ink-faint);
+}
+
+.anp-factor:focus-visible {
+  outline: 1px solid var(--calm);
+  outline-offset: 2px;
+}
+
+.anp-factor-on {
+  border-color: var(--calm);
+  background: #16211f;
+}
+
+.anp-factor-name {
+  font-size: 1.02rem;
+}
+
+.anp-factor-mark {
+  color: var(--calm);
+  font-size: 0.85rem;
+  margin-left: 8px;
+}
+
+.anp-factor-gloss {
+  color: var(--ink-dim);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.anp-reflect-actions {
+  padding-top: 8px;
+  align-items: center;
+}
+
+/* ------------------------------------------------------------------ */
+/* Eyes-closed / audio-only mode                                        */
+/* ------------------------------------------------------------------ */
+
+/* Two giant halves: upper marks a breath, lower advances the step.
+   Near-black; a barely-visible hint in each zone; step changes are
+   announced only by the advance cue. */
+
+.anp-veil-zone {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.anp-veil-breath {
+  border-bottom: 1px solid rgba(232, 228, 218, 0.05);
+}
+
+.anp-veil-hint {
+  font: inherit;
+  font-size: 0.85rem;
+  letter-spacing: 0.14em;
+  color: rgba(232, 228, 218, 0.1);
+  user-select: none;
+}
+
+.anp-veil-zone:focus-visible {
+  outline: 1px solid rgba(127, 168, 160, 0.35);
+  outline-offset: -6px;
+  border-radius: var(--radius-lg);
+}
+
+.anp-veil-zone:active .anp-veil-hint {
+  color: rgba(232, 228, 218, 0.18);
+}

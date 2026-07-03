@@ -1,0 +1,296 @@
+/* Stillpoint figure system — hand mudras, soft blob face, seated meditator,
+   and the learn-mode mudra legend. Dim line-art in the shared palette; all
+   idle animation is killed globally by the prefers-reduced-motion rule in
+   styles.css, and every animated node still works as a static drawing. */
+
+/* --------------------------------------------------------------------------
+   Shared: every CSS-animated SVG node rotates/scales about its LOCAL origin
+   (0 0). Static positioning lives in attribute transforms on parent groups,
+   so morphs are plain transform transitions — reliable across browsers.
+   Duration comes from --fig-ms, set inline from the transitionMs prop.
+-------------------------------------------------------------------------- */
+.figure-anim {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transition:
+    transform var(--fig-ms, 800ms) ease-in-out,
+    opacity var(--fig-ms, 800ms) ease-in-out;
+}
+
+/* --------------------------------------------------------------------------
+   HandMudra
+-------------------------------------------------------------------------- */
+.hand-mudra {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.hm-seg-line {
+  stroke: var(--ink, #e8e4da);
+  stroke-opacity: 0.55;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.hm-palm-outline {
+  stroke: var(--ink, #e8e4da);
+  stroke-opacity: 0.4;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.hm-palm-fill {
+  fill: var(--ink, #e8e4da);
+}
+
+.hm-crease {
+  stroke: var(--ink, #e8e4da);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  fill: none;
+}
+
+/* --------------------------------------------------------------------------
+   FaceBlob
+-------------------------------------------------------------------------- */
+.face-blob {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Gentle idle bob; duration grows with calm (slower = more settled). */
+.fb-idle {
+  animation: fbIdle var(--fb-idle, 9s) ease-in-out infinite alternate;
+}
+@keyframes fbIdle {
+  from { transform: translateY(0); }
+  to   { transform: translateY(1.4px); }
+}
+
+.fb-head {
+  fill: var(--ink, #e8e4da);
+  fill-opacity: 0.05;
+  stroke: var(--ink, #e8e4da);
+  stroke-opacity: 0.35;
+  stroke-width: 1.6;
+}
+
+.fb-almond {
+  fill: none;
+  stroke: var(--ink, #e8e4da);
+  stroke-width: 1.8;
+}
+
+.fb-iris {
+  fill: var(--ink, #e8e4da);
+}
+
+.fb-closed-arc {
+  stroke: var(--ink, #e8e4da);
+  stroke-width: 2;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.fb-mouth {
+  stroke: var(--ink, #e8e4da);
+  stroke-width: 2;
+  stroke-linecap: round;
+  fill: none;
+  transition:
+    d var(--fig-ms, 800ms) ease-in-out,
+    opacity var(--fig-ms, 800ms) ease-in-out;
+}
+
+.fb-brow-dot,
+.fb-brow-halo {
+  fill: var(--accent, #d4a35a);
+}
+
+/* --------------------------------------------------------------------------
+   SeatedBody
+-------------------------------------------------------------------------- */
+.seated-body {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 3 / 4;
+  margin: 0 auto;
+}
+
+.sb-figure {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 80%;
+  transition: opacity var(--fig-ms, 800ms) ease-in-out;
+}
+
+/* Idle sway only ever slows and dims — never quickens. */
+.seated-body[data-motion='active'] .sb-figure {
+  animation: sbSway 9s ease-in-out infinite alternate;
+}
+.seated-body[data-motion='settling'] .sb-figure {
+  animation: sbSwaySlow 17s ease-in-out infinite alternate;
+  opacity: 0.88;
+}
+.seated-body[data-motion='still'] .sb-figure {
+  opacity: 0.8;
+}
+.seated-body[data-motion='still'] .fb-idle,
+.seated-body[data-motion='still'] .sb-chakra-halo {
+  animation: none;
+}
+@keyframes sbSway {
+  from { transform: rotate(-0.5deg); }
+  to   { transform: rotate(0.5deg); }
+}
+@keyframes sbSwaySlow {
+  from { transform: rotate(-0.2deg); }
+  to   { transform: rotate(0.2deg); }
+}
+
+.sb-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.sb-line {
+  stroke: var(--ink, #e8e4da);
+  stroke-opacity: 0.45;
+  stroke-width: 3;
+  stroke-linecap: round;
+  fill: none;
+}
+.sb-line-soft { stroke-opacity: 0.28; }
+
+.sb-legs-shape {
+  stroke: var(--ink, #e8e4da);
+  stroke-opacity: 0.45;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: var(--ink, #e8e4da);
+  fill-opacity: 0.05;
+}
+
+.sb-spine {
+  stroke: var(--ink, #e8e4da);
+  stroke-opacity: 0.13;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 0.5 9;
+  fill: none;
+}
+
+/* Subtle chest rise driven by breathPhase; short transition low-passes
+   discrete prop updates into a smooth swell. */
+.sb-breath {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transition: transform 420ms ease-out;
+}
+
+.sb-face,
+.sb-hand {
+  position: absolute;
+}
+
+.sb-face {
+  aspect-ratio: 1 / 1;
+  transition:
+    left var(--fig-ms, 800ms) ease-in-out,
+    top var(--fig-ms, 800ms) ease-in-out;
+}
+
+.sb-hand {
+  aspect-ratio: 100 / 130;
+  transition:
+    left var(--fig-ms, 800ms) ease-in-out,
+    top var(--fig-ms, 800ms) ease-in-out,
+    width var(--fig-ms, 800ms) ease-in-out,
+    transform var(--fig-ms, 800ms) ease-in-out;
+}
+
+.sb-chakra-overlay {
+  pointer-events: none;
+}
+
+.sb-chakra-core,
+.sb-chakra-halo {
+  fill: var(--accent, #d4a35a);
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transition: opacity var(--fig-ms, 800ms) ease-in-out;
+}
+.sb-chakra-core { opacity: 0.14; }
+.sb-chakra-halo { opacity: 0; }
+
+.sb-chakra-active .sb-chakra-core { opacity: 0.95; }
+.sb-chakra-active .sb-chakra-halo {
+  opacity: 0.3;
+  /* Delay matches the fade-in so the pulse picks up where the fade ends. */
+  animation: sbChakraGlow 6s ease-in-out var(--fig-ms, 800ms) infinite alternate;
+}
+@keyframes sbChakraGlow {
+  from { opacity: 0.3;  transform: scale(0.94); }
+  to   { opacity: 0.46; transform: scale(1.12); }
+}
+
+/* --------------------------------------------------------------------------
+   MudraLegend (learn mode)
+-------------------------------------------------------------------------- */
+.mudra-legend .legend-hands {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 8px 0 0;
+  min-height: 220px;
+}
+
+.legend-hand {
+  width: 42%;
+  max-width: 190px;
+  aspect-ratio: 100 / 130;
+  transition:
+    width 600ms ease-in-out,
+    margin 600ms ease-in-out;
+}
+.legend-hands[data-placement='knees'] .legend-hand { margin: 0 10px; }
+.legend-hands[data-placement='lap']   .legend-hand { margin: 0 -12px; }
+.legend-hands[data-placement='heart'] .legend-hand { width: 36%; margin: 0 -20px; }
+
+.legend-sanskrit {
+  font-style: italic;
+  color: var(--accent, #d4a35a);
+  opacity: 0.85;
+}
+
+.legend-dots {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ink-faint, #5f5b52);
+  opacity: 0.55;
+  transition: background 400ms ease, opacity 400ms ease;
+}
+.legend-dot-seen {
+  background: var(--accent, #d4a35a);
+  opacity: 0.9;
+}
+
+.legend-note {
+  text-align: center;
+}

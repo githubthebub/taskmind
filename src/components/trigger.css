@@ -1,0 +1,152 @@
+/* Stage 0 trigger screen — pulsing tempo indicator + open-ended retention.
+   Uses the shared tokens from styles.css; everything here stays dim and calm.
+   Note: the global prefers-reduced-motion rule disables all animation, leaving
+   static (still legible) shapes. */
+
+.trigger-stage {
+  min-height: 100%;
+}
+
+.trigger-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.trigger-intro,
+.trigger-choice {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+/* --- Pulsing tempo indicator (one pulse per breath; duration set inline
+       from the technique's bpm — not a box-breathing phase display). --- */
+
+.trigger-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.trigger-pulse {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(212, 163, 90, 0.85),
+    rgba(212, 163, 90, 0.18) 62%,
+    transparent 74%
+  );
+  animation-name: trigger-pulse;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  /* animation-duration is set inline: 60 / bpm seconds per breath. */
+}
+
+@keyframes trigger-pulse {
+  0% {
+    transform: scale(0.72);
+    opacity: 0.55;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(0.72);
+    opacity: 0.55;
+  }
+}
+
+.trigger-breath-count {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+/* --- Retention: a slowly drifting, "breathing" glow. No countdown, no timer,
+       no urgency — just a soft presence to rest the eyes on. --- */
+
+.trigger-glow {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(127, 168, 160, 0.5),
+    rgba(127, 168, 160, 0.08) 60%,
+    transparent 74%
+  );
+  animation: trigger-drift 9s ease-in-out infinite alternate;
+}
+
+.trigger-glow-dim {
+  opacity: 0.5;
+}
+
+@keyframes trigger-drift {
+  from {
+    transform: scale(0.9) translateY(4px);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(1.08) translateY(-4px);
+    opacity: 0.85;
+  }
+}
+
+/* The one quiet post-soft-cap line — fades in slowly, never flashes. */
+.trigger-softcap {
+  color: var(--ink-dim);
+  font-style: italic;
+  animation: trigger-fade-in 3s ease forwards;
+}
+
+@keyframes trigger-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- Controls: large, forgiving targets throughout. --- */
+
+.trigger-big {
+  min-height: 56px;
+  font-size: 1.05rem;
+}
+
+.trigger-release {
+  min-width: 220px;
+  min-height: 60px;
+  font-size: 1.1rem;
+}
+
+.trigger-tap-zone {
+  margin-top: auto;
+}
+
+.tap-report .trigger-tap-label {
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+}
+
+.tap-report .trigger-tap-hint {
+  display: block;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #cbb98f;
+}
+
+.trigger-selfreport-note {
+  text-align: center;
+}
