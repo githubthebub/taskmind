@@ -199,7 +199,6 @@
   }
   .track{
     display:grid;
-    grid-template-columns:1fr 1.5fr 1.25fr .92fr .33fr;
     gap:4px;
     height:6px;
   }
@@ -216,10 +215,8 @@
     background:linear-gradient(90deg,var(--piti),var(--sukha));
     border-radius:3px;
   }
-  .track .labels{display:none}
   .phase-names{
     display:grid;
-    grid-template-columns:1fr 1.5fr 1.25fr .92fr .33fr;
     gap:4px;
     font-family:var(--mono);
     font-size:.56rem;
@@ -235,7 +232,7 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    gap:22px;
+    gap:18px;
     flex-wrap:wrap;
   }
   .vol{
@@ -250,7 +247,7 @@
   }
   input[type=range]{
     -webkit-appearance:none;appearance:none;
-    width:130px;height:3px;border-radius:3px;
+    width:110px;height:3px;border-radius:3px;
     background:var(--line);
     cursor:pointer;
   }
@@ -280,17 +277,50 @@
     transition:border-color .2s,color .2s;
   }
   .ghost-btn:hover{border-color:var(--muted);color:var(--text)}
+  .ghost-btn:disabled{opacity:.4;cursor:default}
   .ghost-btn:focus-visible{outline:2px solid var(--piti);outline-offset:3px}
-  .mode-note{
-    font-family:var(--mono);
-    font-size:.64rem;
-    letter-spacing:.12em;
-    text-transform:uppercase;
-    color:var(--muted-2);
-    display:flex;
-    align-items:center;
-    gap:8px;
+  .seg-toggle{
+    display:inline-flex;
+    border:1px solid var(--line);
+    border-radius:100px;
+    padding:3px;
+    gap:2px;
+    background:var(--ground-2);
   }
+  .seg-toggle button{
+    appearance:none;
+    background:transparent;
+    border:none;
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:.62rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    padding:7px 13px;
+    border-radius:100px;
+    cursor:pointer;
+    transition:background .2s,color .2s;
+    white-space:nowrap;
+  }
+  .seg-toggle button:hover{color:var(--text)}
+  .seg-toggle button.on{
+    background:var(--raised-2);
+    color:var(--text);
+  }
+  .seg-toggle button[data-v="mic"].on,
+  .seg-toggle button[data-v="sleep"].on{color:var(--piti)}
+  .seg-toggle button:focus-visible{outline:2px solid var(--piti);outline-offset:2px}
+  .mic-status{
+    text-align:center;
+    font-family:var(--mono);
+    font-size:.66rem;
+    letter-spacing:.08em;
+    color:var(--muted);
+    min-height:1.2em;
+    margin-top:-14px;
+  }
+  .mic-status b{color:var(--piti);font-weight:400}
+  .mic-status.err{color:var(--danger)}
 
   /* ---------- legend ---------- */
   .legend{
@@ -373,6 +403,7 @@
   }
   .notes .row.safety .tag{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,var(--line))}
   .notes a{color:var(--piti)}
+  .notes code{font-family:var(--mono);font-size:.9em;color:var(--anchor)}
   .fine{
     font-size:.72rem;
     color:var(--muted-2);
@@ -395,7 +426,7 @@
   <header>
     <div class="mark">Cymatic · non-verbal sound conditioning</div>
     <h1>Breathe with the <em>light</em>.</h1>
-    <p class="sub">A five-minute sound language that leads the breath from alert rhythm down into absorption — and, if you let it, sleep. No words. Just the anchor, the rising, and the landing.</p>
+    <p class="sub">A sound language that leads the breath from alert rhythm down into absorption — and, if you let it, sleep. No words. Just the anchor, the rising, and the landing.</p>
   </header>
 
   <div class="stage">
@@ -417,28 +448,28 @@
   <div class="timeline">
     <div class="clock">
       <span class="phase" id="phaseLabel">Ready</span>
-      <span><span id="tElapsed">0:00</span> / 5:00</span>
+      <span><span id="tElapsed">0:00</span> / <span id="tTotal">5:00</span></span>
     </div>
-    <div class="track" id="track">
-      <div class="seg"><i></i></div>
-      <div class="seg"><i></i></div>
-      <div class="seg"><i></i></div>
-      <div class="seg"><i></i></div>
-      <div class="seg"><i></i></div>
-    </div>
-    <div class="phase-names" id="phaseNames">
-      <span>Capture</span><span>Lead</span><span>Absorb</span><span>Decay</span><span>Dissolve</span>
-    </div>
+    <div class="track" id="track"></div>
+    <div class="phase-names" id="phaseNames"></div>
   </div>
 
   <div class="controls">
+    <div class="seg-toggle" id="modeToggle" role="group" aria-label="Session length">
+      <button type="button" data-v="practice" class="on">5-min practice</button>
+      <button type="button" data-v="sleep">Sleep · fades out</button>
+    </div>
+    <div class="seg-toggle" id="breathToggle" role="group" aria-label="Breath source">
+      <button type="button" data-v="pacer" class="on">Guided pace</button>
+      <button type="button" data-v="mic">Follow my breath</button>
+    </div>
     <div class="vol">
       <span>Vol</span>
       <input type="range" id="vol" min="0" max="100" value="55" aria-label="Volume">
     </div>
     <button class="ghost-btn" id="restart" disabled>Restart</button>
-    <div class="mode-note"><span class="dot" style="--vc:var(--sukha)"></span>ends in silence</div>
   </div>
+  <div class="mic-status" id="micStatus"></div>
 
   <div class="legend">
     <div class="voice" id="voiceAnchor" style="--vc:var(--anchor)">
@@ -466,9 +497,13 @@
       <span class="tag">Headphones</span>
       <span>The Anchor is a true binaural beat — 108 Hz in one ear, 112 Hz in the other. Without stereo separation you'll still hear a pacing tremolo, but the effect is far weaker. Sub-bass also carries better on headphones.</span>
     </div>
+    <div class="row">
+      <span class="tag">Two modes</span>
+      <span><b>5-min practice</b> ends cleanly in silence. <b>Sleep</b> runs the same descent, then keeps darkening and thinning for ~20 minutes more before fading to true silence at ~25 min — no loop, so it won't wake you. <b>Follow my breath</b> uses your microphone to read your breathing <em>rate</em> and lock the pacer and shimmer to it — it meets you where you are, then leads you slower. The mic signal is analysed on-device only; nothing is recorded, stored, or sent anywhere.</span>
+    </div>
     <div class="row safety">
       <span class="tag">Care</span>
-      <span>Kept deliberately quiet — raise the volume only as far as is comfortable. This is not a medical device and makes no clinical claims. Don't use while driving or operating machinery. If you have epilepsy or are sensitive to rhythmic stimulation, skip it. The session ends in true silence and never loops.</span>
+      <span>Kept deliberately quiet — raise the volume only as far as is comfortable. This is not a medical device and makes no clinical claims. Don't use while driving or operating machinery. If you have epilepsy or are sensitive to rhythmic stimulation, skip it.</span>
     </div>
     <div class="row">
       <span class="tag">How it works</span>
@@ -476,17 +511,16 @@
     </div>
   </div>
 
-  <div class="fine">a prototype of the Cymatic engine — metronomic breath pacer (MVP tier)</div>
+  <div class="fine" id="fine">a prototype of the Cymatic engine — metronomic pacer, optional mic breath-tracking</div>
 </div>
 
 <script>
 (() => {
   "use strict";
 
-  // ---------- session score (5 min = 300 s) ----------
-  // keyframes: t seconds -> target parameter vector. Interpolated each frame.
-  const KEY = [
-    // t    bpm   df   carrier cutoff  piti  sukha master anchor
+  // ============ session scores ============
+  // Each keyframe: t seconds -> target parameter vector, interpolated per frame.
+  const KEY_PRACTICE = [
     { t:0,   bpm:13, df:8.0, car:110, cut:3600, piti:0.16, sukha:0.42, master:1.00, anchor:0.85 },
     { t:60,  bpm:13, df:8.0, car:110, cut:3400, piti:0.18, sukha:0.48, master:1.00, anchor:0.85 },
     { t:150, bpm:6,  df:5.0, car:110, cut:2100, piti:0.50, sukha:0.80, master:0.86, anchor:0.82 },
@@ -494,330 +528,391 @@
     { t:280, bpm:5,  df:1.5, car:98,  cut:400,  piti:0.09, sukha:0.72, master:0.42, anchor:0.40 },
     { t:300, bpm:5,  df:0.0, car:90,  cut:230,  piti:0.00, sukha:0.00, master:0.00, anchor:0.00 },
   ];
-  const DURATION = 300;
-  const PHASES = [
-    { name:"Capture",    end:60  },
-    { name:"Lead",       end:150 },
-    { name:"Absorption", end:225 },
-    { name:"Decay",      end:280 },
-    { name:"Dissolve",   end:300 },
+  // Sleep: same active descent through ~5 min, then a long thinning tail to true silence ~25 min.
+  const KEY_SLEEP = [
+    { t:0,    bpm:13,  df:8.0, car:110, cut:3600, piti:0.16, sukha:0.42, master:1.00, anchor:0.85 },
+    { t:60,   bpm:13,  df:8.0, car:110, cut:3400, piti:0.18, sukha:0.48, master:1.00, anchor:0.85 },
+    { t:150,  bpm:6,   df:5.0, car:110, cut:2100, piti:0.45, sukha:0.80, master:0.86, anchor:0.82 },
+    { t:240,  bpm:6,   df:4.0, car:110, cut:820,  piti:0.24, sukha:0.96, master:0.66, anchor:0.62 },
+    { t:360,  bpm:5,   df:2.0, car:100, cut:420,  piti:0.06, sukha:0.72, master:0.46, anchor:0.42 },
+    { t:600,  bpm:4.5, df:0.8, car:92,  cut:300,  piti:0.00, sukha:0.44, master:0.30, anchor:0.24 },
+    { t:1020, bpm:4,   df:0.0, car:86,  cut:230,  piti:0.00, sukha:0.20, master:0.14, anchor:0.11 },
+    { t:1320, bpm:4,   df:0.0, car:82,  cut:190,  piti:0.00, sukha:0.07, master:0.05, anchor:0.03 },
+    { t:1500, bpm:4,   df:0.0, car:80,  cut:170,  piti:0.00, sukha:0.00, master:0.00, anchor:0.00 },
   ];
 
-  const lerp = (a,b,t) => a + (b-a)*t;
-  const smooth = t => t*t*(3-2*t);
+  const MODES = {
+    practice:{
+      duration:300, key:KEY_PRACTICE,
+      phases:[
+        {name:"Capture",end:60},{name:"Lead",end:150},
+        {name:"Absorption",end:225},{name:"Decay",end:280},{name:"Dissolve",end:300},
+      ],
+    },
+    sleep:{
+      duration:1500, key:KEY_SLEEP,
+      phases:[
+        {name:"Capture",end:60},{name:"Lead",end:150},
+        {name:"Absorption",end:360},{name:"Descent",end:1020},{name:"Dissolve",end:1500},
+      ],
+    },
+  };
+
+  let modeName="practice", breathSrc="pacer";
+  const mode = () => MODES[modeName];
+
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+  const smooth=t=>t*t*(3-2*t);
   function sample(time){
-    if (time <= KEY[0].t) return {...KEY[0]};
-    if (time >= KEY[KEY.length-1].t) return {...KEY[KEY.length-1]};
-    let i=0; while (i<KEY.length-1 && KEY[i+1].t < time) i++;
-    const a=KEY[i], b=KEY[i+1];
-    const raw=(time-a.t)/(b.t-a.t), s=smooth(raw);
-    const out={};
-    for (const k of ["bpm","df","car","cut","piti","sukha","master","anchor"]){
-      // bpm & df glide linearly (rhythm), levels/cutoff ease
-      const t = (k==="bpm"||k==="df") ? raw : s;
+    const K=mode().key;
+    if(time<=K[0].t) return {...K[0]};
+    if(time>=K[K.length-1].t) return {...K[K.length-1]};
+    let i=0; while(i<K.length-1 && K[i+1].t<time) i++;
+    const a=K[i], b=K[i+1], raw=(time-a.t)/(b.t-a.t), s=smooth(raw), out={};
+    for(const k of ["bpm","df","car","cut","piti","sukha","master","anchor"]){
+      const t=(k==="bpm"||k==="df")?raw:s;
       out[k]=lerp(a[k],b[k],t);
     }
     return out;
   }
 
-  // ---------- breath envelope ----------
-  // phase p in [0,1): inhale rise, hold, exhale fall, pause.
-  const IN_END=0.42, HOLD_END=0.52, EX_END=0.92; // pause -> 1
+  // breath envelope: inhale rise, hold, exhale fall, pause
+  const IN_END=0.42, HOLD_END=0.52, EX_END=0.92;
   function breathEnv(p){
-    if (p < IN_END)   return 0.5 - 0.5*Math.cos(Math.PI * p/IN_END);           // 0 -> 1
-    if (p < HOLD_END) return 1;
-    if (p < EX_END)   return 0.5 + 0.5*Math.cos(Math.PI * (p-HOLD_END)/(EX_END-HOLD_END)); // 1 -> 0
+    if(p<IN_END)   return 0.5-0.5*Math.cos(Math.PI*p/IN_END);
+    if(p<HOLD_END) return 1;
+    if(p<EX_END)   return 0.5+0.5*Math.cos(Math.PI*(p-HOLD_END)/(EX_END-HOLD_END));
     return 0;
   }
   function breathStage(p){
-    if (p < IN_END)   return "in";
-    if (p < HOLD_END) return "hold";
-    if (p < EX_END)   return "out";
+    if(p<IN_END)return "in";
+    if(p<HOLD_END)return "hold";
+    if(p<EX_END)return "out";
     return "rest";
   }
 
-  // ---------- audio graph ----------
+  // ============ audio graph ============
   let ctx=null, started=false, raf=null;
-  let t0=0, breathPhase=0, lastFrame=0, lastBreath=0, sukhaArmed=true;
-  let rings=[]; // {t0} in ctx time
+  let t0=0, breathPhase=0, lastFrame=0, sukhaArmed=true, rings=[];
   const nodes={};
 
   function buildGraph(){
-    ctx = new (window.AudioContext||window.webkitAudioContext)();
+    ctx=new (window.AudioContext||window.webkitAudioContext)();
 
-    // master chain: userVol -> limiter -> destination
-    const userVol = ctx.createGain(); userVol.gain.value = volToGain(volEl.value);
-    const limiter = ctx.createDynamicsCompressor();
+    const userVol=ctx.createGain(); userVol.gain.value=volToGain(volEl.value);
+    const limiter=ctx.createDynamicsCompressor();
     limiter.threshold.value=-3; limiter.knee.value=2; limiter.ratio.value=20;
     limiter.attack.value=0.003; limiter.release.value=0.25;
     userVol.connect(limiter); limiter.connect(ctx.destination);
 
-    // session master (score-driven)
-    const master = ctx.createGain(); master.gain.value=0; master.connect(userVol);
+    // envelope = guaranteed session fade (native automation; survives tab throttling)
+    const envelope=ctx.createGain(); envelope.gain.value=1; envelope.connect(userVol);
+    const master=ctx.createGain(); master.gain.value=0; master.connect(envelope);
 
-    // --- ANCHOR: dichotic 108 / 112 via channel merger + centred octave harmonic ---
-    const merger = ctx.createChannelMerger(2);
-    const oscL = ctx.createOscillator(); oscL.type="sine";
-    const oscR = ctx.createOscillator(); oscR.type="sine";
-    const gL = ctx.createGain(), gR = ctx.createGain(); gL.gain.value=gR.gain.value=0.5;
+    // ANCHOR: dichotic 108/112 via merger + centred octave harmonic + slow amplitude breath
+    const merger=ctx.createChannelMerger(2);
+    const oscL=ctx.createOscillator(); oscL.type="sine";
+    const oscR=ctx.createOscillator(); oscR.type="sine";
+    const gL=ctx.createGain(), gR=ctx.createGain(); gL.gain.value=gR.gain.value=0.5;
     oscL.connect(gL).connect(merger,0,0);
     oscR.connect(gR).connect(merger,0,1);
-    const harm = ctx.createOscillator(); harm.type="sine";
-    const harmG = ctx.createGain(); harmG.gain.value=0.10;
-    harm.connect(harmG);
-    const anchorGain = ctx.createGain(); anchorGain.gain.value=0;
+    const harm=ctx.createOscillator(); harm.type="sine";
+    const harmG=ctx.createGain(); harmG.gain.value=0.10; harm.connect(harmG);
+    const anchorGain=ctx.createGain(); anchorGain.gain.value=0;
     merger.connect(anchorGain); harmG.connect(anchorGain);
-    // slow amplitude "breath" on the anchor every ~10s
-    const anchorLFO = ctx.createOscillator(); anchorLFO.type="sine"; anchorLFO.frequency.value=0.1;
-    const anchorLFOg = ctx.createGain(); anchorLFOg.gain.value=0.12;
+    const anchorLFO=ctx.createOscillator(); anchorLFO.type="sine"; anchorLFO.frequency.value=0.1;
+    const anchorLFOg=ctx.createGain(); anchorLFOg.gain.value=0.12;
     anchorLFO.connect(anchorLFOg).connect(anchorGain.gain);
     anchorGain.connect(master);
     [oscL,oscR,harm,anchorLFO].forEach(o=>o.start());
 
-    // --- PĪTI: inhale-gated shimmer — decorrelated noise (L/R) + high partials, sweeping LPF ---
-    const noiseBuf = makeNoise(ctx, 2.7);
-    const nL = ctx.createBufferSource(), nR = ctx.createBufferSource();
+    // PĪTI: inhale-gated shimmer — decorrelated L/R noise + high partials, sweeping LPF
+    const noiseBuf=makeNoise(ctx,2.7);
+    const nL=ctx.createBufferSource(), nR=ctx.createBufferSource();
     nL.buffer=noiseBuf; nR.buffer=noiseBuf; nL.loop=nR.loop=true; nR.playbackRate.value=1.013;
-    const panL = ctx.createStereoPanner(), panR = ctx.createStereoPanner();
+    const panL=ctx.createStereoPanner(), panR=ctx.createStereoPanner();
     panL.pan.value=-0.75; panR.pan.value=0.75;
-    const airHP = ctx.createBiquadFilter(); airHP.type="highpass"; airHP.frequency.value=600;
-    const airG = ctx.createGain(); airG.gain.value=0.25;
-    nL.connect(panL).connect(airHP); nR.connect(panR).connect(airHP);
-    airHP.connect(airG);
-    // additive partials of the 110 series (4,6,9,13) for the "tingle"
-    const partialBus = ctx.createGain(); partialBus.gain.value=0.16;
-    const partials=[4,6,9,13].map((m,idx)=>{
+    const airHP=ctx.createBiquadFilter(); airHP.type="highpass"; airHP.frequency.value=600;
+    const airG=ctx.createGain(); airG.gain.value=0.25;
+    nL.connect(panL).connect(airHP); nR.connect(panR).connect(airHP); airHP.connect(airG);
+    const partialBus=ctx.createGain(); partialBus.gain.value=0.16;
+    [4,6,9,13].forEach((m,idx)=>{
       const o=ctx.createOscillator(); o.type="sine"; o.frequency.value=110*m;
       const g=ctx.createGain(); g.gain.value=(1/(idx+1))*0.5;
       const pan=ctx.createStereoPanner(); pan.pan.value=(idx%2?1:-1)*0.4;
       o.connect(g).connect(pan).connect(partialBus); o.start();
-      return o;
     });
-    const pitiLPF = ctx.createBiquadFilter(); pitiLPF.type="lowpass"; pitiLPF.frequency.value=800; pitiLPF.Q.value=0.7;
-    const pitiGain = ctx.createGain(); pitiGain.gain.value=0;
+    const pitiLPF=ctx.createBiquadFilter(); pitiLPF.type="lowpass"; pitiLPF.frequency.value=800; pitiLPF.Q.value=0.7;
+    const pitiGain=ctx.createGain(); pitiGain.gain.value=0;
     airG.connect(pitiLPF); partialBus.connect(pitiLPF);
     pitiLPF.connect(pitiGain).connect(master);
     nL.start(); nR.start();
 
-    // --- SUKHA bus (event-driven pulses land here) ---
-    const sukhaBus = ctx.createGain(); sukhaBus.gain.value=1; sukhaBus.connect(master);
+    // SUKHA bus (event pulses land here)
+    const sukhaBus=ctx.createGain(); sukhaBus.gain.value=1; sukhaBus.connect(master);
 
-    Object.assign(nodes,{userVol,limiter,master,oscL,oscR,harm,anchorGain,pitiLPF,pitiGain,sukhaBus});
+    Object.assign(nodes,{userVol,envelope,master,oscL,oscR,harm,anchorGain,pitiLPF,pitiGain,sukhaBus});
   }
 
-  function makeNoise(ctx, secs){
-    const len = Math.floor(ctx.sampleRate*secs);
-    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    let last=0;
-    for (let i=0;i<len;i++){
-      const white=Math.random()*2-1;
-      last = (last + 0.02*white)/1.02;   // soft pink-ish tilt
-      d[i]=last*3.2;
-    }
+  function makeNoise(ctx,secs){
+    const len=Math.floor(ctx.sampleRate*secs);
+    const buf=ctx.createBuffer(1,len,ctx.sampleRate);
+    const d=buf.getChannelData(0); let last=0;
+    for(let i=0;i<len;i++){ const w=Math.random()*2-1; last=(last+0.02*w)/1.02; d[i]=last*3.2; }
     return buf;
   }
 
-  // Sukha pulse: 55 Hz sub + AUM-like amplitude beat + 110 Hz ghost for small speakers
   function fireSukha(level){
-    if (!ctx || level < 0.03) return;
-    const t = ctx.currentTime;
-    const env = ctx.createGain(); env.gain.setValueAtTime(0.0001,t);
-    env.gain.linearRampToValueAtTime(level*0.9, t+0.3);
-    env.gain.exponentialRampToValueAtTime(0.0001, t+4.0);
+    if(!ctx||level<0.03) return;
+    const t=ctx.currentTime;
+    const env=ctx.createGain(); env.gain.setValueAtTime(0.0001,t);
+    env.gain.linearRampToValueAtTime(level*0.9,t+0.3);
+    env.gain.exponentialRampToValueAtTime(0.0001,t+4.0);
     env.connect(nodes.sukhaBus);
-
-    // amplitude beat (~7 Hz) -> the "AUM" throb
-    const am = ctx.createGain(); am.gain.value=0.82;
-    const beat = ctx.createOscillator(); beat.type="sine"; beat.frequency.value=7;
-    const beatG = ctx.createGain(); beatG.gain.value=0.16;
-    beat.connect(beatG).connect(am.gain);
+    const am=ctx.createGain(); am.gain.value=0.82;
+    const beat=ctx.createOscillator(); beat.type="sine"; beat.frequency.value=7;
+    const beatG=ctx.createGain(); beatG.gain.value=0.16; beat.connect(beatG).connect(am.gain);
     am.connect(env);
-
-    const sub = ctx.createOscillator(); sub.type="sine"; sub.frequency.setValueAtTime(58,t);
-    sub.frequency.exponentialRampToValueAtTime(54, t+1.2);
-    const subG = ctx.createGain(); subG.gain.value=1.0;
-    sub.connect(subG).connect(am);
-
-    const ghost = ctx.createOscillator(); ghost.type="sine"; ghost.frequency.value=110;
-    const ghostG = ctx.createGain(); ghostG.gain.value=0.14;
-    ghost.connect(ghostG).connect(am);
-
+    const sub=ctx.createOscillator(); sub.type="sine"; sub.frequency.setValueAtTime(58,t);
+    sub.frequency.exponentialRampToValueAtTime(54,t+1.2);
+    const subG=ctx.createGain(); subG.gain.value=1.0; sub.connect(subG).connect(am);
+    const ghost=ctx.createOscillator(); ghost.type="sine"; ghost.frequency.value=110;
+    const ghostG=ctx.createGain(); ghostG.gain.value=0.14; ghost.connect(ghostG).connect(am);
     beat.start(t); sub.start(t); ghost.start(t);
     beat.stop(t+4.2); sub.stop(t+4.2); ghost.stop(t+4.2);
-
-    rings.push({ start: t });
+    rings.push({start:t});
   }
 
-  const volToGain = v => Math.pow(v/100, 1.6) * 0.9;
+  const volToGain=v=>Math.pow(v/100,1.6)*0.9;
 
-  // ---------- main loop ----------
+  // ============ mic breath tracker ============
+  const mic={active:false,stream:null,analyser:null,data:null,
+             env:0,floor:0.002,level:0,rate:0,lastOnset:0,armed:true,intervals:[],err:null};
+
+  async function enableMic(){
+    if(!ctx) buildGraph();
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ mic.err="unsupported"; return false; }
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+      const src=ctx.createMediaStreamSource(stream);
+      const hp=ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=180;
+      const lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=2200;
+      const an=ctx.createAnalyser(); an.fftSize=1024; an.smoothingTimeConstant=0.35;
+      src.connect(hp); hp.connect(lp); lp.connect(an); // never connected to destination — no feedback, no recording
+      mic.stream=stream; mic.analyser=an; mic.data=new Float32Array(an.fftSize);
+      mic.active=true; mic.err=null; mic.intervals=[]; mic.rate=0; mic.lastOnset=0;
+      return true;
+    }catch(e){ mic.err=(e&&e.name)||"denied"; mic.active=false; return false; }
+  }
+  function disableMic(){
+    mic.active=false;
+    if(mic.stream){ mic.stream.getTracks().forEach(t=>t.stop()); mic.stream=null; }
+  }
+  function micUpdate(nowSec){
+    if(!mic.active||!mic.analyser) return;
+    mic.analyser.getFloatTimeDomainData(mic.data);
+    let sum=0; for(let i=0;i<mic.data.length;i++){ const v=mic.data[i]; sum+=v*v; }
+    const rms=Math.sqrt(sum/mic.data.length);
+    mic.env+=(rms-mic.env)*0.25;
+    // slow adaptive noise floor
+    mic.floor+=((mic.env<mic.floor? mic.env : mic.floor*1.05) - mic.floor)*0.01;
+    mic.floor=Math.max(mic.floor,0.0006);
+    const activity=Math.max(0,mic.env-mic.floor*1.4);
+    mic.level=clamp(activity/(mic.floor*5+0.006),0,1);
+    const thr=mic.floor*2.4+0.004;
+    if(mic.armed && mic.env>thr){
+      if(mic.lastOnset>0){
+        const dt=nowSec-mic.lastOnset;
+        if(dt>1.6 && dt<16){
+          mic.intervals.push(dt); if(mic.intervals.length>5) mic.intervals.shift();
+          const avg=mic.intervals.reduce((a,b)=>a+b,0)/mic.intervals.length;
+          mic.rate=clamp(60/avg,4,20);
+        }
+      }
+      mic.lastOnset=nowSec; mic.armed=false;
+    }
+    if(mic.env<thr*0.6) mic.armed=true;
+  }
+
+  // ============ main loop ============
   function frame(now){
-    raf = requestAnimationFrame(frame);
-    const tSec = (now - t0)/1000;
-    const dt = Math.min(0.05, (now - lastFrame)/1000 || 0);
-    lastFrame = now;
+    raf=requestAnimationFrame(frame);
+    const M=mode();
+    const tSec=(now-t0)/1000;
+    const dt=Math.min(0.05,(now-lastFrame)/1000||0);
+    lastFrame=now;
 
-    const s = sample(tSec);
+    const s=sample(tSec);
 
-    // integrate breath phase from current bpm (smooth even as rate changes)
-    breathPhase += (s.bpm/60) * dt;
-    if (breathPhase >= 1) breathPhase -= 1;
-    const env = breathEnv(breathPhase);
-    const stage = breathStage(breathPhase);
+    // mic: read rate + live breath level
+    if(breathSrc==="mic") micUpdate(now/1000);
 
-    // fire Sukha once, at the exhale bottom (entering rest)
-    if (breathPhase >= EX_END && sukhaArmed && tSec > 1.5){
-      fireSukha(s.sukha); sukhaArmed=false;
-    }
-    if (breathPhase < EX_END) sukhaArmed=true;
-
-    // ---- apply to audio ----
-    if (ctx){
-      const at = ctx.currentTime, tc=0.05;
-      nodes.master.gain.setTargetAtTime(s.master, at, tc);
-      nodes.anchorGain.gain.setTargetAtTime(s.anchor*0.5, at, 0.2);
-      nodes.oscL.frequency.setTargetAtTime(s.car - s.df/2, at, 0.15);
-      nodes.oscR.frequency.setTargetAtTime(s.car + s.df/2, at, 0.15);
-      nodes.harm.frequency.setTargetAtTime(s.car*2, at, 0.2);
-      // Pīti: gate to inhale envelope, cutoff sweeps up with the breath toward the score ceiling
-      nodes.pitiGain.gain.setTargetAtTime(s.piti*env, at, 0.05);
-      const cutoff = 300 + (s.cut-300)*env;
-      nodes.pitiLPF.frequency.setTargetAtTime(Math.max(180,cutoff), at, 0.06);
+    // effective breath rate: early on, meet the user where they are (iso principle), then lead to score
+    let bpm=s.bpm;
+    if(breathSrc==="mic" && mic.active && mic.rate>0){
+      const adapt=clamp(1 - tSec/150, 0, 1);   // full follow at start -> pure score by Lead's end
+      bpm=lerp(s.bpm, mic.rate, adapt*0.75);
     }
 
-    // ---- visuals ----
-    drawOrb(tSec, env, s);
-    updateHUD(tSec, s, stage);
+    breathPhase+=(bpm/60)*dt; if(breathPhase>=1) breathPhase-=1;
+    let env=breathEnv(breathPhase);
+    const stage=breathStage(breathPhase);
 
-    if (tSec >= DURATION) finish();
+    // mic makes it responsive: louder actual breathing -> brighter shimmer / bigger orb
+    let pitiMul=1, orbBreath=env;
+    if(breathSrc==="mic" && mic.active){
+      pitiMul=0.7+0.7*mic.level;
+      orbBreath=clamp(0.55*env+0.55*mic.level,0,1);
+    }
+
+    if(breathPhase>=EX_END && sukhaArmed && tSec>1.5){ fireSukha(s.sukha); sukhaArmed=false; }
+    if(breathPhase<EX_END) sukhaArmed=true;
+
+    if(ctx){
+      const at=ctx.currentTime, tc=0.05;
+      nodes.master.gain.setTargetAtTime(s.master,at,tc);
+      nodes.anchorGain.gain.setTargetAtTime(s.anchor*0.5,at,0.2);
+      nodes.oscL.frequency.setTargetAtTime(s.car-s.df/2,at,0.15);
+      nodes.oscR.frequency.setTargetAtTime(s.car+s.df/2,at,0.15);
+      nodes.harm.frequency.setTargetAtTime(s.car*2,at,0.2);
+      nodes.pitiGain.gain.setTargetAtTime(clamp(s.piti*env*pitiMul,0,1.2),at,0.05);
+      const cutoff=300+(s.cut-300)*env;
+      nodes.pitiLPF.frequency.setTargetAtTime(Math.max(180,cutoff),at,0.06);
+    }
+
+    drawOrb(tSec,orbBreath,s);
+    updateHUD(tSec,{...s,bpm},stage);
+
+    if(tSec>=M.duration) finish();
   }
 
-  // ---------- canvas orb ----------
-  const cv = document.getElementById("orb");
-  const g = cv.getContext("2d");
-  const reduceMotion = window.matchMedia("(prefers-reduce-motion: reduce)").matches
-                    || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  // phase colour ramp: gold (alert) -> violet -> deep blue (dissolve)
-  const RAMP=[
-    {t:0.0, c:[230,169,78]},
-    {t:0.5, c:[138,111,208]},
-    {t:0.8, c:[95,107,176]},
-    {t:1.0, c:[55,69,110]},
-  ];
+  // ============ canvas orb ============
+  const cv=document.getElementById("orb");
+  const g=cv.getContext("2d");
+  const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const RAMP=[{t:0.0,c:[230,169,78]},{t:0.5,c:[138,111,208]},{t:0.8,c:[95,107,176]},{t:1.0,c:[55,69,110]}];
   function rampColor(f){
-    f=Math.max(0,Math.min(1,f));
-    let i=0; while(i<RAMP.length-1 && RAMP[i+1].t<f) i++;
-    const a=RAMP[i], b=RAMP[Math.min(i+1,RAMP.length-1)];
-    const r=(f-a.t)/((b.t-a.t)||1);
+    f=clamp(f,0,1); let i=0; while(i<RAMP.length-1 && RAMP[i+1].t<f) i++;
+    const a=RAMP[i], b=RAMP[Math.min(i+1,RAMP.length-1)], r=(f-a.t)/((b.t-a.t)||1);
     return a.c.map((v,k)=>Math.round(lerp(v,b.c[k],r)));
   }
-
   let idlePhase=0;
-  function drawOrb(tSec, env, s){
-    const W=cv.width, H=cv.height, cx=W/2, cy=H/2;
+  function drawOrb(tSec,breath,s){
+    const W=cv.width,H=cv.height,cx=W/2,cy=H/2;
     g.clearRect(0,0,W,H);
-
-    const prog = started ? Math.min(1,tSec/DURATION) : 0;
-    const col = rampColor(prog);
-    const [r,gr,b]=col;
-
-    // idle gentle pulse before start
-    let breath = env;
-    if (!started){ idlePhase += 0.012; breath = 0.5+0.5*Math.sin(idlePhase); }
-
-    const base = W*0.17;
-    const swell = W*0.16*breath*(started?1:0.5);
-    const R = base + swell;
-
-    // outer glow
-    const glow = g.createRadialGradient(cx,cy,R*0.15, cx,cy,R*2.4);
-    const bright = started ? (0.5 + 0.5*breath) : 0.4;
-    glow.addColorStop(0, `rgba(${r},${gr},${b},${0.42*bright})`);
+    const prog=started?clamp(tSec/mode().duration,0,1):0;
+    const [r,gr,b]=rampColor(prog);
+    let br=breath;
+    if(!started){ idlePhase+=0.012; br=0.5+0.5*Math.sin(idlePhase); }
+    const R=W*0.17+W*0.16*br*(started?1:0.5);
+    const glow=g.createRadialGradient(cx,cy,R*0.15,cx,cy,R*2.4);
+    const bright=started?(0.5+0.5*br):0.4;
+    glow.addColorStop(0,`rgba(${r},${gr},${b},${0.42*bright})`);
     glow.addColorStop(0.4,`rgba(${r},${gr},${b},${0.14*bright})`);
-    glow.addColorStop(1, "rgba(0,0,0,0)");
+    glow.addColorStop(1,"rgba(0,0,0,0)");
     g.fillStyle=glow; g.fillRect(0,0,W,H);
-
-    // sukha rings (expanding on each landing)
-    if (ctx && !reduceMotion){
+    if(ctx&&!reduceMotion){
       const nowT=ctx.currentTime;
-      rings = rings.filter(ring => nowT-ring.start < 3.2);
-      for (const ring of rings){
-        const age=(nowT-ring.start)/3.2;
-        const rr=R + age*W*0.5;
+      rings=rings.filter(ring=>nowT-ring.start<3.2);
+      for(const ring of rings){
+        const age=(nowT-ring.start)/3.2, rr=R+age*W*0.5;
         g.beginPath(); g.arc(cx,cy,rr,0,Math.PI*2);
         g.strokeStyle=`rgba(111,128,201,${(1-age)*0.5})`;
         g.lineWidth=2.5*(1-age)+0.5; g.stroke();
       }
     }
-
-    // core disc
-    const core=g.createRadialGradient(cx,cy-R*0.2,R*0.1, cx,cy,R);
-    core.addColorStop(0, `rgba(${Math.min(255,r+40)},${Math.min(255,gr+34)},${Math.min(255,b+30)},0.95)`);
+    const core=g.createRadialGradient(cx,cy-R*0.2,R*0.1,cx,cy,R);
+    core.addColorStop(0,`rgba(${Math.min(255,r+40)},${Math.min(255,gr+34)},${Math.min(255,b+30)},0.95)`);
     core.addColorStop(0.7,`rgba(${r},${gr},${b},0.62)`);
-    core.addColorStop(1, `rgba(${r},${gr},${b},0.08)`);
+    core.addColorStop(1,`rgba(${r},${gr},${b},0.08)`);
     g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.fillStyle=core; g.fill();
-
-    // thin rim
     g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2);
     g.strokeStyle=`rgba(${r},${gr},${b},0.55)`; g.lineWidth=1.5; g.stroke();
   }
 
-  // ---------- HUD ----------
-  const el = id => document.getElementById(id);
-  const tCarrier=el("tCarrier"), tBeat=el("tBeat"), tBreath=el("tBreath");
-  const tElapsed=el("tElapsed"), phaseLabel=el("phaseLabel"), cue=el("cue");
-  const segs=[...document.querySelectorAll("#track .seg i")];
-  const pnames=[...document.querySelectorAll("#phaseNames span")];
-  const voiceEls={ anchor:el("voiceAnchor"), piti:el("voicePiti"), sukha:el("voiceSukha") };
+  // ============ HUD ============
+  const el=id=>document.getElementById(id);
+  const tCarrier=el("tCarrier"),tBeat=el("tBeat"),tBreath=el("tBreath");
+  const tElapsed=el("tElapsed"),tTotal=el("tTotal"),phaseLabel=el("phaseLabel"),cue=el("cue");
+  const trackEl=el("track"),namesEl=el("phaseNames"),micStatus=el("micStatus");
+  const voiceEls={anchor:el("voiceAnchor"),piti:el("voicePiti"),sukha:el("voiceSukha")};
+  let segFills=[],nameSpans=[],bounds=[];
 
-  function fmt(t){const m=Math.floor(t/60),s=Math.floor(t%60);return `${m}:${String(s).padStart(2,"0")}`;}
+  const fmt=t=>{const m=Math.floor(t/60),s=Math.floor(t%60);return `${m}:${String(s).padStart(2,"0")}`;};
 
-  function updateHUD(tSec, s, stage){
-    tCarrier.textContent = s.car.toFixed(1);
-    tBeat.textContent = started ? (s.df<0.05 ? "—" : s.df.toFixed(1)+" Hz") : "—";
-    tBreath.textContent = started ? s.bpm.toFixed(1) : "—";
-    tElapsed.textContent = fmt(Math.min(tSec,DURATION));
-
-    // phase
-    let pi=PHASES.findIndex(p=>tSec<p.end); if(pi<0)pi=PHASES.length-1;
-    phaseLabel.textContent = started ? PHASES[pi].name : "Ready";
-    pnames.forEach((n,i)=>n.classList.toggle("on", started && i===pi));
-
-    // segment fills
-    let bounds=[0,60,150,225,280,300];
-    for (let i=0;i<segs.length;i++){
-      const a=bounds[i], b=bounds[i+1];
-      const f = tSec<=a?0 : tSec>=b?1 : (tSec-a)/(b-a);
-      segs[i].style.width=(f*100)+"%";
-    }
-
-    // breath cue word (onboarding legend only — non-verbal during play, this is a faint guide)
-    cue.classList.remove("in","out");
-    if (!started){ cue.textContent="put on headphones · then begin"; }
-    else if (stage==="in"){ cue.textContent="breathe in"; cue.classList.add("in"); }
-    else if (stage==="hold"){ cue.textContent="·"; }
-    else if (stage==="out"){ cue.textContent="breathe out"; cue.classList.add("out"); }
-    else { cue.textContent="rest"; }
-
-    // which voice is "live"
-    voiceEls.anchor.dataset.live = s.anchor>0.05 ? "1":"0";
-    voiceEls.piti.dataset.live   = (started && s.piti>0.05 && (stage==="in"||stage==="hold")) ? "1":"0";
-    voiceEls.sukha.dataset.live  = (started && s.sukha>0.05 && stage==="rest") ? "1":"0";
+  function buildTimeline(){
+    const M=mode();
+    trackEl.innerHTML=""; namesEl.innerHTML=""; segFills=[]; nameSpans=[]; bounds=[0];
+    const cols=M.phases.map((p,i)=>{ const w=(p.end-(i?M.phases[i-1].end:0))/M.duration; return w.toFixed(4)+"fr"; }).join(" ");
+    trackEl.style.gridTemplateColumns=cols; namesEl.style.gridTemplateColumns=cols;
+    M.phases.forEach((p)=>{
+      bounds.push(p.end);
+      const seg=document.createElement("div"); seg.className="seg";
+      const fill=document.createElement("i"); seg.appendChild(fill); trackEl.appendChild(seg); segFills.push(fill);
+      const span=document.createElement("span"); span.textContent=p.name; namesEl.appendChild(span); nameSpans.push(span);
+    });
+    tTotal.textContent=fmt(M.duration);
   }
 
-  // ---------- transport ----------
-  const holder=el("orbHolder"), playBtn=el("playBtn"), glyph=el("glyph"),
-        restart=el("restart"), volEl=el("vol");
+  function updateHUD(tSec,s,stage){
+    const M=mode();
+    tCarrier.textContent=s.car.toFixed(1);
+    tBeat.textContent=started?(s.df<0.05?"—":s.df.toFixed(1)+" Hz"):"—";
+    tBreath.textContent=started?s.bpm.toFixed(1):"—";
+    tElapsed.textContent=fmt(Math.min(tSec,M.duration));
+
+    let pi=M.phases.findIndex(p=>tSec<p.end); if(pi<0)pi=M.phases.length-1;
+    phaseLabel.textContent=started?M.phases[pi].name:"Ready";
+    nameSpans.forEach((n,i)=>n.classList.toggle("on",started&&i===pi));
+    for(let i=0;i<segFills.length;i++){
+      const a=bounds[i],b=bounds[i+1];
+      const f=tSec<=a?0:tSec>=b?1:(tSec-a)/(b-a);
+      segFills[i].style.width=(f*100)+"%";
+    }
+
+    // cue words fade out in the deep tail so they don't keep you tracking as you drift off
+    cue.classList.remove("in","out");
+    const quiet=s.master<0.3;
+    if(!started){ cue.textContent="put on headphones · then begin"; }
+    else if(quiet){ cue.textContent="·"; }
+    else if(stage==="in"){ cue.textContent="breathe in"; cue.classList.add("in"); }
+    else if(stage==="hold"){ cue.textContent="·"; }
+    else if(stage==="out"){ cue.textContent="breathe out"; cue.classList.add("out"); }
+    else { cue.textContent="rest"; }
+
+    voiceEls.anchor.dataset.live=s.anchor>0.05?"1":"0";
+    voiceEls.piti.dataset.live=(started&&s.piti>0.05&&(stage==="in"||stage==="hold"))?"1":"0";
+    voiceEls.sukha.dataset.live=(started&&s.sukha>0.05&&stage==="rest")?"1":"0";
+
+    if(breathSrc==="mic"&&started&&mic.active){
+      micStatus.classList.remove("err");
+      micStatus.innerHTML = mic.rate>0
+        ? `listening · your breath ≈ <b>${mic.rate.toFixed(1)}/min</b> · leading you to ${M.phases[Math.min(pi,1)].name==="Capture"?"6":s.bpm.toFixed(0)}/min`
+        : `listening · breathe audibly so it can find your rhythm…`;
+    }
+  }
+
+  // ============ transport ============
+  const holder=el("orbHolder"),playBtn=el("playBtn"),glyph=el("glyph"),
+        restart=el("restart"),volEl=el("vol"),
+        modeToggle=el("modeToggle"),breathToggle=el("breathToggle");
 
   async function begin(){
-    if (!ctx) buildGraph();
-    if (ctx.state==="suspended") await ctx.resume();
+    if(!ctx) buildGraph();
+    if(ctx.state==="suspended") await ctx.resume();
     started=true; holder.classList.add("running");
     restart.disabled=false; glyph.textContent="";
     playBtn.setAttribute("aria-label","Restart session");
     t0=performance.now(); lastFrame=t0; breathPhase=0; sukhaArmed=true; rings=[];
+    // native safety fade: guarantees silence at end even if the tab is throttled/backgrounded
+    const M=mode(), now=ctx.currentTime;
+    nodes.envelope.gain.cancelScheduledValues(now);
+    nodes.envelope.gain.setValueAtTime(1,now);
+    if(modeName==="sleep"){
+      nodes.envelope.gain.setValueAtTime(1,now+M.duration-180);
+      nodes.envelope.gain.linearRampToValueAtTime(0.0001,now+M.duration);
+    }
     cancelAnimationFrame(raf); raf=requestAnimationFrame(frame);
   }
 
@@ -825,18 +920,16 @@
     cancelAnimationFrame(raf);
     started=false; holder.classList.remove("running");
     glyph.textContent="Again"; phaseLabel.textContent="Complete";
-    cue.textContent="silence · rest as long as you like"; cue.classList.remove("in","out");
-    if (ctx) nodes.master.gain.setTargetAtTime(0, ctx.currentTime, 0.4);
-    // keep a slow idle draw
+    cue.textContent=modeName==="sleep"?"silence · sleep well":"silence · rest as long as you like";
+    cue.classList.remove("in","out");
+    if(ctx) nodes.master.gain.setTargetAtTime(0,ctx.currentTime,0.4);
     idleLoop();
   }
-
   function stopHard(){
     cancelAnimationFrame(raf); started=false; holder.classList.remove("running");
-    if (ctx) nodes.master.gain.setTargetAtTime(0, ctx.currentTime, 0.2);
+    if(ctx){ nodes.master.gain.setTargetAtTime(0,ctx.currentTime,0.2); nodes.envelope.gain.cancelScheduledValues(ctx.currentTime); nodes.envelope.gain.setTargetAtTime(1,ctx.currentTime,0.2); }
     idleLoop();
   }
-
   let idleRaf=null;
   function idleLoop(){
     cancelAnimationFrame(idleRaf);
@@ -844,17 +937,46 @@
     step();
   }
 
-  playBtn.addEventListener("click", ()=>{ cancelAnimationFrame(idleRaf); begin(); });
-  restart.addEventListener("click", ()=>{ cancelAnimationFrame(idleRaf); stopHard(); setTimeout(begin,120); });
-  volEl.addEventListener("input", ()=>{ if(nodes.userVol) nodes.userVol.gain.setTargetAtTime(volToGain(volEl.value), ctx.currentTime, 0.05); });
+  playBtn.addEventListener("click",()=>{ cancelAnimationFrame(idleRaf); begin(); });
+  restart.addEventListener("click",()=>{ cancelAnimationFrame(idleRaf); stopHard(); setTimeout(begin,140); });
+  volEl.addEventListener("input",()=>{ if(nodes.userVol) nodes.userVol.gain.setTargetAtTime(volToGain(volEl.value),ctx.currentTime,0.05); });
 
-  // resize canvas for crispness
+  modeToggle.addEventListener("click",e=>{
+    const btn=e.target.closest("button"); if(!btn) return;
+    modeName=btn.dataset.v;
+    [...modeToggle.children].forEach(b=>b.classList.toggle("on",b===btn));
+    buildTimeline();
+    if(started){ stopHard(); setTimeout(begin,140); } else idleLoop();
+  });
+
+  breathToggle.addEventListener("click",async e=>{
+    const btn=e.target.closest("button"); if(!btn) return;
+    const want=btn.dataset.v;
+    if(want==="mic"){
+      micStatus.classList.remove("err"); micStatus.textContent="requesting microphone…";
+      const ok=await enableMic();
+      if(!ok){
+        micStatus.classList.add("err");
+        micStatus.textContent = mic.err==="unsupported"
+          ? "microphone not available in this browser — staying on guided pace"
+          : "microphone blocked — allow access to follow your breath, staying on guided pace";
+        return; // keep pacer selected
+      }
+      breathSrc="mic";
+      micStatus.classList.remove("err");
+      micStatus.textContent="microphone on · analysed on-device, nothing recorded";
+    }else{
+      breathSrc="pacer"; disableMic(); micStatus.textContent="";
+    }
+    [...breathToggle.children].forEach(b=>b.classList.toggle("on",b.dataset.v===breathSrc));
+  });
+
   function fitCanvas(){
     const rect=holder.getBoundingClientRect();
-    const dpr=Math.min(2, window.devicePixelRatio||1);
+    const dpr=Math.min(2,window.devicePixelRatio||1);
     cv.width=Math.round(rect.width*dpr); cv.height=Math.round(rect.height*dpr);
   }
-  window.addEventListener("resize", fitCanvas);
-  fitCanvas(); idleLoop();
+  window.addEventListener("resize",fitCanvas);
+  fitCanvas(); buildTimeline(); idleLoop();
 })();
 </script>
