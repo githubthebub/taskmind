@@ -127,6 +127,11 @@
     border-radius: 12px; padding: 12px 20px; font-size: 14px; cursor: pointer; font-family: inherit;
   }
   button.ghost:hover { color: var(--ink); border-color: var(--accent); }
+  #paceBtn {
+    background: transparent; border: 2px solid var(--phase); color: var(--phase);
+    border-radius: 12px; padding: 12px 26px; font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: inherit; transition: color .6s, border-color .6s;
+  }
 
   /* ---------- panels ---------- */
   .panel {
@@ -146,20 +151,50 @@
   #pSource { font-size: 12px; color: var(--ink-dim); margin-top: 6px; }
   #practicePanel .note { display: block; margin-top: 8px; }
 
-  /* mudra panel */
+  /* mudra panel: big diagram on top, info below */
   #mudraPanel .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   #mudraPanel .nav { display: flex; gap: 6px; }
   #mudraPanel .nav button {
     background: var(--bg2); border: 1px solid var(--panel-edge); color: var(--ink);
-    width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 15px;
+    width: 34px; height: 34px; border-radius: 8px; cursor: pointer; font-size: 16px;
   }
-  #mudraBody { display: flex; gap: 16px; align-items: center; }
-  #mudraDiagram { flex: 0 0 130px; }
-  #mudraDiagram svg { width: 130px; height: 118px; display: block; }
-  #mudraDiagram .cap { font-size: 10px; color: var(--ink-dim); text-align: center; margin-top: 4px; }
-  #mudraInfo h3 { font-size: 18px; margin-bottom: 4px; }
-  #mudraInfo .cue { font-size: 13px; line-height: 1.4; margin-bottom: 6px; }
+  #mudraBody { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  #mudraDiagram { width: 100%; max-width: 280px; }
+  #mudraDiagram svg { width: 100%; height: auto; display: block; }
+  #mudraDiagram .cap { font-size: 11px; color: var(--ink-dim); text-align: center; margin-top: 6px; }
+  #mudraInfo { text-align: center; }
+  #mudraInfo h3 { font-size: 19px; margin-bottom: 2px; }
+  #mudraInfo .alt { font-size: 12px; color: var(--ink-dim); font-style: italic; margin-bottom: 6px; }
+  #mudraInfo .cue { font-size: 13px; line-height: 1.45; margin-bottom: 6px; }
   #mudraInfo .trad { font-size: 12px; color: var(--ink-dim); line-height: 1.4; }
+  .flabel { font-size: 13px; font-weight: 700; fill: var(--ink); }
+  .flabel.dim { fill: var(--ink-dim); font-weight: 600; }
+
+  /* technique library */
+  #techCats { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 12px; }
+  .tcat {
+    background: var(--bg2); border: 1px solid var(--panel-edge); color: var(--ink-dim);
+    border-radius: 999px; padding: 5px 12px; font-size: 12px; cursor: pointer; font-family: inherit;
+  }
+  .tcat.on { color: var(--ink); border-color: var(--accent); }
+  #techList { display: flex; flex-direction: column; gap: 8px; }
+  .tcard {
+    text-align: left; background: var(--bg2); border: 1px solid var(--panel-edge);
+    border-radius: 12px; padding: 10px 12px; cursor: pointer; font-family: inherit; color: var(--ink);
+    transition: border-color .2s;
+  }
+  .tcard:hover { border-color: var(--accent); }
+  .tcard.on { border-color: var(--accent); background: #1b2547; }
+  .trow { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .tname { font-weight: 700; font-size: 14px; }
+  .twhen { font-size: 10px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--panel-edge); color: var(--ink-dim); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+  .twhen[data-w="inhale"] { color: var(--inhale); border-color: var(--inhale); }
+  .twhen[data-w="hold"]   { color: var(--hold);   border-color: var(--hold); }
+  .twhen[data-w="exhale"] { color: var(--exhale); border-color: var(--exhale); }
+  .talt { font-size: 11px; color: var(--ink-dim); font-style: italic; margin: 2px 0 6px; }
+  .tdo { font-size: 13px; line-height: 1.45; }
+  .ttrad { font-size: 11px; color: var(--ink-dim); line-height: 1.4; margin-top: 6px; }
+  .tsrc { font-size: 10px; color: var(--ink-dim); opacity: .85; margin-top: 4px; letter-spacing: .03em; }
 
   /* neuro state-profile panel */
   #neuroPanel .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 10px; }
@@ -182,9 +217,10 @@
   #debrief .stat span { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .08em; }
   #debrief .line { font-size: 14px; line-height: 1.5; }
 
-  /* toggle */
+  /* toggles */
   .toggleRow { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-dim); }
   .toggleRow input { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+  #toggles { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 
   /* celebrate hop for the feet */
   @keyframes hop { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
@@ -262,10 +298,14 @@
 
   <div id="controls">
     <button id="beginBtn" class="primary">Begin</button>
+    <button id="paceBtn" style="display:none">▸</button>
     <button id="endBtn" class="ghost" style="display:none">End session</button>
   </div>
 
-  <label class="toggleRow"><input type="checkbox" id="mudraToggle"> Mudra mode — give the coach hands to mimic</label>
+  <div id="toggles">
+    <label class="toggleRow"><input type="checkbox" id="mudraToggle"> Mudra mode — give the coach hands to mimic</label>
+    <label class="toggleRow"><input type="checkbox" id="scholarToggle"> Scholar mode — use the traditional terms</label>
+  </div>
 
   <div class="panel show" id="practicePanel">
     <div class="head">
@@ -291,11 +331,22 @@
       <div id="mudraDiagram"></div>
       <div id="mudraInfo">
         <h3></h3>
+        <div class="alt"></div>
         <div class="cue"></div>
         <div class="trad"></div>
       </div>
     </div>
     <p class="note" style="margin-top:10px">Associations are described as tradition, not promised effects.</p>
+  </div>
+
+  <div class="panel show" id="techPanel">
+    <div class="head" style="display:flex;justify-content:space-between;align-items:baseline">
+      <h2>Technique library</h2>
+      <span class="note">tap a card to hear it and load the cue</span>
+    </div>
+    <div id="techCats"></div>
+    <div id="techList"></div>
+    <p class="note" style="margin-top:10px">The major actionable instructions of the Pali suttas and haṭha/tantric manuals, described as those texts teach them — not as promises. Sources on every card.</p>
   </div>
 
   <div class="panel" id="neuroPanel">
@@ -329,19 +380,17 @@
   // pink = the held breath (full or empty), fresh green = release.
   // Boundary chimes descend through an A-major world: E5 / C#5 / A4 / E4.
   const PHASE_META = {
-    inhale: { label: 'Inhale',   legend: 'inhale',   cls: 'l-in', chime: 659.25 },
-    hold:   { label: 'Hold',     legend: 'hold',     cls: 'l-ho', chime: 554.37 },
-    exhale: { label: 'Exhale',   legend: 'exhale',   cls: 'l-ex', chime: 440.0  },
-    hold2:  { label: 'Hold out', legend: 'hold out', cls: 'l-ho', chime: 329.63 },
+    inhale: { label: 'Inhale',   adv: 'Pūraka',          legend: 'inhale',   legendAdv: 'pūraka',          cls: 'l-in', chime: 659.25 },
+    hold:   { label: 'Hold',     adv: 'Antara kumbhaka', legend: 'hold',     legendAdv: 'antara kumbhaka', cls: 'l-ho', chime: 554.37 },
+    exhale: { label: 'Exhale',   adv: 'Recaka',          legend: 'exhale',   legendAdv: 'recaka',          cls: 'l-ex', chime: 440.0  },
+    hold2:  { label: 'Hold out', adv: 'Bāhya kumbhaka',  legend: 'hold out', legendAdv: 'bāhya kumbhaka',  cls: 'l-ho', chime: 329.63 },
   };
 
   /* ============ practices ============ */
-  // Different breathwork for different purposes. Sources are named; purposes
-  // are worded as tradition, never as promised effects (honesty invariant).
-  // Benefit first, tradition second: the chip sells what it does for you;
-  // the subtitle and source credit where it comes from.
+  // Benefit first, tradition second; scholar mode swaps them. Purposes are
+  // worded as tradition, never as promised effects (honesty invariant).
   const PRACTICES = [
-    { key: 'downshift', name: 'Fall Asleep Faster', ratio: '4 · 7 · 8',
+    { key: 'downshift', name: 'Fall Asleep Faster', nameAdv: '4-7-8 Viṣama-vṛtti', ratio: '4 · 7 · 8',
       sub: 'The 4-7-8 relaxing breath',
       purpose: 'For the racing mind at midnight. The long exhale is the off-switch; the hold lets the breath settle before it. Traditionally used at bedtime — most people feel the downshift within a few cycles.',
       source: 'Modern relaxing-breath ratio, pranayama-derived.',
@@ -349,7 +398,7 @@
       profile: { gaba: 9, ht: 4, da: 2, ne: 1 },
       tags: { gaba: 'Sleep Onset', da: 'Inactive Reward', ne: 'Minimal Arousal' } },
 
-    { key: 'anapanasati', name: 'Calm, Clear Focus', ratio: '6 · 6',
+    { key: 'anapanasati', name: 'Calm, Clear Focus', nameAdv: 'Ānāpānasati (MN 118)', ratio: '6 · 6',
       sub: 'Mindfulness of breathing — Ānāpānasati in the Pali canon',
       purpose: 'For a scattered mind. Ride the natural breath and anchor on one sensation: the air is cool at the tip of your nose on the way in, warm on the way out. Nothing forced — the count is a suggestion, the noticing is the practice.',
       source: 'Ānāpānasati Sutta, MN 118 — first tetrad.',
@@ -357,21 +406,29 @@
       profile: { gaba: 6, ht: 7, da: 4, ne: 4 },
       tags: { ht: 'Settled Attention' } },
 
-    { key: 'passaddhi', name: 'Melt Tension', ratio: '4 · 2 · 10',
+    { key: 'passaddhi', name: 'Melt Tension', nameAdv: 'Passambhaya kāyasaṅkhāraṁ', ratio: '4 · 2 · 10',
       sub: 'The long calming exhale — “calming the bodily fabrication”',
-      purpose: 'For the tight jaw, the raised shoulders, the clenched everything. A brief hold, then the longest exhale in the app lets the body\u2019s version of the thought wind down with it.',
+      purpose: 'For the tight jaw, the raised shoulders, the clenched everything. A brief hold, then the longest exhale in the app lets the body’s version of the thought wind down with it.',
       source: 'Ānāpānasati Sutta, MN 118 — first tetrad, fourth step.',
       phases: [ { key: 'inhale', dur: 4 }, { key: 'hold', dur: 2 }, { key: 'exhale', dur: 10 } ],
       profile: { gaba: 8, ht: 5, da: 3, ne: 2 },
       tags: { gaba: 'Deep Settling' } },
 
-    { key: 'box', name: 'Steady Under Pressure', ratio: '4 · 4 · 4 · 4',
+    { key: 'box', name: 'Steady Under Pressure', nameAdv: 'Sama-vṛtti kumbhaka', ratio: '4 · 4 · 4 · 4',
       sub: 'Box breathing — samavṛtti, equal measure on all four sides',
       purpose: 'For the minutes before something hard. Equal sides, including a hold on empty lungs — composure you can carry into the meeting, the exam, the difficult call. Steadiness rather than sleep.',
       source: 'Yogic samavṛtti prāṇāyāma.',
       phases: [ { key: 'inhale', dur: 4 }, { key: 'hold', dur: 4 }, { key: 'exhale', dur: 4 }, { key: 'hold2', dur: 4 } ],
       profile: { gaba: 6, ht: 6, da: 5, ne: 3 },
       tags: { ne: 'Steady Composure' } },
+
+    { key: 'freeform', name: 'Your Own Rhythm', nameAdv: 'Sahaja prāṇāyāma', ratio: 'you decide', freeform: true,
+      sub: 'The uncounted breath — you lead, it follows',
+      purpose: 'Full autonomy: no counts, no countdown. Tap the pace button (or press space) whenever you’re ready for the next phase — the app follows you. The sound always tells you where you are: rising means in, shimmering chord means hold, falling means out. Tap straight through any hold to skip it.',
+      source: 'Sahaja (“natural, spontaneous”) — the breath left to its own intelligence.',
+      phases: [ { key: 'inhale' }, { key: 'hold' }, { key: 'exhale' }, { key: 'hold2' } ],
+      profile: { gaba: 7, ht: 6, da: 3, ne: 2 },
+      tags: { ne: 'Self-Regulated' } },
   ];
 
   /* ============ state store ============ */
@@ -381,7 +438,9 @@
   };
   let practiceKey = store.get('practice', 'downshift');
   if (!PRACTICES.some((p) => p.key === practiceKey)) practiceKey = 'downshift';
+  let scholar = store.get('scholar', false) === true;
   const practice = () => PRACTICES.find((p) => p.key === practiceKey);
+  const isFreeform = () => practice().freeform === true;
   const cycleLen = () => practice().phases.reduce((s, p) => s + p.dur, 0);
 
   function phaseAt(t) {
@@ -468,93 +527,173 @@
 
   /* ============ mudras ============ */
   const MUDRAS = [
-    { key: 'gyan', name: 'Gyan', touch: [1],
-      cue: 'Index fingertip touches the thumb tip; the other three fingers extend straight.',
+    { key: 'gyan', name: 'Wisdom pinch', adv: 'Gyan Mudrā', touch: [1],
+      cue: 'Index fingertip touches the thumb tip; the other three fingers extend straight. Rest the hands palm-up on the knees.',
       trad: 'The classic meditation seat — used across Kundalini and seated practice, traditionally associated with clarity and receptivity.' },
-    { key: 'dhyana', name: 'Dhyāna', custom: 'dhyana',
-      cue: 'Hands cupped in the lap like a bowl, right over left, thumb tips lightly touching.',
+    { key: 'dhyana', name: 'Meditation bowl', adv: 'Dhyāna Mudrā', custom: 'dhyana',
+      cue: 'Hands cupped in the lap like a bowl, right resting in left, thumb tips lightly touching above.',
       trad: 'The traditional absorption posture of jhāna practice.' },
-    { key: 'anjali', name: 'Añjali', custom: 'anjali',
-      cue: 'Palms pressed together at the heart, fingers pointing up.',
+    { key: 'anjali', name: 'Prayer press', adv: 'Añjali Mudrā', custom: 'anjali',
+      cue: 'Palms pressed evenly together at the heart, fingers pointing up, forearms level.',
       trad: 'Traditionally a gesture of gathering the attention and offering it.' },
-    { key: 'prana', name: 'Prāṇa', touch: [3, 4],
-      cue: 'Ring and little fingertips touch the thumb; index and middle extend straight.',
+    { key: 'prana', name: 'Vitality pinch', adv: 'Prāṇa Mudrā', touch: [3, 4],
+      cue: 'Ring and little fingertips touch the thumb; index and middle extend straight. Palm-up on the knees.',
       trad: 'The vitality seal — traditionally paired with long, slow exhales.' },
   ];
 
-  // Schematic diagram: palm-up finger map. Fingers that touch the thumb curl
-  // to a dashed contact ring; extended fingers are drawn straight and highlighted.
+  // Big schematic diagram: palm-up finger map with labeled fingers.
+  // Gold = extended fingers and contact points; periwinkle = curled fingers
+  // travelling to the dashed contact ring at the thumb tip.
+  const FLETTERS = ['I', 'M', 'R', 'L']; // index, middle, ring, little
   function mudraDiagramSVG(m) {
     if (m.custom === 'dhyana') {
-      return `<svg viewBox="0 0 130 118">
-        <path d="M18 78 Q65 118 112 78" fill="none" stroke="#8d9bff" stroke-width="7" stroke-linecap="round"/>
-        <path d="M26 88 Q65 120 104 88" fill="none" stroke="#5b6ee0" stroke-width="7" stroke-linecap="round"/>
-        <path d="M50 62 Q65 50 80 62" fill="none" stroke="#ffd166" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="65" cy="55" r="5" fill="none" stroke="#ffd166" stroke-width="2" stroke-dasharray="3 3"/>
-      </svg><div class="cap">dashed ring = thumb tips touch</div>`;
+      return `<svg viewBox="0 0 200 150">
+        <path d="M24 84 Q100 148 176 84" fill="none" stroke="#8d9bff" stroke-width="11" stroke-linecap="round"/>
+        <path d="M38 100 Q100 152 162 100" fill="none" stroke="#5b6ee0" stroke-width="11" stroke-linecap="round"/>
+        <path d="M70 66 Q100 46 130 66" fill="none" stroke="#ffd166" stroke-width="8" stroke-linecap="round"/>
+        <circle class="contact" cx="100" cy="57" r="9" fill="none" stroke="#ffd166" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <text class="flabel dim" x="30" y="70" text-anchor="middle">L</text>
+        <text class="flabel dim" x="170" y="70" text-anchor="middle">R</text>
+        <text class="flabel" x="100" y="34" text-anchor="middle">T·T</text>
+      </svg><div class="cap">left hand under right, a bowl — dashed ring = thumb tips touch (T)</div>`;
     }
     if (m.custom === 'anjali') {
-      return `<svg viewBox="0 0 130 118">
-        <path d="M58 112 L58 34 Q65 22 65 34 L65 112" fill="#8d9bff"/>
-        <path d="M72 112 L72 34 Q65 22 65 34 L65 112" fill="#5b6ee0"/>
-        <line x1="65" y1="30" x2="65" y2="112" stroke="#ffd166" stroke-width="2" stroke-dasharray="4 3"/>
-      </svg><div class="cap">palms pressed — dashed contact line</div>`;
+      return `<svg viewBox="0 0 200 150">
+        <path d="M86 142 L86 40 Q100 20 100 40 L100 142" fill="#8d9bff"/>
+        <path d="M114 142 L114 40 Q100 20 100 40 L100 142" fill="#5b6ee0"/>
+        <line x1="100" y1="34" x2="100" y2="142" stroke="#ffd166" stroke-width="3" stroke-dasharray="5 4"/>
+        <text class="flabel dim" x="70" y="90" text-anchor="middle">L</text>
+        <text class="flabel dim" x="130" y="90" text-anchor="middle">R</text>
+      </svg><div class="cap">both palms pressed flat — dashed line = full contact, thumbs at the sternum</div>`;
     }
-    // touch-type mudra: 4 fingers indexed 1..4 (index..little), thumb at left
-    const baseX = [40, 62, 84, 104]; // finger root x for index, middle, ring, little
-    const tipY = [18, 12, 16, 26];
+    // touch-type mudra: thumb at left, four labeled fingers
+    const baseX = [70, 98, 126, 152];
+    const tipY = [36, 26, 32, 50];
     let fingers = '';
     for (let f = 1; f <= 4; f++) {
-      const x = baseX[f - 1], ty = tipY[f - 1];
+      const x = baseX[f - 1], ty = tipY[f - 1], letter = FLETTERS[f - 1];
       if (m.touch.includes(f)) {
-        // curled across the palm to the contact ring near the thumb tip
-        fingers += `<path d="M${x} 78 Q${x - 6} 46 34 60" fill="none" stroke="#8d9bff" stroke-width="8" stroke-linecap="round" opacity="0.9"/>`;
+        fingers += `<path class="fing-curl" d="M${x} 118 Q${x - 14} 64 52 84" fill="none" stroke="#8d9bff" stroke-width="13" stroke-linecap="round"/>
+          <text class="flabel dim" x="${x - 8}" y="66" text-anchor="middle">${letter}</text>`;
       } else {
-        fingers += `<line x1="${x}" y1="80" x2="${x}" y2="${ty}" stroke="#ffd166" stroke-width="8" stroke-linecap="round"/>`;
+        fingers += `<line class="fing-ext" x1="${x}" y1="118" x2="${x}" y2="${ty}" stroke="#ffd166" stroke-width="13" stroke-linecap="round"/>
+          <text class="flabel" x="${x}" y="${ty - 12}" text-anchor="middle">${letter}</text>`;
       }
     }
-    return `<svg viewBox="0 0 130 118">
-      <ellipse cx="68" cy="96" rx="44" ry="28" fill="#5b6ee0"/>
-      <path d="M28 96 Q14 78 26 62" fill="none" stroke="#8d9bff" stroke-width="9" stroke-linecap="round"/>
+    return `<svg viewBox="0 0 200 170">
+      <ellipse cx="108" cy="132" rx="60" ry="34" fill="#5b6ee0"/>
+      <path d="M58 148 Q30 120 34 92" fill="none" stroke="#8d9bff" stroke-width="13" stroke-linecap="round"/>
+      <text class="flabel" x="22" y="82" text-anchor="middle">T</text>
       ${fingers}
-      <circle class="contact" cx="31" cy="60" r="8" fill="none" stroke="#ffd166" stroke-width="2" stroke-dasharray="3 3"/>
-    </svg><div class="cap">dashed ring = fingertips touch thumb</div>`;
+      <circle class="contact" cx="40" cy="86" r="11" fill="none" stroke="#ffd166" stroke-width="2.5" stroke-dasharray="4 3"/>
+    </svg><div class="cap">palm up · T thumb, I index, M middle, R ring, L little — dashed ring = fingertips touch the thumb; gold fingers stay straight</div>`;
   }
 
-  // simplified hands on the coach itself
+  // bigger simplified hands on the coach itself
   function coachHandsSVG(m) {
     if (m.custom === 'anjali') {
-      return `<g><path d="M146 186 L146 158 Q150 152 150 158 L150 186" fill="#b9c3ff"/><path d="M154 186 L154 158 Q150 152 150 158 L150 186" fill="#93a1f5"/></g>`;
+      return `<g><path d="M144 188 L144 152 Q150 144 150 152 L150 188" fill="#b9c3ff"/><path d="M156 188 L156 152 Q150 144 150 152 L150 188" fill="#93a1f5"/></g>`;
     }
     if (m.custom === 'dhyana') {
-      return `<g><path d="M118 190 Q150 208 182 190" fill="none" stroke="#b9c3ff" stroke-width="9" stroke-linecap="round"/><path d="M144 184 Q150 179 156 184" fill="none" stroke="#93a1f5" stroke-width="5" stroke-linecap="round"/></g>`;
+      return `<g><path d="M112 188 Q150 212 188 188" fill="none" stroke="#b9c3ff" stroke-width="11" stroke-linecap="round"/><path d="M140 182 Q150 174 160 182" fill="none" stroke="#93a1f5" stroke-width="6" stroke-linecap="round"/></g>`;
     }
-    // touch-type: two hands at the sides, a ring where finger meets thumb + extended fingers
     const ext = [1, 2, 3, 4].filter(f => !m.touch.includes(f)).length;
     let lines = '';
     for (let i = 0; i < ext; i++) {
-      const a = -0.5 + i * 0.42;
-      lines += `<line x1="0" y1="0" x2="${Math.sin(a) * 17}" y2="${-Math.cos(a) * 17}" stroke="#b9c3ff" stroke-width="4.5" stroke-linecap="round"/>`;
+      const a = -0.55 + i * 0.44;
+      lines += `<line x1="0" y1="0" x2="${Math.sin(a) * 24}" y2="${-Math.cos(a) * 24}" stroke="#b9c3ff" stroke-width="6" stroke-linecap="round"/>`;
     }
-    const hand = `<circle r="8" fill="#93a1f5"/><circle r="4.5" cx="-6" cy="-6" fill="none" stroke="#ffd166" stroke-width="2.4"/>${lines}`;
-    return `<g><g transform="translate(88,196)">${hand}</g><g transform="translate(212,196) scale(-1,1)">${hand}</g></g>`;
+    const hand = `<circle r="11" fill="#93a1f5"/><circle r="6" cx="-8" cy="-8" fill="none" stroke="#ffd166" stroke-width="3"/>${lines}`;
+    return `<g><g transform="translate(84,198)">${hand}</g><g transform="translate(216,198) scale(-1,1)">${hand}</g></g>`;
   }
 
+  /* ============ technique library ============ */
+  // The major actionable instructions from the Pali suttas and haṭha/tantric
+  // manuals: posture, locks (bandha), gaze, sounding breath, mind practices.
+  // Every entry: what you do, when in the cycle, what tradition says, source.
+  const TECH_CATS = [
+    { key: 'posture', name: 'Posture',      adv: 'Āsana' },
+    { key: 'locks',   name: 'Body locks',   adv: 'Bandha' },
+    { key: 'gaze',    name: 'Gaze & anchor',adv: 'Dṛṣṭi' },
+    { key: 'voice',   name: 'Breath sound', adv: 'Sounding prāṇāyāma' },
+    { key: 'mind',    name: 'Mind',         adv: 'Bhāvanā' },
+  ];
+  const TECHNIQUES = [
+    { key: 'sukha', cat: 'posture', name: 'Easy seat', adv: 'Sukhāsana', w: 'any', when: 'before you begin',
+      does: 'Sit cross-legged on a cushion, hips above the knees, spine tall but not rigid, hands on the thighs.',
+      trad: 'The default meditation seat: "having folded the legs, set the body erect." Stable enough to forget about.',
+      src: 'MN 10 / MN 118 (seated instruction)' },
+    { key: 'siddha', cat: 'posture', name: 'Adept’s seat', adv: 'Siddhāsana', w: 'any', when: 'before you begin',
+      does: 'One heel draws in against the perineum, the other foot rests in front of it; knees to the floor, spine erect.',
+      trad: 'The haṭha manuals rank it first among seats for breath practice — it lightly presses the root-lock point for you.',
+      src: 'Haṭha Yoga Pradīpikā, ch. 1' },
+    { key: 'chair', cat: 'posture', name: 'Chair seat', adv: 'Maitryāsana', w: 'any', when: 'before you begin',
+      does: 'Sit toward the chair’s front edge, feet flat, spine self-supported — no backrest — hands on the thighs.',
+      trad: 'Fully in the spirit of the texts: body still, back erect. The posture serves the breath, not the other way around.',
+      src: 'MN 10, adapted' },
+
+    { key: 'mula', cat: 'locks', name: 'Root lock', adv: 'Mūla Bandha', w: 'hold', when: 'during holds',
+      does: 'Gently lift the pelvic floor — the muscles you’d use to stop mid-stream. Keep the belly and face soft. Release with the exhale.',
+      trad: 'The tantric and haṭha texts describe it as sealing energy at the root so the held breath can work; the classic companion to retention.',
+      src: 'Haṭha Yoga Pradīpikā, ch. 3' },
+    { key: 'uddiyana', cat: 'locks', name: 'Belly lift', adv: 'Uḍḍīyāna Bandha', w: 'hold', when: 'empty hold only',
+      does: 'Only after a full exhale: draw the belly in and up under the ribcage, as if the navel moves toward the spine. Never on full lungs.',
+      trad: 'Described as "the lion that kills the elephant of death" — flying the energy upward. Classically practiced on empty retention.',
+      src: 'Haṭha Yoga Pradīpikā, ch. 3' },
+    { key: 'jalandhara', cat: 'locks', name: 'Chin seal', adv: 'Jālandhara Bandha', w: 'hold', when: 'during holds',
+      does: 'Lengthen the back of the neck and let the chin drop slightly toward the notch of the throat. No strain.',
+      trad: 'Said to contain the pressure of the held breath at the throat; the texts pair it with any long retention.',
+      src: 'Haṭha Yoga Pradīpikā, ch. 3' },
+    { key: 'maha', cat: 'locks', name: 'All three locks', adv: 'Mahā Bandha', w: 'hold', when: 'empty hold · advanced',
+      does: 'Root lifted, belly drawn (on empty lungs), chin sealed — all at once, then release in reverse order.',
+      trad: 'The "great lock": the three seals together, treated in the haṭha texts as a complete practice of its own. Build up to it.',
+      src: 'Haṭha Yoga Pradīpikā, ch. 3' },
+
+    { key: 'nasagra', cat: 'gaze', name: 'Nose-tip gaze', adv: 'Nāsāgra Dṛṣṭi', w: 'inhale', when: 'inhale & exhale',
+      does: 'Eyes soft and half-closed, attention resting where the cool air touches the nostrils.',
+      trad: 'The classic anchor point — "gazing at the tip of one’s own nose" — and the natural home of the coolness cue.',
+      src: 'Bhagavad Gītā 6.13; haṭha manuals' },
+    { key: 'bhrumadhya', cat: 'gaze', name: 'Brow point', adv: 'Bhrūmadhya Dṛṣṭi', w: 'hold', when: 'during holds',
+      does: 'Eyes closed, attention drawn gently up to the point between the eyebrows. If it strains, drop back to the nose tip.',
+      trad: 'The tantric manuals place the mind here during retention — the seat of the "third eye" in that map of the body.',
+      src: 'Haṭha Yoga Pradīpikā, ch. 4; tantric manuals' },
+
+    { key: 'ujjayi', cat: 'voice', name: 'Ocean breath', adv: 'Ujjāyī', w: 'inhale', when: 'inhale & exhale',
+      does: 'Slightly narrow the back of the throat so the breath whispers like distant surf — in and out through the nose.',
+      trad: 'The sounding breath: it gives the mind a continuous handle to hold, so attention has somewhere to live.',
+      src: 'Haṭha Yoga Pradīpikā, ch. 2' },
+    { key: 'bhramari', cat: 'voice', name: 'Bee hum', adv: 'Bhrāmarī', w: 'exhale', when: 'on the exhale',
+      does: 'Exhale with a soft closed-lip hum and feel the buzz fill the skull. Let the hum run the whole exhale.',
+      trad: 'Named for the bee. The texts prescribe it for agitation — the vibration gives the racing mind one thing to do.',
+      src: 'Haṭha Yoga Pradīpikā, ch. 2' },
+
+    { key: 'metta', cat: 'mind', name: 'Goodwill phrases', adv: 'Mettā Bhāvanā', w: 'exhale', when: 'on the exhale',
+      does: 'One phrase per exhale: "May I be at ease." Then widen the circle each cycle — someone dear, a stranger, everyone.',
+      trad: 'The warm counterpart to breathwork: "as a mother guards her only child." Traditionally paired with a settled breath.',
+      src: 'Karaṇīyamettā Sutta, Snp 1.8' },
+    { key: 'knowing', cat: 'mind', name: 'Knowing long as long', adv: 'Dīghaṁ vā assasanto', w: 'any', when: 'all phases',
+      does: 'Change nothing. Just know: this breath is long, this one is short. Observation before control, always.',
+      trad: 'MN 118’s first instruction — the foundation every other technique here stands on.',
+      src: 'Ānāpānasati Sutta, MN 118' },
+    { key: 'calming', cat: 'mind', name: 'Calming the body', adv: 'Passambhaya kāyasaṅkhāraṁ', w: 'exhale', when: 'on the exhale',
+      does: 'On each exhale, intend one word: "calming." Let the shoulders and jaw take the hint.',
+      trad: 'The fourth step of the first tetrad — where breath observation turns into tranquility.',
+      src: 'MN 118, first tetrad' },
+  ];
+
   /* ============ audio ============ */
-  // Per-phase sound signatures over a soft 110Hz/432Hz bed. The glide voice
-  // rises a fifth (264->396) across the inhale and descends an octave
-  // (396->198) across the exhale as a single clean line. The holds get their
-  // own texture so they can't be confused with the exhale: the held note
-  // gains a slow ~0.9Hz shimmer (tremolo) plus a quiet second voice a fifth
-  // below, turning the sustain into a soft chord. The empty hold sustains the
-  // low 198 with a fainter, slower version of the same texture.
-  // Boundary chimes: E5 (inhale) / C#5 (hold) / A4 (exhale) / E4 (hold out).
-  let AC = null, glide = null, glideGain = null, trem = null, lfo = null, lfoDepth = null, dyad = null, dyadGain = null;
+  // The sound system is designed so everything can be told apart with eyes
+  // closed. Breath: glide voice rises a fifth on the inhale, descends an
+  // octave on the exhale; holds become a shimmering chord (full = higher +
+  // faster shimmer, empty = lower + slower). Chimes: E5/C#5/A4/E4 around the
+  // cycle. Every control also has its own earcon: each practice, persona,
+  // mudra, technique category, and toggle plays a distinct signature.
+  let AC = null, bedGain = null, glide = null, glideGain = null, trem = null, lfo = null, lfoDepth = null, dyad = null, dyadGain = null;
   function audioInit() {
     if (AC) return;
     try {
       AC = new (window.AudioContext || window.webkitAudioContext)();
-      const bedGain = AC.createGain(); bedGain.gain.value = 0.02; bedGain.connect(AC.destination);
+      bedGain = AC.createGain(); bedGain.gain.value = 0; bedGain.connect(AC.destination); // bed fades in only during sessions
       const bed1 = AC.createOscillator(); bed1.frequency.value = 110; bed1.connect(bedGain); bed1.start();
       const bed2Gain = AC.createGain(); bed2Gain.gain.value = 0.35; bed2Gain.connect(bedGain);
       const bed2 = AC.createOscillator(); bed2.frequency.value = 432; bed2.connect(bed2Gain); bed2.start();
@@ -567,36 +706,110 @@
       dyad = AC.createOscillator(); dyad.type = 'sine'; dyad.frequency.value = 264; dyad.connect(dyadGain); dyad.start();
     } catch (e) { AC = null; }
   }
+  function ensureAudio() { audioInit(); if (AC && AC.state === 'suspended') AC.resume(); return !!AC; }
+
+  // one-shot tone; the atom every earcon is built from
+  function tone(freq, { at = 0, dur = 0.5, type = 'sine', gain = 0.045, glideTo = null } = {}) {
+    if (!AC) return;
+    const now = AC.currentTime + at;
+    const g = AC.createGain();
+    g.gain.setValueAtTime(gain, now);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    g.connect(AC.destination);
+    const o = AC.createOscillator(); o.type = type; o.frequency.setValueAtTime(freq, now);
+    if (glideTo) o.frequency.linearRampToValueAtTime(glideTo, now + dur);
+    o.connect(g); o.start(now); o.stop(now + dur + 0.05);
+  }
+  function motif(notes, { type = 'sine', step = 0.14, dur = 0.35, gain = 0.045 } = {}) {
+    if (!ensureAudio()) return;
+    notes.forEach((n, i) => tone(n, { at: i * step, dur, type, gain }));
+  }
+  function whoosh() { // filtered-noise breath sound for the 'voice' category
+    if (!ensureAudio()) return;
+    const len = Math.floor(AC.sampleRate * 0.45);
+    const buf = AC.createBuffer(1, len, AC.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.sin(i * 12.9898) * 43758.5453 % 1) * (1 - i / len); // deterministic noise
+    const src = AC.createBufferSource(); src.buffer = buf;
+    const bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.setValueAtTime(900, AC.currentTime);
+    bp.frequency.exponentialRampToValueAtTime(300, AC.currentTime + 0.45); bp.Q.value = 1.2;
+    const g = AC.createGain(); g.gain.value = 0.12;
+    src.connect(bp); bp.connect(g); g.connect(AC.destination); src.start();
+  }
+
+  // ---- earcon signatures: a distinct sound for every distinct thing ----
+  const semitone = (base, n) => base * Math.pow(2, n / 12);
+  const EARCONS = {
+    practice: {
+      downshift: () => motif([659.25, 554.37, 440], { type: 'triangle' }),                       // settling descent
+      anapanasati: () => motif([440], { dur: 1.3, gain: 0.04 }),                                  // one steady tone
+      passaddhi: () => { if (ensureAudio()) tone(396, { dur: 1.1, glideTo: 198, gain: 0.045 }); },// long fall
+      box: () => motif([330, 330, 330, 330], { type: 'square', gain: 0.018, step: 0.18, dur: 0.12 }), // four equal sides
+      freeform: () => motif([264, 330, 264, 396], { step: 0.11, dur: 0.3 }),                      // wandering, unresolved
+    },
+    persona: {
+      sage: () => motif([392, 494], { dur: 0.6 }),
+      challenger: () => motif([220, 220], { type: 'square', gain: 0.022, step: 0.12, dur: 0.1 }),
+      alchemist: () => motif([523.25, 659.25, 783.99, 1046.5], { step: 0.09, dur: 0.25, gain: 0.035 }),
+    },
+    mudra: {
+      gyan: () => motif([528], { dur: 0.9 }),                                                    // one pure point
+      dhyana: () => { motif([330], { dur: 1.1 }); motif([495], { dur: 1.1 }); },                 // settled open fifth
+      anjali: () => { if (ensureAudio()) { tone(462, { glideTo: 440, dur: 0.9 }); tone(419, { glideTo: 440, dur: 0.9 }); } }, // two tones meeting
+      prana: () => motif([392, 440, 494], { step: 0.11 }),                                       // rising vitality
+    },
+    techCat: {
+      posture: (i) => motif([semitone(165, i * 2)], { dur: 0.7, type: 'triangle', gain: 0.05 }),  // low, grounded
+      locks: (i) => { if (ensureAudio()) tone(semitone(82, i * 2), { dur: 0.35, gain: 0.1, glideTo: semitone(60, i * 2) }); }, // deep thump
+      gaze: (i) => motif([semitone(988, i * 2)], { dur: 0.8, gain: 0.018 }),                      // high, pin-point
+      voice: () => whoosh(),                                                                      // breath itself
+      mind: (i) => { motif([semitone(660, i * 3)], { dur: 1.2, gain: 0.03 }); motif([semitone(1320, i * 3)], { dur: 0.9, gain: 0.01 }); }, // small bell
+    },
+    toggleOn: () => motif([440, 587.33], { step: 0.1, dur: 0.25 }),
+    toggleOff: () => motif([587.33, 440], { step: 0.1, dur: 0.25 }),
+    scholarOn: () => motif([294, 392], { type: 'triangle', step: 0.12, dur: 0.4 }),
+    scholarOff: () => motif([392, 294], { type: 'triangle', step: 0.12, dur: 0.4 }),
+    begin: () => motif([264, 330, 396], { step: 0.12, dur: 0.4 }),
+    end: () => motif([396, 330, 264], { step: 0.14, dur: 0.5 }),
+  };
+
   function audioPhase(key, dur) {
     if (!AC) return;
     const now = AC.currentTime;
     // boundary chime
     const cg = AC.createGain(); cg.gain.setValueAtTime(0.05, now); cg.gain.exponentialRampToValueAtTime(0.0001, now + 1.2); cg.connect(AC.destination);
     const ch = AC.createOscillator(); ch.frequency.value = PHASE_META[key].chime; ch.connect(cg); ch.start(now); ch.stop(now + 1.3);
-    // glide voice + hold textures
+    // glide voice + hold textures; dur === null means freeform (unknown
+    // length): approach the target pitch instead of ramping to a deadline
     glideGain.gain.setTargetAtTime(0.03, now, 0.15);
     glide.frequency.cancelScheduledValues(now);
     if (key === 'inhale') {
-      glide.frequency.setValueAtTime(264, now); glide.frequency.linearRampToValueAtTime(396, now + dur);
+      if (dur === null) { glide.frequency.setTargetAtTime(396, now, 2.2); }
+      else { glide.frequency.setValueAtTime(264, now); glide.frequency.linearRampToValueAtTime(396, now + dur); }
       lfoDepth.gain.setTargetAtTime(0, now, 0.1); dyadGain.gain.setTargetAtTime(0, now, 0.1);
     } else if (key === 'hold') {
-      glide.frequency.setValueAtTime(396, now);
+      const f = dur === null ? glide.frequency.value : 396;
+      glide.frequency.setValueAtTime(f, now);
       lfo.frequency.setValueAtTime(0.9, now);
       lfoDepth.gain.setTargetAtTime(0.22, now, 0.3);
-      dyad.frequency.setValueAtTime(264, now); dyadGain.gain.setTargetAtTime(0.018, now, 0.4);
+      dyad.frequency.setValueAtTime(f / 1.5, now); dyadGain.gain.setTargetAtTime(0.018, now, 0.4);
     } else if (key === 'exhale') {
-      glide.frequency.setValueAtTime(396, now); glide.frequency.linearRampToValueAtTime(198, now + dur);
+      if (dur === null) { glide.frequency.setTargetAtTime(198, now, 2.6); }
+      else { glide.frequency.setValueAtTime(396, now); glide.frequency.linearRampToValueAtTime(198, now + dur); }
       lfoDepth.gain.setTargetAtTime(0, now, 0.1); dyadGain.gain.setTargetAtTime(0, now, 0.1);
     } else { // hold2: empty hold — low sustain, fainter and slower shimmer
-      glide.frequency.setValueAtTime(198, now);
+      const f = dur === null ? Math.max(glide.frequency.value, 150) : 198;
+      glide.frequency.setValueAtTime(f, now);
       lfo.frequency.setValueAtTime(0.55, now);
       lfoDepth.gain.setTargetAtTime(0.14, now, 0.3);
-      dyad.frequency.setValueAtTime(132, now); dyadGain.gain.setTargetAtTime(0.012, now, 0.4);
+      dyad.frequency.setValueAtTime(f / 1.5, now); dyadGain.gain.setTargetAtTime(0.012, now, 0.4);
     }
   }
+  function audioSessionStart() { if (AC) bedGain.gain.setTargetAtTime(0.02, AC.currentTime, 0.5); }
   function audioStop() {
     if (!AC) return;
     const now = AC.currentTime;
+    bedGain.gain.setTargetAtTime(0, now, 0.4);
     glideGain.gain.setTargetAtTime(0, now, 0.3);
     dyadGain.gain.setTargetAtTime(0, now, 0.3);
     lfoDepth.gain.setTargetAtTime(0, now, 0.3);
@@ -605,9 +818,9 @@
   /* ============ DOM refs ============ */
   const $ = (s) => document.querySelector(s);
   const app = $('#app'), phaseLabel = $('#phaseLabel'), bubble = $('#bubble'), legend = $('#legend');
-  const beginBtn = $('#beginBtn'), endBtn = $('#endBtn');
+  const beginBtn = $('#beginBtn'), endBtn = $('#endBtn'), paceBtn = $('#paceBtn');
   const bodyScale = $('#bodyScale'), aura = $('#aura'), orbitDot = $('#orbitDot');
-  const mudraToggle = $('#mudraToggle'), mudraPanel = $('#mudraPanel');
+  const mudraToggle = $('#mudraToggle'), mudraPanel = $('#mudraPanel'), scholarToggle = $('#scholarToggle');
   const neuroPanel = $('#neuroPanel'), gaugesEl = $('#gauges'), debriefEl = $('#debrief');
   const npBar = $('#npBar'), npText = $('#npText');
 
@@ -615,8 +828,11 @@
   let personaKey = store.get('persona', 'sage');
   if (!PERSONAS[personaKey]) personaKey = 'sage';
   let mudraIdx = store.get('mudra', 0) % MUDRAS.length;
-  let running = false, startMs = 0, offset = 0, lastPhaseKey = null, raf = 0;
+  let techCat = store.get('techCat', 'locks');
+  if (!TECH_CATS.some((c) => c.key === techCat)) techCat = 'locks';
+  let running = false, startMs = 0, offset = 0, lastPhaseKey = null, raf = 0, lastFrame = 0;
   let cycleBase = 0, carriedCycles = 0; // cycle clock survives mid-session practice switches
+  let ffIdx = 0, ffPhaseStart = 0, ffFull = 0; // freeform: user-driven phase index
   let frozenNeuro = null;
 
   /* ============ persona UI ============ */
@@ -626,6 +842,7 @@
   function say(text) { bubble.textContent = text; }
   document.querySelectorAll('#personas .chip').forEach((c) => c.addEventListener('click', () => {
     personaKey = c.dataset.persona; store.set('persona', personaKey);
+    EARCONS.persona[personaKey]();
     renderPersonas(); say(PERSONAS[personaKey].greet);
   }));
 
@@ -633,27 +850,38 @@
   function renderLegend() {
     legend.innerHTML = practice().phases.map((p) => {
       const m = PHASE_META[p.key];
-      return `<span class="${m.cls}"><i></i>${m.legend} · ${p.dur}s</span>`;
+      const name = scholar ? m.legendAdv : m.legend;
+      return `<span class="${m.cls}"><i></i>${name}${p.dur ? ' · ' + p.dur + 's' : ''}</span>`;
     }).join('');
   }
   function renderPracticePanel() {
     const p = practice();
-    $('#pName').textContent = p.name;
-    $('#pSub').textContent = p.sub;
+    $('#pName').textContent = scholar ? p.nameAdv : p.name;
+    $('#pSub').textContent = scholar ? `${p.name} — ${p.sub}` : p.sub;
     $('#pRatio').textContent = p.ratio;
     $('#pPurpose').textContent = p.purpose;
     $('#pSource').textContent = p.source;
-    document.querySelectorAll('#practices .chip').forEach((c) => c.classList.toggle('on', c.dataset.practice === p.key));
+    app.classList.toggle('freeform', p.freeform === true);
+    document.querySelectorAll('#practices .chip').forEach((c) => {
+      c.classList.toggle('on', c.dataset.practice === p.key);
+      const pr = PRACTICES.find((x) => x.key === c.dataset.practice);
+      c.textContent = scholar ? pr.nameAdv : pr.name;
+    });
   }
   function setPractice(key) {
     if (key === practiceKey || !PRACTICES.some((p) => p.key === key)) return;
-    if (running) { carriedCycles += Math.floor((elapsed() - cycleBase) / cycleLen()); }
+    if (running && !isFreeform()) carriedCycles += Math.floor((elapsed() - cycleBase) / cycleLen());
     practiceKey = key; store.set('practice', key);
-    if (running) { cycleBase = elapsed(); lastPhaseKey = null; }
+    EARCONS.practice[key]();
+    if (running) {
+      lastPhaseKey = null;
+      if (isFreeform()) { ffIdx = 0; ffPhaseStart = elapsed(); stampFreeform(); }
+      else { cycleBase = elapsed(); }
+    }
     frozenNeuro = null;
-    renderLegend(); renderPracticePanel(); buildGauges(); renderNeuro(running ? elapsed() : 0);
+    renderLegend(); renderPracticePanel(); buildGauges(); renderNeuro(running ? elapsed() : 0); updatePaceBtn();
     const p = practice();
-    say(`${p.name} — ${p.ratio}. ${p.purpose.split('. ')[0]}.`.replace('..', '.'));
+    say(`${scholar ? p.nameAdv : p.name} — ${p.ratio}. ${p.purpose.split('. ')[0]}.`.replace('..', '.'));
   }
   $('#practices').innerHTML = PRACTICES.map((p) => `<button class="chip" data-practice="${p.key}">${p.name}</button>`).join('');
   document.querySelectorAll('#practices .chip').forEach((c) => c.addEventListener('click', () => setPractice(c.dataset.practice)));
@@ -662,20 +890,71 @@
   function renderMudra() {
     const m = MUDRAS[mudraIdx];
     $('#mudraDiagram').innerHTML = mudraDiagramSVG(m);
-    $('#mudraInfo h3').textContent = m.name;
+    $('#mudraInfo h3').textContent = scholar ? m.adv : m.name;
+    $('#mudraInfo .alt').textContent = scholar ? m.name : m.adv;
     $('#mudraInfo .cue').textContent = m.cue;
     $('#mudraInfo .trad').textContent = m.trad;
     $('#hands').innerHTML = coachHandsSVG(m);
   }
-  $('#mudraPrev').addEventListener('click', () => { mudraIdx = (mudraIdx + MUDRAS.length - 1) % MUDRAS.length; store.set('mudra', mudraIdx); renderMudra(); say(`${MUDRAS[mudraIdx].name}: ${MUDRAS[mudraIdx].cue}`); });
-  $('#mudraNext').addEventListener('click', () => { mudraIdx = (mudraIdx + 1) % MUDRAS.length; store.set('mudra', mudraIdx); renderMudra(); say(`${MUDRAS[mudraIdx].name}: ${MUDRAS[mudraIdx].cue}`); });
+  function stepMudra(d) {
+    mudraIdx = (mudraIdx + d + MUDRAS.length) % MUDRAS.length;
+    store.set('mudra', mudraIdx);
+    EARCONS.mudra[MUDRAS[mudraIdx].key]();
+    renderMudra();
+    say(`${scholar ? MUDRAS[mudraIdx].adv : MUDRAS[mudraIdx].name}: ${MUDRAS[mudraIdx].cue}`);
+  }
+  $('#mudraPrev').addEventListener('click', () => stepMudra(-1));
+  $('#mudraNext').addEventListener('click', () => stepMudra(1));
   mudraToggle.addEventListener('change', () => {
     const on = mudraToggle.checked;
+    (on ? EARCONS.toggleOn : EARCONS.toggleOff)();
     app.classList.toggle('mudra-on', on);
     mudraPanel.classList.toggle('show', on);
     store.set('mudraOn', on);
-    if (on) say(`${MUDRAS[mudraIdx].name}: ${MUDRAS[mudraIdx].cue}`);
+    if (on) { EARCONS.mudra[MUDRAS[mudraIdx].key](); say(`${scholar ? MUDRAS[mudraIdx].adv : MUDRAS[mudraIdx].name}: ${MUDRAS[mudraIdx].cue}`); }
   });
+
+  /* ============ scholar mode ============ */
+  function applyScholar() {
+    renderLegend(); renderPracticePanel(); renderMudra(); renderTech();
+  }
+  scholarToggle.addEventListener('change', () => {
+    scholar = scholarToggle.checked;
+    store.set('scholar', scholar);
+    (scholar ? EARCONS.scholarOn : EARCONS.scholarOff)();
+    applyScholar();
+    say(scholar ? 'Scholar mode: the traditional terms, as the texts use them.' : 'Plain mode: everyday names, same practices.');
+  });
+
+  /* ============ technique library UI ============ */
+  let selectedTech = null;
+  function renderTech() {
+    $('#techCats').innerHTML = TECH_CATS.map((c) =>
+      `<button class="tcat${c.key === techCat ? ' on' : ''}" data-cat="${c.key}">${scholar ? c.adv : c.name}</button>`).join('');
+    document.querySelectorAll('.tcat').forEach((b) => b.addEventListener('click', () => {
+      techCat = b.dataset.cat; store.set('techCat', techCat);
+      const idx = TECH_CATS.findIndex((c) => c.key === techCat);
+      EARCONS.techCat[techCat](Math.max(0, idx));
+      renderTech();
+    }));
+    const items = TECHNIQUES.filter((t) => t.cat === techCat);
+    $('#techList').innerHTML = items.map((t) => `
+      <button class="tcard${selectedTech === t.key ? ' on' : ''}" data-t="${t.key}">
+        <div class="trow"><span class="tname">${scholar ? t.adv : t.name}</span><span class="twhen" data-w="${t.w}">${t.when}</span></div>
+        <div class="talt">${scholar ? t.name : t.adv}</div>
+        <div class="tdo">${t.does}</div>
+        <div class="ttrad">${t.trad}</div>
+        <div class="tsrc">${t.src}</div>
+      </button>`).join('');
+    document.querySelectorAll('.tcard').forEach((card) => card.addEventListener('click', () => {
+      const t = TECHNIQUES.find((x) => x.key === card.dataset.t);
+      selectedTech = t.key;
+      const catIdx = TECHNIQUES.filter((x) => x.cat === t.cat).findIndex((x) => x.key === t.key);
+      EARCONS.techCat[t.cat](catIdx);
+      document.querySelectorAll('.tcard').forEach((c) => c.classList.toggle('on', c.dataset.t === selectedTech));
+      say(`${scholar ? t.adv : t.name} — ${t.does}`);
+    }));
+  }
 
   /* ============ state-profile panel ============ */
   const NEURO_COLORS = { gaba: '#8d9bff', ht: '#ffd166', da: '#ff7bac', ne: '#5babff' };
@@ -713,16 +992,56 @@
   /* ============ session engine ============ */
   function elapsed() { return (performance.now() - startMs) / 1000 + offset; }
 
+  function promptFor(key) {
+    const lines = PERSONAS[personaKey].prompts[key];
+    const idx = isFreeform() ? carriedCycles : carriedCycles + Math.floor((elapsed() - cycleBase) / cycleLen());
+    return lines[idx % lines.length];
+  }
+
+  function stampFreeform() {
+    const key = practice().phases[ffIdx].key;
+    lastPhaseKey = key;
+    app.setAttribute('data-phase', key);
+    audioPhase(key, null);
+    say(promptFor(key));
+    updatePaceBtn();
+  }
+  function advanceFreeform() {
+    if (!running || !isFreeform()) return;
+    ffIdx = (ffIdx + 1) % practice().phases.length;
+    if (ffIdx === 0) carriedCycles += 1;
+    ffPhaseStart = elapsed();
+    stampFreeform();
+  }
+  function updatePaceBtn() {
+    if (running && isFreeform()) {
+      const phases = practice().phases;
+      const next = PHASE_META[phases[(ffIdx + 1) % phases.length].key];
+      paceBtn.style.display = '';
+      paceBtn.textContent = `▸ ${scholar ? next.adv : next.label}`;
+    } else {
+      paceBtn.style.display = 'none';
+    }
+  }
+  paceBtn.addEventListener('click', advanceFreeform);
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && running && isFreeform()) { e.preventDefault(); advanceFreeform(); }
+  });
+
   function begin() {
     running = true; offset = 0; startMs = performance.now(); lastPhaseKey = null;
-    cycleBase = 0; carriedCycles = 0; frozenNeuro = null;
+    cycleBase = 0; carriedCycles = 0; ffIdx = 0; ffPhaseStart = 0; ffFull = 0; lastFrame = 0;
+    frozenNeuro = null;
     app.classList.add('live');
     beginBtn.style.display = 'none'; endBtn.style.display = '';
     debriefEl.classList.remove('show');
     neuroPanel.classList.add('show');
-    audioInit();
-    if (AC && AC.state === 'suspended') AC.resume();
-    tick();
+    ensureAudio();
+    EARCONS.begin();
+    audioSessionStart();
+    if (isFreeform()) stampFreeform();
+    updatePaceBtn();
+    tick(performance.now());
   }
 
   function end() {
@@ -731,11 +1050,12 @@
     frozenNeuro = { vals: trajectory(t), reached: t >= NEURO_T, t }; // freeze where it got to
     app.classList.remove('live'); app.setAttribute('data-phase', '');
     beginBtn.style.display = ''; endBtn.style.display = 'none';
+    updatePaceBtn();
     phaseLabel.innerHTML = '&nbsp;';
     bodyScale.style.transform = '';
     audioStop();
-    // debrief with hard numbers
-    const cycles = carriedCycles + Math.floor((t - cycleBase) / cycleLen());
+    EARCONS.end();
+    const cycles = isFreeform() ? carriedCycles : carriedCycles + Math.floor((t - cycleBase) / cycleLen());
     const mmss = fmtTime(t);
     $('#dCycles').textContent = cycles;
     $('#dCyclesLabel').textContent = cycles === 1 ? 'cycle' : 'cycles';
@@ -747,33 +1067,42 @@
     if (cycles >= 1) { app.classList.add('celebrate'); setTimeout(() => app.classList.remove('celebrate'), 1200); }
   }
 
-  function tick() {
+  function tick(frameTime) {
     if (!running) return;
     const t = elapsed();
-    const tc = t - cycleBase;
-    const { key, dur, progress } = phaseAt(tc);
+    const dt = lastFrame ? Math.min(0.1, (frameTime - lastFrame) / 1000) : 0.016;
+    lastFrame = frameTime;
 
-    if (key !== lastPhaseKey) {
-      lastPhaseKey = key;
-      app.setAttribute('data-phase', key);
-      audioPhase(key, dur);
-      const lines = PERSONAS[personaKey].prompts[key];
-      const cycleIdx = carriedCycles + Math.floor(tc / cycleLen());
-      say(lines[cycleIdx % lines.length]);
+    let key, f, orbitProgress, labelText;
+    if (isFreeform()) {
+      key = practice().phases[ffIdx].key;
+      const tp = t - ffPhaseStart;
+      const target = (key === 'inhale' || key === 'hold') ? 1 : 0;
+      ffFull += (target - ffFull) * Math.min(1, dt * 1.6); // ease toward the phase, at your pace
+      f = ffFull;
+      orbitProgress = (tp % 8) / 8; // steady lap while you decide
+      labelText = `${scholar ? PHASE_META[key].adv : PHASE_META[key].label} · ${Math.floor(tp)}s`;
+    } else {
+      const tc = t - cycleBase;
+      const ph = phaseAt(tc);
+      key = ph.key;
+      if (key !== lastPhaseKey) {
+        lastPhaseKey = key;
+        app.setAttribute('data-phase', key);
+        audioPhase(key, ph.dur);
+        say(promptFor(key));
+      }
+      const remain = Math.ceil(ph.dur * (1 - ph.progress));
+      labelText = `${scholar ? PHASE_META[key].adv : PHASE_META[key].label} · ${remain}`;
+      f = fullnessAt(tc);
+      orbitProgress = ph.progress;
     }
 
-    // phase label with countdown, tinted by CSS var --phase
-    const remain = Math.ceil(dur * (1 - progress));
-    phaseLabel.textContent = `${PHASE_META[key].label} · ${remain}`;
-
-    // body inflates/holds/deflates/rests-empty with breath fullness
-    const f = fullnessAt(tc);
+    phaseLabel.textContent = labelText;
     bodyScale.style.transform = `scale(${1 + 0.13 * f})`;
     aura.setAttribute('r', String(88 + 14 * f));
     aura.style.opacity = String(0.18 + 0.2 * f);
-
-    // orbit tracer: exactly one lap per phase
-    const ang = progress * Math.PI * 2 - Math.PI / 2;
+    const ang = orbitProgress * Math.PI * 2 - Math.PI / 2;
     orbitDot.setAttribute('cx', String(150 + 128 * Math.cos(ang)));
     orbitDot.setAttribute('cy', String(150 + 128 * Math.sin(ang)));
 
@@ -785,18 +1114,21 @@
   endBtn.addEventListener('click', end);
 
   /* ============ boot ============ */
+  scholarToggle.checked = scholar;
   renderLegend();
   renderPracticePanel();
+  renderTech();
   buildGauges();
   renderPersonas();
   renderMudra();
-  if (store.get('mudraOn', false)) { mudraToggle.checked = true; mudraToggle.dispatchEvent(new Event('change')); }
+  if (store.get('mudraOn', false)) { mudraToggle.checked = true; app.classList.add('mudra-on'); mudraPanel.classList.add('show'); }
   say(PERSONAS[personaKey].greet);
 
   /* ============ test hooks ============ */
   window.__sp = {
-    PRACTICES, phaseAt, fullnessAt, trajectory, setPractice,
+    PRACTICES, TECHNIQUES, phaseAt, fullnessAt, trajectory, setPractice,
     practice: () => practice(),
+    advance: advanceFreeform,
     jump: (sec) => { offset += sec; },
     isRunning: () => running,
   };
