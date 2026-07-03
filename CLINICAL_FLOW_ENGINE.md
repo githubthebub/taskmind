@@ -219,7 +219,22 @@ their fixes — the log is append-only.
   ID/type-cast agreement, service-worker shell manifest vs `dist/` tree,
   320px/700px responsive sanity) + interface contracts (cast safety, emit
   ordering at session stop, dist ES-module specifiers).
-- Result: recorded below upon completion; fixes, if any, re-gated through G4.
+- Result: **1 defect found.**
+  - **D4 — PromptGrid timeout resurrects prompt after session end.**
+    `showFor()` scheduled an untracked 350 ms fade-in timeout; `clear()` only
+    removed the `.visible` class. Ending a session within 350 ms of an inhale
+    start (two rapid clicks: Begin → End) let the pending timeout fire on the
+    idle screen, leaving a reframing prompt visible indefinitely. *Fix:*
+    timer id is tracked; both `showFor()` and `clear()` cancel any pending
+    fade before proceeding.
+  - Verified clean: all 6 expression layers, level 2–6 growth reveals, and
+    ring phase colors have matching CSS with correct specificity; all 7
+    element IDs and casts agree with the HTML; all 16 service-worker shell
+    paths exist in `dist/`; 320px layout fits (bubble ~286px in a 296px
+    content box, all SVG geometry inside the viewBox); stop-path emit
+    ordering sound, `SESSION_END` reachable from every state; all dist import
+    specifiers end in `.js`.
+- **G4 re-verify**: `tsc` PASS · smoke PASS after fix.
 
 <!-- Append new passes above this line; never rewrite history. -->
 

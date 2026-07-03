@@ -8,6 +8,7 @@ import { PromptDeck } from '../data/prompts.js';
 export class PromptGrid {
     constructor(container) {
         this.deck = new PromptDeck();
+        this.fadeTimer = null;
         container.classList.add('prompt-grid');
         container.innerHTML = `<p class="prompt-text" aria-live="polite"></p>`;
         this.el = container.querySelector('.prompt-text');
@@ -16,13 +17,22 @@ export class PromptGrid {
         const prompt = this.deck.draw(phase, level);
         if (!prompt)
             return;
+        this.cancelPending();
         this.el.classList.remove('visible');
-        window.setTimeout(() => {
+        this.fadeTimer = window.setTimeout(() => {
+            this.fadeTimer = null;
             this.el.textContent = prompt.text;
             this.el.classList.add('visible');
         }, 350);
     }
     clear() {
+        this.cancelPending();
         this.el.classList.remove('visible');
+    }
+    cancelPending() {
+        if (this.fadeTimer !== null) {
+            window.clearTimeout(this.fadeTimer);
+            this.fadeTimer = null;
+        }
     }
 }

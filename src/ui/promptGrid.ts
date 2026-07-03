@@ -10,6 +10,7 @@ import { PromptDeck } from '../data/prompts.js';
 export class PromptGrid {
   private readonly deck = new PromptDeck();
   private readonly el: HTMLElement;
+  private fadeTimer: number | null = null;
 
   constructor(container: HTMLElement) {
     container.classList.add('prompt-grid');
@@ -20,14 +21,24 @@ export class PromptGrid {
   showFor(phase: BreathPhase, level: number): void {
     const prompt = this.deck.draw(phase, level);
     if (!prompt) return;
+    this.cancelPending();
     this.el.classList.remove('visible');
-    window.setTimeout(() => {
+    this.fadeTimer = window.setTimeout(() => {
+      this.fadeTimer = null;
       this.el.textContent = prompt.text;
       this.el.classList.add('visible');
     }, 350);
   }
 
   clear(): void {
+    this.cancelPending();
     this.el.classList.remove('visible');
+  }
+
+  private cancelPending(): void {
+    if (this.fadeTimer !== null) {
+      window.clearTimeout(this.fadeTimer);
+      this.fadeTimer = null;
+    }
   }
 }
