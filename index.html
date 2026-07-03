@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080b12">
 <title>Cybernetic Jhāna Engine — offline biofeedback</title>
-<meta name="description" content="Offline, client-side camera biofeedback: rPPG pulse + in-browser FFT drive an adaptive audio/visual closed loop with a breath-key cross-check and confidence bars.">
+<meta name="description" content="Offline camera + mic biofeedback: rPPG pulse, FFT, breath-key game, aum/breath mic detection, confidence bars.">
 <style>html,body{margin:0;padding:0;background:#080b12}</style>
 </head>
 <body>
@@ -93,6 +93,17 @@
   #cje .key.lit{border-color:var(--calm);background:rgba(90,209,196,0.16);box-shadow:0 0 0 1px var(--calm)}
   #cje .key.hit{border-color:var(--good);background:rgba(90,209,196,0.28)}
   #cje .key.miss{border-color:var(--bad);background:rgba(232,144,90,0.2)}
+  #cje .microw{display:flex;align-items:center;gap:10px;margin-top:12px}
+  #cje .microw .mlabel{font:600 10px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--ink-dim)}
+  #cje .mmeter{flex:1;height:6px;border-radius:3px;background:rgba(120,150,200,0.15);overflow:hidden}
+  #cje .mmeter i{display:block;height:100%;width:0;border-radius:3px;background:var(--focus);transition:width .08s linear}
+  #cje .mdet{font:600 12px/1 var(--mono);color:var(--ink-dim);min-width:96px;text-align:right}
+  #cje .mdet.aum{color:var(--focus)} #cje .mdet.breath{color:var(--calm)}
+  #cje .modes{margin-top:10px}
+  #cje .pacewrap{gap:10px}
+  #cje input[type=range]{accent-color:var(--calm);width:120px;vertical-align:middle}
+  #cje input[type=range]:disabled{opacity:.45}
+  #cje .paceval{font:600 12px/1 var(--mono);color:var(--ink);min-width:52px}
   #cje .grsa{font-size:11.5px;color:var(--ink-dim);line-height:1.5;margin-top:10px}
   #cje .rng{font:600 11px/1.2 var(--mono);color:var(--ink-dim);margin-top:6px;font-variant-numeric:tabular-nums;min-height:13px}
 
@@ -176,9 +187,10 @@
   <div class="disclaim">
     <b>What this is:</b> a real, working closed-loop biofeedback toy. Your camera estimates pulse from
     micro-color changes in your skin (rPPG) using an in-browser FFT; the sound, visuals, and on-screen cues
-    adapt to that signal. Follow the breath pacer with the <b>W/S/D/A</b> keys — that cross-checks the optical
-    read against your real breathing (heart rate should rise on the inhale, fall on the exhale) and drives the
-    <b>confidence bar and ± range</b> on every number. <b>What it is not:</b> a medical device. Webcam heart-rate —
+    adapt to that signal. Choose your <b>Lead</b> mode (follow the pacer, or let the app follow you), set the
+    <b>pace</b>, and optionally turn on the <b>mic</b> so it can hear an <em>aum</em> hum and your breath. Every
+    input cross-checks the optical read against your real breathing (heart rate should rise on the inhale, fall on
+    the exhale) and drives the <b>confidence bar and ± range</b> on every number. <b>What it is not:</b> a medical device. Webcam heart-rate —
     and especially HRV — is a rough estimate; the confidence bar tells you how much to trust it, and low
     confidence means treat the numbers as noise. Nothing here diagnoses or treats anything. Nothing leaves your device.
   </div>
@@ -205,8 +217,8 @@
 
   <div class="game" id="game">
     <div class="ghead">
-      <div><span class="tag">breath game</span> follow the pacer &amp; tap the phase — it cross-checks the optical signal</div>
-      <div class="gscore">match <b id="gAcc">–</b> · coupling <b id="gCouple">–</b></div>
+      <div><span class="tag">breath</span> <span id="gMode">follow the pacer &amp; tap the phase — it cross-checks the optical signal</span></div>
+      <div class="gscore" id="gScoreWrap">match <b id="gAcc">–</b> · coupling <b id="gCouple">–</b></div>
     </div>
     <div class="gprompt" id="gPrompt">— press <b>Start</b> —</div>
     <div class="keys">
@@ -215,7 +227,12 @@
       <button class="key" data-k="exhale"><b>D</b><span>exhale</span></button>
       <button class="key" data-k="aum"><b>A</b><span>aum · rest</span></button>
     </div>
-    <div class="grsa">Respiratory coupling (RSA): HR should rise on your inhale, fall on your exhale. When your keys track that swing, confidence climbs.</div>
+    <div class="microw" id="micRow" hidden>
+      <span class="mlabel">mic</span>
+      <div class="mmeter"><i id="micLevel"></i></div>
+      <span class="mdet" id="micDet">listening…</span>
+    </div>
+    <div class="grsa" id="grsa">Respiratory coupling (RSA): HR should rise on your inhale, fall on your exhale. When your inputs track that swing, confidence climbs.</div>
   </div>
 
   <div class="hud">
@@ -237,6 +254,21 @@
     <button class="ghost" id="btnRecal" disabled>Re-baseline</button>
   </div>
 
+  <div class="controls modes">
+    <label class="sel">Lead
+      <select id="lead">
+        <option value="guided">Guided — I follow the app</option>
+        <option value="detect">Detect — app follows me</option>
+      </select>
+    </label>
+    <label class="sel"><input type="checkbox" id="chkAdaptive" checked> Adaptive pace</label>
+    <label class="sel pacewrap">Pace
+      <input type="range" id="pace" min="3" max="10" step="0.5" value="5.5" disabled>
+      <span class="paceval" id="paceVal">5.5/min</span>
+    </label>
+    <label class="sel"><input type="checkbox" id="chkMic"> Mic (detect aum + breath)</label>
+  </div>
+
   <div id="camStatus" class="camstatus" hidden>
     <span class="ic" aria-hidden="true"></span>
     <span class="msg"></span>
@@ -249,6 +281,7 @@
       <div class="kv"><span>Detected mode</span><b id="dMode">—</b></div>
       <div class="kv"><span>Carrier tone</span><b id="dTone">—</b></div>
       <div class="kv"><span>Breath pacer</span><b id="dPace">—</b></div>
+      <div class="kv"><span>Detected breathing</span><b id="dResp">—</b></div>
       <div class="kv"><span>Haptic pattern</span><b id="dHap">—</b></div>
       <div class="kv"><span>Visual field</span><b id="dVis">—</b></div>
       <div class="kv"><span>Baseline HR</span><b id="dBase">—</b></div>
@@ -359,6 +392,9 @@
     reported:null, reportedSince:0, promptPhase:null, gameAcc:0, gameHits:0, gameTries:0,
     rsaBuf:[],            // {t, hr, phase}
     coupling:0, conf:0, hrStd:0, hrHist:[],
+    // modes: lead + pace + mic + camera-derived respiration
+    leadMode:"guided", paceMode:"adaptive", paceBpm:5.5, statePace:6.5,
+    micOn:false, mic:null, detectedPhase:null, respBpm:0, respBuf:[],
     reduced: window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
   };
 
@@ -504,25 +540,40 @@
     if(frac<0.82) return "exhale";
     return "aum";
   }
-  function reportPhase(p){
+  // src: "key" | "mic". In guided mode we score against the prompt; in detect
+  // mode the reported phase IS the answer (the app is following the user).
+  function reportPhase(p, src){
     if(!p) return;
-    E.reported=p; E.reportedSince=now();
-    // score against the current prompt
-    var lit=E.promptPhase, cell=document.querySelector('.key[data-k="'+p+'"]');
-    if(E.running && lit){
+    E.reported=p; E.reportedSince=now(); E.detectedPhase=p;
+    var cell=document.querySelector('.key[data-k="'+p+'"]');
+    if(E.leadMode==="guided" && E.running && E.promptPhase){
       E.gameTries++;
-      var hit=(p===lit);
+      var hit=(p===E.promptPhase);
       if(hit) E.gameHits++;
       E.gameAcc = lerp(E.gameAcc, hit?1:0, 0.25);
       if(cell){ cell.classList.remove("hit","miss"); void cell.offsetWidth; cell.classList.add(hit?"hit":"miss");
         setTimeout(function(){ cell.classList.remove("hit","miss"); }, 300); }
-    } else if(cell){ cell.classList.add("hit"); setTimeout(function(){cell.classList.remove("hit");},200); }
+    } else if(cell){ // detect mode (or idle): light the phase, no scoring
+      var prev=document.querySelector(".key.lit"); if(prev&&prev!==cell) prev.classList.remove("lit");
+      cell.classList.add("lit");
+      cell.classList.add("hit"); setTimeout(function(){ cell.classList.remove("hit"); }, 200);
+    }
   }
   function updatePrompt(){
+    if(E.leadMode==="detect"){
+      // App follows the user: show what it currently believes you're doing.
+      var d=E.detectedPhase, el=$("gPrompt");
+      if(el){
+        if(d){ el.innerHTML='<span style="opacity:.55;font-size:.6em;letter-spacing:.12em">YOU’RE</span> &nbsp;'+PHASE_LABEL[d]; el.style.color=PHASE_COLOR[d]; }
+        else { el.innerHTML='<span style="opacity:.5">breathe — I’m watching '+(E.micOn?'mic + camera':'your keys + camera')+'</span>'; el.style.color="var(--ink-dim)"; }
+      }
+      return;
+    }
+    // Guided: prescribe the phase on the pacer clock.
     var p=phaseAt(E.breathPhase);
     if(p!==E.promptPhase){
       E.promptPhase=p;
-      var el=$("gPrompt"); if(el){ el.innerHTML=PHASE_LABEL[p]+' &nbsp;<b style="opacity:.6">['+keyFor(p)+']</b>'; el.style.color=PHASE_COLOR[p]; }
+      var el2=$("gPrompt"); if(el2){ el2.innerHTML=PHASE_LABEL[p]+' &nbsp;<b style="opacity:.6">['+keyFor(p)+']</b>'; el2.style.color=PHASE_COLOR[p]; }
       var lit=document.querySelector(".key.lit"); if(lit) lit.classList.remove("lit");
       var next=document.querySelector('.key[data-k="'+p+'"]'); if(next) next.classList.add("lit");
     }
@@ -634,12 +685,18 @@
     applyAudioTargets(E.curTone, E.curPace);
   }
   function applyAudioTargets(tone, paceSec){
-    E.curTone=tone; E.curPace=paceSec;
+    E.curTone=tone; E.statePace=paceSec; recomputePace();
     if(!E.ac||!E.soundOn) return;
     var t=E.ac.currentTime;
     E.osc.frequency.cancelScheduledValues(t);
     E.osc.frequency.linearRampToValueAtTime(tone, t+4.0);      // glide, don't jump
     E.subOsc.frequency.linearRampToValueAtTime(tone/2, t+4.0);
+  }
+  // Effective breath pace = manual slider (user leads) or state-adaptive (auto).
+  function recomputePace(){
+    E.curPace = (E.paceMode==="manual") ? clamp(60/E.paceBpm, 3, 20) : (E.statePace||6.5);
+    if(E.paceMode==="adaptive"){ var el=$("pace"); if(el){ el.value=(60/E.curPace).toFixed(1); }
+      var pv=$("paceVal"); if(pv) pv.textContent=(60/E.curPace).toFixed(1)+"/min"; }
   }
   var lastBreath=0;
   function audioBreath(dt){
@@ -656,6 +713,97 @@
   function stopAudio(){
     if(!E.ac) return;
     try{ E.oscGain.gain.setTargetAtTime(0, E.ac.currentTime, 0.2); E.subGain.gain.setTargetAtTime(0, E.ac.currentTime, 0.2);}catch(e){}
+  }
+
+  /* ========================= MIC: aum + breath ============================ */
+  // Analyses the microphone to auto-report breath phases. It reliably detects a
+  // sustained voiced hum ("aum" — low spectral flatness + a stable pitch) and
+  // airflow energy (broadband noise). Audible airflow ⇒ exhale, the quiet after
+  // ⇒ inhale — a heuristic, honestly imperfect, but it feeds the same coupling
+  // cross-check so a wrong guess shows up as low confidence.
+  async function initMic(){
+    if(E.mic) return true;
+    if(!camSupported()){ setMicDet("no mic API",""); return false; }
+    var stream;
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    }catch(err){ setMicDet("blocked ("+((err&&err.name)||"err")+")",""); $("chkMic").checked=false; E.micOn=false; return false; }
+    initAudio(); if(!E.ac){ setMicDet("no audio ctx",""); return false; }
+    var src=E.ac.createMediaStreamSource(stream);
+    var an=E.ac.createAnalyser(); an.fftSize=2048; an.smoothingTimeConstant=0.5;
+    src.connect(an); // analyser only — never routed to output (no feedback)
+    E.mic={ stream:stream, src:src, an:an, td:new Float32Array(an.fftSize), fd:new Float32Array(an.frequencyBinCount),
+            floor:0.008, voiceFrames:0, breathHigh:false, lastAum:0 };
+    $("micRow").hidden=false; setMicDet("listening…","");
+    return true;
+  }
+  function stopMic(){
+    if(!E.mic) return;
+    try{ E.mic.stream.getTracks().forEach(function(t){t.stop();}); }catch(e){}
+    try{ E.mic.src.disconnect(); }catch(e){}
+    E.mic=null; $("micRow").hidden=true; $("micLevel").style.width="0%";
+  }
+  function setMicDet(txt, kind){ var el=$("micDet"); if(el){ el.textContent=txt; el.className="mdet "+(kind||""); } }
+
+  function micDetect(){
+    var m=E.mic; if(!m||!E.ac) return;
+    m.an.getFloatTimeDomainData(m.td); m.an.getFloatFrequencyData(m.fd);
+    // RMS energy
+    var i, n=m.td.length, s=0; for(i=0;i<n;i++) s+=m.td[i]*m.td[i];
+    var rms=Math.sqrt(s/n);
+    // spectral flatness (geo mean / arith mean of magnitudes) — low = tonal/voiced
+    var fb=m.fd.length, gm=0, am=0, cnt=0;
+    for(i=2;i<fb;i++){ var mag=Math.pow(10, m.fd[i]/20); if(mag<1e-9) mag=1e-9; gm+=Math.log(mag); am+=mag; cnt++; }
+    gm=Math.exp(gm/cnt); am/=cnt; var flat=am>0? gm/am : 1;
+    // pitch via time-domain autocorrelation (only meaningful when voiced)
+    var pitch=autoPitch(m.td, E.ac.sampleRate);
+    // adaptive noise floor from quiet frames
+    if(rms<m.floor*1.5) m.floor=lerp(m.floor, Math.max(0.003,rms), 0.02);
+    var lvl=clamp(rms/0.08,0,1); $("micLevel").style.width=(lvl*100)+"%";
+
+    var voiced = rms>Math.max(0.012,m.floor*2.5) && flat<0.28 && pitch>70 && pitch<400;
+    if(voiced){
+      m.voiceFrames++;
+      if(m.voiceFrames>6){ setMicDet("🕉 aum · "+Math.round(pitch)+" Hz","aum");
+        if(now()-m.lastAum>1200){ reportPhase("aum","mic"); m.lastAum=now(); } }
+    } else {
+      m.voiceFrames=0;
+      var breath = rms>Math.max(0.02, m.floor*3.2) && flat>0.3;
+      if(breath && !m.breathHigh){ m.breathHigh=true; setMicDet("breath out ›","breath"); reportPhase("exhale","mic"); }
+      else if(!breath && m.breathHigh && rms<m.floor*2){ m.breathHigh=false; setMicDet("breath in ‹","breath"); reportPhase("inhale","mic"); }
+      else if(!m.breathHigh && rms<m.floor*2){ if(E.micOn && $("micDet").className.indexOf("aum")<0 && $("micDet").textContent.indexOf("breath")<0) setMicDet("listening…",""); }
+    }
+  }
+  // Autocorrelation pitch estimate (Hz), 0 if none — cheap, robust enough for a hum.
+  function autoPitch(td, sr){
+    var n=td.length, best=-1, bestLag=-1;
+    var minLag=Math.floor(sr/400), maxLag=Math.floor(sr/70);
+    var rms=0,i; for(i=0;i<n;i++) rms+=td[i]*td[i]; rms=Math.sqrt(rms/n);
+    if(rms<0.01) return 0;
+    for(var lag=minLag; lag<=maxLag; lag++){
+      var c=0; for(i=0;i<n-lag;i++) c+=td[i]*td[i+lag];
+      if(c>best){ best=c; bestLag=lag; }
+    }
+    if(bestLag<=0) return 0;
+    return sr/bestLag;
+  }
+
+  /* ================= CAMERA-DERIVED RESPIRATION (bonus) =================== */
+  // Breathing modulates the pulse baseline; the low-frequency band (0.1–0.5 Hz)
+  // of the optical signal gives a breaths-per-minute estimate with no keys/mic.
+  function computeRespiration(rs){
+    if(!rs) return;
+    var n=nextPow2(rs.length), re=new Float64Array(n), im=new Float64Array(n), i;
+    var mean=0; for(i=0;i<rs.length;i++) mean+=rs[i]; mean/=rs.length;
+    for(i=0;i<rs.length;i++) re[i]=(rs[i]-mean);
+    // Hann to reduce leakage
+    for(i=0;i<rs.length;i++){ re[i]*=0.5*(1-Math.cos(2*Math.PI*i/(rs.length-1))); }
+    fft(re,im);
+    var lo=0.1, hi=0.5, loBin=Math.max(1,Math.floor(lo*n/E.fs)), hiBin=Math.ceil(hi*n/E.fs);
+    var peak=0, pb=-1; for(var k=loBin;k<=hiBin;k++){ var mg=re[k]*re[k]+im[k]*im[k]; if(mg>peak){ peak=mg; pb=k; } }
+    if(pb<0) return;
+    var bpm=(pb*E.fs/n)*60;
+    E.respBpm = E.respBpm? lerp(E.respBpm, bpm, 0.2) : bpm;
   }
 
   /* ============================== HAPTICS ================================== */
@@ -802,8 +950,10 @@
 
     // ease absorption + visuals every frame
     E.absorption += (E.absorptionTarget - E.absorption)*Math.min(1, dt*0.0009);
+    recomputePace();
+    if(E.micOn) micDetect();
     audioBreath(dt);
-    updatePrompt();          // drive the breath-game pacer prompt
+    updatePrompt();          // drive the breath-game pacer prompt (or detect read-out)
     drawViz(dt);
 
     // DSP every ~350ms
@@ -818,6 +968,7 @@
 
   function runDSP(){
     var rs=resample(); if(!rs) return;
+    computeRespiration(rs); // camera-derived breaths/min (low-freq baseline)
     var sig=hann(detrend(rs));
     var sp=spectralHR(sig); if(!sp) return;
     // smooth HR
@@ -868,9 +1019,12 @@
     var hb=hrBand(); $("rHr").textContent = hb? "likely "+hb.lo+"–"+hb.hi+" (±"+hb.e+")" : "—";
     var vb=hrvBand(); $("rHrv").textContent = vb? "likely "+vb.lo+"–"+vb.hi+" ms" : "—";
     $("rConf").textContent = E.conf>0.66?"trustworthy":E.conf>0.33?"treat as rough":"low — noisy signal";
-    // game score + coupling
-    $("gAcc").textContent = E.gameTries>0? Math.round(E.gameAcc*100)+"%" : "–";
-    $("gCouple").textContent = (E.gameTries>4 && E.rsaDelta!=null)? (E.rsaDelta>0?"+":"")+E.rsaDelta.toFixed(1)+" bpm" : "–";
+    // game score + coupling (match % only meaningful when you're following the app)
+    $("gAcc").textContent = (E.leadMode==="guided" && E.gameTries>0)? Math.round(E.gameAcc*100)+"%" : "–";
+    $("gCouple").textContent = (E.rsaBuf.length>6 && E.rsaDelta!=null)? (E.rsaDelta>0?"+":"")+E.rsaDelta.toFixed(1)+" bpm" : "–";
+    // pace + respiration read-outs
+    $("dPace").textContent = (60/E.curPace).toFixed(1)+"/min ("+E.curPace.toFixed(1)+"s)"+(E.paceMode==="manual"?" · manual":" · adaptive");
+    $("dResp").textContent = E.respBpm>3? E.respBpm.toFixed(1)+"/min (camera)" : "—";
     updateClinician();
     // session panel
     if(E.sessionStart){
@@ -1015,11 +1169,12 @@
     enterState("baselining");
     $("btnStart").disabled=true; $("btnStop").disabled=false; $("btnRecal").disabled=false;
     $("lexicon").textContent="Finding your baseline. Sit still, breathe normally, keep your face evenly lit for ~30 seconds.";
+    if(E.micOn) initMic();
     E._raf=requestAnimationFrame(loop);
   }
   function resetGame(){
-    E.reported=null; E.promptPhase=null; E.gameAcc=0; E.gameHits=0; E.gameTries=0;
-    E.rsaBuf=[]; E.coupling=0; E.rsaDelta=null; E.conf=0; E.hrHist=[]; E.hr=0; E.hrv=0; E.coh=0;
+    E.reported=null; E.promptPhase=null; E.detectedPhase=null; E.gameAcc=0; E.gameHits=0; E.gameTries=0;
+    E.rsaBuf=[]; E.coupling=0; E.rsaDelta=null; E.conf=0; E.hrHist=[]; E.hr=0; E.hrv=0; E.coh=0; E.respBpm=0;
   }
   function applyTorch(){
     var track=E.stream.getVideoTracks()[0];
@@ -1030,7 +1185,7 @@
     E.running=false; if(E._raf) cancelAnimationFrame(E._raf);
     saveSession(false);
     if(E.stream){ E.stream.getTracks().forEach(function(t){t.stop();}); E.stream=null; }
-    stopAudio(); if(E.hapticTimer) clearInterval(E.hapticTimer);
+    stopAudio(); stopMic(); if(E.hapticTimer) clearInterval(E.hapticTimer);
     enterState("idle"); $("stateName").textContent="idle";
     $("btnStart").disabled=false; $("btnStop").disabled=true; $("btnRecal").disabled=true;
     $("lexicon").textContent="Session ended. Your metrics are saved locally. Start again whenever you like.";
@@ -1043,6 +1198,7 @@
     resetGame();
     E.baseline=74; E.simT=0; E.simHR=82; enterState("baselining");
     if($("chkSound").checked){ E.soundOn=true; initAudio(); }
+    if(E.micOn) initMic();
     $("btnStart").disabled=true; $("btnStop").disabled=false;
     var simLoop=function(t){
       if(!E.running) return;
@@ -1055,7 +1211,7 @@
       var v=128+18*Math.sin(2*Math.PI*f*(E.simT/1000))+4*Math.sin(2*Math.PI*0.2*(E.simT/1000));
       E.buf.push({t:now(), v:v}); if(E.buf.length>600) E.buf.shift(); updateIBI(v);
       E.absorption += (E.absorptionTarget-E.absorption)*Math.min(1,dt*0.0009);
-      audioBreath(dt); updatePrompt(); drawViz(dt);
+      recomputePace(); if(E.micOn) micDetect(); audioBreath(dt); updatePrompt(); drawViz(dt);
       if(t-lastDSP>350){ lastDSP=t; runDSP(); pushLexicon(false); updateHUD(); }
       E._raf=requestAnimationFrame(simLoop);
     };
@@ -1075,16 +1231,41 @@
   $("chkSound").addEventListener("change", function(e){ E.soundOn=e.target.checked; if(!E.soundOn) stopAudio(); else if(E.running) initAudio(); });
   $("chkHaptic").addEventListener("change", function(e){ E.hapticOn=e.target.checked; if(!E.hapticOn&&E.hapticTimer) clearInterval(E.hapticTimer); });
 
+  // Lead mode: guided (you follow app) vs detect (app follows you).
+  function applyLeadUI(){
+    var detect=E.leadMode==="detect";
+    $("gMode").innerHTML = detect
+      ? "breathe naturally — the app reads your phase from "+(E.micOn?"mic + keys + camera":"keys + camera")+" and follows you"
+      : "follow the pacer &amp; tap the phase — it cross-checks the optical signal";
+    $("gScoreWrap").style.opacity = detect? "0.55" : "1";
+    if(detect){ var lit=document.querySelector(".key.lit"); if(lit) lit.classList.remove("lit"); }
+  }
+  $("lead").addEventListener("change", function(e){ E.leadMode=e.target.value; E.promptPhase=null; applyLeadUI(); });
+  $("chkAdaptive").addEventListener("change", function(e){
+    E.paceMode = e.target.checked? "adaptive":"manual";
+    $("pace").disabled = e.target.checked; recomputePace();
+  });
+  $("pace").addEventListener("input", function(e){
+    E.paceBpm=parseFloat(e.target.value); $("paceVal").textContent=E.paceBpm.toFixed(1)+"/min";
+    if(E.paceMode==="manual") recomputePace();
+  });
+  $("chkMic").addEventListener("change", function(e){
+    E.micOn=e.target.checked;
+    if(E.micOn){ if(E.running) initMic(); else { $("micRow").hidden=false; setMicDet("starts with session","" ); } }
+    else { stopMic(); }
+    applyLeadUI();
+  });
+
   // Breath-key game: W/S/D/A (or tap) report the current breath phase.
   window.addEventListener("keydown", function(e){
     if(e.repeat) return;
     var tag=(e.target&&e.target.tagName)||"";
     if(tag==="INPUT"||tag==="SELECT"||tag==="TEXTAREA") return;
     var k=e.key&&e.key.toLowerCase();
-    if(PHASE_KEYS[k]){ reportPhase(PHASE_KEYS[k]); }
+    if(PHASE_KEYS[k]){ reportPhase(PHASE_KEYS[k], "key"); }
   });
   Array.prototype.forEach.call(document.querySelectorAll(".key"), function(btn){
-    btn.addEventListener("click", function(){ reportPhase(btn.getAttribute("data-k")); });
+    btn.addEventListener("click", function(){ reportPhase(btn.getAttribute("data-k"), "key"); });
   });
 
   /* ============================ SELF-TESTS ================================= */
@@ -1183,6 +1364,29 @@
       var ok=E.rsaDelta!=null && E.rsaDelta>3;
       E.rsaBuf=sv; E.coupling=svc; E.rsaDelta=svd;
       tests.push({name:"RSA coupling detects inhale-HR > exhale-HR", ok:ok, detail:"Δ "+(E.rsaDelta==null?"n/a":E.rsaDelta.toFixed(1))+" bpm"});
+    })();
+    // 15. autocorrelation pitch recovers a known tone (for aum detection)
+    (function(){
+      var sr=44100, f=140, n=2048, td=new Float32Array(n);
+      for(var i=0;i<n;i++) td[i]=0.5*Math.sin(2*Math.PI*f*i/sr);
+      var p=autoPitch(td, sr);
+      tests.push({name:"Pitch detector recovers a 140 Hz hum (±10)", ok:Math.abs(p-140)<10, detail:p.toFixed(1)+" Hz"});
+    })();
+    // 16. manual pace maps BPM → seconds/breath
+    (function(){
+      var svM=E.paceMode, svB=E.paceBpm, svP=E.curPace, svS=E.statePace;
+      E.paceMode="manual"; E.paceBpm=6; recomputePace(); var six=E.curPace;
+      E.paceBpm=4; recomputePace(); var four=E.curPace;
+      E.paceMode=svM; E.paceBpm=svB; E.curPace=svP; E.statePace=svS;
+      tests.push({name:"Manual pace maps 6/min→10s, 4/min→15s", ok:Math.abs(six-10)<0.1&&Math.abs(four-15)<0.1, detail:six.toFixed(1)+"s / "+four.toFixed(1)+"s"});
+    })();
+    // 17. detect mode records reported phase without scoring
+    (function(){
+      var svL=E.leadMode, svT=E.gameTries, svD=E.detectedPhase;
+      E.leadMode="detect"; E.gameTries=0; reportPhase("exhale","mic");
+      var ok=E.detectedPhase==="exhale" && E.gameTries===0;
+      E.leadMode=svL; E.gameTries=svT; E.detectedPhase=svD;
+      tests.push({name:"Detect mode logs phase, no score penalty", ok:ok, detail:"tries="+E.gameTries});
     })();
 
     var host=$("tests"); host.innerHTML="";

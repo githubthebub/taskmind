@@ -114,6 +114,19 @@ A **clinical read-out** narrates the state in a grounded psychologist / neuroche
 mechanisms as *associations* ("states like this are associated with…"), never as measured claims, and always
 restating how much to trust the current signal.
 
+**Input modes (you choose how the loop closes):**
+- **Lead — Guided vs Detect.** *Guided:* the app prescribes the phase on a pacer clock and scores how well you
+  match it. *Detect:* the app follows you — it shows the phase it believes you're in, inferred from your inputs,
+  and drops the scoring.
+- **Pace — Adaptive vs Manual.** Adaptive lets the state machine slow you down under stress (the original
+  cybernetic behavior). Manual pins the breath cadence to a slider (3–10 breaths/min).
+- **Mic (optional).** A separate `getUserMedia` audio stream + `AnalyserNode`. It detects a sustained **aum**
+  hum via autocorrelation pitch + low spectral flatness (recovered 90–300 Hz in tests), and **breath airflow**
+  via broadband energy (audible airflow ⇒ exhale, the quiet after ⇒ inhale — a labeled heuristic). Detected
+  phases feed the same RSA coupling check, so a wrong guess just lowers confidence rather than lying.
+- **Camera-derived respiration (bonus).** Breathing modulates the pulse baseline, so the low-frequency band
+  (0.1–0.5 Hz) of the optical signal yields a breaths/min estimate with no keys or mic — shown in the loop panel.
+
 ### 4. Full local data integration
 `localStorage` schema (`cje.v1`): baseline HR, and per session — duration, avg HR,
 peak coherence, whether peak was reached, and **time-to-first-calm** (shift velocity).
@@ -143,6 +156,9 @@ that audits the DSP and state machine against known inputs — no placeholders, 
 12. Game accuracy rises on a correct key, falls on a wrong one
 13. Low confidence widens the HR ± error band
 14. RSA coupling detects inhale-HR > exhale-HR
+15. Autocorrelation pitch recovers a known hum (aum detection)
+16. Manual pace maps breaths/min → seconds/breath
+17. Detect mode logs the phase without scoring
 
 The frequency-domain math is additionally validated headless in Node
 (`node scratch dsp_test.js` reproduces 55–120 bpm detection within a few bpm).
