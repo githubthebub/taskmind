@@ -95,6 +95,25 @@ anchors** (cool air at the nostrils, fingertip pressure, weight of the hands). T
 state selects the register; an anchor is substituted in. Framed as savoring / reappraisal
 invitations — never medical claims (see safety boundary).
 
+### 3b. Breath-key game + reading confidence (validation loop)
+The user follows the on-screen breath pacer with **W = inhale, S = hold, D = exhale, A = aum/rest**
+(or taps the four phase buttons on mobile). This does two honest jobs:
+
+- **Cross-checks the optical signal.** Heart rate rises on inhalation and falls on exhalation
+  (*respiratory sinus arrhythmia*, RSA). The engine tags every HR sample with the user's reported
+  phase and computes mean HR during reported inhale vs exhale. A positive swing (inhale HR > exhale HR)
+  is independent evidence the pulse read is real — and the swing magnitude is itself a genuine vagal-tone
+  indicator, folded into the autonomic-balance estimate.
+- **Powers a confidence bar + error range.** A `Reading confidence` value (0–100%) blends spectral SNR
+  (0.42), HR temporal stability (0.24), buffer warm-up (0.14), and RSA coupling once the game is engaged
+  (0.20). Every reading is shown as a **probable range** (e.g. `HR likely 68–76, ±4`) whose width grows as
+  confidence drops. Low confidence is stated plainly ("low — noisy signal"), so a bad read never masquerades
+  as a good one. RMSSD carries an intentionally wide band because webcam HRV is inherently noisy.
+
+A **clinical read-out** narrates the state in a grounded psychologist / neurochemistry voice — naming
+mechanisms as *associations* ("states like this are associated with…"), never as measured claims, and always
+restating how much to trust the current signal.
+
 ### 4. Full local data integration
 `localStorage` schema (`cje.v1`): baseline HR, and per session — duration, avg HR,
 peak coherence, whether peak was reached, and **time-to-first-calm** (shift velocity).
@@ -120,6 +139,10 @@ that audits the DSP and state machine against known inputs — no placeholders, 
 8. Storage layer persists a session record (and reports mode)
 9. Resampler yields a finite uniform grid from a sparse buffer
 10. No stray template placeholders anywhere in the lexicon corpus
+11. Breath cycle maps fractions to inhale→hold→exhale→aum in order
+12. Game accuracy rises on a correct key, falls on a wrong one
+13. Low confidence widens the HR ± error band
+14. RSA coupling detects inhale-HR > exhale-HR
 
 The frequency-domain math is additionally validated headless in Node
 (`node scratch dsp_test.js` reproduces 55–120 bpm detection within a few bpm).
