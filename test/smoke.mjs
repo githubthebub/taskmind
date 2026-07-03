@@ -102,12 +102,21 @@ try {
     { timeout: 6000 },
   );
 
+  // 4b. During the hold, the coach holds its breath too: puffed cheeks and
+  // pressed mouth visible, the expression mouth hidden.
+  if (await page.isHidden('.cheeks')) fail('cheeks not puffed during hold');
+  if (await page.isHidden('.mouth-hold')) fail('pressed mouth not shown during hold');
+  if (await page.isVisible('.mouth-o')) fail('expression mouth still visible during hold');
+
   // 5. Second boundary (11s): hold -> exhale.
   await page.waitForFunction(
     () => document.querySelector('.ring-label')?.textContent === 'Breathe out',
     null,
     { timeout: 9000 },
   );
+
+  // 5b. Hold face released once the exhale starts.
+  if (await page.isVisible('.cheeks')) fail('cheeks still puffed during exhale');
 
   // 6. Full cycle (19s): exhale -> inhale, cycle counted + persisted.
   await page.waitForFunction(

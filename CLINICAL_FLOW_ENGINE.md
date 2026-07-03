@@ -324,6 +324,20 @@ their fixes — the log is append-only.
   caught by the first run: "1 cycles" → "1 cycle").
 - **G1 compile**: PASS · **G2 smoke (extended)**: PASS.
 
+### Pass 6 — 2026-07-03 · the coach holds its breath too
+
+- During the hold phase the coach now visibly holds: puffed cheeks pop in
+  (spring animation, disabled under reduced-motion) and the expression's
+  mouth is replaced by a small pressed-shut mouth. Both release the instant
+  the exhale begins. Implemented purely in CSS off the existing
+  `data-phase` attribute — no new state, no new events.
+- Smoke test extended: cheeks + pressed mouth visible during hold, expression
+  mouth hidden, everything released on exhale. First run caught a real
+  subtlety: the pressed mouth was authored as a perfectly flat path, whose
+  zero-height bounding box registers as invisible — fixed by giving it a
+  slight curve (which also reads better).
+- **G1 compile**: PASS · **G2 smoke (extended)**: PASS.
+
 <!-- Append new passes above this line; never rewrite history. -->
 
 ---

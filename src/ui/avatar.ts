@@ -162,6 +162,14 @@ function avatarSvg(): string {
       <path class="mouth mouth-o" d="M100 127 m-6 0 a6 6.5 0 1 0 12 0 a6 6.5 0 1 0 -12 0"/>
       <path class="mouth mouth-gentle" d="M90 128 q10 5 20 0"/>
 
+      <!-- breath-hold face: puffed cheeks + pressed mouth (shown only
+           during the hold phase, overriding the expression's mouth) -->
+      <g class="cheeks">
+        <ellipse cx="72" cy="122" rx="11" ry="8"/>
+        <ellipse cx="128" cy="122" rx="11" ry="8"/>
+      </g>
+      <path class="mouth-hold" d="M93 128 q7 2.5 14 0"/>
+
       <g class="blush">
         <ellipse cx="66" cy="118" rx="8" ry="4.5"/>
         <ellipse cx="134" cy="118" rx="8" ry="4.5"/>

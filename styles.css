@@ -180,7 +180,7 @@ body {
 
 .eyes circle { fill: #33302c; }
 .eyes .glint { fill: #ffffff; }
-.eyes path, .mouth {
+.eyes path, .mouth, .mouth-hold {
   fill: none;
   stroke: #33302c;
   stroke-width: 4;
@@ -209,6 +209,22 @@ body {
 [data-expression="delighted"] .mouth-grin,
 [data-expression="proud"] .mouth-grin,
 [data-expression="gentle-concern"] .mouth-gentle { display: block; }
+
+/* Breath-hold face: while the user holds, the coach holds too. */
+.cheeks, .mouth-hold { display: none; }
+.cheeks ellipse { fill: #f7ead8; stroke: #e4cfae; stroke-width: 1.5; }
+.avatar-svg-wrap.live[data-phase="hold"] .cheeks { display: block; }
+.avatar-svg-wrap.live[data-phase="hold"] .mouth { display: none; }
+.avatar-svg-wrap.live[data-phase="hold"] .mouth-hold { display: block; }
+.avatar-svg-wrap.live[data-phase="hold"] .cheeks ellipse {
+  animation: cheek-puff 420ms cubic-bezier(.34, 1.56, .64, 1);
+  transform-origin: center;
+  transform-box: fill-box;
+}
+@keyframes cheek-puff {
+  from { transform: scale(0.55); }
+  to { transform: scale(1); }
+}
 
 .blush { opacity: 0; transition: opacity 400ms; }
 [data-expression="delighted"] .blush,
@@ -619,6 +635,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .avatar-svg-wrap { transition: none; }
   .aura, .avatar-svg-wrap.celebrate .body, .avatar-bubble.pop { animation: none; }
+  .avatar-svg-wrap.live[data-phase="hold"] .cheeks ellipse { animation: none; }
   .prompt-text, .hud-gauge-fill { transition: none; }
 }
 
