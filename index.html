@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; media-src 'self'" />
+  <title>SHIELD MAX — Focus Companion</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <h1>SHIELD MAX</h1>
+      <p class="tagline">Train the state. Then leave.</p>
+    </div>
+    <div class="state-cluster">
+      <span id="state-badge" data-state="BALANCED">Balanced / Deep-Work</span>
+      <div class="arousal-track" role="img" aria-label="Arousal index">
+        <div id="arousal-fill" data-band="mid"></div>
+        <span class="band-mark band-mark-low"></span>
+        <span class="band-mark band-mark-high"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-grid">
+    <section class="game-column" aria-label="Visuospatial Companion">
+      <div class="hud">
+        <span>Level <strong id="hud-level">1</strong></span>
+        <span>Streak <strong id="hud-streak">0</strong></span>
+        <span>Time <strong id="hud-timer">—</strong></span>
+        <span>Matrix <strong id="hud-memory" data-mode="visible">VISIBLE</strong></span>
+        <span>Lifetime clears <strong id="hud-clears">0</strong></span>
+      </div>
+      <div class="canvas-frame">
+        <canvas id="game-canvas"></canvas>
+      </div>
+      <div class="touch-controls">
+        <button id="touch-rotate" type="button" class="btn-secondary">⟳ Rotate</button>
+        <button id="touch-place" type="button" class="btn-primary">Place</button>
+        <button id="touch-swap" type="button" class="btn-secondary">Swap piece</button>
+      </div>
+      <p class="controls-hint">
+        Keys: arrows/WASD move · Q/E rotate · Space place · X swap. Mouse: move to aim, click to place, wheel to rotate.
+        Fill every outlined cell to clear the matrix. From level 3 the matrix hides — hold it in your mind's eye.
+      </p>
+    </section>
+
+    <section class="side-column">
+      <nav class="tab-bar" aria-label="Panels">
+        <button type="button" class="tab-btn active" data-panel="crucible-panel">Crucible</button>
+        <button type="button" class="tab-btn" data-panel="rewards-panel">Vault</button>
+      </nav>
+
+      <div id="crucible-panel" class="tab-panel active" aria-label="Exhaustion Premortem">
+        <h3>Exhaustion Pre-Mortem</h3>
+        <p class="panel-intro">
+          Name the milestone you keep fantasizing about. The Crucible generates three realistic ways it
+          structurally fails, and charts how the feeling of getting it decays over 12 months.
+        </p>
+        <textarea class="crucible-input" rows="2" maxlength="280"
+                  placeholder="e.g. Ship my side project by October"></textarea>
+        <button type="button" class="crucible-run btn-primary">Run pre-mortem</button>
+        <div class="chart-frame"><canvas class="crucible-chart"></canvas></div>
+        <div class="crucible-output"></div>
+      </div>
+
+      <div id="rewards-panel" class="tab-panel" aria-label="Reward Vault">
+        <h3>The Vault</h3>
+        <p class="panel-intro">
+          Motivational bundles and calming audio unlock only on verified pattern clears. No clears, no keys.
+        </p>
+        <div class="reward-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="breathing-overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Breathing guide">
+    <div class="breath-stage">
+      <div class="breath-circle"></div>
+      <p class="breath-phase">Inhale</p>
+      <p class="breath-count">4</p>
+      <p class="breath-cycle"></p>
+      <p class="breath-note">Hyper-arousal detected. Input is paused — nothing needs you for the next minute.</p>
+    </div>
+  </div>
+
+  <div id="exit-overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Exit prompt">
+    <div class="exit-card">
+      <h2>You're balanced. This is the exit.</h2>
+      <p class="exit-stats"></p>
+      <p>
+        The state you just built is portable. Lock this device and put the next
+        30 minutes of it into a real-world task — the one you already know.
+      </p>
+      <div class="exit-actions">
+        <button type="button" class="exit-confirm btn-primary">Lock it in — I'm leaving</button>
+        <button type="button" class="exit-dismiss btn-secondary">2 more minutes</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ended-screen">
+    <h2>Session closed.</h2>
+    <p id="ended-summary"></p>
+  </div>
+
+  <div id="toast" role="status"></div>
+
+  <script src="dist/app.js"></script>
+</body>
+</html>
