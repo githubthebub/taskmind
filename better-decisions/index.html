@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Better Decisions — a private, offline decision coach built on CBT, DBT and somatic psychology. No AI, no tracking, no account." />
+  <title>Better Decisions</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>" />
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- ============ Header ============ -->
+    <header class="topbar">
+      <button class="brand" id="brandBtn" title="Home">
+        <span class="brand-mark">🧭</span>
+        <span class="brand-name">Better<em>Decisions</em></span>
+      </button>
+      <nav class="topnav">
+        <button class="navbtn" id="navWheel"   data-view="home">Wheel</button>
+        <button class="navbtn" id="navToolbox" data-view="toolbox">Toolbox</button>
+        <button class="navbtn" id="navSaved"   data-view="saved">Saved <span class="pill" id="savedCount" hidden>0</span></button>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle light/dark theme">
+        <span class="theme-icon">◐</span>
+      </button>
+    </header>
+
+    <!-- ============ Home / Wheel view ============ -->
+    <main class="view view-home" id="viewHome">
+      <section class="hero">
+        <h1 class="hero-title">Make the call you<br/><span class="grad">won't regret.</span></h1>
+        <p class="hero-sub">
+          A private decision coach — built from CBT, DBT and somatic psychology,
+          with insights from Dr.&nbsp;K&nbsp;(HealthyGamerGG), Dr.&nbsp;Judy&nbsp;Ho, Ali&nbsp;Abdaal,
+          Charisma&nbsp;on&nbsp;Command and Big&nbsp;Think.
+        </p>
+        <p class="hero-badges">
+          <span class="badge">🔒 100% offline</span>
+          <span class="badge">🚫 No AI, no account</span>
+          <span class="badge">🧠 Evidence-based</span>
+        </p>
+      </section>
+
+      <section class="wheel-wrap" aria-label="Life areas wheel">
+        <div class="wheel" id="wheel"><!-- SVG injected by app.js --></div>
+        <p class="wheel-hint">Tap the area of life where a decision is weighing on you</p>
+      </section>
+
+      <section class="area-cards" id="areaCards" aria-label="Life areas list"><!-- injected --></section>
+    </main>
+
+    <!-- ============ Chat view ============ -->
+    <main class="view view-chat" id="viewChat" hidden>
+      <div class="chat-head">
+        <button class="chat-back" id="chatBack" aria-label="Back to wheel">←</button>
+        <div class="chat-title">
+          <span class="chat-avatar" id="chatAvatar">🧭</span>
+          <div>
+            <div class="chat-name" id="chatName">Better Decisions</div>
+            <div class="chat-status">guided pathway · pre-written, not AI</div>
+          </div>
+        </div>
+        <button class="chat-restart" id="chatRestart" title="Restart conversation">↺</button>
+      </div>
+      <div class="chat-scroll" id="chatScroll">
+        <div class="chat-log" id="chatLog"></div>
+        <div class="chat-options" id="chatOptions"></div>
+      </div>
+    </main>
+
+    <!-- ============ Toolbox view ============ -->
+    <main class="view view-toolbox" id="viewToolbox" hidden>
+      <h2 class="view-title">🧰 The Toolbox</h2>
+      <p class="view-sub">The frameworks behind every pathway — learn them once, use them everywhere.</p>
+      <div class="tool-grid" id="toolGrid"></div>
+    </main>
+
+    <!-- ============ Saved insights view ============ -->
+    <main class="view view-saved" id="viewSaved" hidden>
+      <h2 class="view-title">🔖 Saved insights</h2>
+      <p class="view-sub">Everything you saved lives only in this browser. Nothing is uploaded anywhere.</p>
+      <div class="saved-list" id="savedList"></div>
+      <div class="saved-empty" id="savedEmpty">
+        <p>Nothing saved yet.</p>
+        <p>When a pathway shows you an insight card, hit <strong>Save</strong> and it'll wait for you here.</p>
+      </div>
+    </main>
+
+    <footer class="foot">
+      <p>Better Decisions is psycho-education, not therapy. If you're in crisis, please reach a professional or a local helpline.</p>
+    </footer>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
