@@ -386,6 +386,44 @@ body::before {
 .chip.ghost { border-color: var(--line); color: var(--text-dim); font-weight: 500; }
 .chip.ghost:hover { background: var(--card-2); color: var(--text); box-shadow: none; }
 
+/* ---------------- Inline reframe / perspective shift ---------------- */
+
+.reframe {
+  align-self: stretch;
+  max-width: 100%;
+  margin: 6px 0;
+  padding: 16px 20px 16px 22px;
+  border-left: 3px solid var(--accent-2);
+  background: linear-gradient(100deg,
+    color-mix(in srgb, var(--accent-2) 12%, transparent),
+    transparent 85%);
+  border-radius: 4px 14px 14px 4px;
+  animation: pop-in 0.45s ease both;
+}
+.reframe-kicker {
+  display: inline-block;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  margin-bottom: 7px;
+}
+[data-theme="light"] .reframe-kicker { color: #0f9b86; }
+.reframe-quote {
+  font-size: 1.06rem;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.reframe-sub {
+  margin-top: 8px;
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
 /* ---------------- Insight card ---------------- */
 
 .insight {

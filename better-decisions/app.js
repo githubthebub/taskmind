@@ -194,6 +194,7 @@
     els.chatOptions.innerHTML = "";
 
     playCoachMessages(node.coach || [], () => {
+      if (node.note) renderNote(node.note);
       if (node.insight) renderInsight(node.insight, nodeId);
       renderOptions(node);
     });
@@ -274,6 +275,19 @@
     }
 
     els.chatOptions.appendChild(frag);
+    scrollChat();
+  }
+
+  /* ---------------- inline reframe (perspective shift) ---------------- */
+
+  function renderNote(note) {
+    const el = document.createElement("div");
+    el.className = "reframe";
+    el.innerHTML = `
+      <span class="reframe-kicker">perspective shift</span>
+      <p class="reframe-quote">${escapeHTML(note.reframe)}</p>
+      ${note.sub ? `<p class="reframe-sub">${escapeHTML(note.sub)}</p>` : ""}`;
+    els.chatLog.appendChild(el);
     scrollChat();
   }
 
