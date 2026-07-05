@@ -25,13 +25,47 @@
   --ink: #23281f;
   --stone: #6b7264;
   --faint: #c9cdbd;
+  --line: #a8b0a0;
+  --placeholder: #9aa192;
   --indigo: #3d5570;
   --indigo-deep: #2e415a;
   --seal: #a8402f;
+  --tint: rgba(61,85,112,.06);
+  --tint2: rgba(61,85,112,.07);
+  --btn-ink: #eceee6;
+  --enso-stroke: rgba(35,40,31,.92);
+  --sheet-shadow: 0 1px 2px rgba(35,40,31,.08), 0 12px 40px -18px rgba(35,40,31,.28);
   --serif: 'Cormorant Garamond', 'Iowan Old Style', Palatino, Georgia, serif;
   --sans: Seravek, Avenir, 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
 }
-html { background: var(--ground); }
+:root[data-theme="dark"] {
+  --washi: #1e2320;
+  --ground: #12140f;
+  --ink: #e7e5d9;
+  --stone: #9ba192;
+  --faint: #333b34;
+  --line: #454e44;
+  --placeholder: #767d6e;
+  --indigo: #86a0bd;
+  --indigo-deep: #aac1db;
+  --seal: #d06d54;
+  --tint: rgba(134,160,189,.10);
+  --tint2: rgba(134,160,189,.12);
+  --btn-ink: #14170f;
+  --enso-stroke: rgba(231,229,217,.9);
+  --sheet-shadow: 0 0 0 1px #2b322b, 0 24px 60px -30px rgba(0,0,0,.7);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --washi: #1e2320; --ground: #12140f; --ink: #e7e5d9; --stone: #9ba192;
+    --faint: #333b34; --line: #454e44; --placeholder: #767d6e;
+    --indigo: #86a0bd; --indigo-deep: #aac1db; --seal: #d06d54;
+    --tint: rgba(134,160,189,.10); --tint2: rgba(134,160,189,.12);
+    --btn-ink: #14170f; --enso-stroke: rgba(231,229,217,.9);
+    --sheet-shadow: 0 0 0 1px #2b322b, 0 24px 60px -30px rgba(0,0,0,.7);
+  }
+}
+html { background: var(--ground); transition: background-color .5s ease; }
 body {
   margin: 0;
   font-family: var(--sans);
@@ -44,9 +78,10 @@ body {
   margin: clamp(0.75rem, 4vw, 3rem) auto;
   padding: clamp(1.5rem, 5vw, 3.5rem) clamp(1.25rem, 6vw, 3.5rem) 3rem;
   background: var(--washi);
-  box-shadow: 0 1px 2px rgba(35,40,31,.08), 0 12px 40px -18px rgba(35,40,31,.28);
+  box-shadow: var(--sheet-shadow);
   min-height: 34rem;
   box-sizing: border-box;
+  transition: background-color .5s ease, box-shadow .5s ease;
 }
 header { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
 .enso-wrap { position: relative; width: 108px; height: 108px; flex: none; }
@@ -56,7 +91,7 @@ header { display: flex; align-items: flex-end; justify-content: space-between; g
   width: 20px; height: 20px;
   background: var(--seal);
   border-radius: 3px;
-  color: var(--washi);
+  color: #f3efe6;
   font-family: var(--serif);
   font-size: 13px; line-height: 20px;
   text-align: center;
@@ -79,22 +114,29 @@ header { display: flex; align-items: flex-end; justify-content: space-between; g
   color: var(--stone);
 }
 nav {
-  display: flex; gap: 1.4rem; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap;
   margin: 2.2rem 0 0;
   padding-bottom: .7rem;
   border-bottom: 1px solid var(--faint);
 }
-nav button {
+nav button.tab {
   appearance: none; background: none; border: none; padding: 0;
   font-family: var(--sans);
   font-size: .72rem; letter-spacing: .18em; text-transform: uppercase;
   color: var(--stone); cursor: pointer;
 }
-nav button[aria-current="true"] { color: var(--indigo-deep); border-bottom: 2px solid var(--indigo); padding-bottom: .68rem; margin-bottom: -.75rem; }
-nav button:hover { color: var(--indigo); }
-nav button:focus-visible, .btn:focus-visible, input:focus-visible, a:focus-visible {
-  outline: 2px solid var(--indigo); outline-offset: 3px; border-radius: 1px;
+nav button.tab[aria-current="true"] { color: var(--indigo-deep); border-bottom: 2px solid var(--indigo); padding-bottom: .68rem; margin-bottom: -.75rem; }
+nav button.tab:hover { color: var(--indigo); }
+.controls { margin-left: auto; display: flex; gap: .35rem; }
+.icon-btn {
+  appearance: none; background: none; border: none; cursor: pointer;
+  color: var(--stone); padding: .35rem; border-radius: 50%;
+  display: inline-flex; line-height: 0;
+  transition: color .2s ease, background-color .2s ease;
 }
+.icon-btn:hover { color: var(--indigo); background: var(--tint); }
+.icon-btn[aria-pressed="true"] { color: var(--indigo-deep); }
+:focus-visible { outline: 2px solid var(--indigo); outline-offset: 3px; border-radius: 1px; }
 main { margin-top: 2.4rem; }
 .view { display: none; }
 .view.active { display: block; animation: settle .45s ease both; }
@@ -126,20 +168,26 @@ main { margin-top: 2.4rem; }
   font-variant-numeric: tabular-nums;
   margin: 1.6rem 0 0;
 }
-.breath-note { font-family: var(--serif); font-style: italic; font-size: 1.05rem; color: var(--stone); margin: 2.4rem 0 0; }
+.breath-note { font-family: var(--serif); font-style: italic; font-size: 1.05rem; color: var(--stone); margin: 2.4rem 0 0; display: flex; align-items: center; }
+.breath-dot {
+  width: .55rem; height: .55rem; border-radius: 50%;
+  background: var(--indigo); margin-right: .65rem; flex: none;
+  animation: breathe 8s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100% { transform: scale(.65); opacity: .45; } 50% { transform: scale(1.15); opacity: 1; } }
 .actions { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 2rem; }
 .btn {
   appearance: none; cursor: pointer;
   font-family: var(--sans); font-size: .82rem; letter-spacing: .06em;
   padding: .6rem 1.3rem;
   border: 1px solid var(--indigo);
-  background: var(--indigo); color: var(--washi);
+  background: var(--indigo); color: var(--btn-ink);
   border-radius: 2px;
-  transition: background .2s ease;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
 }
-.btn:hover { background: var(--indigo-deep); }
-.btn.quiet { background: transparent; color: var(--indigo-deep); border-color: #a8b0a0; }
-.btn.quiet:hover { border-color: var(--indigo); background: rgba(61,85,112,.06); }
+.btn:hover { background: var(--indigo-deep); border-color: var(--indigo-deep); }
+.btn.quiet { background: transparent; color: var(--indigo-deep); border-color: var(--line); }
+.btn.quiet:hover { border-color: var(--indigo); background: var(--tint); }
 .empty {
   font-family: var(--serif); font-weight: 300; font-style: italic;
   font-size: 1.6rem; line-height: 1.35; text-wrap: balance;
@@ -182,11 +230,11 @@ form.plant input {
   font-family: var(--serif); font-size: 1.3rem; font-weight: 400;
   color: var(--ink);
   background: transparent;
-  border: none; border-bottom: 1px solid #a8b0a0;
+  border: none; border-bottom: 1px solid var(--line);
   padding: .3rem 0 .45rem;
   border-radius: 0;
 }
-form.plant input::placeholder { color: #9aa192; font-style: italic; }
+form.plant input::placeholder { color: var(--placeholder); font-style: italic; }
 form.plant input:focus { outline: none; border-bottom-color: var(--indigo); }
 form.plant .hint { font-size: .8rem; color: var(--stone); margin: -0.8rem 0 0; }
 
@@ -194,20 +242,21 @@ form.plant .hint { font-size: .8rem; color: var(--stone); margin: -0.8rem 0 0; }
 .breath-circle {
   width: 130px; height: 130px; border-radius: 50%;
   border: 1.5px solid var(--indigo);
-  background: rgba(61,85,112,.07);
-  transition: transform 3.5s ease-in-out;
+  background: var(--tint2);
+  transition: transform 3.5s ease-in-out, box-shadow 3.5s ease-in-out;
 }
-.breath-circle.in { transform: scale(1.45); transition-duration: 4s; }
-.breath-circle.hold { transform: scale(1.45); transition-duration: 4s; }
-.breath-circle.out { transform: scale(1); transition-duration: 8s; }
+.breath-circle.in { transform: scale(1.45); transition-duration: 4s; box-shadow: 0 0 44px -6px var(--indigo); }
+.breath-circle.hold { transform: scale(1.45); transition-duration: 4s; box-shadow: 0 0 44px -6px var(--indigo); }
+.breath-circle.out { transform: scale(1); transition-duration: 8s; box-shadow: 0 0 0 0 transparent; }
 .phase {
   font-family: var(--serif); font-style: italic; font-size: 1.4rem;
   color: var(--indigo-deep); min-height: 2rem; text-align: center;
 }
 .breath-count { font-size: .74rem; letter-spacing: .18em; text-transform: uppercase; color: var(--stone); font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) {
-  .breath-circle, .koan, .why, .view.active, .toast { transition: none; animation: none; }
-  .breath-circle.in, .breath-circle.hold, .breath-circle.out { transform: none; }
+  .breath-circle, .koan, .why, .view.active, .toast, html, .sheet { transition: none; animation: none; }
+  .breath-circle.in, .breath-circle.hold, .breath-circle.out { transform: none; box-shadow: none; }
+  .breath-dot { animation: none; opacity: .8; }
 }
 
 .path-copy { max-width: 30rem; }
@@ -222,7 +271,22 @@ form.plant .hint { font-size: .8rem; color: var(--stone); margin: -0.8rem 0 0; }
   color: var(--stone); line-height: 1.45;
 }
 .verse cite { display: block; font-style: normal; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; margin-top: .7rem; }
-footer { margin-top: 3.5rem; font-size: .72rem; letter-spacing: .1em; color: var(--stone); }
+.keys { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; grid-template-columns: auto 1fr; gap: .55rem 1rem; align-items: baseline; max-width: 24rem; }
+.keys dt, .keys .k { white-space: nowrap; }
+kbd {
+  font-family: var(--sans); font-size: .72rem;
+  background: var(--tint); color: var(--indigo-deep);
+  border: 1px solid var(--line); border-radius: 3px;
+  padding: .08rem .4rem; margin-right: .15rem;
+}
+.keys .d { color: var(--stone); font-size: .9rem; }
+footer { margin-top: 3.5rem; font-size: .72rem; letter-spacing: .06em; color: var(--stone); }
+
+@media (max-width: 420px) {
+  header { align-items: flex-start; }
+  .enso-wrap, .enso-wrap canvas { width: 84px; height: 84px; }
+  .masthead h1 { font-size: 2rem; }
+}
 </style>
 </head>
 <body>
@@ -241,11 +305,15 @@ footer { margin-top: 3.5rem; font-size: .72rem; letter-spacing: .1em; color: var
   </header>
 
   <nav aria-label="views">
-    <button data-view="now" aria-current="true">Now</button>
-    <button data-view="garden">Garden</button>
-    <button data-view="plant">Plant</button>
-    <button data-view="sit">Sit</button>
-    <button data-view="path">Path</button>
+    <button class="tab" data-view="now" aria-current="true">Now</button>
+    <button class="tab" data-view="garden">Garden</button>
+    <button class="tab" data-view="plant">Plant</button>
+    <button class="tab" data-view="sit">Sit</button>
+    <button class="tab" data-view="path">Path</button>
+    <span class="controls">
+      <button class="icon-btn" id="sound-toggle" type="button" aria-pressed="false" title="Bell (off)" aria-label="Toggle the bell"></button>
+      <button class="icon-btn" id="theme-toggle" type="button" title="Night sitting" aria-label="Toggle night sitting"></button>
+    </span>
   </nav>
 
   <main>
@@ -309,6 +377,15 @@ footer { margin-top: 3.5rem; font-size: .72rem; letter-spacing: .1em; color: var
           <dt>No craving</dt>
           <dd>Nothing is counted, scored, streaked, or gamified.</dd>
         </dl>
+
+        <p class="label" style="margin-top:2.6rem">Keys, if you like them</p>
+        <ul class="keys">
+          <li class="k"><kbd>1</kbd>–<kbd>5</kbd></li><li class="d">move between views</li>
+          <li class="k"><kbd>D</kbd></li><li class="d">done · <kbd>L</kbd> later · <kbd>R</kbd> release</li>
+          <li class="k"><kbd>Space</kbd></li><li class="d">begin or end a sitting</li>
+          <li class="k"><kbd>?</kbd></li><li class="d">this page</li>
+        </ul>
+
         <blockquote class="verse">
           All that we are is the result of what we have thought.
           <cite>Dhammapada, verse 1</cite>
@@ -319,7 +396,7 @@ footer { margin-top: 3.5rem; font-size: .72rem; letter-spacing: .1em; color: var
     <p class="toast" id="toast" role="status" aria-live="polite"></p>
   </main>
 
-  <footer>Your intentions stay in this browser. Nothing leaves the page.</footer>
+  <footer>Press <kbd>?</kbd> for keys · your intentions stay in this browser, nothing leaves the page.</footer>
 </div>
 
 <script>
@@ -331,7 +408,7 @@ const load = () => {
   try { const d = JSON.parse(localStorage.getItem(KEY)); return Array.isArray(d?.tasks) ? d : { tasks: [] }; }
   catch { return { tasks: [] }; }
 };
-const save = d => localStorage.setItem(KEY, JSON.stringify(d));
+const save = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} };
 
 const COMPLETIONS = [
   'It is done, and now it is gone.',
@@ -376,6 +453,89 @@ function fadesIn(t) {
   return days === 0 ? 'fades in less than a day' : `fades in ${days} day${days !== 1 ? 's' : ''}`;
 }
 
+/* ---------- the bell (synthesized singing bowl) ---------- */
+const SND_KEY = 'taskmind.sound';
+let soundOn = false;
+let audioCtx = null;
+function ensureAudio() {
+  try {
+    if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; audioCtx = new AC(); }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch (e) { audioCtx = null; }
+}
+/* a struck bowl: inharmonic partials, fast strike, long exponential decay, faint beating */
+function strike(freq, dur, vol) {
+  if (!soundOn) return;
+  ensureAudio();
+  if (!audioCtx) return;
+  const ac = audioCtx, t = ac.currentTime;
+  const master = ac.createGain();
+  master.connect(ac.destination);
+  master.gain.setValueAtTime(0.0001, t);
+  master.gain.exponentialRampToValueAtTime(Math.max(0.0015, vol), t + 0.008);
+  master.gain.exponentialRampToValueAtTime(0.0002, t + dur);
+  const partials = [[1, 1], [2.76, 0.5], [5.40, 0.26], [8.93, 0.12]];
+  partials.forEach(([ratio, amp], idx) => {
+    const dets = idx === 0 ? [-4, 4] : [0];        // gentle beating on the fundamental
+    dets.forEach(det => {
+      const o = ac.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(freq * ratio, t);
+      o.detune.setValueAtTime(det, t);
+      const g = ac.createGain();
+      g.gain.value = amp / dets.length;
+      o.connect(g); g.connect(master);
+      o.start(t); o.stop(t + dur + 0.2);
+    });
+  });
+}
+const bell = {
+  done:    () => strike(174.61, 4.2, 0.55),   // F3, a full bowl
+  release: () => strike(146.83, 2.6, 0.42),   // D3, softer and shorter
+  breath:  () => strike(392.00, 1.8, 0.30),   // G4, a light strike per breath
+  open:    () => strike(174.61, 4.0, 0.55),
+  close:   () => { strike(220.00, 3.6, 0.5); setTimeout(() => strike(146.83, 4.0, 0.45), 260); },
+};
+
+const BELL_ON  = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>';
+const BELL_OFF = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 9.3-5"/><path d="M18 12c0 4 2 5 2 5"/><path d="M10 20a2 2 0 0 0 4 0"/><path d="M4 4l16 16" opacity=".85"/></svg>';
+function renderSoundBtn() {
+  const b = document.getElementById('sound-toggle');
+  b.innerHTML = soundOn ? BELL_ON : BELL_OFF;
+  b.setAttribute('aria-pressed', soundOn);
+  b.title = soundOn ? 'Bell (on)' : 'Bell (off)';
+}
+document.getElementById('sound-toggle').addEventListener('click', () => {
+  soundOn = !soundOn;
+  try { localStorage.setItem(SND_KEY, soundOn ? 'on' : 'off'); } catch (e) {}
+  renderSoundBtn();
+  if (soundOn) { ensureAudio(); strike(261.63, 2.4, 0.4); }   // a small confirming chime
+});
+
+/* ---------- theme (day paper / night sitting) ---------- */
+const THEME_KEY = 'taskmind.theme';
+const SUN  = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7"/></svg>';
+const MOON = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+const prefersDark = () => matchMedia('(prefers-color-scheme: dark)').matches;
+function storedTheme() { try { return localStorage.getItem(THEME_KEY); } catch (e) { return null; } }
+function activeTheme() { return storedTheme() || (prefersDark() ? 'dark' : 'light'); }
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const b = document.getElementById('theme-toggle');
+  b.innerHTML = t === 'dark' ? SUN : MOON;
+  b.title = t === 'dark' ? 'Day' : 'Night sitting';
+  b.setAttribute('aria-pressed', t === 'dark');
+}
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const t = activeTheme() === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem(THEME_KEY, t); } catch (e) {}
+  applyTheme(t);
+  drawEnso(false);   // re-ink the circle in the new tone
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+  if (!storedTheme()) { applyTheme(e.matches ? 'dark' : 'light'); drawEnso(false); }
+});
+
 /* ---------- toast ---------- */
 let toastTimer;
 function toast(msg, mark) {
@@ -388,6 +548,7 @@ function toast(msg, mark) {
 
 /* ---------- views ---------- */
 const views = ['now', 'garden', 'plant', 'sit', 'path'];
+function activeView() { const v = document.querySelector('.view.active'); return v ? v.id.replace('view-', '') : 'now'; }
 function show(name) {
   views.forEach(v => {
     document.getElementById('view-' + v).classList.toggle('active', v === name);
@@ -399,7 +560,7 @@ function show(name) {
   if (name !== 'sit') stopSitting(true);
 }
 document.querySelector('nav').addEventListener('click', e => {
-  const b = e.target.closest('button[data-view]');
+  const b = e.target.closest('button.tab[data-view]');
   if (b) show(b.dataset.view);
 });
 
@@ -417,7 +578,7 @@ function renderNow() {
     <p class="koan" id="koan">${esc(t.what)}</p>
     ${t.why ? `<p class="why" id="koan-why">${esc(t.why)}</p>` : ''}
     <p class="meta">${ageOf(t)} · ${fadesIn(t)}</p>
-    <p class="breath-note">Begin when you have taken one full breath.</p>
+    <p class="breath-note"><span class="breath-dot" aria-hidden="true"></span>Begin when you have taken one full breath.</p>
     <div class="actions">
       <button class="btn" id="btn-done">Done</button>
       <button class="btn quiet" id="btn-later">Set it down for later</button>
@@ -435,6 +596,7 @@ function finishPresent(kind) {
   if (!data.tasks.length) { acting = false; renderNow(); return; }
   const t = data.tasks.shift();
   save(data);
+  if (kind === 'done') bell.done(); else bell.release();
   const koan = document.getElementById('koan');
   const why = document.getElementById('koan-why');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -488,6 +650,7 @@ function renderGarden() {
     const t = data.tasks.splice(+b.dataset.i, 1)[0];
     if (!t) { renderGarden(); return; }
     save(data);
+    bell.release();
     renderGarden();
     toast(t.what + ' — ' + pick(RELEASES), '✧');
   });
@@ -514,6 +677,7 @@ function startSitting() {
   breathN = 0;
   document.getElementById('sit-start').hidden = true;
   document.getElementById('sit-stop').hidden = false;
+  bell.open();
   runPhase(0);
 }
 function runPhase(i) {
@@ -523,6 +687,7 @@ function runPhase(i) {
   document.getElementById('phase').textContent = label;
   if (i === 0) {
     breathN++;
+    if (breathN > 1) bell.breath();
     document.getElementById('breath-count').textContent =
       breathN === 1 ? 'first breath' : breathN + ' breaths';
   }
@@ -536,36 +701,68 @@ function stopSitting(silent) {
   document.getElementById('breath-count').textContent = '';
   document.getElementById('sit-start').hidden = false;
   document.getElementById('sit-stop').hidden = true;
-  if (!silent) toast('The sitting ended when it ended. That is fine. Carry the pause with you.');
+  if (!silent) { bell.close(); toast('The sitting ended when it ended. That is fine. Carry the pause with you.'); }
 }
 document.getElementById('sit-start').onclick = startSitting;
 document.getElementById('sit-stop').onclick = () => stopSitting(false);
 
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (tag === 'input' || tag === 'textarea') {
+    if (e.key === 'Escape') { e.target.blur(); show('now'); }
+    return;
+  }
+  const k = e.key.toLowerCase();
+  if (k === '?') { show('path'); return; }
+  const navMap = { '1': 'now', 'n': 'now', '2': 'garden', 'g': 'garden', '3': 'plant', 'p': 'plant', '4': 'sit', 's': 'sit', '5': 'path' };
+  const av = activeView();
+  if (av === 'now' && (k === 'd' || k === 'l' || k === 'r')) {
+    const id = k === 'd' ? 'btn-done' : k === 'l' ? 'btn-later' : 'btn-release';
+    const b = document.getElementById(id);
+    if (b) { e.preventDefault(); b.click(); }
+    return;
+  }
+  if (av === 'sit' && (k === ' ' || k === 'enter')) {
+    e.preventDefault();
+    if (sitTimer === null) startSitting(); else stopSitting(false);
+    return;
+  }
+  if (navMap[k]) { e.preventDefault(); show(navMap[k]); }
+});
+
 /* ---------- enso ---------- */
-(function drawEnso() {
+const ensoSeed = Math.random() * 7;
+function ensoStroke() {
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--enso-stroke').trim();
+  return v || 'rgba(35,40,31,.92)';
+}
+function drawEnso(animate) {
   const c = document.getElementById('enso');
+  if (!c) return;
   const ctx = c.getContext('2d');
-  ctx.scale(2, 2);
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
   const cx = 54, cy = 54, r = 40;
-  const start = -Math.PI / 2 + 0.25;          // traditional gap at the top
+  const start = -Math.PI / 2 + 0.25;          // traditional opening at the top
   const total = Math.PI * 2 - 0.55;
-  const seed = Math.random() * 7;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const DUR = reduced ? 0 : 1500;
+  const DUR = (animate && !reduced) ? 1500 : 0;
+  const stroke = ensoStroke();
   const t0 = performance.now();
   function width(p) {                          // brush loads then dries
     return 6.5 * (0.35 + 0.85 * Math.sin(Math.min(p * 1.15, 1) * Math.PI * 0.82)) * (1 - p * 0.35) + 0.7;
   }
   function pt(p) {
     const a = start + p * total;
-    const wobble = Math.sin(a * 3 + seed) * 1.3 + Math.sin(a * 7 + seed * 2) * 0.6;
+    const wobble = Math.sin(a * 3 + ensoSeed) * 1.3 + Math.sin(a * 7 + ensoSeed * 2) * 0.6;
     return [cx + Math.cos(a) * (r + wobble), cy + Math.sin(a) * (r + wobble)];
   }
   function frame(now) {
     const prog = DUR === 0 ? 1 : Math.min((now - t0) / DUR, 1);
     const eased = 1 - Math.pow(1 - prog, 2.2);
     ctx.clearRect(0, 0, 108, 108);
-    ctx.strokeStyle = 'rgba(35,40,31,.92)';
+    ctx.strokeStyle = stroke;
     ctx.lineCap = 'round';
     const steps = Math.max(2, Math.floor(140 * eased));
     for (let i = 1; i <= steps; i++) {
@@ -579,9 +776,13 @@ document.getElementById('sit-stop').onclick = () => stopSitting(false);
     if (prog < 1) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
-})();
+}
 
 /* ---------- init ---------- */
+soundOn = (function () { try { return localStorage.getItem(SND_KEY) === 'on'; } catch (e) { return false; } })();
+applyTheme(activeTheme());
+renderSoundBtn();
+drawEnso(true);
 renderNow();
 </script>
 
