@@ -177,6 +177,59 @@ body::before {
   border-radius: 999px;
 }
 
+/* ---------------- Ask box (keyword router) ---------------- */
+
+.ask {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 540px;
+  margin: 26px auto 0;
+  padding: 6px 6px 6px 20px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.ask:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--glow);
+}
+.ask-input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 0.98rem;
+  font-family: inherit;
+  padding: 10px 0;
+}
+.ask-input::placeholder { color: var(--text-dim); }
+.ask-send {
+  flex: none;
+  width: 44px; height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6d5df0, var(--accent));
+  color: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.2s ease;
+}
+.ask-send:hover { transform: scale(1.06); filter: brightness(1.08); }
+.ask-send:active { transform: scale(0.96); }
+
+.ask-hint {
+  max-width: 500px;
+  margin: 12px auto 0;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
 /* ---------------- Wheel ---------------- */
 
 .wheel-wrap { text-align: center; padding: 26px 0 8px; }

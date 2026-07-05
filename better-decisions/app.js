@@ -85,6 +85,88 @@
     window.scrollTo({ top: 0 });
   }
 
+  /* ---------------- keyword router (local, no AI) ---------------- */
+
+  const STOP = new Set(
+    ("a an the and or but so of to in on at for with about i im me my mine we our you your " +
+     "he she it they them this that these those is are am be been do does did done how can " +
+     "could would should what why when where who just really keep always never cant dont ive " +
+     "get got feel feeling feels feelings help really kinda sorta like").split(" ")
+  );
+
+  const stem = (w) => (w.length > 3 && w.endsWith("s") ? w.slice(0, -1) : w);
+
+  function matchRoutes(query) {
+    const norm = query.toLowerCase().replace(/[^a-z0-9\s']/g, " ").replace(/\s+/g, " ").trim();
+    if (!norm) return [];
+    const tokens = norm.split(" ").filter((t) => t && !STOP.has(t)).map(stem);
+    const tset = new Set(tokens);
+    const scored = ROUTES.map((r) => {
+      let s = 0;
+      for (const raw of r.kw) {
+        const kw = raw.toLowerCase();
+        if (kw.includes(" ")) {
+          if (norm.includes(kw)) s += 3;
+        } else {
+          const k = stem(kw);
+          if (tset.has(k)) s += 2;
+          else if (k.length >= 4 && tokens.some((t) => t.length >= 4 && (t.includes(k) || k.includes(t)))) s += 1;
+        }
+      }
+      return { r, s };
+    }).filter((x) => x.s >= 2).sort((a, b) => b.s - a.s);
+    return scored.slice(0, 3);
+  }
+
+  const areaById = (id) => AREAS.find((a) => a.id === id);
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  function runRouter(query) {
+    clearPending();
+    const matches = matchRoutes(query);
+    const topArea = matches[0] ? areaById(matches[0].r.area) : null;
+
+    els.chatAvatar.textContent = topArea ? topArea.icon : "🧭";
+    els.chatName.textContent = topArea ? topArea.label : "Your session";
+    state.area = matches[0] ? matches[0].r.area : null; // restart replays that area
+    state.nodeId = "__router";
+    els.chatLog.innerHTML = "";
+    els.chatOptions.innerHTML = "";
+    show("chat");
+    addBubble(query, "user");
+
+    let coach, options;
+
+    if (matches.length === 0) {
+      coach = [
+        "I hear you.",
+        "I don't have a pre-written thread that maps exactly onto those words — remember, I'm not an AI improvising, just a set of authored conversations.",
+        "But one of these is almost certainly the right room to start in. Which feels closest?",
+      ];
+      options = AREAS.map((a) => ({ label: `${a.icon} ${a.label}`, next: a.id }));
+    } else {
+      const confident =
+        matches.length === 1 || (matches[0].s >= 3 && matches[0].s >= matches[1].s * 1.7);
+      if (confident) {
+        const r = matches[0].r;
+        coach = [
+          "Okay — I think I know where to start.",
+          `It sounds like this is really about ${r.topic}. Want to get into it?`,
+        ];
+        options = [{ label: "Yes, let's go there", next: r.to }];
+        if (matches[1]) options.push({ label: `Actually, more like: ${matches[1].r.topic}`, next: matches[1].r.to });
+      } else {
+        coach = [
+          "Got it. A few different threads could fit what you said —",
+          "which one feels closest to the real thing?",
+        ];
+        options = matches.map((m) => ({ label: cap(m.r.topic), next: m.r.to }));
+      }
+    }
+
+    playCoachMessages(coach, () => renderOptions({ coach, options }));
+  }
+
   $("brandBtn").addEventListener("click", () => show("home"));
   els.nav.home.addEventListener("click", () => show("home"));
   els.nav.toolbox.addEventListener("click", () => show("toolbox"));
@@ -380,6 +462,19 @@
   }
 
   /* ---------------- boot ---------------- */
+
+  const askForm = $("askForm");
+  if (askForm) {
+    askForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = $("askInput");
+      const q = input.value.trim();
+      if (!q) return;
+      input.value = "";
+      input.blur();
+      runRouter(q);
+    });
+  }
 
   initTheme();
   buildWheel();

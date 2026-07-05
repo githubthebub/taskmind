@@ -144,6 +144,7 @@ const TREE = {
       { label: "\"I'm in it, and we keep having the same fight.\"", next: "rom_conflict" },
       { label: "\"I can't tell if I should stay or leave.\"", next: "rom_stayleave" },
       { label: "\"We broke up and I can't function.\"", next: "rom_breakup" },
+      { label: "\"I'm hopeless at dating apps / first dates.\"", next: "rom_apps" },
     ],
   },
 
@@ -775,6 +776,8 @@ const TREE = {
       { label: "I freeze — I can't start conversations or approach people.", next: "soc_approach" },
       { label: "I'm awkward in groups / go quiet and invisible.", next: "soc_groups" },
       { label: "I'm a people-pleaser — I can't say no or hold an opinion.", next: "soc_please" },
+      { label: "I run out of things to say / my stories fall flat.", next: "soc_stories" },
+      { label: "I never know how to leave a conversation.", next: "soc_exit" },
       { label: "I want to be more magnetic / charismatic, generally.", next: "soc_charisma" },
     ],
   },
@@ -1425,6 +1428,9 @@ const TREE = {
       { label: "My self-talk is brutal.", next: "mind_selftalk" },
       { label: "I feel emotionally numb / can't name what I feel.", next: "mind_numb" },
       { label: "I'm anxiously attached / obsess over people.", next: "mind_attach" },
+      { label: "I need everyone's approval — one bad comment wrecks me.", next: "mind_validation" },
+      { label: "I was the 'gifted kid' and now I freeze when things get hard.", next: "mind_gifted" },
+      { label: "I can't sit with silence — I need constant stimulation.", next: "mind_stillness" },
       { label: "I compare myself to everyone and lose.", next: "mind_compare" },
     ],
   },
@@ -1668,6 +1674,7 @@ const TREE = {
     coach: ["The big-picture questions. Which one's loudest right now?"],
     options: [
       { label: "I feel directionless — no idea what I want.", next: "pur_lost" },
+      { label: "I'm living my parents' plan, not my own.", next: "pur_parents" },
       { label: "I hit the goals… and felt nothing.", next: "pur_arrival" },
       { label: "Life feels like pleasure-seeking with no meaning.", next: "pur_pleasure" },
     ],
@@ -1787,7 +1794,408 @@ const TREE = {
     ],
   },
 
+  /* ======================================================================
+     ADDED THREADS — more Dr. K & Charisma on Command
+     ====================================================================== */
+
+  /* ---- Dating apps & first dates (CoC) ------------------------------- */
+
+  rom_apps: {
+    coach: [
+      "Dating apps and first dates — let me split them, because they fail for completely different reasons.",
+      "Which one's the bigger pain: getting matches and replies that go anywhere, or the dates themselves going flat?",
+    ],
+    options: [
+      { label: "Matches and messages — it fizzles to nothing.", next: "rom_apps_msg" },
+      { label: "The dates themselves fall flat.", next: "rom_apps_date" },
+    ],
+  },
+
+  rom_apps_msg: {
+    coach: [
+      "Two failure modes cause about 90% of the fizzle, and both are fixable in an afternoon.",
+      "One: the profile is a list of virtues — 'love travel, coffee, the gym' — that gives nobody anything to grab. Two: the openers are interviews — 'hey, how's your weekend?' — that create zero momentum.",
+      "Charlie's principle carries straight across from real life: give people HOOKS and make them feel something.",
+    ],
+    insight: {
+      title: "Give hooks, not a résumé — on the profile and in the first line",
+      technique: "Sub-communication · Warmth × playfulness",
+      source: "Charisma on Command (Charlie Houpert)",
+      body: "Profiles: swap the virtue-list for two or three specific, slightly playful, grab-able details ('will judge you gently for pineapple on pizza') — specificity gives someone something to reply TO, and playfulness signals you're not taking the whole circus, or yourself, too seriously. Openers: react to one specific thing in THEIR profile instead of 'hey :)', and add a playful challenge or a genuine hook so the conversation has somewhere to go. Then the meta-move that saves your sanity: apps reward volume and low attachment, so treat each match as a light, no-stakes hello rather than an audition — outcome independence reads even through text, and so does its absence. And move toward meeting up fairly fast; endless texting builds a pen-pal, not a spark, because attraction mostly lives in person.",
+      actions: [
+        "Rewrite your profile: replace two generic lines with two specific, playful, grab-able ones.",
+        "Bin 'hey'. Open by reacting to one detail in their profile, with a hook or light tease.",
+        "Suggest meeting within a handful of messages. The app is a doorway, not the room.",
+      ],
+    },
+    options: [
+      { label: "And the first dates falling flat?", next: "rom_apps_date" },
+      { label: "Back to the wheel", next: "wheel" },
+    ],
+  },
+
+  rom_apps_date: {
+    coach: [
+      "Flat first dates almost always come from the FORMAT, not from you.",
+      "The default — sitting across a table running through 'so… siblings? job? hobbies?' — manufactures pressure and quietly kills play. You've built an interview and then wondered why it felt like one.",
+    ],
+    insight: {
+      title: "Design the date for play, not for vetting",
+      technique: "Environment design · Warmth × banter · Outcome independence",
+      source: "Charisma on Command (Charlie Houpert)",
+      body: "Pick an activity with something to DO — a walk, a market, mini-golf, a weird little museum — so there's built-in stimulus and easy side-by-side energy instead of face-to-face interrogation. Lead with warmth and a bit of playful teasing rather than a CV exchange; banter that says 'I like you and I'm not nervous' builds more connection than any impressive fact ever will. Get curious about how they think and what lights them up, not their stat sheet. And carry outcome independence in with you: you're not there to be chosen, you're there to find out whether YOU'D choose them. That single frame drops the neediness that makes dates flat — and it's the exact same muscle as the nice-guy work: a full life, lightly shared, never a bid to be liked.",
+      actions: [
+        "Next first date: choose an activity with built-in things to do and look at.",
+        "Open with warmth and light teasing, not the interview questions.",
+        "Hold the frame: 'am I enjoying THEM?' — not 'am I being chosen?'",
+      ],
+    },
+    options: [
+      { label: "This is the same energy as the nice-guy thread", next: "ng_1" },
+      { label: "Back to the wheel", next: "wheel" },
+    ],
+  },
+
+  /* ---- Conversation threading & storytelling (CoC) ------------------- */
+
+  soc_stories: {
+    coach: [
+      "Two skills bundled here, and Charlie treats both as mechanics, not talent. Let's take the one people fear most first: keeping a conversation alive when it stalls.",
+      "The mistake is thinking you need interesting THINGS to say. You don't. You need to make the other person interesting — and follow the threads they're already handing you.",
+      "Every answer someone gives has three or four hooks in it. Most people ignore all of them and reach for a brand-new topic, which is exhausting and turns the whole thing into an interview.",
+    ],
+    options: [
+      { label: "Yeah, my conversations feel like interviews. Fix?", next: "soc_stories2" },
+      { label: "But my own stories fall flat too.", next: "soc_storytell" },
+    ],
+  },
+
+  soc_stories2: {
+    coach: [
+      "Follow the thread you're already holding. Someone says 'I just got back from Portugal' — that sentence is stuffed with hooks: emotion, detail, story. Don't reach for 'cool, so what do you do?'. Go to 'what made you pick Portugal?' or 'okay — best thing you ate there?'.",
+      "Then Charlie's other move: share to invite sharing. Trade a small piece of yourself back ('I've always wanted to go — though I'm terrified of flying'), so it's a two-way thing, not a deposition. Reciprocity is what turns Q&A into rapport.",
+    ],
+    note: {
+      reframe: "You don't run dry because you're boring. You run dry because you keep abandoning the gold the other person just handed you to go dig a fresh hole. Follow the thread you're already holding.",
+      sub: "Conversation threading · Charisma on Command",
+    },
+    options: [
+      { label: "And making my own stories actually land?", next: "soc_storytell" },
+      { label: "Back to the wheel", next: "wheel" },
+    ],
+  },
+
+  soc_storytell: {
+    coach: [
+      "Charlie's storytelling rules are refreshingly concrete — no 'just be charismatic' hand-waving. Here they are.",
+    ],
+    insight: {
+      title: "Tell stories that land: hook first, keep it short, be the fool",
+      technique: "Storytelling mechanics · Sub-communication",
+      source: "Charisma on Command (Charlie Houpert)",
+      body: "Four rules. (1) Lead with the hook, not the chronology — 'I nearly got arrested on my birthday' beats 'so it was a Tuesday and I woke up…'; give them a reason to lean in before the setup arrives. (2) Cut it 30% shorter than feels natural — almost every story that dies is simply too long, and you can always be asked for more. (3) Make yourself the fool at least as often as the hero — self-deprecation from someone visibly relaxed reads as confidence and warmth, whereas being the hero of every story reads as insecurity. (4) Include how you FELT, not just what happened — 'and I'm standing there absolutely certain I'm about to die of embarrassment' lets people live it with you. Deliver all of it a touch slower than your nerves want; pauses are what make a punchline land, and rushing is the tell that you don't believe you've earned the attention. Like everything of Charlie's, it's a rep not a gift — tell the same story three times and watch it tighten itself.",
+      actions: [
+        "Take one story you actually tell and rewrite its opening as a single-line hook.",
+        "Cut your next story by a third. End it before you think you should.",
+        "In the next one, make yourself the fool and name the feeling you had in the moment.",
+      ],
+    },
+    options: [
+      { label: "The keeping-it-going part too", next: "soc_stories2" },
+      { label: "Back to the wheel", next: "wheel" },
+    ],
+  },
+
+  /* ---- Exiting conversations (CoC) ----------------------------------- */
+
+  soc_exit: {
+    coach: [
+      "This one's pure mechanics, and learning it removes a surprising amount of social dread — because a lot of people avoid STARTING conversations only because they secretly don't know how to gracefully end them.",
+      "The awkwardness comes from treating an exit like an escape: trailing off, inventing a bathroom trip, quietly vanishing. Charlie's move is the exact opposite.",
+    ],
+    insight: {
+      title: "Exit warm, not weird — leave on a high note",
+      technique: "Social mechanics · Warmth signalling · Peak-end rule",
+      source: "Charisma on Command (Charlie Houpert)",
+      body: "Exit ON a high note, warmly and openly, instead of waiting for the energy to sag into an awkward fade. Name the leave, give a genuine reason, add a warm close: 'I'm going to go find my friend — but I really enjoyed this, let's pick it up later.' No apology, no over-explaining. If you'd like to see them again, the exit is the natural window to say so or swap contacts. Two payoffs: we remember endings disproportionately (the peak-end rule), so a warm exit makes the whole interaction land better in memory — and simply KNOWING you can leave cleanly is what frees you to approach in the first place. The escape hatch is what makes the entrance feel safe.",
+      actions: [
+        "Learn one clean exit line and keep it: reason + warm close, zero apology.",
+        "Practise leaving mid-good-moment, on a high, rather than waiting for the fade.",
+        "If you'd see them again, say so AT the exit — that's the natural window for it.",
+      ],
+    },
+    options: [
+      { label: "Now the starting-conversations part", next: "soc_approach" },
+      { label: "Back to the wheel", next: "wheel" },
+    ],
+  },
+
+  /* ---- Validation-seeking (Dr. K) ------------------------------------ */
+
+  mind_validation: {
+    coach: [
+      "Let's look at what's actually happening when you chase approval, because Dr. K frames it in a way that changes how it feels from the inside.",
+      "Needing external validation isn't vanity. It's an OUTSOURCED sense of worth. If early on your value felt conditional — on grades, on being good, on achieving — you learned to read your worth off other people's faces instead of generating it internally.",
+      "So every room becomes a scoreboard, and you can never quite leave the arcade.",
+    ],
+    options: [
+      { label: "Yes — one criticism can wreck my entire week.", next: "mind_validation2" },
+      { label: "So how do I actually stop needing it?", next: "mind_validation2" },
+    ],
+  },
+
+  mind_validation2: {
+    coach: [
+      "First, the trap, because it explains why 'just care less' never works: you cannot get ENOUGH external validation to fix an internal deficit. It's drinking seawater.",
+      "A compliment lands for an hour, then the thirst comes back — because approval soothes the symptom and never once touches the source. So you go looking for more, and the loop tightens.",
+    ],
+    note: {
+      reframe: "The goal isn't to stop caring what anyone thinks — that's not human, and not the target. It's to stop letting their opinion be the ONLY vote. You want a seat on your own jury.",
+      sub: "Internal locus of worth · HealthyGamerGG (Dr. K)",
+    },
+    options: [
+      { label: "Okay — how do I build the internal version?", next: "mind_validation3" },
+    ],
+  },
+
+  mind_validation3: {
+    coach: [
+      "You generate worth by acting in line with your own values and NOTICING that you did — the noticing is the part everyone skips.",
+    ],
+    insight: {
+      title: "Build worth you generate, not worth you collect",
+      technique: "Internal validation · Values-based action (ACT) · Self-compassion",
+      source: "HealthyGamerGG (Dr. K) · ACT · self-compassion research",
+      body: "Each night, name one thing you did that matched who you want to be — kept a promise, did the hard rep, told the truth — regardless of whether anyone saw it. You're slowly relocating the scoreboard inside. Pair it with a defusion move: when you catch yourself performing for approval, just name it ('ah, fishing') — not to shame it, only to unhook. Then run one real test: do something meaningful in secret this week, where no validation is even possible. The discomfort you feel is the withdrawal, and sitting through it is exactly how the internal source comes online. Dr. K's deeper point underneath all of it: the meditative skill of watching your own mind is what lets you OBSERVE the craving for approval instead of automatically obeying it — and observed cravings lose their grip.",
+      actions: [
+        "Nightly: name one values-matching thing you did — seen or unseen, doesn't matter.",
+        "Do one meaningful thing this week in secret. Sit with the no-applause discomfort.",
+        "Catch approval-fishing in real time and name it. Unhook; don't shame.",
+      ],
+    },
+    options: [
+      { label: "The harsh inner voice feeds this too", next: "mind_selftalk" },
+      { label: "This is why I freeze at hard things — the gifted-kid thing", next: "mind_gifted" },
+      { label: "Back to the wheel", next: "wheel" },
+    ],
+  },
+
+  /* ---- Gifted-kid / coasting on talent (Dr. K) ----------------------- */
+
+  mind_gifted: {
+    coach: [
+      "The 'smart kid' trap — Dr. K has a whole framework for this, and it's far more common than anyone admits out loud.",
+      "If things came easily early, you never had to build the muscle of struggling at something. Your identity fused with being NATURALLY good. So the first time real effort is required — and at the start you're suddenly average, like everyone else — it doesn't land as 'this is hard'.",
+      "It lands as 'I'm a fraud, and maybe I was never special'. So you quit — to protect the identity.",
+    ],
+    options: [
+      { label: "That's exactly it — I bail the second I'm not instantly good.", next: "mind_gifted2" },
+      { label: "So my talent is actually the problem?", next: "mind_gifted2" },
+    ],
+  },
+
+  mind_gifted2: {
+    coach: [
+      "In a way, yes — the early praise for being 'gifted' quietly taught you that ability is fixed and visible, so effort became evidence of NOT having it. That's Carol Dweck's fixed-versus-growth mindset, and Dr. K maps the emotional side: struggling threatens the only identity you were ever rewarded for.",
+      "So you avoid the exact experiences that would grow you, because they feel like exposure.",
+    ],
+    note: {
+      reframe: "You didn't lose your talent. You just reached the altitude where talent runs out and everyone — including the prodigies — switches engines to effort. Being clumsy at the start isn't the fraud being exposed. It's the entry fee you never had to pay before.",
+      sub: "Fixed vs growth mindset · gifted-kid burnout · Dweck / Dr. K",
+    },
+    options: [
+      { label: "How do I switch engines?", next: "mind_gifted3" },
+    ],
+  },
+
+  mind_gifted3: {
+    coach: [
+      "You reattribute what struggle MEANS — that's the whole fix, and it's genuinely liberating once it clicks.",
+    ],
+    insight: {
+      title: "Trade 'being gifted' for 'getting good' — a sturdier identity",
+      technique: "Growth mindset · Reattribution · Deliberate practice",
+      source: "HealthyGamerGG (Dr. K) · Carol Dweck & Angela Duckworth (Big Think)",
+      body: "Struggle is not a signal you lack ability — it's literally what building ability feels like from the inside. Every expert was once a clumsy beginner who simply stayed. So change what you're proud of: stop taking pride in things being EASY (that's the fixed-mindset drug) and start taking pride in doing hard things badly and continuing anyway. Pick one thing you're currently avoiding precisely BECAUSE you're not instantly good at it, and deliberately be a visible beginner — the discomfort is the exact muscle you never had to develop, and it grows fast once you stop treating it as an emergency. Duckworth's data is the reassurance: sustained effort beats raw talent over any real time horizon, and the gifted kids who never learn this get quietly overtaken by the ones who did.",
+      actions: [
+        "Say the new identity out loud: 'I'm someone who GETS good', not 'someone who's gifted'.",
+        "Pick one thing you avoid because you're bad at it. Do it badly, on purpose, this week.",
+        "Reframe struggle live: 'this is ability being built', not 'this is me being exposed'.",
+      ],
+    },
+    options: [
+      { label: "Related — I chase approval for exactly this reason", next: "mind_validation" },
+      { label: "Back to the wheel", next: "wheel" },
+    ],
+  },
+
+  /* ---- Stillness / constant stimulation (Dr. K) ---------------------- */
+
+  mind_stillness: {
+    coach: [
+      "Notice the reflex: the second there's a gap — a queue, a walk, a lull — the phone's in your hand before you even decided to reach for it.",
+      "Dr. K's question is the useful one: what are you avoiding being alone WITH? For most people, constant stimulation isn't really about boredom. It's about not wanting to be in the room with their own mind — because when the noise stops, the unprocessed stuff (the anxiety, the sadness, the nagging thought) gets loud. The stimulation is how you keep the mind from ever catching up to you.",
+    ],
+    options: [
+      { label: "Yeah… silence makes me weirdly anxious.", next: "mind_stillness2" },
+      { label: "So I should just… sit there and suffer?", next: "mind_stillness2" },
+    ],
+  },
+
+  mind_stillness2: {
+    coach: [
+      "Not suffer — train. The unbearable feeling in silence isn't proof you're 'bad at being calm'. It's the backlog surfacing, and the phone has been letting you outrun it for years.",
+      "Dr. K's framing of meditation is the one that makes it click: it's not about achieving a blank, blissful mind. It's exposure therapy for being present with whatever's actually there.",
+    ],
+    insight: {
+      title: "Stillness is a tolerance you build, not a switch you flip",
+      technique: "Meditation as exposure · Interoception · Dopamine hygiene",
+      source: "HealthyGamerGG (Dr. K on meditation) · DBT",
+      body: "Start absurdly small: two minutes of doing literally nothing, or a short walk with no audio, and treat the restlessness as the workout itself rather than a failure. Over reps, two things happen — the backlog finally gets processed instead of endlessly deferred, and your baseline stops needing constant input to feel okay. What you're really widening is the gap between an uncomfortable feeling and the compulsion to escape it, and that gap is the master skill sitting under every other one here: boundaries, urge-surfing, Wise-Mind decisions, all of it depend on being able to feel something without immediately fleeing it. You're not learning to empty your mind. You're learning that a feeling can show up and you don't have to run.",
+      actions: [
+        "Once a day: two minutes of nothing. No phone, no audio. The restlessness IS the rep.",
+        "One daily walk with zero input. Let your mind actually catch up to you.",
+        "When silence spikes anxiety, name what surfaces — it's usually information, not danger.",
+      ],
+    },
+    options: [
+      { label: "This is my scrolling problem at the root", next: "hab_dopamine" },
+      { label: "Back to the wheel", next: "wheel" },
+    ],
+  },
+
+  /* ---- Parental expectations / individuation (Dr. K) ----------------- */
+
+  pur_parents: {
+    coach: [
+      "This is one Dr. K returns to a lot, so let me go carefully. There's a specific kind of stuck that comes from SUCCEEDING at a life you never actually chose.",
+      "You did the degree, the career, the milestones — often well — and instead of pride you feel a low, confusing emptiness. Because some part of you knows you've been running someone else's race, usually a parent's. And running it well doesn't make it yours.",
+    ],
+    options: [
+      { label: "Yeah — I don't even know what I'd want if they weren't watching.", next: "pur_parents2" },
+      { label: "But I don't want to hurt them or seem ungrateful.", next: "pur_parents_guilt" },
+    ],
+  },
+
+  pur_parents_guilt: {
+    coach: [
+      "That guilt is real and worth naming honestly: your parents likely poured genuine love and sacrifice into that vision. Gratitude for that is fair and true.",
+      "But here's the distinction Dr. K draws — gratitude for their CARE doesn't obligate you to keep living their FEAR. A lot of parental 'expectation' is anxiety in disguise: they want you safe, and they encoded 'safe' as one specific path decades ago. Honouring them was never the same as obeying the map. It's becoming whole enough that they can eventually see it was worth it.",
+    ],
+    options: [
+      { label: "So how do I even find what's actually mine?", next: "pur_parents2" },
+    ],
+  },
+
+  pur_parents2: {
+    coach: [
+      "You start by separating the two voices, because right now they're fused — you can't hear your own wanting over the inherited 'should'.",
+    ],
+    insight: {
+      title: "Separate your voice from the voice you inherited",
+      technique: "Individuation · Values clarification (ACT)",
+      source: "HealthyGamerGG (Dr. K on parental expectations & individuation) · ACT",
+      body: "Most people carrying this can't answer 'what do you want?' because the question gets intercepted by 'what SHOULD I want?' before it ever reaches them. The work is to catch the interception. For one week, whenever you notice a 'should', write it down and ask two questions: whose voice is this, and would I still want it if nobody I loved ever found out? What survives that filter is a candidate for actually yours. Then test it small and in reality — the dharma protocol: curiosity, cheap experiments, notice what creates aliveness — because you can't reason your way out of a life you were reasoned into; you have to FEEL the difference. And know this: disappointing your parents once, cleanly, is survivable — whereas living a muted life to keep them comfortable is the more expensive option, paid quietly, every day, for decades.",
+      actions: [
+        "For one week, log every 'should'. Tag each: whose voice is it, and would I want it unseen?",
+        "Run one tiny experiment toward something that's curiosity-yours, not obligation-yours.",
+        "Practise one small, honest disagreement with a parent on something low-stakes — reps for the bigger autonomy.",
+      ],
+    },
+    options: [
+      { label: "This connects to not knowing my direction at all", next: "pur_lost" },
+      { label: "And to needing their approval", next: "mind_validation" },
+      { label: "Back to the wheel", next: "wheel" },
+    ],
+  },
+
 };
+
+/* =========================================================================
+   ROUTES — the keyword router's map.
+   Lets a free-text box point someone at the closest authored thread,
+   with NO AI: plain keyword scoring, done locally. Each route names a
+   topic (for the coach's reply) and the node it opens.
+   ========================================================================= */
+
+const ROUTES = [
+  { to: "ng_1", area: "relationships", topic: "the 'nice guy' trap and covert contracts",
+    kw: ["friendzone", "friend zone", "nice guy", "used", "generous", "favours", "favors", "taken for granted", "invisible to", "covert", "kind but", "walked over"] },
+  { to: "sel_1", area: "relationships", topic: "why you keep choosing the wrong people",
+    kw: ["boring", "no spark", "bad boys", "toxic", "chase", "hot and cold", "wrong people", "attracted to", "good guys", "unavailable", "always pick", "drama"] },
+  { to: "rom_conflict", area: "relationships", topic: "the same fight on repeat with your partner",
+    kw: ["fight", "fighting", "argue", "arguing", "argument", "conflict", "clash", "partner", "girlfriend", "boyfriend", "wife", "husband", "same fight"] },
+  { to: "rom_stayleave", area: "relationships", topic: "whether to stay or leave",
+    kw: ["stay or leave", "should i leave", "break up with", "end it", "stay or go", "leave my relationship", "should i stay"] },
+  { to: "rom_breakup", area: "relationships", topic: "getting through a breakup",
+    kw: ["breakup", "break up", "broke up", "heartbreak", "heartbroken", "dumped", "get over", "miss them", "miss her", "miss him", "split up", "my ex"] },
+  { to: "rom_apps", area: "relationships", topic: "dating apps and first dates",
+    kw: ["dating app", "tinder", "hinge", "bumble", "matches", "first date", "profile", "openers", "messaging", "swipe", "online dating"] },
+  { to: "fri_lonely", area: "relationships", topic: "loneliness and rebuilding your circle",
+    kw: ["lonely", "loneliness", "no friends", "isolated", "alone", "make friends", "circle shrunk", "few friends", "no mates"] },
+  { to: "fri_onesided", area: "relationships", topic: "a one-sided friendship",
+    kw: ["one sided", "draining friend", "always reach out", "effort friendship", "fair weather", "only friend who tries"] },
+  { to: "fam_bound", area: "relationships", topic: "setting boundaries with family",
+    kw: ["boundaries", "boundary", "family guilt", "overbearing", "enmeshed", "guilt trip", "cant say no to family", "controlling parents"] },
+  { to: "fam_arg", area: "relationships", topic: "the same argument with family",
+    kw: ["family argument", "family fight", "every visit", "holidays", "relatives", "argue with my mum", "argue with my dad"] },
+  { to: "soc_approach", area: "social", topic: "the freeze when you try to talk to people",
+    kw: ["approach", "talk to strangers", "start conversation", "too shy", "social anxiety", "freeze", "talk to girls", "talk to guys", "approach anxiety", "initiate", "scared to talk"] },
+  { to: "soc_groups", area: "social", topic: "going quiet and invisible in groups",
+    kw: ["quiet in groups", "group", "invisible", "go blank", "nothing to say", "dont speak up", "left out", "wallflower", "mind blank"] },
+  { to: "soc_please", area: "social", topic: "people-pleasing and never saying no",
+    kw: ["people pleaser", "people pleasing", "cant say no", "pushover", "doormat", "conflict avoid", "yes to everything", "spineless"] },
+  { to: "soc_stories", area: "social", topic: "keeping conversations going and telling stories",
+    kw: ["run out of things", "conversation dies", "conversation", "conversations", "fall flat", "awkward silence", "small talk", "interview", "stories fall flat", "story", "storytelling", "boring conversations", "keep it going", "run dry"] },
+  { to: "soc_exit", area: "social", topic: "leaving a conversation gracefully",
+    kw: ["leave a conversation", "end conversation", "exit", "get away", "stuck talking", "escape conversation", "how to leave"] },
+  { to: "soc_charisma", area: "social", topic: "becoming more magnetic and charismatic",
+    kw: ["charisma", "charismatic", "magnetic", "likeable", "likable", "presence", "captivating", "more interesting", "stand out"] },
+  { to: "car_quit", area: "career", topic: "whether to quit your job",
+    kw: ["quit", "resign", "hate my job", "leave my job", "dread work", "sunday scaries", "stuck in job", "should i quit"] },
+  { to: "car_passion", area: "career", topic: "passion versus the safe paycheck",
+    kw: ["passion", "dream job", "safe job", "stable job", "meaningful work", "sellout", "follow my heart", "money or"] },
+  { to: "car_burnout", area: "career", topic: "burnout",
+    kw: ["burnout", "burnt out", "burned out", "exhausted by work", "cynical", "detached", "done with work", "no energy for work"] },
+  { to: "mon_big", area: "money", topic: "a big purchase you're weighing up",
+    kw: ["buy a", "big purchase", "ferrari", "sports car", "watch", "rolex", "expensive", "should i buy", "splurge", "afford", "upgrade", "new phone", "new car"] },
+  { to: "mon_impulse", area: "money", topic: "impulse spending",
+    kw: ["impulse", "overspend", "spend too much", "shopping", "retail therapy", "cant stop buying", "impulse buy"] },
+  { to: "mon_anx", area: "money", topic: "money anxiety",
+    kw: ["money anxiety", "scarcity", "financial stress", "worry about money", "never enough money", "money stress", "broke"] },
+  { to: "hab_stick", area: "habits", topic: "why habits never stick",
+    kw: ["stick to", "consistency", "gym", "diet", "routine", "discipline", "motivation", "quit habits", "fall off", "cant keep up"] },
+  { to: "hab_dopamine", area: "habits", topic: "scrolling, your phone and dopamine",
+    kw: ["scrolling", "phone addiction", "social media", "doomscroll", "screen time", "gaming", "games", "addicted", "dopamine", "tiktok", "instagram", "reels", "youtube"] },
+  { to: "hab_procrast", area: "habits", topic: "procrastination",
+    kw: ["procrastinate", "procrastination", "putting off", "avoid tasks", "last minute", "cant start", "lazy", "keep delaying"] },
+  { to: "mind_overthink", area: "mind", topic: "overthinking every decision",
+    kw: ["overthink", "overthinking", "paralysis", "cant decide", "indecisive", "analysis", "spiral", "overanalyze", "overanalyse"] },
+  { to: "mind_soma", area: "mind", topic: "anxiety living in your body",
+    kw: ["anxiety", "anxious", "panic", "chest tight", "racing heart", "gut", "jaw", "physical anxiety", "nervous", "stressed", "tense"] },
+  { to: "mind_selftalk", area: "mind", topic: "a brutal inner critic",
+    kw: ["self talk", "inner critic", "hate myself", "harsh on myself", "self critical", "not good enough", "beat myself up", "self esteem", "worthless"] },
+  { to: "mind_numb", area: "mind", topic: "feeling numb or unable to name what you feel",
+    kw: ["numb", "numbness", "cant feel", "empty", "disconnected", "emotionless", "dont know what i feel", "suppress", "shut down", "no emotions"] },
+  { to: "mind_attach", area: "mind", topic: "anxious attachment and obsessing over someone",
+    kw: ["anxious attachment", "obsess", "clingy", "needy", "overthink texts", "double text", "attachment", "abandonment", "reassurance", "waiting for a reply"] },
+  { to: "mind_validation", area: "mind", topic: "needing everyone's approval",
+    kw: ["validation", "approval", "need to be liked", "want to be liked", "like me", "everyone to like", "please everyone", "what people think", "external validation", "praise", "criticism", "seek approval"] },
+  { to: "mind_gifted", area: "mind", topic: "the gifted-kid trap and coasting on talent",
+    kw: ["gifted", "smart kid", "talented", "coasting", "used to be good", "fraud", "imposter", "give up when hard", "potential", "wasted"] },
+  { to: "mind_stillness", area: "mind", topic: "not being able to sit with silence",
+    kw: ["cant sit still", "silence", "boredom", "always distracted", "need stimulation", "cant be alone", "restless", "meditate", "meditation"] },
+  { to: "mind_compare", area: "mind", topic: "comparing yourself to everyone",
+    kw: ["compare", "comparison", "behind", "ahead of me", "everyone is ahead", "everyone else", "falling behind", "jealous", "envy", "peers ahead", "left behind", "keeping up", "further along"] },
+  { to: "pur_lost", area: "purpose", topic: "feeling directionless",
+    kw: ["directionless", "lost", "no purpose", "no direction", "dont know what i want", "meaningless", "drifting", "what to do with my life", "find purpose", "point of it all"] },
+  { to: "pur_parents", area: "purpose", topic: "living your parents' plan instead of your own",
+    kw: ["parents expect", "parents want", "parents dream", "parents plan", "their dream", "not mine", "for my parents", "expectations", "disappoint them", "make them proud", "ungrateful", "should be a doctor", "chose for me", "living for them"] },
+  { to: "pur_arrival", area: "purpose", topic: "achieving the goals and feeling nothing",
+    kw: ["achieved", "empty after", "hollow", "reached my goals", "success feels", "anticlimax", "arrival", "nothing changed", "still not happy"] },
+  { to: "pur_pleasure", area: "purpose", topic: "pleasure without meaning",
+    kw: ["pleasure", "hedonism", "meaningless fun", "no meaning", "empty pleasure", "partying", "instant gratification", "hollow life"] },
+];
 
 /* Escape hatch present everywhere ---------------------------------------- */
 const GLOBAL_OPTIONS = { wheelLabel: "🎡 Back to the wheel" };
