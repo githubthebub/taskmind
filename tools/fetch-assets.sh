@@ -30,7 +30,8 @@ const lib = new Function(fs.readFileSync('assets/voices.js', 'utf8') + ';return 
 for (const [c, clips] of Object.entries(lib)) {
   fs.mkdirSync(`assets/voice/${c}`, { recursive: true });
   for (const [key, url] of Object.entries(clips)) {
-    const out = `assets/voice/${c}/${key}.mp3`;
+    const ext = (url.split('.').pop() || 'mp3').split('?')[0];
+    const out = `assets/voice/${c}/${key}.${ext}`;
     if (!fs.existsSync(out)) execSync(`curl -fsSL "${url}" -o "${out}"`);
   }
   console.log(c, Object.keys(clips).length, 'clips');

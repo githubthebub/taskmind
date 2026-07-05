@@ -622,6 +622,7 @@ const PRACTICES = [
         "Unclench the jaw. It's holding a conversation that's over.",
         "Let the hands open.",
         "Nothing to solve for the next few minutes.",
+        "If a thought pulls at you, name its genre — planning, replaying, rehearsing — and come back on the inhale.",
         "If a thought pulls at you, put it on the exhale and let it walk.",
         "Softer belly.",
         "Halfway. Your heartbeat is already slower — that's measurable, not poetry.",
@@ -663,6 +664,7 @@ const PRACTICES = [
         "Quarter done. Settle deeper into your seat.",
         "Imagine the breath as a tide. It goes out as easily as it comes in.",
         "Nothing to improve. Just continue.",
+        "You are not your thoughts — you're the one hearing them. Keep the rhythm and just listen.",
         "Halfway. This rhythm is where the heart likes to live.",
         "Let the breath breathe itself now — you're just watching.",
         "Eyes soft or closed, either is fine.",
@@ -849,6 +851,7 @@ const PRACTICES = [
         "In through the nose… and let it fall out long.",
         "Heavy into the mattress or the chair. You don't have to hold yourself — something is already holding you.",
         "If a worry speaks, let it finish, and exhale through it. It can have the morning slot.",
+        "Whatever the worry claims, its court date is tomorrow. Nothing gets heard at this hour — that's the rule.",
         "Jaw loose. Tongue heavy.",
         "Halfway. Notice the body is already further into night than the mind is. Let it lead.",
         "Longer out than in. That's the whole physics of it.",
@@ -1432,13 +1435,13 @@ const SURF_CLOSER = {
 
 const SURF_LINES = [
   "An urge is a wave. It rises, it peaks, and — if you don't feed it — it breaks. Ninety seconds is usually all a peak lasts.",
-  "You don't have to make it go away. You just have to not obey it while it's loud.",
+  "Now catch the thought riding on top of it — 'just once', 'I deserve this', 'she's probably online'. Don't argue with it. Just put three words in front: 'I'm having the thought that…' Feel how that loosens the leash.",
   "Feel it exactly where you said it was. Don't fight it — watch it, like weather.",
+  "Check the facts, quickly: has obeying this ever left you better off at the end of the night? The urge is selling you the first minute and hiding the rest. You've already paid for the rest before.",
   "Notice it's already changing shape. Urges can't hold still under direct attention.",
   "The person on the other side of that screen is paid to manufacture this feeling. The exit is in your body, and you're standing in it.",
-  "Still here. Still breathing. The wave is doing the breaking, not you.",
-  "Almost through the peak. Whatever you feel now, you can feel it and still not act.",
-  "Look at that. It's smaller. You just did the hardest thing in behavior change — you let a wave break."
+  "Zoom out ten minutes. One version of you obeyed the wave; one watched it break. Same clock, two different people — and every wave you surf casts a vote for the second one.",
+  "Look at that. It's smaller. You just did the hardest thing in behavior change — you let a wave break without becoming it."
 ];
 
 /* Honest science notes for the Why panel */
@@ -2042,7 +2045,8 @@ function speak(text, cidOverride) {
       if (stage === 0) { stage = 1; audio.src = lib[key]; audio.play().catch(() => {}); }
       else speakSynth(text, finish);
     };
-    audio.src = `assets/voice/${cid}/${key}.mp3`;
+    const ext = (lib[key].split('.').pop() || 'mp3').split('?')[0];
+    audio.src = `assets/voice/${cid}/${key}.${ext}`;
     audio.play().catch(() => {});
     return { spoke: true, done };
   }

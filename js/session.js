@@ -69,7 +69,8 @@ function speak(text, cidOverride) {
       if (stage === 0) { stage = 1; audio.src = lib[key]; audio.play().catch(() => {}); }
       else speakSynth(text, finish);
     };
-    audio.src = `assets/voice/${cid}/${key}.mp3`;
+    const ext = (lib[key].split('.').pop() || 'mp3').split('?')[0];
+    audio.src = `assets/voice/${cid}/${key}.${ext}`;
     audio.play().catch(() => {});
     return { spoke: true, done };
   }
