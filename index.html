@@ -621,22 +621,46 @@
     </svg><div class="cap">palm up · T thumb, I index, M middle, R ring, L little — dashed ring = fingertips touch the thumb; gold fingers stay straight</div>`;
   }
 
-  // big, readable hands on the coach itself
+  // Recognizable hands drawn on the coach itself. Touch-type mudras render as
+  // real palms: the touching fingers curl into a gold-ringed loop against the
+  // thumb (the classic "OK" shape), the free fingers stand straight up — so
+  // the mudra is legible on the blob, not just in the diagram.
+  const SKIN = '#c6ceff', SKIN_DK = '#8f9cf0';
   function coachHandsSVG(m) {
     if (m.custom === 'anjali') {
-      return `<g><path d="M139 194 L139 146 Q150 132 150 146 L150 194" fill="#b9c3ff"/><path d="M161 194 L161 146 Q150 132 150 146 L150 194" fill="#93a1f5"/><line x1="150" y1="140" x2="150" y2="194" stroke="#ffd166" stroke-width="2" stroke-dasharray="4 3"/></g>`;
+      // two full palms pressed together at the heart, fingers up, gold seam
+      return `<g class="coach-hand"><path d="M149 212 L149 158 Q148 146 139 143 Q130 146 129 160 L129 212 Z" fill="${SKIN_DK}"/><path d="M148 210 L148 159 Q147 148 139 145 Q132 148 131 160 L131 210 Z" fill="${SKIN}"/></g>`
+        + `<g class="coach-hand"><path d="M151 212 L151 158 Q152 146 161 143 Q170 146 171 160 L171 212 Z" fill="${SKIN_DK}"/><path d="M152 210 L152 159 Q153 148 161 145 Q168 148 169 160 L169 210 Z" fill="${SKIN}"/></g>`
+        + `<line class="hand-contact" x1="150" y1="150" x2="150" y2="212" stroke="#ffd166" stroke-width="2.6" stroke-dasharray="5 4"/>`;
     }
     if (m.custom === 'dhyana') {
-      return `<g><path d="M102 190 Q150 222 198 190" fill="none" stroke="#b9c3ff" stroke-width="14" stroke-linecap="round"/><path d="M134 182 Q150 170 166 182" fill="none" stroke="#93a1f5" stroke-width="8" stroke-linecap="round"/><circle cx="150" cy="176" r="5" fill="none" stroke="#ffd166" stroke-width="2.4" stroke-dasharray="3 3"/></g>`;
+      // cupped bowl in the lap, right hand nested in left, thumbs meeting on top
+      return `<g class="coach-hand"><path d="M100 194 Q150 234 200 194" fill="none" stroke="${SKIN_DK}" stroke-width="17" stroke-linecap="round"/>`
+        + `<path d="M118 190 Q150 220 182 190" fill="none" stroke="${SKIN}" stroke-width="14" stroke-linecap="round"/></g>`
+        + `<g class="coach-hand"><path d="M132 184 Q150 172 168 184" fill="none" stroke="${SKIN}" stroke-width="9" stroke-linecap="round"/></g>`
+        + `<circle class="hand-contact" cx="150" cy="177" r="6.5" fill="none" stroke="#ffd166" stroke-width="3.2"/>`;
     }
-    const ext = [1, 2, 3, 4].filter(f => !m.touch.includes(f)).length;
-    let lines = '';
-    for (let i = 0; i < ext; i++) {
-      const a = -0.55 + i * 0.44;
-      lines += `<line x1="0" y1="0" x2="${Math.sin(a) * 32}" y2="${-Math.cos(a) * 32}" stroke="#b9c3ff" stroke-width="8" stroke-linecap="round"/>`;
+    // touch-type (gyan / prana): a palm-up hand with standing + looped fingers
+    const touch = m.touch || [];
+    const rootX = [-16, -6, 5, 15];   // index, middle, ring, little
+    const thumb = { x: -25, y: -15 }; // thumb tip, where looped fingers meet
+    function inner() {
+      let f = `<rect x="-22" y="-6" width="44" height="30" rx="13" fill="${SKIN_DK}"/>`
+        + `<rect x="-20" y="-8" width="40" height="28" rx="12" fill="${SKIN}"/>`
+        + `<path d="M-19 9 Q-33 1 -25 -15" fill="none" stroke="${SKIN}" stroke-width="11" stroke-linecap="round"/>`; // thumb
+      for (let i = 1; i <= 4; i++) {
+        const x = rootX[i - 1];
+        if (touch.includes(i)) {
+          f += `<path class="fing-loop" d="M${x} -6 Q${x - 5} -26 ${thumb.x} ${thumb.y}" fill="none" stroke="${SKIN}" stroke-width="10" stroke-linecap="round"/>`;
+        } else {
+          f += `<path class="fing-up" d="M${x} -6 L${x} -42" fill="none" stroke="${SKIN}" stroke-width="10" stroke-linecap="round"/>`;
+        }
+      }
+      if (touch.length) f += `<circle class="hand-contact" cx="${thumb.x}" cy="${thumb.y}" r="7" fill="none" stroke="#ffd166" stroke-width="3.4"/>`;
+      return f;
     }
-    const hand = `<circle r="15" fill="#93a1f5"/><circle r="8" cx="-10" cy="-10" fill="none" stroke="#ffd166" stroke-width="3.4"/>${lines}`;
-    return `<g><g transform="translate(78,200)">${hand}</g><g transform="translate(222,200) scale(-1,1)">${hand}</g></g>`;
+    return `<g class="coach-hand" transform="translate(102,198)">${inner()}</g>`
+      + `<g class="coach-hand" transform="translate(198,198) scale(-1,1)">${inner()}</g>`;
   }
 
   /* ============ technique library ============ */
