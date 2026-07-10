@@ -50,6 +50,7 @@
           <button class="ask-send" id="askSend" type="submit" aria-label="Find the right conversation">→</button>
         </form>
         <p class="ask-hint">Type freely — it matches your words to the closest conversation, all on your device. No AI, nothing sent anywhere.</p>
+        <div id="resumeSlot"></div>
       </section>
 
       <section class="wheel-wrap" aria-label="Life areas wheel">
@@ -77,6 +78,12 @@
         <div class="chat-log" id="chatLog"></div>
         <div class="chat-options" id="chatOptions"></div>
       </div>
+      <form class="composer" id="composerForm" autocomplete="off">
+        <input class="ask-input" id="composerInput" type="text"
+          placeholder="Or just say what's on your mind…"
+          aria-label="Type what's on your mind" />
+        <button class="ask-send composer-send" type="submit" aria-label="Send">→</button>
+      </form>
     </main>
 
     <!-- ============ Toolbox view ============ -->
@@ -96,6 +103,17 @@
         <p>When a pathway shows you an insight card, hit <strong>Save</strong> and it'll wait for you here.</p>
       </div>
     </main>
+
+    <div class="breather" id="breather" hidden>
+      <button class="breather-close" id="breatherClose" aria-label="Close breathing exercise">✕</button>
+      <div class="breather-stage">
+        <div class="breather-ring"></div>
+        <div class="breather-circle" id="breatherCircle"></div>
+        <div class="breather-phase" id="breatherPhase">get comfortable…</div>
+      </div>
+      <p class="breather-count" id="breatherCount"></p>
+      <p class="breather-sub">in through the nose · out slow, like fogging a mirror</p>
+    </div>
 
     <footer class="foot">
       <p>Better Decisions is psycho-education, not therapy. If you're in crisis, please reach a professional or a local helpline.</p>

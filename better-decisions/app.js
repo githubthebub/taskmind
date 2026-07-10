@@ -82,7 +82,57 @@
     Object.entries(els.views).forEach(([k, el]) => { el.hidden = k !== view; });
     Object.entries(els.nav).forEach(([k, el]) => el.classList.toggle("active", k === view));
     if (view === "saved") renderSaved();
+    if (view === "home") renderResume();
     window.scrollTo({ top: 0 });
+  }
+
+  /* ---------------- resume memory (localStorage only) ---------------- */
+
+  const RESUME_KEY = "better-decisions.resume.v1";
+
+  function saveResume(nodeId, node) {
+    // area roots aren't worth resuming to — keep whatever deeper point we had
+    if (!state.area || nodeId === state.area) return;
+    const area = AREAS.find((a) => a.id === state.area);
+    const label = node.insight ? node.insight.title
+      : (area ? `${area.label} — mid-conversation` : "your last conversation");
+    try {
+      localStorage.setItem(RESUME_KEY, JSON.stringify({ nodeId, area: state.area, label }));
+    } catch {}
+    renderResume();
+  }
+
+  function loadResume() {
+    try {
+      const r = JSON.parse(localStorage.getItem(RESUME_KEY));
+      return r && TREE[r.nodeId] && AREAS.some((a) => a.id === r.area) ? r : null;
+    } catch { return null; }
+  }
+
+  function renderResume() {
+    const slot = $("resumeSlot");
+    if (!slot) return;
+    const r = loadResume();
+    slot.innerHTML = "";
+    if (!r) return;
+    const card = document.createElement("button");
+    card.className = "resume-card";
+    card.innerHTML = `<span class="resume-kicker">welcome back</span><span class="resume-label"></span><span class="resume-go">pick it back up →</span>`;
+    card.querySelector(".resume-label").textContent = r.label;
+    card.addEventListener("click", () => {
+      const area = AREAS.find((a) => a.id === r.area);
+      clearPending();
+      state.area = r.area;
+      els.chatAvatar.textContent = area.icon;
+      els.chatName.textContent = area.label;
+      els.chatLog.innerHTML = "";
+      els.chatOptions.innerHTML = "";
+      show("chat");
+      addBubble("Let's pick up where we left off.", "user");
+      const t = setTimeout(() => goTo(r.nodeId), 350);
+      state.pendingTimeouts.push(t);
+    });
+    slot.appendChild(card);
   }
 
   /* ---------------- keyword router (local, no AI) ---------------- */
@@ -121,16 +171,16 @@
   const areaById = (id) => AREAS.find((a) => a.id === id);
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
-  function runRouter(query) {
+  function runRouter(query, { append = false } = {}) {
     clearPending();
     const matches = matchRoutes(query);
     const topArea = matches[0] ? areaById(matches[0].r.area) : null;
 
     els.chatAvatar.textContent = topArea ? topArea.icon : "🧭";
     els.chatName.textContent = topArea ? topArea.label : "Your session";
-    state.area = matches[0] ? matches[0].r.area : null; // restart replays that area
+    if (matches[0]) state.area = matches[0].r.area; // restart replays that area
     state.nodeId = "__router";
-    els.chatLog.innerHTML = "";
+    if (!append) els.chatLog.innerHTML = "";
     els.chatOptions.innerHTML = "";
     show("chat");
     addBubble(query, "user");
@@ -150,7 +200,7 @@
       if (confident) {
         const r = matches[0].r;
         coach = [
-          "Okay — I think I know where to start.",
+          append ? "Okay — let's switch gears." : "Okay — I think I know where to start.",
           `It sounds like this is really about ${r.topic}. Want to get into it?`,
         ];
         options = [{ label: "Yes, let's go there", next: r.to }];
@@ -252,6 +302,7 @@
   function clearPending() {
     state.pendingTimeouts.forEach(clearTimeout);
     state.pendingTimeouts = [];
+    state.playing = null;
     removeTyping();
   }
 
@@ -273,6 +324,7 @@
     const node = TREE[nodeId];
     if (!node) { console.warn("Missing node:", nodeId); show("home"); return; }
     state.nodeId = nodeId;
+    saveResume(nodeId, node);
     els.chatOptions.innerHTML = "";
 
     playCoachMessages(node.coach || [], () => {
@@ -284,20 +336,35 @@
 
   function playCoachMessages(messages, done) {
     if (!messages.length) { done(); return; }
-    let i = 0;
-    const next = () => {
-      if (i >= messages.length) { done(); return; }
-      showTyping();
-      const msg = messages[i++];
-      const delay = Math.min(TYPE_DELAY_BASE + msg.length * TYPE_DELAY_PER_CHAR, TYPE_DELAY_MAX);
-      const t = setTimeout(() => {
-        removeTyping();
-        addBubble(msg, "coach");
-        next();
-      }, delay);
-      state.pendingTimeouts.push(t);
-    };
-    next();
+    state.playing = { messages, i: 0, done };
+    stepPlay();
+  }
+
+  function stepPlay() {
+    const p = state.playing;
+    if (!p) return;
+    if (p.i >= p.messages.length) { state.playing = null; p.done(); return; }
+    showTyping();
+    const msg = p.messages[p.i++];
+    const delay = Math.min(TYPE_DELAY_BASE + msg.length * TYPE_DELAY_PER_CHAR, TYPE_DELAY_MAX);
+    const t = setTimeout(() => {
+      removeTyping();
+      addBubble(msg, "coach");
+      stepPlay();
+    }, delay);
+    state.pendingTimeouts.push(t);
+  }
+
+  // tap anywhere in the chat to fast-forward the coach's remaining messages
+  function skipPlay() {
+    const p = state.playing;
+    if (!p) return;
+    state.pendingTimeouts.forEach(clearTimeout);
+    state.pendingTimeouts = [];
+    removeTyping();
+    while (p.i < p.messages.length) addBubble(p.messages[p.i++], "coach");
+    state.playing = null;
+    p.done();
   }
 
   function addBubble(text, who) {
@@ -407,6 +474,7 @@
       save.classList.add("saved");
     });
     foot.appendChild(save);
+    if (SOMATIC_RE.test(ins.technique || "")) foot.appendChild(makeBreatheBtn());
     card.appendChild(foot);
 
     els.chatLog.appendChild(card);
@@ -436,6 +504,65 @@
     });
   }
 
+  /* ---------------- breathing widget (4-8 vagal breathing) ---------------- */
+
+  const breather = {
+    el: $("breather"),
+    circle: $("breatherCircle"),
+    phase: $("breatherPhase"),
+    count: $("breatherCount"),
+    timers: [],
+    CYCLES: 5, IN: 4000, OUT: 8000,
+  };
+
+  function breatherStop() {
+    breather.timers.forEach(clearTimeout);
+    breather.timers = [];
+    breather.el.hidden = true;
+    breather.circle.className = "breather-circle";
+  }
+
+  function breatherStart() {
+    breatherStop();
+    breather.el.hidden = false;
+    breather.phase.textContent = "get comfortable…";
+    breather.count.textContent = "";
+    let cycle = 0;
+    const runCycle = () => {
+      cycle++;
+      if (cycle > breather.CYCLES) {
+        breather.circle.className = "breather-circle";
+        breather.phase.textContent = "done. notice the difference.";
+        breather.count.textContent = "come back any time";
+        breather.timers.push(setTimeout(breatherStop, 3500));
+        return;
+      }
+      breather.count.textContent = `round ${cycle} of ${breather.CYCLES}`;
+      breather.phase.textContent = "breathe in… 4";
+      breather.circle.className = "breather-circle in";
+      breather.circle.style.transitionDuration = breather.IN + "ms";
+      breather.timers.push(setTimeout(() => {
+        breather.phase.textContent = "and out, slow… 8";
+        breather.circle.className = "breather-circle out";
+        breather.circle.style.transitionDuration = breather.OUT + "ms";
+        breather.timers.push(setTimeout(runCycle, breather.OUT));
+      }, breather.IN));
+    };
+    breather.timers.push(setTimeout(runCycle, 1600));
+  }
+
+  $("breatherClose").addEventListener("click", breatherStop);
+
+  const SOMATIC_RE = /somatic|TIPP|breath|regulation|interocept/i;
+
+  function makeBreatheBtn() {
+    const b = document.createElement("button");
+    b.className = "breathe-btn";
+    b.textContent = "🫁 Try it — 60s of slow breathing";
+    b.addEventListener("click", breatherStart);
+    return b;
+  }
+
   /* ---------------- toolbox ---------------- */
 
   function buildToolbox() {
@@ -447,6 +574,7 @@
         <span class="insight-tag">${escapeHTML(tool.tag)}</span>
         <h3>${escapeHTML(tool.name)}</h3>
         <p>${escapeHTML(tool.body)}</p>`;
+      if (SOMATIC_RE.test(tool.name + " " + tool.tag)) card.appendChild(makeBreatheBtn());
       els.toolGrid.appendChild(card);
     });
   }
@@ -476,10 +604,32 @@
     });
   }
 
+  const composerForm = $("composerForm");
+  if (composerForm) {
+    composerForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = $("composerInput");
+      const q = input.value.trim();
+      if (!q) return;
+      input.value = "";
+      runRouter(q, { append: true });
+    });
+  }
+
+  // tap the conversation to fast-forward the coach's typing
+  els.chatScroll.addEventListener("click", (e) => {
+    if (state.playing && !e.target.closest("button, a, input")) skipPlay();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !breather.el.hidden) breatherStop();
+  });
+
   initTheme();
   buildWheel();
   buildAreaCards();
   buildToolbox();
   updateSavedBadge();
+  renderResume();
   show("home");
 })();

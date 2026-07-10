@@ -40,9 +40,17 @@ Example pathways:
 ## Features
 
 - 🎡 Interactive SVG life wheel + card grid
-- 💬 Chat UI with typing indicator and tappable response chips (no free text — by design)
-- 🧠 34 saveable **insight cards** with technique tags, sources, and concrete action steps
-- 🧰 **Toolbox** view teaching the 10 core frameworks standalone
+- ⌨️ **Free-text entry with no AI**: a local keyword router matches what you type
+  to the closest authored conversation (confident match / short pick-list /
+  graceful fallback) — nothing leaves the device
+- 💬 Chat UI with typing indicator, tappable response chips, and an **in-chat
+  composer** — type mid-conversation and it switches threads without wiping history
+- ⏩ Tap the conversation to fast-forward the coach's typing
+- 💡 Inline **perspective shift** reframes that land a realization mid-conversation
+- 🧠 45 saveable **insight cards** with technique tags, sources, and concrete action steps
+- 🫁 **Interactive breathing widget** (guided 4-8 vagal breathing) on somatic insights
+- ↩️ **Welcome-back resume** — picks up where you left off (localStorage only)
+- 🧰 **Toolbox** view teaching 17 core frameworks standalone
 - 🔖 **Saved insights** persisted to `localStorage` only
 - 🌗 Dark/light theme, responsive down to phone widths, reduced-motion support
 
