@@ -27,6 +27,7 @@ import {
   recordCompletedSession,
 } from './engine/progression';
 import { loadSettings, saveSettings } from './engine/settings';
+import { useWakeLock } from './engine/wakeLock';
 
 type Screen =
   | 'home'
@@ -71,6 +72,16 @@ export default function App() {
   const selectorReached = useRef(false);
 
   const eyesClosed = settings.eyesClosedMode && eyesClosedEligible(progression);
+
+  // Keep the screen awake through active practice — a phone locking
+  // mid-retention kills the pacing cues at the worst possible moment.
+  useWakeLock(
+    screen === 'gate' ||
+      screen === 'trigger' ||
+      screen === 'select' ||
+      screen === 'path' ||
+      screen === 'classic',
+  );
 
   const updateSettings = (s: AppSettings) => {
     setSettings(s);

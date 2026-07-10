@@ -39,6 +39,19 @@ export function appendEntry(e: SessionLogEntry): void {
   }
 }
 
+/**
+ * Erase every logged session from this device. User-initiated only, behind
+ * an explicit confirmation in the log screen — never called automatically.
+ */
+export function clearLog(): void {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    localStorage.removeItem(STORAGE_KEYS.sessionLog);
+  } catch {
+    // Storage unavailable — nothing to erase.
+  }
+}
+
 /** Pretty JSON of every entry — used only by the explicit export action. */
 export function exportLogAsJson(): string {
   return JSON.stringify(loadLog(), null, 2);

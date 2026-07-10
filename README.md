@@ -45,7 +45,16 @@ when the user knows how that stage felt today.
   completed, learn-mode walkthroughs), never payment.
 - **Private by default.** The session log (time-to-rapture-onset,
   time-to-settled, path, mudra set) lives in localStorage only, exportable as
-  JSON by explicit user action. No network calls, no social features.
+  JSON — and erasable, permanently — by explicit user action. No network
+  calls, no social features. The log screen's practice summary is
+  descriptive only: no streaks, no bests, no trends to chase.
+- **The screen stays awake during practice.** A wake lock is held through
+  the gate, trigger, and path screens so the phone never locks
+  mid-retention; it degrades silently where unsupported.
+- **Keyboard self-reports.** On the trigger stage, Space marks Rapture
+  Onset and Enter releases the hold, so desktop practice works with eyes
+  closed. Installable as a home-screen app (manifest + icons, no service
+  worker, still zero network calls).
 
 ## The four paths
 

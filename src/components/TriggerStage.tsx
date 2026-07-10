@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { TriggerOutcome, TriggerStageProps, TriggerTechnique } from '../types';
 import { useTriggerEngine } from '../engine/triggerEngine';
 import FaceBlob from './figure/FaceBlob';
@@ -63,6 +64,32 @@ export default function TriggerStage({
       skippedToSettle: false,
     });
   };
+
+  // Keyboard self-reports, so desktop practice works with eyes closed:
+  // Space = Rapture Onset (live once the session has started), Enter =
+  // release the hold. Focused buttons keep their native key handling —
+  // we only act when the key would otherwise do nothing.
+  const keyHandlersRef = useRef({ handleRaptureTap, release: engine.releaseRetention, phase: engine.phase });
+  keyHandlersRef.current = { handleRaptureTap, release: engine.releaseRetention, phase: engine.phase };
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat || e.altKey || e.ctrlKey || e.metaKey) return;
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest('button, input, select, textarea, a')) return;
+      const { handleRaptureTap: tap, release, phase } = keyHandlersRef.current;
+      if (phase === 'idle') return;
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        tap();
+      } else if (e.key === 'Enter' && phase === 'retention') {
+        e.preventDefault();
+        release();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   const roundLabel =
     engine.round === 0
@@ -144,6 +171,7 @@ export default function TriggerStage({
               type="button"
               className="btn btn-calm trigger-release"
               onClick={engine.releaseRetention}
+              aria-keyshortcuts="Enter"
             >
               Release
             </button>
@@ -201,7 +229,12 @@ export default function TriggerStage({
       </main>
 
       <div className="stack trigger-tap-zone">
-        <button type="button" className="tap-report" onClick={handleRaptureTap}>
+        <button
+          type="button"
+          className="tap-report"
+          onClick={handleRaptureTap}
+          aria-keyshortcuts="Space"
+        >
           <span className="trigger-tap-label">Rapture Onset</span>
           <span className="trigger-tap-hint">
             Tap when you feel warmth, tingling, waves, or the mind loosening —
@@ -211,6 +244,13 @@ export default function TriggerStage({
         <p className="faint trigger-selfreport-note">
           A self-report, nothing more — only you can know. Nothing here measures
           your body.
+          {engine.phase !== 'idle' && (
+            <span className="trigger-key-hint">
+              {' '}
+              With a keyboard: Space marks it, Enter releases the hold — no
+              need to look.
+            </span>
+          )}
         </p>
       </div>
     </div>

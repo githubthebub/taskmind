@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { SessionLogEntry } from '../types';
-import { downloadLog, loadLog } from '../engine/sessionLog';
+import { clearLog, downloadLog, loadLog } from '../engine/sessionLog';
+import { computeInsights, formatPracticeTime } from '../engine/insights';
 import './misc.css';
 
 export interface SessionLogViewProps {
@@ -41,15 +42,24 @@ function fmtDate(epochMs: number): string {
 
 /**
  * Private session history. Data lives only on this device; export is a
- * manual, explicit action. Onset/settled times are the user's own
- * self-report taps — no detection of any state is claimed. No social or
- * comparison features, by design.
+ * manual, explicit action, and "Delete all" erases it for good. Onset /
+ * settled times are the user's own self-report taps — no detection of any
+ * state is claimed. The summary up top is descriptive, never a score:
+ * no streaks, no bests, no trends to chase.
  */
 export default function SessionLogView({ onBack }: SessionLogViewProps) {
-  const entries = useMemo<SessionLogEntry[]>(
-    () => loadLog().slice().sort((a, b) => b.startedAt - a.startedAt),
-    [],
+  const [entries, setEntries] = useState<SessionLogEntry[]>(() =>
+    loadLog().slice().sort((a, b) => b.startedAt - a.startedAt),
   );
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+  const insights = useMemo(() => computeInsights(entries), [entries]);
+
+  const handleDeleteAll = () => {
+    clearLog();
+    setEntries([]);
+    setConfirmingDelete(false);
+  };
 
   return (
     <div className="screen session-log">
@@ -64,6 +74,35 @@ export default function SessionLogView({ onBack }: SessionLogViewProps) {
         <h1>Your sessions</h1>
         <p className="faint">Stored only on this device. Export is manual.</p>
       </header>
+
+      {entries.length > 0 && (
+        <div className="log-stats" role="group" aria-label="Practice summary">
+          <div className="log-stat">
+            <span className="log-stat-value">{insights.totalSits}</span>
+            <span className="log-stat-label">
+              sit{insights.totalSits === 1 ? '' : 's'} together
+            </span>
+          </div>
+          <div className="log-stat">
+            <span className="log-stat-value">
+              {formatPracticeTime(insights.totalPracticeMs)}
+            </span>
+            <span className="log-stat-label">in practice</span>
+          </div>
+          <div className="log-stat">
+            <span className="log-stat-value">{insights.sitsLast7Days}</span>
+            <span className="log-stat-label">this week</span>
+          </div>
+          {insights.favoritePath && (
+            <div className="log-stat">
+              <span className="log-stat-value log-stat-value-text">
+                {insights.favoritePath}
+              </span>
+              <span className="log-stat-label">most-walked path</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {entries.length === 0 ? (
         <div className="card log-empty">
@@ -104,7 +143,8 @@ export default function SessionLogView({ onBack }: SessionLogViewProps) {
 
       <p className="faint">
         “To onset” and “to settled” are the times of your own self-report taps
-        — a personal record, not a measurement of any state.
+        — a personal record, not a measurement of any state. The summary above
+        describes your practice; it isn’t a score.
       </p>
 
       <footer className="stack">
@@ -116,6 +156,40 @@ export default function SessionLogView({ onBack }: SessionLogViewProps) {
         >
           Export as JSON
         </button>
+        {confirmingDelete ? (
+          <div className="card stack log-delete-confirm">
+            <p className="dim">
+              Erase all {entries.length} session
+              {entries.length === 1 ? '' : 's'} from this device? There is no
+              undo — export first if you want to keep a copy.
+            </p>
+            <div className="row">
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleDeleteAll}
+              >
+                Delete everything
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setConfirmingDelete(false)}
+              >
+                Keep my log
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="btn btn-ghost log-delete-btn"
+            disabled={entries.length === 0}
+            onClick={() => setConfirmingDelete(true)}
+          >
+            Delete all sessions…
+          </button>
+        )}
       </footer>
     </div>
   );

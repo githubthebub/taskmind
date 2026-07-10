@@ -94,6 +94,15 @@ p { line-height: 1.55; margin: 0; }
   color: var(--ink-dim);
 }
 
+.btn-danger {
+  background: #3a2422;
+  border-color: var(--danger);
+  color: #f0d9d6;
+}
+.btn-danger:hover {
+  background: #4a2d2a;
+}
+
 .btn-block { width: 100%; }
 
 /* Large always-visible self-report tap target (Rapture Onset / Settled).
