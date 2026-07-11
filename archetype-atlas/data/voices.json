@@ -1,0 +1,148 @@
+{
+ "archetypes": [
+  {
+   "id": "sovereign",
+   "name": "The Sovereign",
+   "tagline": "Order is not given. It is carried.",
+   "mythos": "The Sovereign is the one who stands up straight at the head of the table and volunteers for the weight everyone else is quietly hoping someone will lift. That's not a cosmic principle — it's high assertiveness deciding to speak first, high orderliness deciding what the structure will be, and high industriousness showing up every day to enforce it. Where others see chaos, the Sovereign sees an unclaimed responsibility, and the crown is nothing more mystical than conscientiousness made visible. The danger, always, is that the walled garden becomes a prison: order imposed past the point where it serves anyone.",
+   "clinician": "Living as the Sovereign is healthy when you genuinely have the temperament for it — when taking charge energizes you rather than depletes you, and you can hand authority back without an identity crisis. It curdles when control becomes how you regulate anxiety: if the world only feels safe when you're running it, that's not leadership, that's hypervigilance wearing a suit. A useful check-in: can you let someone else do it badly without intervening? If delegation feels physically intolerable, the role has stopped being a choice and started being a compulsion, and the work is learning that your worth survives things being out of your hands.",
+   "skeptic": "Okay, so this one actually has receipts: assertiveness is one of the best predictors of emergent leadership in leaderless groups, and conscientiousness is the most robust Big Five predictor of job performance across basically every occupation studied. What the data does not support is the divine-right vibes — groups pick assertive people as leaders even when they're not the most competent, so 'people follow me' is evidence you talk first, not that you're right. The crown imagery is marketing; the trait profile is just a person who organizes things and doesn't wait for permission.",
+   "strengths": [
+    "Creates structure under pressure",
+    "Takes responsibility visibly",
+    "Reliable executive follow-through"
+   ],
+   "shadow": [
+    "Micromanagement and control compulsion",
+    "Mistakes dominance for competence",
+    "Order preserved past its usefulness"
+   ]
+  },
+  {
+   "id": "explorer",
+   "name": "The Explorer",
+   "tagline": "The map ends where the interesting part begins.",
+   "mythos": "The Explorer is the figure who walks voluntarily out of the walled city and into the dark forest, because the treasure is always where the dragon is. Strip the myth and you find the machinery: high openness hungry for the novel, high enthusiasm that makes the unknown feel like an invitation rather than a threat, and low orderliness that experiences routine as a slow death. This is the archetype that keeps a culture from calcifying — someone has to touch the chaos and bring back what's useful. But a life that is all frontier and no homestead builds nothing, and the Explorer who never returns with the treasure is just lost.",
+   "clinician": "This role is healthy when novelty-seeking is genuinely your temperament and you've built enough scaffolding — finances, relationships, sleep — that the improvisation has a floor under it. Watch for the version where exploration is actually avoidance: every new project, city, or partner abandoned right at the point where it would require sustained discomfort. If you notice you always leave when things get boring, ask whether 'boring' actually means 'this is now asking something of me.' The healthy Explorer chooses the unknown; the coping Explorer flees the known, and those feel identical from the inside until you sit still long enough to tell the difference.",
+   "skeptic": "Openness genuinely predicts creative achievement and divergent thinking, so the 'I generate novel ideas' part is real. But let's be honest about the rest: low conscientiousness is negatively correlated with income, job performance, and health outcomes across huge samples, and 'I tolerate chaos' is often a flattering rebrand of 'I don't finish things.' The frontier romance is marketing; the actionable version is 'pair this person with someone who ships.'",
+   "strengths": [
+    "Generates novel options fast",
+    "Thrives in ambiguity",
+    "Energizes stagnant groups"
+   ],
+   "shadow": [
+    "Chronic non-completion",
+    "Novelty as escape from commitment",
+    "Destabilizes systems that were working"
+   ]
+  },
+  {
+   "id": "sage",
+   "name": "The Sage",
+   "tagline": "Speaks last, and only when it changes something.",
+   "mythos": "The Sage sits at the edge of the fire, watching, because someone must see the pattern the tribe is too busy to notice. This is high intellect turned on the world like a slow lamp, low extraversion that finds silence roomier than talk, and a measured temperament that refuses to be stampeded by the crowd's panic or its euphoria. The Sage's confrontation with chaos is not the sword but articulation — dragging the formless thing into precise speech, which is the oldest magic there is. The peril is the tower: analysis so pure it never descends into the mud where things must actually be done.",
+   "clinician": "Being the Sage is healthy when reflection is your genuine gift and you still let people reach you — you think deeply and you feel deeply, in that order or any order. It becomes a mask when intellectualization is doing defensive work: analyzing your grief instead of grieving, having insight about your loneliness instead of calling someone. A lot of very smart people use understanding as anesthesia, and the tell is that the insight never changes anything — you can explain your patterns beautifully and they stay exactly where they are. The path back is embarrassingly simple and genuinely hard: notice a feeling in your body before you name it, and let one person see you being uncertain.",
+   "skeptic": "Real support: measured, low-reactivity people make better forecasters and calibrated judges, and reflective deliberation beats gut reads on most non-time-pressured decision tasks. But introversion has costs the myth conveniently omits — quieter people are systematically under-promoted and their ideas get credited to whoever repeats them louder, because visibility, not accuracy, drives status allocation. 'I play the long game' is sometimes strategy and sometimes a cope for never entering the game; the data can't tell you which one you are, but your track record can.",
+   "strengths": [
+    "Sees patterns others miss",
+    "Immune to group panic",
+    "Precision over volume"
+   ],
+   "shadow": [
+    "Insight without action",
+    "Analysis as emotional avoidance",
+    "Invisible in rooms that reward noise"
+   ]
+  },
+  {
+   "id": "caregiver",
+   "name": "The Caregiver",
+   "tagline": "Carries what others cannot, and calls it nothing.",
+   "mythos": "The Caregiver is the one who tends the hearth so that everyone else can go fight their dragons — and make no mistake, keeping the fire lit against entropy is its own confrontation with chaos. Mechanically this is high compassion, which actually feels others' pain rather than merely noting it, joined to genuine modesty that declines the podium even when it's earned. Cultures survive on the invisible labor of exactly this profile, and a world of only heroes and no caregivers starves in a week. The shadow is old and specific: the one who feeds everyone must not be the one who forgets to eat.",
+   "clinician": "Caregiving is healthy when it flows from fullness — you help because you have capacity and it aligns with your values, and you can say no without spiraling into guilt. It becomes a coping identity when your worth is contingent on being needed: if you learned early that love had to be earned through service, helping stops being generosity and becomes a transaction you're not allowed to admit is a transaction. The tell is resentment — that quiet ledger of everything you've given that nobody repaid. The work isn't to care less; it's to put yourself on the list of people you take care of, and to tolerate the terrifying experiment of being loved while doing nothing for anyone.",
+   "skeptic": "The evidence here is genuinely double-edged and the myth only tells you one edge. Agreeableness predicts better relationships, team cohesion, and being liked — real outcomes — but it also robustly correlates with lower earnings, especially in negotiation-heavy fields, because agreeable people systematically fail to claim value. 'Prioritizing relationships over status' is a beautiful sentence describing a measurable pay cut; do it with your eyes open, not because a codex told you it was noble.",
+   "strengths": [
+    "Builds deep trust and loyalty",
+    "Sustains group cohesion",
+    "Notices distress early"
+   ],
+   "shadow": [
+    "Self-erasure and burnout",
+    "Worth contingent on being needed",
+    "Resentment kept off the books"
+   ]
+  },
+  {
+   "id": "hero",
+   "name": "The Hero",
+   "tagline": "The mountain exists. Someone has to climb it in public.",
+   "mythos": "The Hero is the archetype of voluntary contest: pick the heaviest thing you can lift, lift it where everyone can see, and let the hierarchy sort itself out honestly. Underneath the laurels it's a legible machine — high assertiveness that seeks the front, high industriousness that outworks the field, and a thick skin that metabolizes criticism as fuel rather than injury. This is how competence hierarchies get built, and they beat the alternative, which is hierarchies of resentment. But the Hero must eventually ask the fatal question: is this my mountain, or just the tallest one visible from where I was standing when I was afraid?",
+   "clinician": "Striving is healthy when the goal is genuinely yours and you can still feel the win — you compete, you achieve, and the achievement actually lands somewhere inside you. It's a coping identity when you're running from shame: every trophy buys about a week of relief and then the emptiness comes back, because achievement was never the currency the wound trades in. The diagnostic is what happens on the day off — if rest feels like worthlessness, you're not pursuing success, you're fleeing a feeling. The fix isn't to stop achieving; it's to find out who you are when the scoreboard is off, ideally before your body forces the question.",
+   "skeptic": "Credit where due: industriousness plus assertiveness is close to the empirically optimal profile for career advancement, and low neuroticism buys real resilience under pressure — this strategy demonstrably works for rank and income. What it doesn't buy, per basically every well-being dataset, is life satisfaction past a fairly modest threshold; the correlation between status attainment and happiness is way weaker than the mythology implies. The dragon-slaying frame is marketing for a treadmill — a productive treadmill, but check occasionally that you'd choose the destination and not just the running.",
+   "strengths": [
+    "Relentless output under competition",
+    "Unfazed by criticism",
+    "Raises the group's standard"
+   ],
+   "shadow": [
+    "Achievement as shame-avoidance",
+    "Wins battles that don't matter",
+    "Identity collapses without a scoreboard"
+   ]
+  },
+  {
+   "id": "craftsman",
+   "name": "The Craftsman",
+   "tagline": "Done right, or done again.",
+   "mythos": "The Craftsman fights entropy in its most concrete form: the joint that must be true, the ledger that must balance, the procedure that exists because someone once died without it. This is high industriousness and high orderliness aimed not at the throne but at the work itself, tempered by a politeness that respects the guild, the standard, and the ones who kept it before. It is the least glamorous confrontation with chaos and the most cumulative — cathedrals are built by exactly this temperament, one honest stone at a time. The trap is worshipping the procedure after the purpose has left the building.",
+   "clinician": "This role is healthy when mastery is genuinely nourishing — you lose time in the work, standards are high because excellence feels good, and 'good enough' is available to you when the situation calls for it. It curdles into perfectionism when the standard is really a defense: if a flaw in the work feels like a flaw in you, then every task carries your entire worth, and that's why you can't ship, delegate, or rest. Watch for procedure as anxiety management — rituals that must be done a certain way not because outcomes require it but because deviation feels unbearable. The healthy Craftsman serves the work; the anxious one is held hostage by it.",
+   "skeptic": "This is the most evidence-backed archetype in the deck and it's not close: conscientiousness predicts job performance, income, longevity, and marital stability better than any other trait, and deliberate, procedure-honoring practice is how expertise actually forms. The honest caveat is that high orderliness underperforms in genuinely novel environments — rule-followers do worse when the rules just changed — and 'quality over speed' is a losing trade in markets that reward shipped-and-iterated over polished-and-late. The duty rhetoric is decoration; the trait profile is simply the one that compounds.",
+   "strengths": [
+    "Consistent, compounding quality",
+    "Deep procedural mastery",
+    "Trustworthy with critical detail"
+   ],
+   "shadow": [
+    "Perfectionism blocks shipping",
+    "Ritual outlives purpose",
+    "Brittle when the rules change"
+   ]
+  },
+  {
+   "id": "rebel",
+   "name": "The Rebel",
+   "tagline": "Someone has to say it out loud.",
+   "mythos": "Every order, left unchallenged, drifts toward tyranny — and the Rebel is the appointed instrument of that correction, the voice that says the emperor is naked while the court studies its shoes. The mechanism is unromantic: low politeness that doesn't flinch at giving offense, high openness that can actually see past the current frame, and a nonconformity that treats consensus as a hypothesis rather than a verdict. The Rebel is chaos in the service of renewal, the necessary heresy that keeps the walled garden from becoming a tomb. The shadow is the revolutionary with no blueprint — tearing down is half a job, and the easy half.",
+   "clinician": "Challenging norms is healthy when it's selective and in service of something — you dissent because a specific thing is specifically wrong, and you can also cooperate, concede, and belong. It becomes an identity mask when opposition is compulsive: if you find yourself against whatever the room is for, the room is still controlling you, just with the sign flipped. Often underneath is an old wound around trust or authority — someone with power hurt you, and now all structure reads as threat. The tell is whether you can imagine being led well. If no authority could ever be legitimate to you, that's not principle, that's armor, and armor gets heavy.",
+   "skeptic": "The dissent literature is legitimately on the Rebel's side: minority viewpoints measurably improve group decision quality and reduce groupthink, even when the dissenter is wrong, because they force real deliberation. But the same literature shows the dissenter personally eats the cost — lower likability ratings, blocked promotions, social exclusion — so 'speaking truth to power' is a public good you subsidize out of your own career. Also, most self-styled rebels aren't Galileo; base rates say the consensus is usually right and you're usually just abrasive. Pick your heresies like they're expensive, because they are.",
+   "strengths": [
+    "Breaks groupthink",
+    "Says what others won't",
+    "Sees past the current frame"
+   ],
+   "shadow": [
+    "Contrarianism as reflex",
+    "Burns alliances needlessly",
+    "Demolition without a blueprint"
+   ]
+  },
+  {
+   "id": "diplomat",
+   "name": "The Diplomat",
+   "tagline": "The war that never happened has no monument.",
+   "mythos": "The Diplomat stands at the gate between kingdoms, holding two truths at once and refusing to let either become a casus belli. In trait terms this is high politeness that honors the forms which keep strangers from being enemies, high compassion that feels both sides' stakes, and a perceptiveness that reads a room's weather before the storm has named itself. Order between people, not just within them, is this archetype's dominion — the peace treaty is as real an artifact as the cathedral. The shadow is the peace that should not have been kept: harmony purchased by burying the necessary conflict alive, where it does not die.",
+   "clinician": "Mediating is healthy when it's a skill you deploy, not a survival strategy you can't turn off. A lot of Diplomats are children of volatile homes who learned to read micro-expressions because their safety depended on it — hypervigilance that later gets rebranded as emotional intelligence. The question is whether you can tolerate someone being upset with you: if disharmony anywhere in the room registers as danger, you'll trade away your own position every time just to make the feeling stop, and call it maturity. Healthy diplomacy has a floor — things you'll rupture the peace over. If you can't name yours, that's the work.",
+   "skeptic": "Perspective-taking measurably improves negotiated outcomes, and politeness norms genuinely reduce costly conflict spirals — the Diplomat's toolkit isn't fake. What the framing hides is that conflict-avoidant groups make worse decisions; the teams that perform best fight openly about the task and the Diplomat's instinct to smooth that over is actively harmful. And 'reading the room' is a much shakier scientific construct than its reputation — people are reliably overconfident about their ability to decode others. Half this archetype is real skill, half is anxiety with good manners, and you should audit which half you're running.",
+   "strengths": [
+    "De-escalates before rupture",
+    "Reads unspoken dynamics",
+    "Makes rival factions workable"
+   ],
+   "shadow": [
+    "Buries necessary conflict",
+    "Trades own position for calm",
+    "Harmony as fear response"
+   ]
+  }
+ ]
+}
