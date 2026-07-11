@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backbone — The Big Five Training Game</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦴</text></svg>">
+</head>
+<body>
+
+<header id="topbar" class="hidden">
+  <div class="topbar-inner">
+    <button class="brand" data-nav="home">🦴 Backbone</button>
+    <div class="topbar-right">
+      <button id="culture-chip" class="chip" data-nav="culture" title="Change culture"></button>
+      <span id="streak-chip" class="chip chip-flat" title="Daily streak">🔥 0</span>
+      <span id="score-chip" class="chip chip-flat" title="Total score">⭐ 0</span>
+    </div>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- ============ CULTURE SELECT ============ -->
+  <section id="screen-culture" class="screen">
+    <div class="hero">
+      <div class="hero-emoji">🦴</div>
+      <h1>Backbone</h1>
+      <p class="tagline">A game that trains the Big Five traits your culture actually rewards —
+      and makes sure you never play the doormat.</p>
+    </div>
+    <h2 class="section-title">Where are you playing from?</h2>
+    <p class="muted small">Pick the country or culture you live and work in. It sets which traits the
+    game emphasizes and which <em>style</em> of assertiveness scores best. Being a pushover never wins anywhere.</p>
+    <div class="culture-search-row">
+      <input id="culture-search" type="search" placeholder="Search countries or styles…" autocomplete="off">
+    </div>
+    <h3 class="group-label">Culture styles</h3>
+    <div id="style-grid" class="culture-grid"></div>
+    <h3 class="group-label">Countries</h3>
+    <div id="country-grid" class="culture-grid"></div>
+    <p class="muted tiny">Culture profiles are broad-brush averages from cross-cultural research, not
+    stereotypes about individuals. You can switch anytime.</p>
+  </section>
+
+  <!-- ============ HOME / DASHBOARD ============ -->
+  <section id="screen-home" class="screen hidden">
+    <div id="home-culture-banner" class="banner"></div>
+
+    <div class="meters">
+      <div class="meter-card" id="backbone-card">
+        <div class="meter-head"><span>🦴 Backbone Meter</span><span id="backbone-pct">–</span></div>
+        <div class="bar"><div id="backbone-bar" class="bar-fill bar-backbone"></div></div>
+        <p class="muted tiny">Share of assertive choices when someone pushed on you. Doormat and blow-up answers drag it down.</p>
+      </div>
+      <div class="meter-card">
+        <div class="meter-head"><span>😌 Calm Meter</span><span id="calm-pct">–</span></div>
+        <div class="bar"><div id="calm-bar" class="bar-fill bar-calm"></div></div>
+        <p class="muted tiny">Built by beating anxiety rounds, catching distorted thoughts, and finishing breathing sessions.</p>
+      </div>
+    </div>
+
+    <div id="trait-bars" class="trait-bars"></div>
+
+    <h2 class="section-title">Play</h2>
+    <div class="mode-grid">
+      <button class="mode-card" data-nav="scenario">
+        <span class="mode-emoji">🎭</span>
+        <span class="mode-name">Situations</span>
+        <span class="mode-desc">Real-life dilemmas. Hold your ground without blowing up.</span>
+      </button>
+      <button class="mode-card" data-nav="distortion">
+        <span class="mode-emoji">🔍</span>
+        <span class="mode-name">Spot the Distortion</span>
+        <span class="mode-desc">Catch the anxious thinking trap before it catches you.</span>
+      </button>
+      <button class="mode-card" data-nav="drill">
+        <span class="mode-emoji">🗣️</span>
+        <span class="mode-name">Say It With Spine</span>
+        <span class="mode-desc">Pick the wording that's firm, fair, and doormat-free.</span>
+      </button>
+      <button class="mode-card" data-nav="breathe">
+        <span class="mode-emoji">🌬️</span>
+        <span class="mode-name">Steady Breath</span>
+        <span class="mode-desc">Box-breathing pacer. Train the body's calm switch.</span>
+      </button>
+    </div>
+
+    <div class="row-buttons">
+      <button class="btn ghost" data-nav="progress">📊 Progress &amp; badges</button>
+      <button class="btn ghost" data-nav="about">ℹ️ How this works</button>
+    </div>
+  </section>
+
+  <!-- ============ SCENARIO GAME ============ -->
+  <section id="screen-scenario" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="scenario-progress" class="round-dots"></div>
+    </div>
+    <div id="scenario-card" class="card"></div>
+    <div id="scenario-feedback" class="feedback hidden"></div>
+    <div id="scenario-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ DISTORTION GAME ============ -->
+  <section id="screen-distortion" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="distortion-progress" class="round-dots"></div>
+    </div>
+    <div id="distortion-card" class="card"></div>
+    <div id="distortion-feedback" class="feedback hidden"></div>
+    <div id="distortion-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ DRILL GAME ============ -->
+  <section id="screen-drill" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="drill-progress" class="round-dots"></div>
+    </div>
+    <div id="drill-card" class="card"></div>
+    <div id="drill-feedback" class="feedback hidden"></div>
+    <div id="drill-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ BREATHING ============ -->
+  <section id="screen-breathe" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Back</button>
+    </div>
+    <div class="card center-card">
+      <h2>🌬️ Steady Breath</h2>
+      <p class="muted">Box breathing: in 4s → hold 4s → out 4s → hold 4s. Slow exhales tell your
+      nervous system the threat is over. Tap the circle right when the phase changes for bonus points.</p>
+      <div id="breathe-setup">
+        <div class="row-buttons">
+          <button class="btn" data-breathe="60">1 min</button>
+          <button class="btn" data-breathe="120">2 min</button>
+          <button class="btn" data-breathe="180">3 min</button>
+        </div>
+      </div>
+      <div id="breathe-stage" class="hidden">
+        <div id="breathe-circle-wrap">
+          <div id="breathe-circle"><span id="breathe-phase">Ready</span></div>
+        </div>
+        <div id="breathe-timer" class="muted"></div>
+        <div id="breathe-bonus" class="muted small"></div>
+        <button id="breathe-stop" class="btn ghost small-btn">Stop</button>
+      </div>
+      <div id="breathe-done" class="hidden"></div>
+    </div>
+  </section>
+
+  <!-- ============ PROGRESS ============ -->
+  <section id="screen-progress" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Back</button>
+    </div>
+    <h2 class="section-title">📊 Your character sheet</h2>
+    <div class="card">
+      <h3 class="chart-title">You vs. what <span id="radar-culture-name"></span> rewards</h3>
+      <canvas id="radar" width="640" height="480"></canvas>
+      <p class="muted tiny">Purple = your training so far. Gold = the trait profile your selected culture
+      tends to reward. Play modes that feed your weakest gold-vs-purple gaps.</p>
+    </div>
+    <div id="stats-grid" class="stats-grid"></div>
+    <h2 class="section-title">🏅 Badges</h2>
+    <div id="badge-grid" class="badge-grid"></div>
+    <div class="row-buttons">
+      <button id="reset-save" class="btn danger">Reset all progress</button>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section id="screen-about" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Back</button>
+    </div>
+    <h2 class="section-title">ℹ️ How Backbone works</h2>
+    <div class="card prose">
+      <h3>The Big Five</h3>
+      <p>Psychology's best-supported model of personality measures five traits:
+      <strong>Openness</strong> (curiosity, trying new things), <strong>Conscientiousness</strong>
+      (follow-through, order, reliability), <strong>Extraversion</strong> (social energy, initiative),
+      <strong>Agreeableness</strong> (warmth and cooperation), and <strong>Neuroticism</strong>
+      (proneness to anxiety and negative emotion). Backbone trains the first four upward and trains the
+      behaviors that pull neuroticism <em>down</em> — shown here as its positive mirror,
+      <strong>Emotional Stability</strong>.</p>
+      <p>Traits aren't fixed. Studies on deliberate personality change show that repeatedly
+      <em>acting</em> like the person you want to be — small, concrete behaviors, done often — shifts
+      the traits themselves. That's what the rounds in this game are: reps.</p>
+
+      <h3>Warmth ≠ doormat</h3>
+      <p>The game deliberately splits healthy agreeableness (warm, fair, cooperative) from doormat
+      behavior (swallowing your needs to avoid conflict). Doormat answers <em>lose points in every
+      culture</em>, and so do aggressive blow-ups. The winning move is always some form of assertiveness:
+      stating what you want, calmly, without apologizing for existing. What changes by culture is the
+      <em>style</em> — blunt-and-brief scores best in direct cultures like Germany or the Netherlands,
+      while firm-but-face-saving scores best in high-context cultures like Japan or Thailand. Same spine,
+      different wrapping.</p>
+
+      <h3>Anxiety and negative emotion</h3>
+      <p>You can't delete emotions — and you wouldn't want to; anxiety is your alarm system. What you
+      <em>can</em> train is the response: catching distorted thoughts (the CBT skill behind Spot the
+      Distortion), approaching instead of avoiding (the Situations rounds), and downshifting your body
+      (Steady Breath). Do the reps and the alarm fires less often, less loudly, and stops running your life.
+      That's what "low neuroticism" actually looks like from the inside.</p>
+
+      <h3>Cultures are averages</h3>
+      <p>The country profiles here are broad-brush tendencies drawn from cross-cultural psychology
+      (trait-value surveys, communication-directness research). Real people vary hugely within every
+      culture. Use the profiles as a lens, not a box.</p>
+
+      <h3>Not therapy</h3>
+      <p>Backbone is a training game, not medical advice. If anxiety or low mood is seriously interfering
+      with your life, a professional (a CBT therapist especially) is the real power-up.</p>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
