@@ -84,6 +84,24 @@ The whole game plays like picking up a completed cartridge:
 ![Trainer Card](docs/trainer-card.png)
 ![Pokédex](docs/pokedex.png)
 
+## GBA-remake modern feel
+
+The polish layer that separates the remake era from the originals:
+
+- **Location banners** slide in as you cross between Seagallop Harbor,
+  Treasure Beach, One Island, Kindle Road, Ember Spa, and the summit
+- **Colored keywords** in dialogue — places, people/Pokémon, and items each
+  get their own highlight color
+- **"Previously on your adventure..."** journal recap whenever you CONTINUE
+- **VS Seeker** in your bag — defeated trainers accept rematches with teams
+  that come back 4 levels stronger (and pay bigger prizes) every time
+- **Second conversations** — talk to islanders twice for new material
+- **Type-colored chips** on the move-select screen
+- Soft rounded corners on every UI frame
+
+![Location banner](docs/banner.png)
+![Colored dialogue](docs/dialog.png)
+
 ## Music & feel
 
 - Original **chiptune soundtrack** synthesized live with WebAudio — overworld,

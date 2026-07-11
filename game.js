@@ -93,6 +93,8 @@ const game = {
   gotGift: false,
   collected: {},
   beaten: {},
+  talked: {},
+  rematches: {},
   quest: 0,
   money: 31650,
   seen: {},
@@ -114,6 +116,7 @@ function newGame() {
   game.map = 'oneisland'; game.px = 13; game.py = 49; game.dir = 'up';
   game.gotGift = false;
   game.collected = {}; game.beaten = {}; game.quest = 0;
+  game.talked = {}; game.rematches = {};
   game.money = 31650;
   game.seen = {}; game.caught = {};
   game.playFrames = 0;
@@ -127,7 +130,7 @@ function newGame() {
     'You step off the SEAGALLOP ferry', 'onto the harbor pier.',
     'After conquering the POKeMON', 'LEAGUE, BILL asked you to visit', 'CELIO at the NETWORK CENTER here.',
     'KINDLE ROAD, EMBER SPA and', 'MT. EMBER lie to the north.', 'Good luck, CHAMPION!',
-  ], () => { game.state = 'world'; });
+  ], () => { game.state = 'world'; checkZone(true); });
 }
 
 // ---------- Save / load ----------
@@ -138,6 +141,7 @@ function saveGame() {
     collected: game.collected, beaten: game.beaten, quest: game.quest,
     money: game.money, seen: game.seen, caught: game.caught,
     playFrames: game.playFrames, trainerId: game.trainerId,
+    talked: game.talked, rematches: game.rematches,
   };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); return true; }
   catch (e) { return false; }
@@ -154,6 +158,8 @@ function loadGame() {
     game.seen = game.seen || {}; game.caught = game.caught || {};
     game.playFrames = game.playFrames || 0;
     game.trainerId = game.trainerId || 30716;
+    game.talked = game.talked || {};
+    game.rematches = game.rematches || {};
     for (const p of game.party) { game.seen[p.species] = true; game.caught[p.species] = true; }
     R3D.setMap(game.map);
     MUSIC.play(mapTrack());
@@ -271,12 +277,14 @@ function doWarp(warp) {
     game.walking = false; game.ox = game.oy = 0;
     R3D.setMap(game.map);
     MUSIC.play(mapTrack());
+    checkZone(true);
     fadeIn(() => { game.state = 'world'; });
   });
 }
 
 function onStep() {
   game.steps++;
+  checkZone();
   const t = tileAt(game.map, game.px, game.py);
   if (t === 'T' && Math.random() < 0.14) startWildBattle();
 }
@@ -326,7 +334,14 @@ function interact() {
     } else if (npc.action === 'gift') {
       startDialog(['How is your journey going?', 'Do come visit an old lady again.']);
     } else {
-      startDialog(npc.lines);
+      // second conversations for the chattier islanders
+      if (npc.lines2 && game.talked[npc.name]) {
+        startDialog(game.talked[npc.name] % 2 ? npc.lines2 : npc.lines);
+        game.talked[npc.name]++;
+      } else {
+        startDialog(npc.lines);
+        game.talked[npc.name] = 1;
+      }
     }
     return;
   }
@@ -512,9 +527,28 @@ function updateBag() {
     mon.hp += healed;
     consumeItem(slot);
     startDialog([mon.name + ' recovered ' + healed + ' HP!']);
+  } else if (item.kind === 'seeker') {
+    useVsSeeker();
   } else {
-    startDialog(['OAK\'s words echoed...', 'There\'s a time and place for', 'everything!']);
+    startDialog(['There\'s a time and place for', 'everything, as they say.']);
   }
+}
+
+function useVsSeeker() {
+  const rematchers = MAPS[game.map].npcs.filter(n => n.trainer && game.beaten[n.trainer.id]);
+  if (!rematchers.length) {
+    startDialog(['The VS SEEKER beeps softly...', 'No defeated TRAINERS responded', 'nearby.']);
+    return;
+  }
+  blip(1200, .08); blip(1500, .1);
+  const names = rematchers.map(n => n.name);
+  for (const n of rematchers) {
+    game.beaten[n.trainer.id] = false;
+    game.rematches[n.trainer.id] = (game.rematches[n.trainer.id] || 0) + 1;
+  }
+  startDialog(['The VS SEEKER lights up!',
+    ...names.map(nm => nm + ' is raring for a rematch!'),
+    'Their POKeMON look tougher than', 'before...']);
 }
 function consumeItem(slot) {
   slot.qty--;
@@ -555,7 +589,8 @@ function startWildBattle() {
 function startTrainerBattle(npc) {
   const tr = npc.trainer;
   battle.trainer = { id: tr.id, name: npc.name, npc };
-  battle.trainerParty = tr.party.map(p => makeMon(p.species, p.level, p.moves));
+  const boost = 4 * (game.rematches[tr.id] || 0); // VS SEEKER rematches level up
+  battle.trainerParty = tr.party.map(p => makeMon(p.species, Math.min(70, p.level + boost), p.moves));
   battle.foeIdx = 0;
   const foe = battle.trainerParty[0];
   const lead = game.party.find(p => p.hp > 0);
@@ -966,7 +1001,7 @@ function afterFoeFainted() {
     const finish = () => {
       queueMsg('You defeated ' + battle.trainer.name + '!', () => {
         game.beaten[tr.id] = true;
-        const prize = tr.prize || 0;
+        const prize = Math.round((tr.prize || 0) * (1 + 0.5 * (game.rematches[tr.id] || 0)));
         if (prize > 0) {
           game.money += prize;
           blip(1100, .08);
@@ -1130,20 +1165,54 @@ function drawMon(species, x, y, size) {
   ctx.drawImage(src, x, y, size, size);
 }
 
-// ---------- World draw (3D scene + optional location banner) ----------
+// ---------- World draw (3D scene + location banner) ----------
+const banner = { text: '', t: 0 };
+function zoneName() {
+  if (game.map !== 'oneisland') return MAP_ZONE_NAMES[game.map] || '';
+  for (const z of ZONES) if (game.py <= z.max) return z.name;
+  return '';
+}
+function checkZone(force) {
+  const name = zoneName();
+  if (name && (force || name !== banner.last)) {
+    banner.last = name;
+    banner.text = name;
+    banner.t = 130;
+  }
+}
+
 function drawWorld() {
   game.frame++;
   R3D.renderWorld();
+  if (banner.t > 0) {
+    banner.t--;
+    const w = banner.text.length * 5.4 + 18;
+    // slide in, hold, slide out
+    const slide = banner.t > 120 ? (130 - banner.t) / 10 : banner.t < 12 ? banner.t / 12 : 1;
+    const bx = -w + slide * (w + 4);
+    px(bx, 5, w, 16, '#f8f0d8');
+    px(bx, 5, w, 2, '#c04838');
+    px(bx, 19, w, 2, '#584838');
+    text(banner.text, bx + 8, 10, '#40342c', 7);
+    roundCorners(bx, 5, w, 16);
+  }
 }
 
 // ---------- UI primitives ----------
-// FRLG-style frames: white dialog box with blue frame, cream battle info boxes
+// GBA-remake style frames: soft rounded corners, white dialog with blue frame
+function roundCorners(x, y, w, h) {
+  ctx.clearRect(x, y, 2, 2);
+  ctx.clearRect(x + w - 2, y, 2, 2);
+  ctx.clearRect(x, y + h - 2, 2, 2);
+  ctx.clearRect(x + w - 2, y + h - 2, 2, 2);
+}
 function drawBox(x, y, w, h) {
   px(x, y, w, h, '#f8f8f8');
   ctx.strokeStyle = '#4870a8'; ctx.lineWidth = 2;
   ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
   ctx.strokeStyle = '#a8c0e0'; ctx.lineWidth = 1;
   ctx.strokeRect(x + 3.5, y + 3.5, w - 7, h - 7);
+  roundCorners(x, y, w, h);
 }
 
 function drawInfoBox(x, y, w, h) {
@@ -1151,6 +1220,7 @@ function drawInfoBox(x, y, w, h) {
   ctx.strokeStyle = '#584838'; ctx.lineWidth = 2;
   ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
   px(x + 2, y + h - 4, w - 4, 2, '#d8c8a0');
+  roundCorners(x, y, w, h);
 }
 
 function drawMsgPanel(x, y, w, h) {
@@ -1158,6 +1228,20 @@ function drawMsgPanel(x, y, w, h) {
   px(x + 3, y + 3, w - 6, h - 6, '#28384e');
   ctx.strokeStyle = '#e8d8b0'; ctx.lineWidth = 1;
   ctx.strokeRect(x + 3.5, y + 3.5, w - 7, h - 7);
+  roundCorners(x, y, w, h);
+}
+
+// FRLG-style colored proper nouns, with typewriter budget support
+function textKeywords(line, chars, x, y, size = 8) {
+  ctx.font = 'bold ' + size + 'px monospace';
+  let cx = x, budget = chars;
+  for (const word of line.split(' ')) {
+    if (budget <= 0) break;
+    const shown = word.slice(0, Math.max(0, Math.ceil(budget)));
+    text(shown, cx, y, KEYWORD_COLORS[word] || '#383838', size);
+    cx += ctx.measureText(word + ' ').width;
+    budget -= word.length + 1;
+  }
 }
 
 function text(str, x, y, color = '#383838', size = 8) {
@@ -1203,8 +1287,7 @@ function drawDialogBox() {
   let shown = Math.floor(dialog.chars);
   for (let i = 0; i < pageLines.length; i++) {
     const line = pageLines[i];
-    const take = clamp(shown, 0, line.length);
-    text(line.slice(0, take), 10, VH - 34 + i * 13);
+    textKeywords(line, shown, 10, VH - 34 + i * 13);
     shown -= line.length;
   }
   const total = pageLines.join('').length;
@@ -1339,14 +1422,20 @@ function drawBattleUI() {
     const moves = playerMon().moves;
     moves.forEach((m, i) => {
       const x = 16 + (i % 2) * 74, y = VH - 35 + Math.floor(i / 2) * 15;
-      text(m.name, x, y, m.pp > 0 ? '#40342c' : '#a89c88', 6);
-      if (battle.moveIdx === i) text('▶', x - 9, y, '#e85838', 7);
+      px(x - 2, y + 1, 3, 6, TYPE_COLORS[MOVES[m.name].type] || '#888');
+      text(m.name, x + 4, y, m.pp > 0 ? '#40342c' : '#a89c88', 6);
+      if (battle.moveIdx === i) text('▶', x - 10, y, '#e85838', 7);
     });
     const sel = moves[battle.moveIdx];
     drawInfoBox(162, VH - 42, VW - 164, 40);
     text('PP', 170, VH - 35, '#584838', 7);
     text(sel.pp + '/' + sel.maxPp, 192, VH - 35, '#40342c', 7);
-    text(MOVES[sel.name].type + '/', 170, VH - 20, '#584838', 7);
+    // type chip in the move's color
+    const tc = TYPE_COLORS[MOVES[sel.name].type] || '#888';
+    px(168, VH - 22, 52, 11, tc);
+    ctx.strokeStyle = '#40342c'; ctx.lineWidth = 1;
+    ctx.strokeRect(168.5, VH - 21.5, 51, 10);
+    text(MOVES[sel.name].type, 172, VH - 20, '#ffffff', 7);
   }
 }
 
@@ -1464,9 +1553,31 @@ function updateTitle() {
   if (tapB()) { title.mode = 'logo'; return; }
   if (tapA()) {
     blip(900);
-    if (title.idx === 0 && loadGame()) game.state = 'world';
+    if (title.idx === 0 && loadGame()) {
+      game.state = 'world';
+      checkZone(true);
+      startDialog(recapLines());
+    }
     else newGame();
   }
+}
+
+// journal recap shown when continuing a save
+function recapLines() {
+  const lines = ['Previously on your adventure...'];
+  if (game.quest === 0) {
+    lines.push('You sailed to ONE ISLAND after your', 'LEAGUE victory.', 'BILL asked you to visit CELIO at', 'the NETWORK CENTER.');
+  } else if (game.quest === 1) {
+    lines.push('CELIO asked you to fetch a RUBY', 'from MT. EMBER\'s summit.', 'The trail past EMBER SPA is open.');
+  } else if (game.quest === 2) {
+    lines.push('You found the RUBY at the summit!', 'CELIO is waiting for it at the', 'NETWORK CENTER.');
+  } else {
+    lines.push('The NETWORK MACHINE hums with the', 'RUBY\'s glow. The islands are', 'linked, thanks to you.');
+  }
+  const wins = Object.values(game.beaten).filter(Boolean).length;
+  if (wins > 0) lines.push('TRAINERS defeated so far: ' + wins + '.');
+  lines.push('Your journey continues!');
+  return lines;
 }
 
 // ---------- Main loop ----------

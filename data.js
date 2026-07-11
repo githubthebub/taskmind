@@ -120,13 +120,53 @@ const ITEMS = {
   'GREAT BALL':   { kind:'ball', bonus:1.5, desc:'A good, high-performance BALL.' },
   'MASTER BALL':  { kind:'ball', bonus:255, desc:'The best BALL. It never fails.' },
   'RUBY':         { kind:'key',  desc:'A gemstone that glows like embers.' },
+  'VS SEEKER':    { kind:'seeker', desc:'Finds TRAINERS keen on a rematch.' },
 };
+
+// UI accent color per move type
+const TYPE_COLORS = {
+  NORMAL:'#a8a068', FIRE:'#e8823c', WATER:'#5a8fd6', ELECTRIC:'#d8b020',
+  GRASS:'#58b850', ICE:'#7cc8d8', FIGHTING:'#b0342c', POISON:'#9a4a9a',
+  GROUND:'#d0b058', FLYING:'#8a9ae0', PSYCHIC:'#e05888', BUG:'#a8b820',
+  ROCK:'#b89e58', GHOST:'#6a5a9a', DRAGON:'#6a48e0', DARK:'#6a5848', STEEL:'#a8a8c0',
+};
+
+// area names shown in the sliding location banner, by row range on oneisland
+const ZONES = [
+  { max: 5,   name: 'EMBER SPA' },
+  { max: 29,  name: 'KINDLE ROAD' },
+  { max: 43,  name: 'ONE ISLAND' },
+  { max: 48,  name: 'TREASURE BEACH' },
+  { max: 999, name: 'SEAGALLOP HARBOR' },
+];
+const MAP_ZONE_NAMES = {
+  center: 'POKeMON NETWORK CENTER',
+  house: 'ISLANDER\'S HOME',
+  summit: 'MT. EMBER SUMMIT',
+};
+
+// dialog keyword highlighting (FRLG-style colored proper nouns)
+const KEYWORD_COLORS = (() => {
+  const place = '#c04838', person = '#2858b8', item = '#1e8a48';
+  const map = {};
+  const add = (words, c) => words.forEach(w => { map[w] = c; });
+  add(['ISLAND!', 'ISLAND', 'ISLANDS', 'SEVII', 'KINDLE', 'ROAD', 'EMBER', 'SPA', 'MT.', 'TREASURE',
+    'BEACH', 'SEAGALLOP', 'VERMILION', 'NETWORK', 'CENTER', 'CITY.', 'SUMMIT', 'LEAGUE', 'GYM'], place);
+  add(['CELIO', 'CELIO!', 'BILL', 'ATLAS', 'MILO', 'RICK', 'OAK\'s', 'CHAMPION', 'CHAMPION!', 'TRAINER', 'TRAINERS',
+    'NURSE', 'HIKER', 'MEOWTH', 'WAILORD', 'MAGIKARP', 'MANKEY', 'SLOWPOKE-tail...',
+    'BLASTOISE', 'BLASTOISE?!', 'PIDGEOT', 'PIDGEOT,', 'ALAKAZAM', 'SNORLAX', 'RAICHU', 'NIDOKING',
+    'SPEAROW', 'FEAROW', 'PONYTA', 'RAPIDASH', 'GEODUDE', 'POKeMON'], person);
+  add(['RUBY', 'RUBY!', 'RUBY,', 'RUBY.', 'BALL', 'BALLS', 'POKe', 'POTION', 'MASTER', 'SEEKER',
+    'MACHINE', 'MACHINE!', 'POKeDEX', 'POKeDEX.'], item);
+  return map;
+})();
 
 const STARTING_BAG = [
   { item:'HYPER POTION', qty:3 },
   { item:'SUPER POTION', qty:5 },
   { item:'POKe BALL',    qty:10 },
   { item:'GREAT BALL',   qty:5 },
+  { item:'VS SEEKER',    qty:1 },
 ];
 
 // ---------- Pixel sprites (24x24, '.'=transparent, k=outline) ----------
@@ -757,17 +797,23 @@ const MAPS = {
     },
     npcs: [
       { x:15, y:42, dir:'down', color:'#d06890', name:'ISLAND WOMAN',
-        lines:['Welcome to ONE ISLAND!', 'Mainlanders always ask where our', 'GYM is. No GYM here, hon.', 'We settle arguments island-style:', 'whoever spots a WAILORD first', 'wins. Nobody has won since \'92.'] },
+        lines:['Welcome to ONE ISLAND!', 'Mainlanders always ask where our', 'GYM is. No GYM here, hon.', 'We settle arguments island-style:', 'whoever spots a WAILORD first', 'wins. Nobody has won since \'92.'],
+        lines2:['Back again, hon?', 'Keep an eye on the horizon.', 'I have a good feeling about', 'WAILORD season this year.'] },
       { x:8,  y:47, dir:'down', color:'#6890c0', name:'BEACHCOMBER',
-        lines:['Thirty years I\'ve combed this', 'beach for treasure.', 'My greatest find? My dear wife!', 'She drifted in on a kayak.', 'Gahaha! Any POKe BALLS you spot', 'are yours. My back is retired.'] },
+        lines:['Thirty years I\'ve combed this', 'beach for treasure.', 'My greatest find? My dear wife!', 'She drifted in on a kayak.', 'Gahaha! Any POKe BALLS you spot', 'are yours. My back is retired.'],
+        lines2:['Find anything good?', 'Once I dug up a gold nugget here.', 'Traded it for a sandwich.', 'Worst deal of my life. Best', 'sandwich, though. Gahaha!'] },
       { x:15, y:27, dir:'down', color:'#68a860', name:'YOUNGSTER',
-        lines:['I wear shorts all year. Island', 'life! Breezy AND aerodynamic.', '...Whoa, hold on. A BLASTOISE?!', 'Are you famous or something?', 'Can I get your autograph?!', '...On my shorts?'] },
+        lines:['I wear shorts all year. Island', 'life! Breezy AND aerodynamic.', '...Whoa, hold on. A BLASTOISE?!', 'Are you famous or something?', 'Can I get your autograph?!', '...On my shorts?'],
+        lines2:['I told everyone at school about', 'you! Nobody believed me.', 'School is on THREE ISLAND, so', 'the story got wet on the way.'] },
       { x:12, y:51, dir:'down', color:'#4878b0', name:'SAILOR',
-        lines:['This old girl is the SEAGALLOP.', 'She\'s carried me through three', 'typhoons and one WAILORD sneeze.', 'The sneeze was worse.', 'We\'ll sail again once CELIO\'s', 'machine is humming. No rush, eh?'] },
+        lines:['This old girl is the SEAGALLOP.', 'She\'s carried me through three', 'typhoons and one WAILORD sneeze.', 'The sneeze was worse.', 'We\'ll sail again once CELIO\'s', 'machine is humming. No rush, eh?'],
+        lines2:['You get your sea legs yet?', 'Takes three voyages, they say.', 'Took me thirty. And one WAILORD.'] },
       { x:12, y:48, dir:'right', color:'#48a898', name:'FISHERMAN',
-        lines:['Shh! You\'ll scare the MAGIKARP!', '...', '...Nothing\'s biting anyway.', 'Between you and me, I stopped', 'baiting the hook years ago.', 'It\'s about the peace, friend.'] },
+        lines:['Shh! You\'ll scare the MAGIKARP!', '...', '...Nothing\'s biting anyway.', 'Between you and me, I stopped', 'baiting the hook years ago.', 'It\'s about the peace, friend.'],
+        lines2:['...', '......', '.........Bite!', '...No. Just seaweed.', 'Still counts as excitement.'] },
       { x:15, y:5, dir:'down', color:'#a87848', name:'HIKER',
-        lines:['I\'ve hiked MT. EMBER thirty times!', 'My knees? Gravel. Pure gravel.', 'But one soak in EMBER SPA and I', 'bounce around like a MANKEY!', 'Your POKeMON will love it too.', 'Just don\'t drink the water.'] },
+        lines:['I\'ve hiked MT. EMBER thirty times!', 'My knees? Gravel. Pure gravel.', 'But one soak in EMBER SPA and I', 'bounce around like a MANKEY!', 'Your POKeMON will love it too.', 'Just don\'t drink the water.'],
+        lines2:['A trainer once asked me WHY not', 'to drink the spa water.', 'Friend, a GEODUDE bathes in it.', 'That\'s why.'] },
       { x:16, y:12, dir:'left', color:'#c8a038', name:'BIRD KEEPER MILO',
         trainer: {
           id: 'birdkeeper',
