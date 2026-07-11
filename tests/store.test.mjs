@@ -64,6 +64,38 @@ test("commitDraft finalizes and clears the draft pointer", () => {
   assert.ok(store.getDecision(d.id).decidedAt > 0);
 });
 
+test("adoptDraft persists lazily-created drafts and ignores non-drafts", () => {
+  const storage = memStorage();
+  const store = createStore(storage);
+
+  const d = newDecision();
+  assert.equal(storage.getItem("betterdecisions.v1"), null, "nothing persisted before adoption");
+  store.adoptDraft(d);
+  assert.equal(store.getDraft().id, d.id);
+  assert.equal(createStore(storage).getDraft().id, d.id, "adopted draft survives reload");
+
+  // adopting twice must not duplicate
+  store.adoptDraft(d);
+  assert.equal(store.state.decisions.length, 1);
+
+  // a committed decision can't be resurrected as the draft pointer
+  store.commitDraft(d);
+  store.adoptDraft(d);
+  assert.equal(store.getDraft(), null);
+});
+
+test("reload re-reads state written by another tab", () => {
+  const storage = memStorage();
+  const a = createStore(storage);
+  const b = createStore(storage);
+  const d = b.startDraft();
+  d.title = "written by tab B";
+  b.commitDraft(d);
+  assert.equal(a.state.decisions.length, 0, "tab A is stale before reload");
+  a.reload();
+  assert.equal(a.state.decisions[0].title, "written by tab B");
+});
+
 test("deleteDecision removes and clears draft pointer when needed", () => {
   const store = createStore(memStorage());
   const d = store.startDraft();
@@ -146,6 +178,14 @@ test("valuesFitScore averages only rated values", () => {
   assert.equal(valuesFitScore({ Growth: 1, Freedom: 2, Health: 2 }), 1.7);
 });
 
+test("valuesFitScore ignores ratings for values no longer on the table", () => {
+  // user rated Growth 5, then deselected Growth and picked Family (rated 1)
+  assert.equal(valuesFitScore({ Growth: 5, Family: 1 }, ["Family"]), 1);
+  assert.equal(valuesFitScore({ Growth: 5 }, ["Family"]), null);
+  assert.equal(valuesFitScore({ Growth: 5, Family: 1 }, null), 3); // no filter → all count
+  assert.deepEqual(rankOptionsByValues([{ fit: { Old: 5, New: 1 } }, { fit: { New: 4 } }], ["New"]), [1, 0]);
+});
+
 test("rankOptionsByValues sorts best-first, unrated last, stable ties", () => {
   const notes = [
     { fit: { Growth: 2 } },
@@ -172,6 +212,18 @@ test("defaultReviewDate is ~30 days out in yyyy-mm-dd", () => {
   const d = defaultReviewDate(new Date(2026, 0, 1));
   assert.equal(d, "2026-01-31");
   assert.match(defaultReviewDate(), /^\d{4}-\d{2}-\d{2}$/);
+  // calendar arithmetic: a window crossing the DST fall-back must still be 30 days
+  assert.equal(defaultReviewDate(new Date(2026, 9, 20, 0, 30)), "2026-11-19");
+});
+
+test("defaultReviewDate honours a sooner future deadline", () => {
+  const now = new Date(2026, 6, 11);
+  assert.equal(defaultReviewDate(now, "2026-07-20"), "2026-07-20", "sooner deadline wins");
+  assert.equal(defaultReviewDate(now, "2026-09-01"), "2026-08-10", "later deadline ignored");
+  assert.equal(defaultReviewDate(now, "2026-07-01"), "2026-08-10", "past deadline ignored");
+  assert.equal(defaultReviewDate(now, "2026-07-11"), "2026-08-10", "today is not 'in the future'");
+  assert.equal(defaultReviewDate(now, "garbage"), "2026-08-10", "unparseable deadline ignored");
+  assert.equal(defaultReviewDate(now, ""), "2026-08-10");
 });
 
 test("calibration needs 3 reviews, then compares confidence to outcomes", () => {
@@ -223,6 +275,31 @@ test("compileBrief assembles the narrative from wizard answers", () => {
   assert.match(brief, /coin said "Take the job" and I felt relieved/);
 
   assert.equal(compileBrief(newDecision(), FRAMEWORKS), "");
+});
+
+test("compileBrief keeps option/notes pairing when a middle option is blanked", () => {
+  const d = newDecision();
+  d.options = ["Take the job", "", "Move abroad"];
+  d.values = ["Growth"];
+  d.optionNotes = [
+    { pain: "pain one", fit: { Growth: 5 } },
+    { pain: "old pain from cleared option", fit: { Growth: 1 } },
+    { pain: "pain three", fit: { Growth: 4 } },
+  ];
+  const brief = compileBrief(d, FRAMEWORKS);
+  assert.match(brief, /Option "Move abroad": values fit 4\/5; the pain: pain three\./);
+  assert.ok(!brief.includes("old pain from cleared option"), "blank option's note is dropped");
+});
+
+test("compileBrief excludes ratings from deselected values and doesn't double-punctuate", () => {
+  const d = newDecision();
+  d.options = ["Stay"];
+  d.values = ["Family"];
+  d.optionNotes = [{ pain: "Ends with a period.", fit: { Growth: 5, Family: 1 } }];
+  const brief = compileBrief(d, FRAMEWORKS);
+  assert.match(brief, /values fit 1\/5/);
+  assert.match(brief, /the pain: Ends with a period\.$/m);
+  assert.ok(!brief.includes(".."), "no double punctuation");
 });
 
 /* ------------------------------------------------ content integrity */

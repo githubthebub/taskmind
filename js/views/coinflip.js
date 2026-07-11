@@ -10,11 +10,11 @@ export function coinFlipView() {
   let flipping = false;
 
   const headsInput = el("input", {
-    type: "text", placeholder: "e.g. Take the job", "aria-label": "Option for heads",
+    type: "text", id: "coin-heads", placeholder: "e.g. Take the job", "aria-label": "Option for heads",
     onInput: (e) => (headsLabel = e.target.value),
   });
   const tailsInput = el("input", {
-    type: "text", placeholder: "e.g. Stay put", "aria-label": "Option for tails",
+    type: "text", id: "coin-tails", placeholder: "e.g. Stay put", "aria-label": "Option for tails",
     onInput: (e) => (tailsLabel = e.target.value),
   });
 
@@ -84,9 +84,9 @@ export function coinFlipView() {
     el(
       "div",
       { class: "card" },
-      el("label", { class: "field-label", for: "" }, "Heads means…"),
+      el("label", { class: "field-label", for: "coin-heads" }, "Heads means…"),
       headsInput,
-      el("label", { class: "field-label" }, "Tails means…"),
+      el("label", { class: "field-label", for: "coin-tails" }, "Tails means…"),
       tailsInput,
       el(
         "div",

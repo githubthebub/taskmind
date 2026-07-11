@@ -2,6 +2,14 @@
  * Minimal hash router. Routes look like "#/journal" or "#/decision/:id".
  */
 
+function safeDecode(segment) {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment; // malformed %-sequence in a hand-mangled URL — use it raw
+  }
+}
+
 export function createRouter(routes, { notFound } = {}) {
   function parse() {
     const hash = window.location.hash || "#/";
@@ -18,7 +26,7 @@ export function createRouter(routes, { notFound } = {}) {
       const params = {};
       let ok = true;
       for (let i = 0; i < parts.length; i++) {
-        if (parts[i].startsWith(":")) params[parts[i].slice(1)] = decodeURIComponent(segments[i]);
+        if (parts[i].startsWith(":")) params[parts[i].slice(1)] = safeDecode(segments[i]);
         else if (parts[i] !== segments[i]) { ok = false; break; }
       }
       if (ok) return { route, params, path };
@@ -27,6 +35,12 @@ export function createRouter(routes, { notFound } = {}) {
   }
 
   function fire() {
+    // Plain fragments like "#app" are not routes (and shouldn't 404) —
+    // normalize them home. Route hashes always start with "#/".
+    const hash = window.location.hash;
+    if (hash && hash !== "#" && !hash.startsWith("#/")) {
+      history.replaceState(null, "", "#/");
+    }
     const { route, params, path } = resolve();
     highlightNav(path);
     if (route) route.handler(params);

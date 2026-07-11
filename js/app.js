@@ -37,6 +37,22 @@ const router = createRouter(
 );
 ctx.router = router;
 
+/* ---- skip link: focus main content without touching the hash router ---- */
+
+document.querySelector(".skip-link").addEventListener("click", (e) => {
+  e.preventDefault();
+  root.focus();
+});
+
+/* ---- cross-tab sync: another tab wrote to storage, refresh our state ---- */
+
+window.addEventListener("storage", (e) => {
+  if (e.key !== null && e.key !== "betterdecisions.v1") return;
+  store.reload();
+  // Don't stomp an in-progress wizard render — its draft re-saves by id.
+  if (!window.location.hash.startsWith("#/new")) router.start();
+});
+
 /* ---- footer data actions ---- */
 
 document.getElementById("export-data").addEventListener("click", () => {

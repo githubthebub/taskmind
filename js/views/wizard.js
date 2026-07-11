@@ -1,6 +1,7 @@
 import { el, toast, chip, ratingRow } from "../ui.js";
 import { VALUES, FRAMEWORKS } from "../data/content.js";
 import {
+  newDecision,
   checkinVerdict,
   triageRecommendation,
   valuesFitScore,
@@ -23,9 +24,12 @@ const STEPS = [
 
 export function wizardView(ctx) {
   const { store, router } = ctx;
-  let draft = store.getDraft();
-  if (!draft) draft = store.startDraft();
+  // Lazy draft: nothing touches storage until the user actually interacts,
+  // so just visiting #/new never litters the journal with empty drafts.
+  let draft = store.getDraft() || newDecision();
   if (typeof draft.step !== "number") draft.step = 0;
+  let dead = false; // set when the draft is committed or discarded
+  let saveTimer = null;
 
   const root = el("div", {});
   const progress = el("div", { class: "wizard-progress", "aria-hidden": "true" });
@@ -33,8 +37,20 @@ export function wizardView(ctx) {
   root.append(progress, stage);
 
   function save() {
-    store.upsertDecision(draft);
+    if (dead) return;
+    store.adoptDraft(draft);
   }
+
+  // Autosave: every input/click inside the wizard mutates the draft through
+  // its own handler first (target listeners run before this bubbled one),
+  // then we persist shortly after — so closing the tab mid-step loses nothing.
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(save, 400);
+  }
+  root.addEventListener("input", scheduleSave);
+  root.addEventListener("change", scheduleSave);
+  root.addEventListener("click", scheduleSave);
 
   function syncOptionNotes() {
     draft.optionNotes = draft.options.map((_, i) => draft.optionNotes[i] || { pain: "", fit: {} });
@@ -91,6 +107,8 @@ export function wizardView(ctx) {
         type: "button",
         onClick: () => {
           if (confirm("Discard this decision draft?")) {
+            dead = true;
+            clearTimeout(saveTimer);
             store.discardDraft();
             router.go("/");
           }
@@ -157,7 +175,7 @@ export function wizardView(ctx) {
       el("div", { class: "step-quote" },
         "“Your mind will happily generate reasons for whatever it already wants. Notice the want first.”",
         el("span", { class: "who" }, "— after Dr. K, HealthyGamerGG")),
-      el("label", { class: "field-label" }, "Any of these true right now? (HALT)"),
+      el("span", { class: "field-label" }, "Any of these true right now? (HALT)"),
       el(
         "div",
         { class: "chip-row" },
@@ -256,7 +274,7 @@ export function wizardView(ctx) {
         placeholder: "Anything your future self will need to understand why this was hard.",
         onInput: (e) => (draft.detail = e.target.value),
       }, draft.detail),
-      el("label", { class: "field-label" }, "Your options (2–5)"),
+      el("span", { class: "field-label" }, "Your options (2–5)"),
       optionsWrap,
       el("label", { class: "field-label", for: "d-deadline" }, "Real deadline (optional)"),
       el("p", { class: "field-hint" }, "Parkinson's law applies to choices too — an open-ended decision expands to fill your whole head."),
@@ -303,7 +321,7 @@ export function wizardView(ctx) {
               class: "btn primary", type: "button",
               onClick: () => {
                 draft.fastTracked = true;
-                if (!draft.reviewOn) draft.reviewOn = defaultReviewDate();
+                if (!draft.reviewOn) draft.reviewOn = defaultReviewDate(new Date(), draft.deadline);
                 goStep(7);
               },
             }, "Fast-track: just decide"),
@@ -342,7 +360,7 @@ export function wizardView(ctx) {
       el("div", { class: "step-quote" },
         "“Reduce the cost of failure instead of agonising over the odds of success.”",
         el("span", { class: "who" }, "— the experiment mindset, after Ali Abdaal")),
-      el("label", { class: "field-label" }, "If this goes wrong, can you walk it back?"),
+      el("span", { class: "field-label" }, "If this goes wrong, can you walk it back?"),
       pick(
         [
           [true, "Two-way door", "Mostly reversible — I could undo or adjust course without lasting damage."],
@@ -354,7 +372,7 @@ export function wizardView(ctx) {
           refreshAdvice();
         }
       ),
-      el("label", { class: "field-label" }, "How big are the stakes, honestly?"),
+      el("span", { class: "field-label" }, "How big are the stakes, honestly?"),
       pick(
         [
           ["low", "Low", "A month from now this barely registers."],
@@ -402,6 +420,11 @@ export function wizardView(ctx) {
               draft.values = [...draft.values, v];
             } else {
               draft.values = draft.values.filter((x) => x !== v);
+              // Drop the ratings tied to this value so they can't haunt
+              // the fit scores after the value leaves the table.
+              draft.optionNotes.forEach((n) => {
+                if (n?.fit) delete n.fit[v];
+              });
             }
             renderChips();
             renderOptionCards();
@@ -475,7 +498,7 @@ export function wizardView(ctx) {
       el("div", { class: "step-quote" },
         "“Who you are is defined by what you're willing to struggle for.”",
         el("span", { class: "who" }, "— Mark Manson")),
-      el("label", { class: "field-label" }, "The values on the table (pick up to 3)"),
+      el("span", { class: "field-label" }, "The values on the table (pick up to 3)"),
       chipsWrap,
       el("div", { style: { display: "flex", gap: "0.5rem", marginTop: "0.4rem" } },
         customInput,
@@ -588,7 +611,7 @@ export function wizardView(ctx) {
         placeholder: "Answer fast. First instinct.",
         onInput: (e) => (draft.courage.noJudgement = e.target.value),
       }),
-      el("label", { class: "field-label" }, "2 · Is part of this choice about not disappointing someone?"),
+      el("span", { class: "field-label" }, "2 · Is part of this choice about not disappointing someone?"),
       pick(
         [
           [true, "Yes, honestly", "There's a person whose reaction I'm managing."],
@@ -684,8 +707,9 @@ export function wizardView(ctx) {
       el(
         "p",
         { class: "muted" },
-        "You've done the head work. Now the Dr. K move: assign two options to a coin and flip it — " +
-          "not to obey it, but to catch the hope or dread that surfaces while it's in the air. " +
+        "You've done the head work. Now an old therapist's trick, in the spirit of Dr. K's " +
+          "notice-the-feeling practice: assign two options to a coin and flip it — not to obey it, " +
+          "but to catch the hope or dread that surfaces while it's in the air. " +
           "That reaction is the honest signal under all the reasoning."
       ),
       opts.length >= 2
@@ -693,7 +717,7 @@ export function wizardView(ctx) {
         : el("div", { class: "callout info" }, "Add at least two named options in the Frame step to run the gut check."),
       navRow({
         next: () => {
-          if (!draft.reviewOn) draft.reviewOn = defaultReviewDate();
+          if (!draft.reviewOn) draft.reviewOn = defaultReviewDate(new Date(), draft.deadline);
           goStep(7);
         },
         nextLabel: draft.gut.done ? "Next" : "Skip / Next",
@@ -720,7 +744,7 @@ export function wizardView(ctx) {
 
   function stepDecide() {
     const step = STEPS[7];
-    if (!draft.reviewOn) draft.reviewOn = defaultReviewDate();
+    if (!draft.reviewOn) draft.reviewOn = defaultReviewDate(new Date(), draft.deadline);
     const opts = draft.options.map((o, i) => ({ o: o.trim(), i })).filter((x) => x.o);
     const brief = compileBrief(draft, FRAMEWORKS);
 
@@ -739,7 +763,7 @@ export function wizardView(ctx) {
       { class: "choice-list" },
       opts.map(({ o, i }) => {
         const note = draft.optionNotes[i];
-        const score = valuesFitScore(note?.fit);
+        const score = valuesFitScore(note?.fit, draft.values.length ? draft.values : null);
         const btn = el(
           "button",
           {
@@ -776,7 +800,7 @@ export function wizardView(ctx) {
             el("h3", { class: "small" }, "What the walkthrough surfaced"),
             el("p", { class: "small muted", style: { whiteSpace: "pre-wrap" } }, brief))
         : null,
-      el("label", { class: "field-label" }, "The decision"),
+      el("span", { class: "field-label" }, "The decision"),
       optionPick,
       el("label", { class: "field-label", for: "confidence" }, "How confident are you that this is the right call?"),
       el("p", { class: "field-hint" }, "If you had to bet money on “future me endorses this” — what odds would you take?"),
@@ -799,6 +823,8 @@ export function wizardView(ctx) {
           if (draft.chosenIndex === null || !draft.options[draft.chosenIndex]?.trim()) {
             return toast("Pick the option you're committing to.");
           }
+          dead = true;
+          clearTimeout(saveTimer);
           store.commitDraft(draft);
           toast("Decision made. Now honour it — confidence comes from keeping promises to yourself.");
           router.go(`/decision/${draft.id}`);

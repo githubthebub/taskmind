@@ -141,6 +141,12 @@ export function createStore(storage = defaultStorage()) {
       return () => listeners.delete(fn);
     },
 
+    /** Re-read state from storage (e.g. after another tab wrote to it). */
+    reload() {
+      state = load();
+      notify();
+    },
+
     /* ---- decisions ---- */
 
     getDecision(id) {
@@ -170,6 +176,17 @@ export function createStore(storage = defaultStorage()) {
       state.draftId = d.id;
       persist();
       return d;
+    },
+
+    /**
+     * Persist an in-memory draft the first time the user actually touches it
+     * (the wizard creates drafts lazily so just visiting #/new leaves no trace).
+     * No-op for anything that is no longer a draft.
+     */
+    adoptDraft(d) {
+      if (!d || d.status !== "draft") return;
+      state.draftId = d.id;
+      this.upsertDecision(d);
     },
 
     getDraft() {
@@ -264,20 +281,24 @@ export function triageRecommendation(reversible, stakes) {
 
 /**
  * Average values-fit score for one option's fit map, or null when unrated.
+ * When `values` is given, only ratings for those values count — ratings left
+ * behind by since-deselected values must not skew the score.
  */
-export function valuesFitScore(fit) {
+export function valuesFitScore(fit, values = null) {
   if (!fit) return null;
-  const scores = Object.values(fit).filter((n) => typeof n === "number" && n >= 1);
-  if (!scores.length) return null;
-  return Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10;
+  const entries = Object.entries(fit).filter(
+    ([k, n]) => typeof n === "number" && n >= 1 && (!values || values.includes(k))
+  );
+  if (!entries.length) return null;
+  return Math.round((entries.reduce((a, [, n]) => a + n, 0) / entries.length) * 10) / 10;
 }
 
 /**
  * Rank options by values fit. Returns indices of `optionNotes` sorted best-first;
  * unrated options sink to the end. Ties keep original order.
  */
-export function rankOptionsByValues(optionNotes) {
-  const scored = (optionNotes || []).map((note, i) => ({ i, score: valuesFitScore(note?.fit) }));
+export function rankOptionsByValues(optionNotes, values = null) {
+  const scored = (optionNotes || []).map((note, i) => ({ i, score: valuesFitScore(note?.fit, values) }));
   return scored
     .slice()
     .sort((a, b) => (b.score ?? -1) - (a.score ?? -1) || a.i - b.i)
@@ -294,8 +315,15 @@ export function isReviewDue(decision, today = new Date()) {
 }
 
 /** Default review date: ~30 days out, or the deadline if it's sooner and in the future. */
-export function defaultReviewDate(now = new Date()) {
-  const d = new Date(now.getTime() + 30 * 86400000);
+export function defaultReviewDate(now = new Date(), deadline = "") {
+  // Calendar arithmetic (not ms) so DST transitions can't shave a day off.
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  d.setDate(d.getDate() + 30);
+  if (deadline) {
+    const dl = new Date(`${deadline}T00:00:00`);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (!Number.isNaN(dl.getTime()) && dl > today && dl < d) return deadline;
+  }
   const pad = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
@@ -341,7 +369,8 @@ export function resultingWarning(review) {
  */
 export function compileBrief(d, frameworksCatalog = []) {
   const lines = [];
-  const opts = (d.options || []).filter((o) => o && o.trim());
+  // Ends the line with "." only when the text doesn't already punctuate itself.
+  const dot = (s) => (/[.!?…"'”)]$/.test(s) ? "" : ".");
 
   if (d.checkin?.emotion) {
     lines.push(`State going in: feeling ${d.checkin.emotion.trim()} (intensity ${d.checkin.intensity}/5).`);
@@ -355,13 +384,19 @@ export function compileBrief(d, frameworksCatalog = []) {
   if (d.values?.length) {
     lines.push(`Values on the table: ${d.values.join(", ")}.`);
   }
-  opts.forEach((opt, i) => {
+  // Iterate original indices — optionNotes is parallel to the unfiltered
+  // options array, and a blank row in the middle must not shift the pairing.
+  (d.options || []).forEach((opt, i) => {
+    if (!opt || !opt.trim()) return;
     const note = d.optionNotes?.[i];
-    const score = valuesFitScore(note?.fit);
+    const score = valuesFitScore(note?.fit, d.values?.length ? d.values : null);
     const bits = [];
     if (score !== null && score !== undefined) bits.push(`values fit ${score}/5`);
     if (note?.pain?.trim()) bits.push(`the pain: ${note.pain.trim()}`);
-    if (bits.length) lines.push(`Option "${opt}": ${bits.join("; ")}.`);
+    if (bits.length) {
+      const line = `Option "${opt.trim()}": ${bits.join("; ")}`;
+      lines.push(line + dot(line));
+    }
   });
   Object.entries(d.frameworks || {}).forEach(([id, answer]) => {
     if (!answer || !answer.trim()) return;
