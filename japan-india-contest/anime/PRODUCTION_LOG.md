@@ -15,8 +15,16 @@ account's generation history by job ID).
 | S1 "The Wish" | `ba43e42b-00f7-46b4-9d82-ca9599ff0171` | completed | Style/palette anchor for all later frames |
 | S2 "The Flutter" | `2de3a1f6-b885-4d08-8161-93ebf965a9f8` | completed | Ref: S1 |
 | S3 "The Flame" | `13d102a8-5e28-4a3b-a23f-414d19383d9c` | completed | Ref: S1; match-cut twin of S2 |
-| S4 "Her Sky" | `88045434-8494-4773-aa80-213127e7dd3a` | — | Ref: S1 + S3 (Diya's costume continuity) |
-| S5 "One Sky" (title) | — | — | Ref: S1 + S4 (both palettes) |
+| S4 "Her Sky" | `88045434-8494-4773-aa80-213127e7dd3a` | completed | Ref: S1 + S3 (Diya's costume continuity) |
+| S5 "One Sky" (title) | `91da97c0-54a0-4547-8412-06c76cba6cd8` | completed | Ref: S1 + S4 (both palettes); trilingual title text |
+
+Keyframe stills (CDN):
+
+- S1: https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260711_173557_ba43e42b-00f7-46b4-9d82-ca9599ff0171.png
+- S2: https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260711_173713_2de3a1f6-b885-4d08-8161-93ebf965a9f8.png
+- S3: https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260711_173718_13d102a8-5e28-4a3b-a23f-414d19383d9c.png
+- S4: https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260711_173823_88045434-8494-4773-aa80-213127e7dd3a.png
+- S5: https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260711_173936_91da97c0-54a0-4547-8412-06c76cba6cd8.png
 
 ## Shots (video jobs, Kling 3.0 Turbo, 1080p 16:9)
 
@@ -26,7 +34,7 @@ account's generation history by job ID).
 | S2 | 4 s | `d88729d6-b375-4cf3-a5fa-720debd88aff` | — |
 | S3 | 5 s | `faef7bf7-8b32-4146-bfdb-d4cddda22ae0` | — |
 | S4 | 5 s | — | — |
-| S5 | 8 s (narration bed, 7.6 s VO) | — | — |
+| S5 | 8 s (narration bed, 7.6 s VO) | `e4dbc478-c63c-4843-be72-b8c04d0231da` | — |
 
 ## Audio
 
