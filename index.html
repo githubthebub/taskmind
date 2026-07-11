@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pokemon FRLG: Sevii Edition 3D</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #101820;
+    color: #cdd6e0;
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 12px;
+  }
+  /* ---- handheld console shell ---- */
+  #console {
+    background: linear-gradient(160deg, #7a4fb0 0%, #5c3a8c 55%, #472a70 100%);
+    border-radius: 26px 26px 40px 40px;
+    padding: 20px 26px 26px;
+    box-shadow: inset 0 2px 3px rgba(255,255,255,.25), inset 0 -6px 10px rgba(0,0,0,.35),
+      0 18px 40px -14px rgba(0,0,0,.8);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  #bezel {
+    background: #241a30;
+    border-radius: 12px;
+    padding: 14px 14px 20px;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,.7);
+    position: relative;
+  }
+  #bezel::after {
+    content: 'GAME CHAMP ADVANCE';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    letter-spacing: .25em;
+    color: #6a5a88;
+  }
+  #stack {
+    position: relative;
+    width: min(58vw, 540px);
+    aspect-ratio: 3 / 2;
+    background: #000;
+    overflow: hidden;
+    border-radius: 3px;
+  }
+  #stack canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+  }
+  #game { z-index: 2; }
+  #gl { z-index: 1; }
+  /* power LED */
+  #led {
+    position: absolute;
+    top: 16px; left: 16px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #58e858;
+    box-shadow: 0 0 6px #58e858;
+  }
+  /* ---- controls ---- */
+  .side { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  #dpad { position: relative; width: 96px; height: 96px; }
+  #dpad button {
+    position: absolute;
+    width: 32px; height: 32px;
+    background: #2c2434;
+    border: none;
+    border-radius: 4px;
+    box-shadow: inset 0 -3px 4px rgba(0,0,0,.5), inset 0 2px 2px rgba(255,255,255,.12);
+    cursor: pointer;
+  }
+  #dpad button:active { background: #1e1826; transform: translateY(1px); }
+  #d-up    { left: 32px; top: 0; }
+  #d-down  { left: 32px; top: 64px; }
+  #d-left  { left: 0; top: 32px; }
+  #d-right { left: 64px; top: 32px; }
+  #d-mid   { left: 32px; top: 32px; background: #2c2434; position: absolute; width: 32px; height: 32px; border-radius: 0; }
+  .ab { display: flex; gap: 14px; transform: rotate(-18deg); }
+  .ab button {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: radial-gradient(circle at 35% 30%, #d8506a, #a02848);
+    color: #fff0f4;
+    font: bold 14px monospace;
+    box-shadow: inset 0 -4px 6px rgba(0,0,0,.4), 0 3px 4px rgba(0,0,0,.4);
+    cursor: pointer;
+  }
+  .ab button:active { transform: translateY(2px); box-shadow: inset 0 -2px 4px rgba(0,0,0,.4); }
+  .meta { display: flex; gap: 12px; }
+  .meta button {
+    background: #38304a;
+    border: none;
+    border-radius: 10px;
+    color: #b8a8d8;
+    font: bold 8px monospace;
+    letter-spacing: .1em;
+    padding: 5px 12px;
+    box-shadow: inset 0 -2px 3px rgba(0,0,0,.5);
+    cursor: pointer;
+    transform: rotate(-18deg);
+  }
+  .meta button:active { transform: rotate(-18deg) translateY(1px); }
+  .controls { font-size: 12px; color: #7a8ba0; text-align: center; line-height: 1.6; }
+  .controls b { color: #cdd6e0; }
+  @media (max-width: 900px) {
+    #console { flex-direction: column; padding: 16px; }
+    #stack { width: 88vw; }
+    .side { flex-direction: row; gap: 40px; }
+  }
+</style>
+</head>
+<body>
+  <div id="console">
+    <div class="side">
+      <div id="dpad">
+        <button id="d-up" data-key="ArrowUp" aria-label="up"></button>
+        <button id="d-left" data-key="ArrowLeft" aria-label="left"></button>
+        <div id="d-mid"></div>
+        <button id="d-right" data-key="ArrowRight" aria-label="right"></button>
+        <button id="d-down" data-key="ArrowDown" aria-label="down"></button>
+      </div>
+      <div class="meta">
+        <button data-key="m">SELECT</button>
+        <button data-key="Enter">START</button>
+      </div>
+    </div>
+    <div id="bezel">
+      <div id="led"></div>
+      <div id="stack">
+        <canvas id="gl" width="480" height="320"></canvas>
+        <canvas id="game" width="240" height="160"></canvas>
+      </div>
+    </div>
+    <div class="side">
+      <div class="ab">
+        <button data-key="x">B</button>
+        <button data-key="z">A</button>
+      </div>
+      <div class="meta">
+        <button data-key="Shift">RUN</button>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    Keyboard: <b>Arrows / WASD</b> move · <b>Shift</b> run · <b>Z / Enter</b> A · <b>X / Esc</b> B, menu · <b>M</b> music<br>
+    Talk to CELIO in the POKeMON CENTER to begin the RUBY quest
+  </div>
+  <script src="lib/three.min.js"></script>
+  <script src="data.js"></script>
+  <script src="audio.js"></script>
+  <script src="render3d.js"></script>
+  <script src="game.js"></script>
+  <script>
+    // wire the console buttons to the game's key state
+    for (const btn of document.querySelectorAll('button[data-key]')) {
+      const k = btn.dataset.key;
+      const down = e => { e.preventDefault(); window.pressVirtual(k, true); };
+      const up = e => { e.preventDefault(); window.pressVirtual(k, false); };
+      btn.addEventListener('pointerdown', down);
+      btn.addEventListener('pointerup', up);
+      btn.addEventListener('pointerleave', up);
+      btn.addEventListener('pointercancel', up);
+    }
+  </script>
+</body>
+</html>
