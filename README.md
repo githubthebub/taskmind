@@ -1,1 +1,62 @@
-# taskmind
+# Pokémon Sevii Adventures 🌋
+
+A **FireRed/LeafGreen-style fan game demo** that starts where the FRLG post-game begins: the **Sevii Islands**. You arrive on One Island with a veteran team — Blastoise, Pidgeot, Gengar, Nidoking, Snorlax and Jolteon — and get pulled into Celio's hunt for the Ruby of Mt. Ember.
+
+Built entirely in vanilla JavaScript + Canvas. **All graphics, music and dialogue are original, drawn/composed in code** — no ripped assets.
+
+## ▶️ Play
+
+Open `index.html` in any browser (or serve the folder: `python3 -m http.server` → `localhost:8000`).
+A pre-built single-file version can be produced with `./build.sh` → `dist/pokemon-sevii.html`.
+
+## 🎮 Controls
+
+| Key | Action |
+|---|---|
+| Arrow keys / WASD | Move |
+| `Z` / `Space` | A — confirm, talk, advance text |
+| `X` / `Esc` | B — cancel (hold to run, too) |
+| `Shift` (hold) | Run |
+| `Enter` | START — pause menu (Pokémon, Bag, Save, Sound) |
+| `M` | Toggle sound |
+
+On-screen touch controls appear on mobile.
+
+## 🗺️ The demo quest
+
+1. **One Island** — Bill walks you off the Seagallop ferry. Meet **Celio** in the Pokémon Center.
+2. **Kindle Road** — coastal route north: tall-grass wilds (Spearow, Meowth, Ponyta, Psyduck, Geodude, Fearow) and three trainers.
+3. **Mt. Ember** — two Team Rocket grunts guard a cave. Deal with them.
+4. **Ruby Chamber** — take the Ruby back to Celio to link the island network… roll credits.
+5. **Post-game** — something with very hot wings waits on the summit perch. Bring Ultra Balls (the grandma in the island house has spares).
+
+## ⚙️ Features
+
+- Grid-based overworld with warps, NPCs (wandering, flag-driven), signs, interiors
+- Full turn-based battle engine: gen-3 type chart, physical/special split by type, STAB, crits, accuracy, priority, stat stages, multi-hit, flinch, recoil, and status (PSN/BRN/PAR/SLP)
+- Trainer battles (multi-Pokémon), wild encounters, a legendary static encounter
+- Catching with the gen-3 shake formula, EXP + level-ups, party switching, full bag (potions, Full Heal, Revive, Ultra Balls)
+- Pokémon Center healing, blackout-and-respawn, save/continue via `localStorage`
+- Original chiptune soundtrack (WebAudio sequencer): 9 tracks + full SFX set
+- GBA-feel UI: typewriter dialogue, FRLG-style boxes, HP/EXP bar animations, location banners, ending credits
+
+## 🧱 Code layout
+
+```
+index.html      shell + touch controls
+css/            page chrome + embedded pixel fonts (OFL-licensed)
+js/data.js      type chart, moves, species, trainers, items
+js/sprites.js   ALL art, drawn procedurally (tiles, characters, 18 battle sprites + 6 backs)
+js/maps.js      maps (built with carve helpers), NPCs, dialogue scripts
+js/audio.js     chiptune sequencer + SFX
+js/ui.js        text boxes, menus, bars, fades
+js/engine.js    input, overworld, script runner, party/bag/save
+js/battle.js    battle engine
+js/main.js      title screen, ending, main loop
+```
+
+Debug helpers: `?debug=sprites` (sprite sheet), `?map=kindle&x=9&y=30` (teleport).
+
+## ⚖️ Disclaimer
+
+This is a free, non-commercial **fan homage** for personal/educational use. Pokémon © Nintendo / Creatures Inc. / GAME FREAK Inc. This project is not affiliated with or endorsed by them. All code, artwork, music and text here are original.
