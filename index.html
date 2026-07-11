@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jhana Trainer</title>
+<style>
+  :root {
+    --bg: #12121f;
+    --panel: #1b1b2e;
+    --panel-2: #232338;
+    --text: #e8e6f0;
+    --muted: #9a97b0;
+    --accent: #e8b45a;
+    --accent-dim: #a37f3f;
+    --good: #7fc98f;
+    --line: #32324a;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 20px 80px; }
+  header { text-align: center; padding: 28px 0 8px; }
+  header h1 { font-size: 1.6rem; font-weight: 600; letter-spacing: 0.04em; }
+  header h1 .dot { color: var(--accent); }
+  header p { color: var(--muted); font-size: 0.95rem; margin-top: 4px; }
+
+  nav {
+    display: flex; justify-content: center; gap: 8px;
+    margin: 20px 0 28px;
+  }
+  nav button {
+    background: var(--panel); color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 8px 20px; font-size: 0.95rem; cursor: pointer;
+    transition: all .15s ease;
+  }
+  nav button:hover { color: var(--text); }
+  nav button.active { background: var(--accent); border-color: var(--accent); color: #1a1408; font-weight: 600; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 22px; margin-bottom: 18px;
+  }
+  .card h2 { font-size: 1.15rem; margin-bottom: 10px; font-weight: 600; }
+  .card h3 { font-size: 1rem; margin: 16px 0 6px; color: var(--accent); font-weight: 600; }
+  .card p, .card li { color: var(--text); font-size: 0.95rem; }
+  .card p + p { margin-top: 10px; }
+  .card ul, .card ol { padding-left: 22px; margin: 8px 0; }
+  .card li { margin: 6px 0; }
+  .muted { color: var(--muted); }
+  .small { font-size: 0.85rem; }
+
+  .presets { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
+  .presets button {
+    flex: 1; min-width: 90px;
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 10px; font-size: 1rem; cursor: pointer;
+    transition: all .15s ease;
+  }
+  .presets button:hover { border-color: var(--accent-dim); }
+  .presets button.selected { border-color: var(--accent); background: #2a2438; color: var(--accent); font-weight: 600; }
+  .presets button .len { display: block; font-size: 1.3rem; font-weight: 600; }
+  .presets button .sub { display: block; font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 10px 0; }
+  .toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+  .toggle input { accent-color: var(--accent); width: 18px; height: 18px; cursor: pointer; }
+
+  .btn-primary {
+    display: block; width: 100%;
+    background: var(--accent); color: #1a1408;
+    border: none; border-radius: 12px;
+    padding: 16px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+    margin-top: 16px; letter-spacing: 0.03em;
+    transition: transform .1s ease, filter .15s ease;
+  }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-primary:active { transform: scale(0.99); }
+
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 18px; font-size: 0.9rem; cursor: pointer;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+  .stats { display: flex; gap: 12px; }
+  .stat {
+    flex: 1; background: var(--panel-2); border-radius: 10px;
+    padding: 14px; text-align: center;
+  }
+  .stat .num { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+  /* ---------- Session overlay ---------- */
+  #session {
+    position: fixed; inset: 0; z-index: 50;
+    background: #0b0b14;
+    display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px; text-align: center;
+  }
+  #session.active { display: flex; }
+  #session .stage-name {
+    font-size: 0.85rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 18px;
+  }
+  #session .instruction {
+    max-width: 460px; font-size: 1.15rem; line-height: 1.7; color: var(--text);
+    opacity: 0.92; margin-bottom: 34px; white-space: pre-line;
+  }
+  #pacer {
+    width: 180px; height: 180px; margin-bottom: 34px;
+    display: none; align-items: center; justify-content: center;
+  }
+  #pacer.on { display: flex; }
+  #pacer .ball {
+    width: 70px; height: 70px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #f3cd8a, var(--accent-dim));
+    animation: breathe 10s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(2.1); }   /* 4s inhale */
+    100% { transform: scale(1); }     /* 6s exhale */
+  }
+  #session .clock {
+    font-size: 1rem; color: var(--muted); font-variant-numeric: tabular-nums;
+    min-height: 1.6em; margin-bottom: 26px;
+  }
+  #session .clock.hidden-time { visibility: hidden; }
+  #session .controls { display: flex; gap: 12px; }
+  #progress {
+    position: absolute; bottom: 0; left: 0; height: 3px;
+    background: var(--accent); width: 0%;
+    transition: width 1s linear;
+  }
+  .stage-dots { position: absolute; bottom: 14px; display: flex; gap: 8px; }
+  .stage-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+  .stage-dots span.done { background: var(--accent-dim); }
+  .stage-dots span.now { background: var(--accent); }
+
+  /* ---------- Log ---------- */
+  .log-entry {
+    background: var(--panel-2); border-radius: 10px; padding: 14px 16px; margin: 10px 0;
+  }
+  .log-entry .top { display: flex; justify-content: space-between; font-size: 0.9rem; }
+  .log-entry .date { color: var(--text); font-weight: 600; }
+  .log-entry .dur { color: var(--muted); }
+  .log-entry .meta { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+  .log-entry .piti-flag { color: var(--good); font-weight: 600; }
+  .log-entry .notes { font-size: 0.88rem; margin-top: 6px; color: var(--text); opacity: 0.85; }
+
+  /* ---------- Modal ---------- */
+  #modal-backdrop {
+    position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.6);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  #modal-backdrop.active { display: flex; }
+  #modal {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    max-width: 420px; width: 100%; padding: 24px;
+  }
+  #modal h2 { font-size: 1.1rem; margin-bottom: 14px; }
+  #modal label { display: block; font-size: 0.88rem; color: var(--muted); margin: 12px 0 4px; }
+  .rating { display: flex; gap: 8px; }
+  .rating button {
+    flex: 1; padding: 10px 0; background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 8px; color: var(--muted); font-size: 1rem; cursor: pointer;
+  }
+  .rating button.selected { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+  #modal textarea {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 8px; color: var(--text); padding: 10px; font-size: 0.9rem;
+    font-family: inherit; resize: vertical; min-height: 64px;
+  }
+  #modal .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+  #modal .modal-actions .btn-primary { margin-top: 0; flex: 2; padding: 12px; font-size: 1rem; }
+  #modal .modal-actions .btn-ghost { flex: 1; }
+
+  .milestone { display: flex; gap: 10px; align-items: flex-start; margin: 10px 0; cursor: pointer; }
+  .milestone input { margin-top: 5px; accent-color: var(--good); width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+  .milestone.done .m-text { color: var(--muted); text-decoration: line-through; }
+
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--panel-2);
+    padding: 12px 16px; border-radius: 0 10px 10px 0; margin: 12px 0;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Jhana Trainer<span class="dot">.</span></h1>
+    <p>A structured protocol for reaching meditative absorption</p>
+  </header>
+
+  <nav>
+    <button data-view="practice" class="active">Practice</button>
+    <button data-view="guide">Guide</button>
+    <button data-view="log">Log</button>
+  </nav>
+
+  <!-- ============ PRACTICE ============ -->
+  <section id="view-practice" class="view active">
+    <div class="card">
+      <h2>Today's sit</h2>
+      <p class="muted small">The session walks you through five stages — settling, breath counting, sustained attention, shifting to pleasantness, and absorption — with a soft bell at each transition so you never need to open your eyes.</p>
+      <div class="presets" id="presets">
+        <button data-min="20"><span class="len">20</span><span class="sub">min · starter</span></button>
+        <button data-min="30"><span class="len">30</span><span class="sub">min · builder</span></button>
+        <button data-min="45" class="selected"><span class="len">45</span><span class="sub">min · standard</span></button>
+        <button data-min="60"><span class="len">60</span><span class="sub">min · deep</span></button>
+      </div>
+      <div class="row">
+        <label class="toggle"><input type="checkbox" id="opt-clock"> Show elapsed time during the sit</label>
+      </div>
+      <div class="row">
+        <label class="toggle"><input type="checkbox" id="opt-pacer" checked> Breath pacer during settling stage</label>
+      </div>
+      <button class="btn-primary" id="btn-start">Begin sit</button>
+    </div>
+
+    <div class="card">
+      <h2>Your practice</h2>
+      <div class="stats">
+        <div class="stat"><div class="num" id="stat-streak">0</div><div class="label">day streak</div></div>
+        <div class="stat"><div class="num" id="stat-sits">0</div><div class="label">total sits</div></div>
+        <div class="stat"><div class="num" id="stat-hours">0</div><div class="label">hours on cushion</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Milestones on the road to first jhana</h2>
+      <p class="muted small">Check these off as they become reliably true — they mark real progress, in order.</p>
+      <div id="milestones"></div>
+    </div>
+  </section>
+
+  <!-- ============ GUIDE ============ -->
+  <section id="view-guide" class="view">
+    <div class="card">
+      <h2>What jhana actually is</h2>
+      <p>Jhana is a state of meditative absorption in which attention unifies on its object and the mind is suffused with joy (pīti) and happiness (sukha). The first jhana has five classic factors: applied attention, sustained attention, joy, happiness, and unification of mind.</p>
+      <div class="callout">Honest note: no app, technique, or hack can <em>make</em> jhana happen. It arises when the conditions are assembled. What this trainer does is assemble the conditions in the most direct order known, and keep you consistent — which is genuinely the fastest route there is.</div>
+    </div>
+
+    <div class="card">
+      <h2>The fastest realistic path</h2>
+      <ol>
+        <li><strong>Daily, non-negotiable sits.</strong> One 45-minute sit per day minimum; two is dramatically better. Concentration compounds across days and evaporates with gaps.</li>
+        <li><strong>Density beats duration.</strong> The single biggest accelerant is a residential retreat (even 3–10 days). Most people who enter jhana for the first time do so on retreat, because momentum builds hour over hour.</li>
+        <li><strong>A quiet run-up.</strong> Concentration on the cushion mirrors stimulation off it. In the hours before sitting: no doomscrolling, no arguments, no caffeine loading, no intoxicants.</li>
+        <li><strong>The right method, in the right order</strong> — which is what the session timer walks you through, below.</li>
+        <li><strong>A teacher, if you stall.</strong> A few sessions with a concentration-focused teacher fixes errors you cannot see yourself.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>The protocol (what the timer does)</h2>
+      <h3>1 · Settle</h3>
+      <p>Sit upright but at ease. Sweep attention slowly through the body, releasing obvious tension. Let the breath be natural. The optional pacer (4s in, 6s out) calms the nervous system; drop it once you feel settled.</p>
+      <h3>2 · Count the breath</h3>
+      <p>Count each exhale silently: one… two… up to ten, then restart. Lose the count? Simply begin at one — no commentary, no self-criticism. This builds the muscle of returning.</p>
+      <h3>3 · Sustain attention</h3>
+      <p>Drop the counting. Rest attention on the sensations of breathing at the nostrils or upper lip. The goal is <em>continuity</em>: feel the whole in-breath, the whole out-breath, and the gaps between. Thoughts may still murmur in the background — that's fine, as long as the breath stays foreground. When attention stays with the breath for minutes at a time and the breath becomes subtle and pleasant, you are at or near <strong>access concentration</strong>.</p>
+      <h3>4 · Shift to pleasantness</h3>
+      <p>This is the step most people never learn. Once attention is stable, deliberately move it from the breath to a <em>pleasant sensation</em> — anywhere it appears: hands, chest, face, a general glow. Rest attention on the pleasantness itself. Do not analyze it, chase it, or grip it. Just enjoy it and stay.</p>
+      <h3>5 · Let absorption take you</h3>
+      <p>Attended to calmly, the pleasantness intensifies on its own — often surging as tingling, waves, or energy (pīti). Your only job is to not interfere. Wanting it harder pushes it away; the attitude that works is contented, almost amused patience. When pīti and sukha sustain themselves and attention locks on without effort, that is the doorway to first jhana. Walk through by doing nothing extra.</p>
+    </div>
+
+    <div class="card">
+      <h2>The three classic blockers</h2>
+      <ul>
+        <li><strong>Striving.</strong> Craving the state blocks the state — this is the central paradox. Treat every sit as complete in itself; jhana is a side-effect of enjoying concentration.</li>
+        <li><strong>Clock-watching.</strong> Checking time fragments concentration. Trust the bells; leave elapsed-time display off.</li>
+        <li><strong>Dullness mistaken for calm.</strong> If the mind gets foggy or dreamy, brighten attention: open the eyes slightly, sit taller, take one deep breath, re-engage crisply.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Go deeper</h2>
+      <ul>
+        <li><em>Right Concentration</em> — Leigh Brasington (the pleasantness-shift method this trainer follows)</li>
+        <li><em>The Mind Illuminated</em> — Culadasa (systematic stage map to access concentration)</li>
+        <li>Rob Burbea's <em>Practising the Jhānas</em> retreat talks (free audio online)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ LOG ============ -->
+  <section id="view-log" class="view">
+    <div class="card">
+      <h2>Session log</h2>
+      <p class="muted small" id="log-empty">No sits recorded yet. Your first one is a "Begin sit" away.</p>
+      <div id="log-list"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ SESSION OVERLAY ============ -->
+<div id="session">
+  <div class="stage-name" id="s-stage"></div>
+  <div id="pacer"><div class="ball"></div></div>
+  <div class="instruction" id="s-instruction"></div>
+  <div class="clock hidden-time" id="s-clock">00:00</div>
+  <div class="controls">
+    <button class="btn-ghost" id="btn-pause">Pause</button>
+    <button class="btn-ghost" id="btn-end">End sit</button>
+  </div>
+  <div class="stage-dots" id="s-dots"></div>
+  <div id="progress"></div>
+</div>
+
+<!-- ============ POST-SIT MODAL ============ -->
+<div id="modal-backdrop">
+  <div id="modal">
+    <h2>How was the sit?</h2>
+    <label>Attention stability</label>
+    <div class="rating" id="m-rating">
+      <button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">5</button>
+    </div>
+    <label class="toggle" style="margin-top:14px"><input type="checkbox" id="m-piti"> Pīti arose (tingling, waves, energy, spontaneous joy)</label>
+    <label>Notes</label>
+    <textarea id="m-notes" placeholder="Anything worth remembering…"></textarea>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="m-skip">Skip</button>
+      <button class="btn-primary" id="m-save">Save session</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- Stage definitions ---------------- */
+  // frac = share of total session time
+  const STAGES = [
+    { key: "settle", name: "Settle", frac: 0.10,
+      instruction: "Sit upright, at ease.\nSweep attention through the body, releasing tension.\nBreathe with the circle if it helps." },
+    { key: "count", name: "Count the breath", frac: 0.20,
+      instruction: "Count each exhale: one… two… up to ten, then restart.\nLose the count? Start again at one — no commentary." },
+    { key: "sustain", name: "Sustain attention", frac: 0.35,
+      instruction: "Drop the counting.\nRest attention on the breath at the nostrils.\nFeel the whole in-breath, the whole out-breath, continuously." },
+    { key: "shift", name: "Shift to pleasantness", frac: 0.25,
+      instruction: "Move attention to a pleasant sensation, wherever it appears.\nDon't analyze or grip it. Just enjoy it and stay." },
+    { key: "absorb", name: "Let it take you", frac: 0.10,
+      instruction: "Do nothing extra.\nLet the pleasantness intensify on its own.\nContented, patient, undemanding." },
+  ];
+
+  const LS_LOG = "jhana.log.v1";
+  const LS_MILESTONES = "jhana.milestones.v1";
+
+  /* ---------------- Utilities ---------------- */
+  const $ = (id) => document.getElementById(id);
+  const fmt = (s) => {
+    const m = Math.floor(s / 60), r = s % 60;
+    return String(m).padStart(2, "0") + ":" + String(r).padStart(2, "0");
+  };
+  const load = (k, d) => {
+    try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; }
+  };
+  const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+  /* ---------------- Audio (synthesized bell) ---------------- */
+  let audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+  }
+  function bell(times = 1) {
+    if (!audioCtx) return;
+    const partials = [523.25, 1046.5, 1567.98]; // C5 + harmonics
+    for (let i = 0; i < times; i++) {
+      const t0 = audioCtx.currentTime + i * 1.6;
+      partials.forEach((f, j) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = f;
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.35 / (j + 1), t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 4);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(t0);
+        osc.stop(t0 + 4.2);
+      });
+    }
+  }
+
+  /* ---------------- Navigation ---------------- */
+  document.querySelectorAll("nav button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("nav button").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+      btn.classList.add("active");
+      $("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  /* ---------------- Presets ---------------- */
+  let sessionMinutes = 45;
+  $("presets").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    document.querySelectorAll("#presets button").forEach((x) => x.classList.remove("selected"));
+    b.classList.add("selected");
+    sessionMinutes = Number(b.dataset.min);
+  });
+
+  /* ---------------- Session engine ---------------- */
+  let timer = null;
+  let elapsed = 0;          // seconds
+  let totalSec = 0;
+  let boundaries = [];      // cumulative end-time (sec) of each stage
+  let stageIdx = -1;
+  let paused = false;
+  let wakeLock = null;
+
+  function computeBoundaries(total) {
+    let acc = 0;
+    return STAGES.map((s, i) => {
+      acc += (i === STAGES.length - 1) ? total - acc : Math.round(total * s.frac);
+      return acc;
+    });
+  }
+
+  function enterStage(i) {
+    stageIdx = i;
+    const st = STAGES[i];
+    $("s-stage").textContent = (i + 1) + " · " + st.name;
+    $("s-instruction").textContent = st.instruction;
+    $("pacer").classList.toggle("on", st.key === "settle" && $("opt-pacer").checked);
+    renderDots();
+    if (i > 0) bell(1);
+  }
+
+  function renderDots() {
+    $("s-dots").innerHTML = STAGES.map((_, i) =>
+      `<span class="${i < stageIdx ? "done" : i === stageIdx ? "now" : ""}"></span>`
+    ).join("");
+  }
+
+  function tick() {
+    if (paused) return;
+    elapsed++;
+    $("s-clock").textContent = fmt(elapsed);
+    $("progress").style.width = (100 * elapsed / totalSec) + "%";
+    if (stageIdx < STAGES.length - 1 && elapsed >= boundaries[stageIdx]) {
+      enterStage(stageIdx + 1);
+    }
+    if (elapsed >= totalSec) finishSession(true);
+  }
+
+  async function startSession() {
+    ensureAudio();
+    totalSec = sessionMinutes * 60;
+    boundaries = computeBoundaries(totalSec);
+    elapsed = 0;
+    paused = false;
+    $("btn-pause").textContent = "Pause";
+    $("s-clock").textContent = "00:00";
+    $("s-clock").classList.toggle("hidden-time", !$("opt-clock").checked);
+    $("progress").style.width = "0%";
+    $("session").classList.add("active");
+    enterStage(0);
+    bell(1);
+    timer = setInterval(tick, 1000);
+    try { wakeLock = await navigator.wakeLock?.request("screen"); } catch { /* unsupported */ }
+  }
+
+  function stopEngine() {
+    clearInterval(timer);
+    timer = null;
+    try { wakeLock?.release(); } catch { /* already released */ }
+    wakeLock = null;
+  }
+
+  function finishSession(completed) {
+    stopEngine();
+    if (completed) bell(3);
+    $("session").classList.remove("active");
+    if (elapsed >= 60) openModal();   // don't log sub-minute sits
+  }
+
+  $("btn-start").addEventListener("click", startSession);
+  $("btn-pause").addEventListener("click", () => {
+    paused = !paused;
+    $("btn-pause").textContent = paused ? "Resume" : "Pause";
+  });
+  $("btn-end").addEventListener("click", () => finishSession(false));
+
+  /* ---------------- Post-sit modal ---------------- */
+  let modalRating = 0;
+  function openModal() {
+    modalRating = 0;
+    document.querySelectorAll("#m-rating button").forEach((b) => b.classList.remove("selected"));
+    $("m-piti").checked = false;
+    $("m-notes").value = "";
+    $("modal-backdrop").classList.add("active");
+  }
+  function closeModal() { $("modal-backdrop").classList.remove("active"); }
+
+  $("m-rating").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    modalRating = Number(b.dataset.v);
+    document.querySelectorAll("#m-rating button").forEach((x) =>
+      x.classList.toggle("selected", Number(x.dataset.v) <= modalRating));
+  });
+  $("m-skip").addEventListener("click", closeModal);
+  $("m-save").addEventListener("click", () => {
+    const log = load(LS_LOG, []);
+    log.push({
+      date: new Date().toISOString(),
+      minutes: Math.round(elapsed / 60),
+      rating: modalRating || null,
+      piti: $("m-piti").checked,
+      notes: $("m-notes").value.trim(),
+    });
+    save(LS_LOG, log);
+    closeModal();
+    renderLog();
+    renderStats();
+  });
+
+  /* ---------------- Log & stats ---------------- */
+  function renderLog() {
+    const log = load(LS_LOG, []).slice().reverse();
+    $("log-empty").style.display = log.length ? "none" : "block";
+    $("log-list").innerHTML = log.map((e) => {
+      const d = new Date(e.date);
+      const date = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+      const meta = [
+        e.rating ? "stability " + e.rating + "/5" : null,
+        e.piti ? '<span class="piti-flag">pīti ✦</span>' : null,
+      ].filter(Boolean).join(" · ");
+      return `<div class="log-entry">
+        <div class="top"><span class="date">${date}</span><span class="dur">${e.minutes} min</span></div>
+        ${meta ? `<div class="meta">${meta}</div>` : ""}
+        ${e.notes ? `<div class="notes">${escapeHtml(e.notes)}</div>` : ""}
+      </div>`;
+    }).join("");
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function renderStats() {
+    const log = load(LS_LOG, []);
+    $("stat-sits").textContent = log.length;
+    $("stat-hours").textContent = (log.reduce((a, e) => a + e.minutes, 0) / 60).toFixed(1);
+    // streak: consecutive calendar days ending today or yesterday
+    const days = new Set(log.map((e) => new Date(e.date).toDateString()));
+    let streak = 0;
+    const cursor = new Date();
+    if (!days.has(cursor.toDateString())) cursor.setDate(cursor.getDate() - 1);
+    while (days.has(cursor.toDateString())) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    $("stat-streak").textContent = streak;
+  }
+
+  /* ---------------- Milestones ---------------- */
+  const MILESTONES = [
+    "Sat every day for a week",
+    "Completed a 45-minute sit comfortably",
+    "Counted ten breaths without losing the count, repeatedly",
+    "Attention stays on the breath for minutes at a time",
+    "Breath becomes subtle; body feels light and pleasant (access concentration)",
+    "Pīti arises when attended to — tingling, waves, energy, joy",
+    "Pleasure sustains and grows on its own without effort — first-jhana territory",
+  ];
+  function renderMilestones() {
+    const done = load(LS_MILESTONES, []);
+    $("milestones").innerHTML = MILESTONES.map((m, i) =>
+      `<label class="milestone ${done.includes(i) ? "done" : ""}">
+        <input type="checkbox" data-i="${i}" ${done.includes(i) ? "checked" : ""}>
+        <span class="m-text">${m}</span>
+      </label>`
+    ).join("");
+  }
+  $("milestones").addEventListener("change", (e) => {
+    const i = Number(e.target.dataset.i);
+    let done = load(LS_MILESTONES, []);
+    done = e.target.checked ? [...new Set([...done, i])] : done.filter((x) => x !== i);
+    save(LS_MILESTONES, done);
+    renderMilestones();
+  });
+
+  /* ---------------- Init ---------------- */
+  renderLog();
+  renderStats();
+  renderMilestones();
+})();
+</script>
+</body>
+</html>
