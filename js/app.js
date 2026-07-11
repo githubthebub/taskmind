@@ -654,11 +654,20 @@ function drawRadar() {
   }), "rgba(139,124,246,.95)", "rgba(139,124,246,.22)");
 }
 
-$("#reset-save").addEventListener("click", () => {
-  if (confirm("Delete all progress, badges, and streaks? This can't be undone.")) {
-    resetState();
-    showScreen("culture");
+let resetArmed = false;
+$("#reset-save").addEventListener("click", (e) => {
+  if (!resetArmed) {
+    resetArmed = true;
+    e.target.textContent = "Really delete everything? Click again to confirm";
+    setTimeout(() => {
+      resetArmed = false;
+      e.target.textContent = "Reset all progress";
+    }, 3000);
+    return;
   }
+  resetArmed = false;
+  resetState();
+  showScreen("culture");
 });
 
 /* ================= boot ================= */
