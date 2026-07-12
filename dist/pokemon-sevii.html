@@ -3840,6 +3840,12 @@ window.addEventListener('load', async ()=>{
   G_ctx = G_canvas.getContext('2d');
   G_ctx.imageSmoothingEnabled = false;
   bindInput();
+  // keyboard focus insurance (esp. when embedded in an iframe/artifact)
+  G_canvas.setAttribute('tabindex','0');
+  G_canvas.style.outline = 'none';
+  const grabFocus = ()=>{ try{ window.focus(); G_canvas.focus(); }catch(e){} SND.init(); };
+  grabFocus();
+  document.addEventListener('pointerdown', grabFocus);
   fitCanvas();
   window.addEventListener('resize', fitCanvas);
   try{ await document.fonts.ready; }catch(e){}
