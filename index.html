@@ -34,6 +34,10 @@
       <h1>Backbone</h1>
       <p class="tagline">A game that trains the Big Five traits your culture actually rewards —
       and makes sure you never play the doormat.</p>
+      <div class="row-buttons" style="justify-content:center; margin-top:16px">
+        <button id="quick-start" class="btn">🧳 Take the 2-minute Workplace Backbone Test</button>
+      </div>
+      <p class="muted tiny">Skip the setup — get your Backbone Index first. You can pick your culture anytime after.</p>
     </div>
     <h2 class="section-title">Where are you playing from?</h2>
     <p class="muted small">Pick the country or culture you live and work in. It sets which traits the
@@ -75,6 +79,12 @@
         <span class="mode-name">Life Board</span>
         <span class="mode-desc">Roll, land, survive what life throws. Doormat answers slide you back — spine boosts you forward.</span>
         <span class="mode-progress" id="board-mode-progress"></span>
+      </button>
+      <button class="mode-card" data-nav="workday">
+        <span class="mode-emoji">🧳</span>
+        <span class="mode-name">Workplace Backbone Test</span>
+        <span class="mode-desc">10 office standoffs, same for everyone. Get your Backbone Index /100.</span>
+        <span class="mode-progress" id="workday-mode-progress"></span>
       </button>
       <button class="mode-card" data-nav="scenario">
         <span class="mode-emoji">🎭</span>
@@ -200,6 +210,25 @@
     <div id="safety-card" class="card"></div>
     <div id="safety-feedback" class="feedback hidden"></div>
     <div id="safety-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ WORKPLACE BACKBONE TEST ============ -->
+  <section id="screen-workday" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="workday-progress" class="round-dots"></div>
+    </div>
+    <div id="workday-intro" class="card center-card">
+      <h2>🧳 The Workplace Backbone Test</h2>
+      <p class="muted">Ten real office standoffs — the Friday 5:45pm ask, the credit thief, the salary
+      silence. No right-sounding answers; pick what you'd <em>actually</em> do. Everyone gets the same
+      ten, in the same order, so your <b>Backbone Index</b> compares straight across.</p>
+      <p class="muted tiny">~2 minutes · retake anytime · your picks also train your trait XP</p>
+      <button id="workday-start" class="btn">Start the test</button>
+    </div>
+    <div id="workday-card" class="card hidden"></div>
+    <div id="workday-feedback" class="feedback hidden"></div>
+    <div id="workday-result" class="hidden"></div>
   </section>
 
   <!-- ============ LIFE BOARD ============ -->

@@ -437,6 +437,16 @@ html, body {
   color: transparent;
 }
 .verdict-line { color: var(--muted); margin: 6px 0 12px; }
+.index-num {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(92deg, #b9aefc, var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 .verdict-stats { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 
 /* ---------- gauntlet ---------- */

@@ -11,7 +11,7 @@ const el = (tag, cls, html) => {
 const SESSION_LEN = 5;
 
 /* ================= navigation ================= */
-const SCREENS = ["culture", "home", "scenario", "distortion", "drill", "career", "love", "safety", "board", "gauntlet", "perception", "breathe", "progress", "about"];
+const SCREENS = ["culture", "home", "scenario", "distortion", "drill", "career", "love", "safety", "workday", "board", "gauntlet", "perception", "breathe", "progress", "about"];
 
 function showScreen(name) {
   for (const s of SCREENS) $("#screen-" + s).classList.toggle("hidden", s !== name);
@@ -28,6 +28,7 @@ function showScreen(name) {
   if (name === "career") renderCampaignMap(CAMPAIGNS.career);
   if (name === "love") renderCampaignMap(CAMPAIGNS.love);
   if (name === "safety") startSafetySession();
+  if (name === "workday") enterWorkday();
   if (name === "board") renderBoardScreen();
   if (name === "gauntlet") enterGauntlet();
   if (name === "perception") startPerceptionSession();
@@ -216,6 +217,9 @@ function renderHome() {
   $("#love-mode-progress").textContent = love.done
     ? "🏆 All chapters cleared"
     : `${(love.cleared || []).length}/${LOVE_CHAPTERS.length} chapters cleared`;
+  $("#workday-mode-progress").textContent = state.stats.backboneIndex
+    ? `Index ${state.stats.backboneIndex}/100${state.stats.backboneIndexBest > state.stats.backboneIndex ? ` · best ${state.stats.backboneIndexBest}` : ""}`
+    : "Get your number";
   $("#board-mode-progress").textContent = state.board.active
     ? `Run in progress — tile ${state.board.pos + 1}/${BOARD_LAYOUT.length} · ${state.board.coins} 🪙`
     : state.stats.boardWins
@@ -833,6 +837,191 @@ function renderSafetyRound() {
     list.append(btn);
   }
   card.append(list);
+}
+
+/* ================= workplace backbone test ================= */
+let wdRun = null;
+
+function workdayItems() {
+  return WORKDAY_TEST.map((ref) => {
+    if (ref.type === "drill") {
+      const d = DRILLS.find((x) => x.situation.includes(ref.match));
+      return {
+        tag: `Office moment · ${d.skill}`,
+        text: d.situation,
+        choices: d.options.map((o) => ({ ...DRILL_CHOICE_EFFECTS[o.kind], text: o.text, fb: `<b>${d.skill}.</b> ${d.tip}` })),
+      };
+    }
+    const pool = ref.type === "career" ? CAREER_STAGES.flatMap((s) => s.scenarios) : SCENARIOS;
+    const sc = pool.find((x) => x.id === ref.id);
+    return { tag: `Office moment · ${sc.tag}`, text: sc.text, choices: sc.choices, focus: sc.focus };
+  });
+}
+
+function enterWorkday() {
+  wdRun = null;
+  $("#workday-intro").classList.remove("hidden");
+  $("#workday-card").classList.add("hidden");
+  $("#workday-feedback").classList.add("hidden");
+  $("#workday-result").classList.add("hidden");
+  $("#workday-result").innerHTML = "";
+  $("#workday-progress").innerHTML = "";
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#workday-start")) startWorkday();
+  if (e.target.closest("#quick-start")) {
+    if (!state.cultureId) setCulture("style-global");
+    showScreen("workday");
+  }
+});
+
+function startWorkday() {
+  wdRun = { items: workdayItems(), idx: 0, results: [], picks: [] };
+  $("#workday-intro").classList.add("hidden");
+  renderWorkdayRound();
+}
+
+function renderWorkdayRound() {
+  const run = wdRun;
+  const card = $("#workday-card");
+  const fb = $("#workday-feedback");
+  fb.classList.add("hidden");
+
+  if (run.idx >= run.items.length) { finishWorkday(); return; }
+
+  card.classList.remove("hidden");
+  renderDots($("#workday-progress"), run.items.length, run.results, run.idx);
+
+  const item = run.items[run.idx];
+  card.innerHTML = "";
+  card.append(el("span", "scene-tag", `🧳 ${run.idx + 1}/10 · ${item.tag}`));
+  card.append(el("p", "scene-text", item.text));
+
+  const hadDoormat = item.choices.some((c) => c.kind === "doormat");
+  const list = el("div", "choices");
+  const order = shuffle(item.choices.map((_, i) => i));
+  for (const i of order) {
+    const ch = item.choices[i];
+    const btn = el("button", "choice-btn", ch.text);
+    btn.addEventListener("click", () => {
+      ch._roundHadDoormat = hadDoormat;
+      const res = applyChoice(ch, item.focus || "A");
+      juice(btn, res);
+      const pts = INDEX_POINTS[ch.kind] ?? 0;
+      run.picks.push({ kind: ch.kind, pts });
+      run.results.push(res.cls);
+
+      for (const b of list.querySelectorAll("button")) b.disabled = true;
+      btn.classList.add("picked-" + res.cls);
+      if (res.cls !== "good") {
+        for (const j of order) {
+          if (kindClass(item.choices[j].kind) === "good") list.children[order.indexOf(j)].classList.add("reveal-best");
+        }
+      }
+
+      renderDots($("#workday-progress"), run.items.length, run.results, run.idx);
+      fb.innerHTML = "";
+      fb.classList.remove("hidden");
+      fb.append(el("div", "fb-verdict " + res.cls, res.label));
+      fb.append(el("p", null, ch.fb));
+      fb.append(el("div", "fb-points", `<b>+${pts} index</b> ${xpPills(res.xpGained)}`));
+      const next = el("button", "btn fb-next", run.idx === run.items.length - 1 ? "See my Backbone Index →" : "Next →");
+      next.addEventListener("click", () => { run.idx++; renderWorkdayRound(); });
+      fb.append(next);
+      next.focus();
+      refreshTopbar();
+    });
+    list.append(btn);
+  }
+  card.append(list);
+}
+
+function workdayShareLinkedIn(index, tier, spine, doormats, blowups) {
+  return `I took a 2-minute "Workplace Backbone Test" — ten office standoffs (the Friday 5:45pm ask, the credit thief, the salary silence). No right-sounding answers; you pick what you'd actually do.`
+    + `\n\nMy Backbone Index: ${index}/100 — ${tier.emoji} ${tier.name}`
+    + `\n• Held the line in ${spine}/10 moments`
+    + `\n• Doormat slips: ${doormats}`
+    + `\n• Blow-ups: ${blowups}`
+    + `\n\nIt read me uncomfortably well. Curious where you land.`;
+}
+
+function finishWorkday() {
+  const run = wdRun;
+  const index = run.picks.reduce((a, p) => a + p.pts, 0);
+  const spine = run.picks.filter((p) => p.pts === 10).length;
+  const doormats = run.picks.filter((p) => p.kind === "doormat").length;
+  const blowups = run.picks.filter((p) => p.kind === "aggressive").length;
+  const tier = INDEX_TIERS.find((t) => index >= t.min);
+
+  state.stats.workdayRuns++;
+  state.stats.backboneIndex = index;
+  state.stats.backboneIndexBest = Math.max(state.stats.backboneIndexBest || 0, index);
+  state.stats.sessionsCompleted++;
+  touchStreak();
+  saveState();
+  if (index >= 85) confettiBurst(200);
+
+  $("#workday-card").classList.add("hidden");
+  $("#workday-feedback").classList.add("hidden");
+  const box = $("#workday-result");
+  box.classList.remove("hidden");
+  box.innerHTML = "";
+
+  const card = el("div", "verdict-card");
+  card.append(el("div", "verdict-label", "Your Workplace Backbone Index"));
+  const num = el("div", "index-num", "0");
+  card.append(num);
+  card.append(el("div", "verdict-emoji", tier.emoji));
+  card.append(el("div", "verdict-name", tier.name));
+  card.append(el("div", "verdict-line", `“${tier.line}”`));
+  const stats = el("div", "verdict-stats");
+  for (const p of [`🦴 Held the line ${spine}/10`, `🚪 Doormat slips: ${doormats}`, `💥 Blow-ups: ${blowups}`]) {
+    stats.append(el("span", "xp-pill", p));
+  }
+  card.append(stats);
+  const shareRow = el("div", "row-buttons");
+  shareRow.style.justifyContent = "center";
+  const liBtn = el("button", "btn small-btn", "📋 Copy LinkedIn version");
+  liBtn.addEventListener("click", () => copyText(workdayShareLinkedIn(index, tier, spine, doormats, blowups)));
+  const casualBtn = el("button", "btn ghost small-btn", "📋 Copy group-chat version");
+  casualBtn.addEventListener("click", () => copyText(
+    `🦴 Backbone Index: ${index}/100 (${tier.emoji} ${tier.name}) — 10 office standoffs, ${doormats} doormat slip${doormats === 1 ? "" : "s"}${doormats ? " 😅" : " 😤"}. Bet you can't beat it.`));
+  shareRow.append(liBtn, casualBtn);
+  card.append(shareRow);
+  box.append(card);
+
+  // train-the-gaps funnel
+  const gaps = el("div", "card center-card");
+  gaps.append(el("h3", null, "Train the gaps"));
+  const sugg = el("div", "row-buttons");
+  sugg.style.justifyContent = "center";
+  const suggestions = [];
+  if (doormats > 0) suggestions.push(["🗣️ Spine drills", "drill"]);
+  if (blowups > 0) suggestions.push(["🎭 Situations", "scenario"]);
+  if (index < 85) suggestions.push(["🎙️ Negotiation rung", "career"]);
+  if (!suggestions.length) suggestions.push(["🎲 Life Board", "board"]);
+  for (const [label, nav] of suggestions.slice(0, 2)) {
+    const b = el("button", "btn ghost", label);
+    b.addEventListener("click", () => showScreen(nav));
+    sugg.append(b);
+  }
+  const retake = el("button", "btn ghost", "↻ Retake");
+  retake.addEventListener("click", startWorkday);
+  sugg.append(retake);
+  gaps.append(sugg);
+  box.append(gaps);
+
+  // count-up animation on the big number
+  const t0 = performance.now();
+  (function tick(t) {
+    const p = Math.min(1, (t - t0) / 900);
+    num.textContent = String(Math.round(index * (REDUCED_MOTION ? 1 : (1 - Math.pow(1 - p, 3)))));
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
+
+  announceBadges(checkBadges());
+  refreshTopbar();
 }
 
 /* ================= life board ================= */
@@ -1679,6 +1868,7 @@ function renderProgress() {
     [state.stats.dailiesPlayed, "Dailies played 📅"],
     [state.stats.boardWins, "Board wins 🎲"],
     [state.stats.boardBestCoins, "Best board run 🪙"],
+    [state.stats.backboneIndexBest || "–", "Backbone Index 🧳"],
   ];
   for (const [num, label] of stats) {
     const card = el("div", "stat-card");
@@ -1711,6 +1901,7 @@ const RESETS = [
   { label: "💼❤️ Both campaigns", apply: () => { state.campaigns = { career: { stage: 0, done: false }, love: { cleared: [], done: false } }; } },
   { label: "⚡ Gauntlet & Daily records", apply: () => { Object.assign(state.stats, { gauntletBest: 0, gauntletRuns: 0, gauntletFlawless: false, dailiesPlayed: 0, dailyBest: 0 }); state.daily = { day: null, number: 0, score: 0, squares: [], hearts: 0 }; } },
   { label: "🎲 Life Board", apply: () => { state.board = { active: false, pos: 0, energy: 3, coins: 0 }; Object.assign(state.stats, { boardRuns: 0, boardWins: 0, boardBestCoins: 0 }); } },
+  { label: "🧳 Backbone Index history", apply: () => Object.assign(state.stats, { workdayRuns: 0, backboneIndex: 0, backboneIndexBest: 0 }) },
   { label: "🃏 Card memory (reshuffle all decks)", apply: () => { state.seen = { scenarios: [], distortions: [], drills: [], safety: [], perception: [] }; } },
 ];
 

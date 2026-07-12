@@ -15,6 +15,10 @@ const TRAITS = {
    Broad-brush averages from cross-cultural research — not rules about individuals. */
 const CULTURES = [
   /* ----- culture styles (pick these if your country isn't listed or you live between cultures) ----- */
+  { id: "style-global", group: "style", flag: "🌐", name: "Global Professional",
+    blurb: "The default: modern international workplace norms.",
+    directness: 0.6, weights: { O: 4, C: 4, E: 4, A: 4, S: 4 },
+    notes: ["Clear beats clever; kind beats nice.", "State the ask, own the no, keep the relationship."] },
   { id: "style-direct", group: "style", flag: "🎯", name: "Direct Individualist",
     blurb: "Low-context: say what you mean, mean what you say.",
     directness: 0.9, weights: { O: 4, C: 4, E: 4, A: 3, S: 4 },
@@ -1209,6 +1213,40 @@ const CHANCE_EVENTS = [
   { emoji: "🗣️", text: "Someone quotes your toast from that dinner, months later. Words with spine travel.", effect: { move: 2 } },
 ];
 
+/* ---------------- The Workplace Backbone Test ----------------
+   A fixed 10-item test — identical rounds in identical order for everyone,
+   so the resulting Backbone Index (0–100) is comparable between people.
+   Items are drawn from the existing decks by stable reference. */
+const WORKDAY_TEST = [
+  { type: "drill", match: "Saturday shift" },
+  { type: "scenario", id: "friday-boss" },
+  { type: "drill", match: "obviously padded" },
+  { type: "scenario", id: "credit-thief" },
+  { type: "scenario", id: "typo-email" },
+  { type: "drill", match: "stretch project" },
+  { type: "career", id: "cl-neg-silence" },
+  { type: "scenario", id: "slacker-teammate" },
+  { type: "drill", match: "slide 14" },
+  { type: "scenario", id: "raise-ask" },
+];
+
+/* kind → index points (culture-independent so scores compare fairly) */
+const INDEX_POINTS = {
+  assert: 10, assertDirect: 10, assertDiplo: 10, good: 10,
+  ok: 5, aggressive: 2, avoid: 2, doormat: 0,
+};
+
+const INDEX_TIERS = [
+  { min: 85, emoji: "🏛️", name: "Velvet Tank Tier",
+    line: "Firm on outcomes, warm in delivery — the rarest combination in any office." },
+  { min: 65, emoji: "🧱", name: "Boundary Builder",
+    line: "The spine is real. A few moments still slip through — usually the ones with an audience." },
+  { min: 40, emoji: "🪞", name: "Selective Spine",
+    line: "Strong when it's safe, softer when it counts. The gap is the training plan." },
+  { min: 0, emoji: "🚪", name: "The Over-Accommodator",
+    line: "Generous to everyone except yourself. Very trainable — that's the good news." },
+];
+
 /* ---------------- character archetypes (verdict cards) ---------------- */
 const ARCHETYPES = [
   { id: "fresh", emoji: "🐣", name: "Fresh Save File", line: "Character creation in progress. Everything is still possible.",
@@ -1283,6 +1321,10 @@ const BADGES = [
     check: (s) => (s.stats.boardWins || 0) >= 1 },
   { id: "high-roller", emoji: "🪙", name: "High Roller", desc: "Bank 120+ coins in a single Life Board run.",
     check: (s) => (s.stats.boardBestCoins || 0) >= 120 },
+  { id: "index-taken", emoji: "🧳", name: "Read the Room", desc: "Take the Workplace Backbone Test.",
+    check: (s) => (s.stats.workdayRuns || 0) >= 1 },
+  { id: "index-85", emoji: "🏛️", name: "Velvet Tier", desc: "Score 85+ on the Workplace Backbone Test.",
+    check: (s) => (s.stats.backboneIndexBest || 0) >= 85 },
 ];
 
 /* ---------------- campaign: Career Ladder ----------------

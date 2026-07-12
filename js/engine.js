@@ -32,6 +32,9 @@ function defaultState() {
       boardRuns: 0,
       boardWins: 0,
       boardBestCoins: 0,
+      workdayRuns: 0,
+      backboneIndex: 0,       // most recent Workplace Backbone Test score
+      backboneIndexBest: 0,
       readAbout: false,
     },
     seen: { scenarios: [], distortions: [], drills: [], safety: [], perception: [] },
