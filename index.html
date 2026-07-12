@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="SWARAJ — Rule Your Mind. Live one Indian life from 2026 to 2047. A game about the mind between cringe and bluster.">
+<meta name="theme-color" content="#e2762d">
+<title>SWARAJ — Rule Your Mind</title>
+<style>
+:root{
+  --bg:#faf6ef; --bg2:#f1e9db; --card:#ffffff; --ink:#221f1a; --ink2:#6b6154;
+  --line:#e4dbc9; --saffron:#d96c1e; --saffron2:#b95812; --green:#2e7d4f; --blue:#2456a6;
+  --rose:#c34a5e; --amber:#b07d1a; --violet:#6d4fc0; --shadow:0 10px 30px rgba(60,40,10,.10);
+  --danger:#b33a3a; --chip:#f4ede0;
+}
+[data-theme="dark"]{
+  --bg:#151310; --bg2:#1c1915; --card:#221e19; --ink:#efe7d9; --ink2:#a89a86;
+  --line:#373026; --saffron:#e88a3f; --saffron2:#f0a05f; --green:#5cb884; --blue:#7ea3e0;
+  --rose:#e08093; --amber:#d9a83e; --violet:#a68eea; --shadow:0 10px 30px rgba(0,0,0,.45);
+  --danger:#e07070; --chip:#2b2620;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151310; --bg2:#1c1915; --card:#221e19; --ink:#efe7d9; --ink2:#a89a86;
+    --line:#373026; --saffron:#e88a3f; --saffron2:#f0a05f; --green:#5cb884; --blue:#7ea3e0;
+    --rose:#e08093; --amber:#d9a83e; --violet:#a68eea; --shadow:0 10px 30px rgba(0,0,0,.45);
+    --danger:#e07070; --chip:#2b2620;
+  }
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;
+  min-height:100dvh;
+}
+#app{max-width:480px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.screen{display:none;flex-direction:column;flex:1;padding:16px}
+.screen.active{display:flex}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+.btn{
+  display:block;width:100%;padding:14px 18px;border-radius:14px;margin:6px 0;
+  background:var(--card);border:1.5px solid var(--line);box-shadow:var(--shadow);
+  text-align:left;font-size:16px;line-height:1.4;transition:transform .08s ease;
+}
+.btn:active{transform:scale(.985)}
+.btn.primary{background:var(--saffron);color:#fff;border-color:var(--saffron)}
+.btn.primary:active{background:var(--saffron2)}
+.btn.ghost{background:transparent;box-shadow:none;text-align:center;color:var(--ink2)}
+.small{font-size:13px;color:var(--ink2)}
+.tag{display:inline-block;background:var(--chip);border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;color:var(--ink2)}
+
+/* ---------- home ---------- */
+#home{justify-content:center;text-align:center;gap:6px}
+.logo{font-size:44px;letter-spacing:.14em;color:var(--saffron);font-weight:700;font-family:Georgia,serif}
+.tagline{color:var(--ink2);font-style:italic;margin-bottom:6px}
+.homegauge{margin:6px auto 10px}
+.homebtns{max-width:340px;width:100%;margin:0 auto}
+.streakline{font-size:14px;color:var(--amber);min-height:20px}
+.foot{margin-top:14px;font-size:12px;color:var(--ink2)}
+
+/* ---------- game ---------- */
+#topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+#stageTag{font-size:13px;color:var(--ink2)}
+#nation{display:flex;gap:10px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin-bottom:10px}
+.nmeter{flex:1;text-align:center}
+.nmeter .lbl{font-size:11px;color:var(--ink2);display:block;white-space:nowrap}
+.nbar{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:3px}
+.nbar>i{display:block;height:100%;border-radius:4px;transition:width .5s ease}
+#nsp>i{background:var(--violet)} #nhp>i{background:var(--blue)} #nql>i{background:var(--green)}
+
+#cardZone{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:280px}
+.gamecard{
+  background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:22px 20px;
+  box-shadow:var(--shadow);animation:pop .28s ease;
+}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.gamecard{animation:none}.btn{transition:none}}
+.cardart{font-size:40px;line-height:1;margin-bottom:10px}
+.cardtitle{font-size:19px;margin-bottom:8px}
+.cardtext{font-size:16px;color:var(--ink);margin-bottom:4px}
+.fwdwrap .gamecard{border-color:var(--green);border-style:dashed}
+.fwdhead{font-size:12px;color:var(--green);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+
+#meters{display:flex;gap:8px;margin-top:12px}
+.pm{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:7px 6px;text-align:center}
+.pm .ico{font-size:16px}
+.pbar{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:4px}
+.pbar>i{display:block;height:100%;border-radius:4px;transition:width .5s ease}
+#pw>i{background:var(--amber)} #ph>i{background:var(--rose)} #pr>i{background:var(--green)} #pv>i{background:var(--blue)}
+.pm.low{outline:2px solid var(--danger)}
+
+#compassWrap{margin-top:10px;text-align:center}
+.gauge{display:inline-block}
+.gauge .needle{transition:transform .6s cubic-bezier(.3,1.4,.5,1);transform-origin:100px 92px}
+.gaugelbl{display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);max-width:220px;margin:0 auto}
+
+/* ---------- overlay (because / receipt / debunk) ---------- */
+#overlay{
+  position:fixed;inset:0;background:rgba(20,14,6,.55);display:none;align-items:flex-end;justify-content:center;z-index:50;
+}
+#overlay.active{display:flex}
+#overlayCard{
+  background:var(--card);border-radius:20px 20px 0 0;max-width:480px;width:100%;padding:22px 20px 28px;
+  border-top:3px solid var(--saffron);animation:up .25s ease;max-height:80dvh;overflow-y:auto;
+}
+@keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chip{background:var(--chip);border:1px solid var(--line);border-radius:99px;padding:3px 11px;font-size:14px}
+.chip.up{color:var(--green)} .chip.down{color:var(--danger)}
+.because{font-size:14px;color:var(--ink2);border-left:3px solid var(--saffron);padding-left:10px;margin:10px 0}
+.receiptdrop{background:var(--bg2);border:1.5px dashed var(--saffron);border-radius:14px;padding:12px;margin:12px 0}
+.receiptdrop .rt{font-weight:600}
+.receiptdrop .rs{font-size:12px;color:var(--ink2)}
+
+/* ---------- receipts screen ---------- */
+#receiptGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:12px}
+.rcell{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:12px;min-height:84px}
+.rcell .re{font-size:24px;display:block;margin-bottom:4px}
+.rcell.locked{opacity:.35;filter:grayscale(1)}
+#receiptDetail{margin-top:14px;background:var(--card);border:1.5px solid var(--saffron);border-radius:16px;padding:16px;display:none}
+#receiptDetail.active{display:block}
+.nuance{margin-top:10px;font-size:13px;color:var(--ink2);background:var(--bg2);border-radius:10px;padding:10px}
+.nuance b{color:var(--saffron)}
+
+/* ---------- end screen ---------- */
+#end{overflow-y:auto}
+.endcard{background:var(--card);border:1.5px solid var(--saffron);border-radius:20px;padding:24px 20px;text-align:center;box-shadow:var(--shadow)}
+.endemoji{font-size:52px}
+.endtitle{font-size:26px;margin:8px 0 4px}
+.endsub{color:var(--ink2);font-size:15px}
+.india47{margin-top:14px;text-align:left;background:var(--bg2);border-radius:14px;padding:14px}
+.india47 h3{font-size:15px;margin-bottom:8px}
+.i47row{display:flex;gap:8px;align-items:baseline;font-size:14px;margin:6px 0}
+.i47row .d{min-width:52px;font-weight:700}
+.d.up{color:var(--green)} .d.down{color:var(--danger)} .d.flat{color:var(--ink2)}
+.sharebox{margin-top:14px;background:var(--bg2);border-radius:12px;padding:12px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;white-space:pre-wrap;text-align:left}
+
+/* ---------- about ---------- */
+#about{overflow-y:auto}
+#about .body{font-size:15px}
+#about h3{margin:16px 0 6px;color:var(--saffron)}
+.backrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.backbtn{font-size:22px;padding:4px 10px;border-radius:10px;background:var(--bg2);border:1px solid var(--line)}
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  border-radius:99px;padding:9px 18px;font-size:14px;z-index:99;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;
+}
+.toast.show{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME -->
+  <section class="screen active" id="home" aria-label="Home">
+    <div style="display:flex;justify-content:flex-end"><button class="backbtn" id="themeBtn" aria-label="Toggle theme">◐</button></div>
+    <div class="logo">SWARAJ</div>
+    <div class="tagline">Rule your mind. Build your Bharat.</div>
+    <div class="homegauge" id="homeGauge" aria-hidden="true"></div>
+    <p class="small" style="max-width:320px;margin:0 auto 10px">
+      One Indian life, 2026 → 2047. Every choice moves you — and 1.4 billion neighbours.
+      Neither cringe nor bluster: find the needle's true north.
+    </p>
+    <div class="streakline" id="streakLine"></div>
+    <div class="homebtns">
+      <button class="btn primary" id="btnDaily">☕ Daily Chai <span class="small" style="color:#ffe8d2">— today's 10 cards, same for everyone</span></button>
+      <button class="btn" id="btnLife">🧭 Full Life <span class="small">— 2026 to 2047, ~10 minutes</span></button>
+      <button class="btn" id="btnReceipts">🧾 Receipts <span class="small" id="receiptCount"></span></button>
+      <button class="btn" id="btnAbout">🪔 About & Sources</button>
+    </div>
+    <div class="foot">No login · no ads · works offline · your data stays on your phone</div>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen" id="game" aria-label="Game">
+    <div id="topbar">
+      <button class="backbtn" id="quitBtn" aria-label="Quit to home">✕</button>
+      <span id="stageTag">Student · 2026</span>
+      <span class="tag" id="cardNum">1/32</span>
+    </div>
+    <div id="nation" aria-label="India's meters">
+      <div class="nmeter"><span class="lbl">🕊 Soft Power</span><div class="nbar" id="nsp"><i></i></div></div>
+      <div class="nmeter"><span class="lbl">🛡 Hard Power</span><div class="nbar" id="nhp"><i></i></div></div>
+      <div class="nmeter"><span class="lbl">🏠 Jan Jeevan</span><div class="nbar" id="nql"><i></i></div></div>
+    </div>
+    <div id="cardZone"></div>
+    <div id="meters" aria-label="Your meters">
+      <div class="pm" id="pmw"><span class="ico">🪙</span><div class="pbar" id="pw"><i></i></div></div>
+      <div class="pm" id="pmh"><span class="ico">❤️</span><div class="pbar" id="ph"><i></i></div></div>
+      <div class="pm" id="pmr"><span class="ico">🌱</span><div class="pbar" id="pr"><i></i></div></div>
+      <div class="pm" id="pmv"><span class="ico">📣</span><div class="pbar" id="pv"><i></i></div></div>
+    </div>
+    <div id="compassWrap">
+      <div class="gauge" id="gauge"></div>
+      <div class="gaugelbl"><span>cringe</span><span style="color:var(--saffron);font-weight:700">SWARAJ</span><span>bluster</span></div>
+    </div>
+    <div class="sr" aria-live="polite" id="srLive"></div>
+  </section>
+
+  <!-- END -->
+  <section class="screen" id="end" aria-label="Ending">
+    <div class="backrow"><button class="backbtn" id="endHome" aria-label="Back to home">🏠</button><h2 style="font-size:18px">Your life, tallied</h2></div>
+    <div class="endcard">
+      <div class="endemoji" id="endEmoji">🌳</div>
+      <div class="endtitle" id="endTitle">The Rooted Builder</div>
+      <div class="endsub" id="endText"></div>
+      <div class="india47" id="india47"></div>
+      <div class="sharebox" id="shareBox"></div>
+      <button class="btn primary" id="shareBtn" style="text-align:center">📤 Share (no spoilers)</button>
+      <button class="btn" id="againBtn" style="text-align:center">🔁 Live another life</button>
+    </div>
+  </section>
+
+  <!-- RECEIPTS -->
+  <section class="screen" id="receipts" aria-label="Receipts collection">
+    <div class="backrow"><button class="backbtn" id="rBack" aria-label="Back">←</button><h2 style="font-size:18px">🧾 Receipts <span class="small" id="rCount2"></span></h2></div>
+    <p class="small">Real, sourced facts you earned in play. Tap one. Every receipt carries its fight — the caveats are part of the collection.</p>
+    <div id="receiptGrid"></div>
+    <div id="receiptDetail" role="dialog" aria-label="Receipt detail"></div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="screen" id="about" aria-label="About">
+    <div class="backrow"><button class="backbtn" id="aBack" aria-label="Back">←</button><h2 style="font-size:18px">🪔 About SWARAJ</h2></div>
+    <div class="body">
+      <p><i>“Swaraj is when we learn to rule ourselves.”</i> — M.K. Gandhi, <i>Hind Swaraj</i> (1909)</p>
+      <h3>What this is</h3>
+      <p>A life-simulation about the mind India inherited and the one it is building. The colonial hangover is real and measurable — a ~34% wage premium on English, a half-billion-dollar fairness-cream market, a validated psychometric scale for internalized inferiority. But its mirror image — golden-age fantasy and forwarded pseudo-history — is, as Ashis Nandy wrote, still the colonized mind in a different mask. The game's only doctrine is <b>discernment</b>: real pride needs no forgery, and reflexive doubt is not rigor.</p>
+      <h3>The needle</h3>
+      <p>Left is <b>cringe</b> (Fanon's mask, the accent apology). Right is <b>bluster</b> (the WhatsApp aircraft, the purity purge). The centre — <b>swaraj</b> — is not lukewarm; it is self-rule: rooted, evidence-hungry, open to the world without needing its approval.</p>
+      <h3>The receipts are real</h3>
+      <p>Every fact card cites a source: Angus Maddison's GDP tables, Dharampal's British-archive school surveys, the World Bank on remittances, NPCI on UPI, the Lancet on air. Contested numbers ship with their caveats. Full evidence base with citations: <b>docs/RESEARCH.md</b> in this project's repository.</p>
+      <h3>Care</h3>
+      <p>This game contains no communal content and no party politics. Exam-stress storylines are about support, never harm — if you or a friend are struggling, <b>Tele-MANAS 14416</b> is free, 24×7, in 20 languages.</p>
+      <h3>Privacy</h3>
+      <p>Everything runs on your device. No account, no tracking, no network calls. Your streak and receipts live in your browser only.</p>
+      <p class="small" style="margin-top:18px">v1.0 · built as an open prototype · text set in the spirit of Hinglish, with love</p>
+    </div>
+  </section>
+
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<!-- overlay -->
+<div id="overlay" role="dialog" aria-modal="true">
+  <div id="overlayCard">
+    <div id="ovBody"></div>
+    <button class="btn primary" id="ovNext" style="text-align:center">Continue →</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ============================================================
+   SWARAJ — Rule Your Mind · v1.0
+   Single-file, dependency-free, offline-capable.
+   Design doc: docs/DESIGN.md · Evidence: docs/RESEARCH.md
+   ============================================================ */
+
+/* ---------- utilities ---------- */
+const $ = id => document.getElementById(id);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function hashStr(s){ let h=1779033703; for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353); h=h<<13|h>>>19;} return h>>>0; }
+function shuffled(arr, rnd){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2200); }
+function todayIST(){ // date string in Asia/Kolkata
+  return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+}
+function istYesterday(t){ // day before an IST 'YYYY-MM-DD' string, immune to local DST
+  const d=new Date(t+'T00:00:00Z'); d.setUTCDate(d.getUTCDate()-1); return d.toISOString().slice(0,10);
+}
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem('swaraj.'+k); return v===null?d:JSON.parse(v);}catch(e){return d;} },
+  set(k,v){ try{ localStorage.setItem('swaraj.'+k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ============================================================
+   CONTENT — RECEIPTS (all sourced; nuance = the fact's "fight")
+   ============================================================ */
+const RECEIPTS = [
+ {id:'maddison', e:'📉', t:'The Share', f:'India held ~24.4% of world GDP in 1700. By 1950: 4.2%.', s:'Angus Maddison, The World Economy (OECD, 2001)', n:'<b>Handle with care:</b> historian Tirthankar Roy notes a falling <i>share</i> partly reflects the West\'s industrial explosion — it doesn\'t alone prove absolute impoverishment. The receipt is real; the interpretation is a live scholarly fight.'},
+ {id:'naoroji', e:'🧮', t:'The First Audit', f:'Dadabhai Naoroji priced India\'s per-capita income at Rs 20 (1867–68) against Rs 34 subsistence — arguably the world\'s first poverty line, computed to indict an empire.', s:'Naoroji, Poverty and Un-British Rule in India (1901)', n:'An elected British MP doing arithmetic against Britain — the original "receipts" energy.'},
+ {id:'drain', e:'💷', t:'Home Charges', f:'Naoroji quantified an annual drain of ~£30–40 million from India to Britain by 1901 via salaries, pensions and unrequited exports.', s:'Naoroji (1901); revived by Utsa Patnaik (2017)', n:'<b>The famous "$45 trillion"</b> (Patnaik) compounds this at 5% interest to the present — most of the headline is interest, and economists contest the method. Naoroji\'s contemporaneous ledger is the safer citation.'},
+ {id:'dharampal', e:'🌳', t:'The Beautiful Tree', f:'British surveys of Madras Presidency (1822–25) counted 11,575 schools — and in Tamil districts, 70–80% of pupils were Shudra or below.', s:'Dharampal, The Beautiful Tree (1983), from colonial archives', n:'<b>Carries its fight:</b> girls were largely absent, and enrollment ≠ literacy — Gandhi himself couldn\'t fully substantiate the "more illiterate than 50 years ago" claim when Sir Philip Hartog pressed him. The schools were real; the golden gloss is extra.'},
+ {id:'macaulay', e:'📜', t:'The Minute', f:'Macaulay, 1835: education funds should form "a class of persons, Indian in blood and colour, but English in taste, in opinions, in morals, and in intellect."', s:'Minute on Indian Education, 2 Feb 1835 (verbatim)', n:'The real document is damning enough. The viral "I have not seen one beggar in India" quote attributed to him is a <b>fabrication</b> — it even contradicts what he actually wrote.'},
+ {id:'wage', e:'💬', t:'The Premium', f:'English fluency raises Indian wages ~34% — roughly the return on completing secondary school.', s:'Azam, Chin & Prakash (IZA/World Bank)', n:'This is why SWARAJ never asks you to drop English. The colonial trap was never the language — it was <i>subtraction</i>. Add; don\'t replace.'},
+ {id:'fairlovely', e:'🧴', t:'The Rename', f:'India is the world\'s largest skin-lightening market. Its biggest brand earned >$500M/yr — and dropped the word "Fair" from its name in 2020.', s:'Fortune; NBC (2020)', n:'Studies of 14 years of matrimonial ads show fairness demanded of brides far more than grooms. The insecurity is manufactured, gendered — and billed monthly.'},
+ {id:'cms', e:'🧠', t:'It\'s Measurable', f:'Psychologists measure "colonial mentality" with a validated scale (CMS): cultural shame, internalized inferiority, skin-tone preference, within-group discrimination, colonial debt.', s:'David & Okazaki (2006); Indian adaptation, 2021 study', n:'In a 2021 diaspora sample, 32% endorsed colonial-mentality items — and scores correlated with depressive symptoms. This isn\'t rhetoric; it\'s psychometrics.'},
+ {id:'nandy', e:'🪞', t:'The Mirror', f:'Ashis Nandy (1983): the militant who fights the colonizer by mirroring his hyper-masculine bluster is still colonized — the "intimate enemy" wins either way.', s:'The Intimate Enemy (OUP, 1983)', n:'The canon contains its own antidote: the opposite of cringe is not bluster. It\'s self-rule.'},
+ {id:'taiwo', e:'🔑', t:'Adopt, Adapt, Reject', f:'Philosopher Olúfẹ́mi Táíwò: rejecting ideas merely for colonial provenance denies the colonized their own agency to adopt, adapt, or reject.', s:'Against Decolonisation (2022)', n:'Decolonization-1 (self-rule) freed nations. Decolonization-2 (provenance-purging) just builds a new cage and paints it in your own colours.'},
+ {id:'ngugi', e:'💣', t:'The Cultural Bomb', f:'Ngũgĩ wa Thiong\'o: imperialism\'s most lasting weapon annihilates "a people\'s belief in their names, their languages… and ultimately in themselves."', s:'Decolonising the Mind (1986)', n:'Language carries culture. A child who can\'t talk to her grandmother lost more than vocabulary.'},
+ {id:'fanon', e:'🎭', t:'White Masks', f:'Fanon (1952): the colonized wear a mask to win the colonizer\'s approval — and the mask estranges them from themselves.', s:'Black Skin, White Masks (1952)', n:'The accent you sand off at midnight is the mask\'s daily rent.'},
+ {id:'coomaraswamy', e:'🎨', t:'The Pariah Warning', f:'"A single generation of English education suffices to break the threads of tradition… a sort of intellectual pariah who does not belong to the East or the West."', s:'Ananda Coomaraswamy, The Dance of Shiva (1918)', n:'Written a century ago; still the sharpest description of the Golden Cage ending.'},
+ {id:'hindswaraj', e:'🧭', t:'Self-Rule', f:'Gandhi (1909): swaraj is not just the British leaving — it is learning to rule ourselves, starting with the mind.', s:'Hind Swaraj (1909)', n:'The game\'s title, and its whole argument, in one 1909 pamphlet written in ten days on a ship.'},
+ {id:'tagore', e:'🕊', t:'The Counterweight', f:'Tagore (1917): "True modernism is freedom of mind, not slavery of taste… not tutelage under European schoolmasters." He equally refused the Nation-as-machine.', s:'Nationalism (1917)', n:'Tagore and Gandhi disagreed publicly and loved each other anyway — the healthiest argument in the canon.'},
+ {id:'upi', e:'📲', t:'The Rails', f:'UPI crossed 20 billion transactions a month and now carries roughly half the world\'s real-time digital payments — and India exports the rails.', s:'NPCI (2025); IMF', n:'A free public utility carrying roughly half the planet\'s real-time payments. The street vendor\'s QR code is a geopolitical instrument.'},
+ {id:'remit', e:'🌉', t:'The Bridge', f:'India received $129.1 billion in remittances in 2024 — the largest share any country has held this century.', s:'World Bank (2024)', n:'Leaving isn\'t treason. The Bridge sends money, knowledge, and networks home — the game\'s diaspora ending is a winning one.'},
+ {id:'ceos', e:'🏢', t:'The Corner Offices', f:'11 Fortune-500 companies — $6.5 trillion in combined market cap — are led by Indian-heritage CEOs.', s:'Newsweek (2024–25)', n:'Microsoft, Google, Adobe, FedEx. None of them got there by pretending not to be Indian.'},
+ {id:'yoga', e:'🧘', t:'The 4% Problem', f:'The global yoga market is ~$125B. India — which gave the world yoga — captures about $5B of it: 4%.', s:'Expert Market Research; Grand View (2025)', n:'Soft power without value capture is applause without royalties. The fix isn\'t resentment — it\'s certification, IP, and showing up to teach.'},
+ {id:'naatu', e:'🎬', t:'Unapologetically Itself', f:'"Naatu Naatu" won the 2023 Oscar for Best Original Song — the first for a fully Indian production. It did not audition as anything other than itself.', s:'Academy Awards (2023); CNN', n:'25% of Prime Video\'s Indian-content viewing is now international. The world buys the real thing, not the imitation.'},
+ {id:'isro', e:'🚀', t:'Frugal Orbit', f:'Chandrayaan-3 landed at the lunar south pole for ~$75M — less than many Hollywood budgets. ISRO has launched 397 foreign satellites in a decade.', s:'ISRO; WION; WEF', n:'Frugality as brand: the world\'s cheapest reliable ride to space was engineered in Bengaluru and Thiruvananthapuram.'},
+ {id:'defense', e:'🛡', t:'34x', f:'India\'s defense exports grew ~34-fold in 11 years to ₹23,622 crore (FY2024-25), reaching 100+ countries — BrahMos to the Philippines was the first big sale.', s:'PIB; Ministry of Defence (2025)', n:'The world\'s largest arms <i>importer</i> is becoming an exporter. Every indigenized component is fiscal space plus strategic autonomy.'},
+ {id:'iphone', e:'📱', t:'Top Export', f:'~25% of the world\'s iPhones are now assembled in India; the iPhone became India\'s single largest export item (~$23B in 2025).', s:'Counterpoint Research; PIB (2025–26)', n:'A country stereotyped as services-only now ships phones as its #1 good — many built by first-generation female factory workers.'},
+ {id:'micron', e:'🔬', t:'First Silicon', f:'India\'s first semiconductor assembly-and-test plant (Micron, Sanand) produced its first chips in 2025.', s:'Business Standard; YourStory (2025)', n:'Chips are the most geopolitically contested objects on earth. Being in the supply chain is hard power measured in nanometres.'},
+ {id:'solar', e:'☀️', t:'Third Sun', f:'India\'s renewable capacity crossed 250 GW — third in the world — and it became the world\'s #2 solar growth market.', s:'MNRE; Rystad (2025)', n:'Every rooftop panel shrinks the energy import bill. Energy security is hard power that also cleans the air.'},
+ {id:'gdp4', e:'📈', t:'Fourth', f:'India passed Japan in 2025 to become the world\'s 4th-largest economy (IMF); 3rd-largest is projected around 2028–30.', s:'IMF (2025)', n:'<b>The honest column:</b> per-capita income remains modest, and rankings shuffle with currency moves. Both columns are true. Read both.'},
+ {id:'swachh', e:'🚽', t:'The Plumbing', f:'WHO estimated Swachh Bharat\'s sanitation gains averted 300,000+ deaths by 2019.', s:'WHO (2019)', n:'The least glamorous receipt in the deck, and possibly the most heroic. Nation-building is mostly plumbing.'},
+ {id:'jandhan', e:'🏦', t:'550 Million Doors', f:'550M Jan Dhan accounts opened — 56% held by women — and direct benefit transfer plugged ₹3.48 lakh crore of leakage.', s:'PIB (2025); DBT reports', n:'The ghost beneficiaries died so the real ones could eat. Boring infrastructure, spectacular returns.'},
+ {id:'jal', e:'🚰', t:'The Tap', f:'Rural tap-water coverage rose from 17% (2019) to ~82% (2026).', s:'Jal Jeevan Mission; PIB', n:'Hours of daily water-fetching — mostly women\'s and girls\' hours — returned. Taps upstream, careers downstream.'},
+ {id:'lfpr', e:'👩‍🏭', t:'The Half Engine', f:'Female labour-force participation rose from 23.3% (2017-18) to 41.7% (2023-24). Closing the gap is India\'s single largest untapped growth lever.', s:'PLFS; ILO', n:'<b>Caveat included:</b> much of the rise is unpaid or self-employment. Quantity is up; the fight for quality (and safety, and childcare) is on.'},
+ {id:'air', e:'🌫', t:'The Invisible Tax', f:'PM2.5 pollution kills ~1.7M Indians a year, costs ~9.5% of GDP, and cuts average life expectancy by 3.5 years.', s:'Lancet Countdown (2025); AQLI', n:'India loses more than a year\'s economic growth to bad air, every year. It is also millions of individual choices — which means it can be unchosen.'},
+ {id:'sushruta', e:'🩺', t:'The Real Surgery', f:'The Sushruta Samhita describes reconstructive rhinoplasty; modern surgical histories acknowledge the Indian lineage of the "forehead flap" technique.', s:'Sushruta Samhita; surgical-history literature', n:'You don\'t need the forged add-ons. The documented surgery is astonishing enough.'},
+ {id:'madhava', e:'♾', t:'The Kerala Series', f:'Madhava of Sangamagrama derived infinite series for π and trigonometric functions ~250 years before their European namesakes.', s:'History of mathematics (Kerala school, 14th c.)', n:'Real, peer-acknowledged, and taught in math-history courses worldwide. No aircraft required.'},
+ {id:'panini', e:'🔤', t:'The Grammar Machine', f:'Pāṇini\'s Aṣṭādhyāyī (~4th c. BCE) compressed Sanskrit into ~4,000 generative rules — celebrated by modern linguists as an ancestor of formal grammar.', s:'Linguistics literature on Pāṇini', n:'The viral "NASA says Sanskrit is best for computers" claim is a misreading of a 1985 magazine article. Pāṇini needs no NASA.'},
+ {id:'wootz', e:'⚔️', t:'Damascus Was Indian Steel', f:'Wootz steel ingots from South India were exported for centuries and forged into legendary "Damascus" blades; Michael Faraday studied wootz.', s:'Metallurgical history; Faraday\'s papers', n:'A real ancient-tech export with shipping manifests — the receipt pseudo-history wishes it had.'},
+ {id:'zero', e:'0️⃣', t:'Shunya', f:'Brahmagupta (628 CE) wrote the first known rules for computing with zero; the decimal place-value system reached Europe through the Arab world as "Hindu numerals."', s:'Brāhmasphuṭasiddhānta (628 CE)', n:'Every spreadsheet on earth runs on this export. Royalties were never collected.'},
+ {id:'chola', e:'⛵', t:'Blue-Water Cholas', f:'Rajendra Chola\'s navy crossed the Bay of Bengal and struck Srivijaya (1025 CE) — documented Indian naval power projection.', s:'Chola inscriptions; Southeast Asian records', n:'"India never invaded anyone in 10,000 years" is a comforting myth. Real history is more interesting — and the Cholas are the receipt.'},
+ {id:'brands', e:'🛍', t:'2:1', f:'Indian brands now outpoll imported ones roughly 2:1 in consumer preference across clothing, personal care, and packaged food.', s:'Mintel consumer research', n:'The "foreign = better" reflex is measurably dying. Discernment killed it: people read the reviews and the Indian product won.'},
+ {id:'odds', e:'🎫', t:'80 to 1', f:'3.59 crore candidates appeared for 92,116 railway posts in one 2024 cycle. UP Police ran ~80 applicants per post.', s:'RRB; UP Police recruitment data (2024)', n:'The sarkari queue is not irrational — it\'s a rational response to scarce security. Judge the odds, not the aspirant.'},
+ {id:'happiness', e:'🎭', t:'Two Indias, Two Surveys', f:'India ranks #1 in one global happiness survey (88% happy) and 118th of 147 in another. The difference is who gets asked.', s:'Ipsos (2025) vs World Happiness Report (2025)', n:'Urban online panels vs national samples. "The Indian mindset" is really several mindsets — this game samples more than one.'},
+];
+const RMAP = Object.fromEntries(RECEIPTS.map(r=>[r.id,r]));
+
+/* ============================================================
+   CONTENT — LIFE CARDS
+   fx: w=wealth h=heart r=roots v=voice c=compass(-cringe/+bluster)
+       sp/hp/ql = national externalities; because = visible causality
+       receipt = receipt id dropped; onmsg marks mindset-loaded cards
+   ============================================================ */
+const CARDS = [
+/* ---------------- STAGE 0 · STUDENT (2026–2031) ---------------- */
+{id:'stream', st:0, e:'📚', t:'Scope hai, beta', x:'Sharma uncle has decided your future: "Science lo, scope hai." You secretly love history.',
+ a:{l:'Take science. Scope hai.', fx:{w:6,h:-6,v:-2}, b:'A safe rail is still a rail. The queue at the end is long — some recruitments run 80 applicants per post, and railways ran far worse.'},
+ b:{l:'Fight for the history books', fx:{h:7,r:4,w:-3,v:4}, b:'Heritage-tech, archives, tourism, game studios — the past is a growth sector now. Its first auditor was a history-minded MP with a ledger.', receipt:'naoroji'}},
+{id:'accent', st:0, e:'🎤', t:'The smirk', x:'Inter-school debate. A posh-accent kid smirks at your small-town English mid-sentence.', onmsg:1,
+ a:{l:'Practice erasing your accent at midnight', fx:{c:-12,w:2,h:-3}, b:'The English premium is real (+34%, for fluency) — but it pays for the language, not for erasing yourself. That part is rent on a mask.', receipt:'fanon'},
+ b:{l:'Sharpen the argument, keep the accent', fx:{v:8,c:5,h:3}, b:'Judges remember arguments. The CEOs running $6.5T of market cap kept their vowels.', receipt:'ceos'}},
+{id:'dadi', st:0, e:'👵', t:'Dadi\'s stories', x:'Your new school "discourages home languages." Dadi\'s Bhojpuri stories are the best hour of your week.', onmsg:1,
+ a:{l:'English only from now on', fx:{c:-10,r:-9,w:2}, b:'English adds. Subtracting Bhojpuri buys nothing extra — it just closes the door to Dadi\'s room.', receipt:'ngugi'},
+ b:{l:'Keep both worlds', fx:{r:8,h:4,c:2}, b:'Bilinguals earn the same premium. The trap was never English — it was "instead of."', receipt:'wage'}},
+{id:'cream', st:0, e:'🧴', t:'The tube', x:'Function season. Rishta aunty presses a fairness cream into your hand: "Just for the glow, beta."', onmsg:1,
+ a:{l:'Use it. Easier than arguing.', fx:{c:-12,h:-4,w:-2}, b:'The world\'s biggest lightening market runs on exactly this moment, repeated a billion times.', receipt:'fairlovely'},
+ b:{l:'Return the tube, keep the face', fx:{h:6,v:4,c:3}, b:'The brand itself blinked first — it dropped "Fair" from its name in 2020.'}},
+{id:'kota', st:0, e:'🏠', t:'Room 214', x:'Coaching city. Your hostel neighbour hasn\'t come down for meals in two days. Mains are in three weeks.',
+ a:{l:'Keep your head down — Mains in three weeks, you can\'t carry him too', fx:{h:-8,v:-3}, b:'He studies worse alone, and so do you. Pressure shared is pressure halved.'},
+ b:{l:'Sit with him. Call his parents. Share 14416.', fx:{h:6,v:6,ql:1}, b:'Tele-MANAS (14416) is free, 24×7, 20 languages. A listened-to friend studies better. So will you.'}},
+{id:'final', st:0, e:'🏏', t:'The final', x:'India in the World Cup final. Physics exam Monday morning.',
+ a:{l:'Watch every ball', fx:{h:8,w:-3}, b:'Some things are load-bearing for the soul. This is one.'},
+ b:{l:'Study. Highlights later.', fx:{w:5,h:-4}, b:'Discipline is also a shot selection. Respect.'}},
+{id:'drain2', st:0, e:'🌧', t:'First flood', x:'First monsoon in the new colony. The drain is choked with plastic and the lane is a lake.',
+ a:{l:'"Someone will complain eventually, na"', fx:{v:-4,ql:-1}, b:'Nobody does. The lane floods again next month — waiting is free, and so is mosquito breeding.'},
+ b:{l:'Organize a Sunday de-clog squad', fx:{v:7,h:3,ql:1.5}, b:'Civic muscle is a muscle. The lane dries; the WhatsApp group discovers your name.'}},
+{id:'exchange', st:0, e:'🌍', t:'"So, is India really poor?"', x:'The exchange student asks it kindly, over canteen samosas.', onmsg:1,
+ a:{l:'"Honestly? It\'s hopeless here."', fx:{c:-12,v:-3,sp:-1}, b:'Self-deprecation performed for foreign approval is the oldest mask in the drawer.', receipt:'cms'},
+ b:{l:'Show both columns: 4th-largest economy AND real poverty', fx:{v:6,c:2,sp:1}, b:'Honesty is more impressive than either flag-waving or cringing. She asks for the sources.', receipt:'gdp4'}},
+{id:'vote', st:0, e:'🗳', t:'First ink', x:'Your first election. The queue is long, the sun is rude, your friends are at the multiplex.',
+ a:{l:'Vote, then popcorn', fx:{v:6,ql:0.5,h:2}, b:'The finger stain is the cheapest power you\'ll ever hold.'},
+ b:{l:'Skip it — one vote, yaar', fx:{v:-4}, b:'Decisions get made about people who don\'t show up.'}},
+{id:'clubs', st:0, e:'🎖', t:'Thursday afternoons', x:'Two clubs, one slot: NCC drill or the coding club shipping a real app.',
+ a:{l:'NCC — the uniform means something', fx:{h:4,v:3,hp:1}, b:'Discipline, service, and the long pipeline that ends in olive green.'},
+ b:{l:'Code club — ship something', fx:{w:5,sp:0.5}, b:'The other uniform is a GitHub streak. Both build the country — this club\'s alumni now debug chip fabs in Sanand.', receipt:'micron'}},
+{id:'fest', st:0, e:'🎸', t:'Fest night', x:'Your band gets the fest slot. The seniors want all-English covers; your bassist has a folk-fusion set ready.', onmsg:1,
+ a:{l:'Covers. Crowd-safe.', fx:{c:-6,r:-3,h:2}, b:'Safe is fine. But nobody ever went viral being a photocopy.'},
+ b:{l:'Folk-fusion, full volume', fx:{r:7,v:3,sp:1}, b:'"Naatu Naatu" didn\'t audition as anything other than itself — and took the Oscar.', receipt:'naatu'}},
+{id:'pdf', st:0, e:'🌳', t:'2 AM rabbit hole', x:'A footnote leads you to a scanned PDF: British surveys counting 11,575 schools in 1820s Madras. Wait, what?',
+ a:{l:'Read it — and check who disputes it', fx:{r:6,v:3,c:2}, b:'The colonizer\'s own archives are the best decolonial evidence — read with the caveats on.', receipt:'dharampal'},
+ b:{l:'Sleep. Exams.', fx:{h:3}, b:'Fair. The PDF will wait; it has waited two centuries.'}},
+{id:'abroad1', st:0, e:'✈️', t:'The scholarship', x:'A partial scholarship abroad lands in your inbox. Real money gap; real opportunity; 1.3 million Indians are abroad on this exact bet right now.',
+ a:{l:'Take the leap (and the loan)', fx:{w:-6,v:3,sp:0.5}, b:'The Bridge is a real strategy: remittances, networks, knowledge that returns.', receipt:'remit'},
+ b:{l:'Stay — IISc is not a consolation prize', fx:{w:2,hp:0.5,r:2}, b:'Chandrayaan-3 cost less than a Hollywood film. The frugal-genius pipeline hires here.', receipt:'isro'}},
+{id:'diary', st:0, e:'📖', t:'The loft box', x:'Cleaning the loft, you find your great-grandfather\'s diary — in a script you can\'t read.',
+ a:{l:'Find someone to teach you the script', fx:{r:8,h:3}, b:'A family\'s memory is infrastructure too. Now you\'re the bridge across four generations.', receipt:'coomaraswamy'},
+ b:{l:'Back in the box', fx:{r:-5}, b:'The box keeps its secret. Boxes are patient; people aren\'t immortal.'}},
+/* ---------------- STAGE 1 · BUILDER (2031–2038) ---------------- */
+{id:'sarkari', st:1, e:'🎫', t:'The queue', x:'Graduation done. 3.59 crore people applied for 92,116 railway posts this cycle. Your parents light a diya for your form.',
+ a:{l:'One more attempt year. Full focus.', fx:{h:-6,w:-4,v:-2}, b:'The queue is rational — security is scarce. But aspirants routinely give it years of a young life.', receipt:'odds'},
+ b:{l:'Take the messy private job; keep building', fx:{w:6,h:-2,v:4}, b:'Business-preference among youth rose 16%→27% in a generation. The ladder now has more than one rail.'}},
+{id:'stamp', st:1, e:'🎓', t:'The stamp', x:'Interview day. The panel shrugs at a rival\'s foreign MBA and hires the NIT kid with three shipped projects.', onmsg:1,
+ a:{l:'"Stamps still rule. Plan the London loan."', fx:{c:-8,w:-6}, b:'~45% of returnees say the foreign degree didn\'t land them their first job. The premium is eroding under your feet.'},
+ b:{l:'"Skills beat stamps now." Ship more.', fx:{v:5,w:4,c:2}, b:'Employers surveyed: a third won\'t hire fresh foreign-degree grads over proven builders. Receipts > stamps.'}},
+{id:'qr', st:1, e:'📲', t:'Amma\'s counter', x:'Amma\'s shop still runs on a cash tin and a khata notebook. The neighbour\'s stall got a QR code sticker.',
+ a:{l:'Set up the QR this Sunday', fx:{w:6,ql:1,sp:1}, b:'Street vendor → 20 billion monthly transactions → India exports the payment rails. Amma is now geopolitics.', receipt:'upi'},
+ b:{l:'"Cash is fine for us"', fx:{w:-2}, b:'The khata never lies, but it never compounds either.'}},
+{id:'earbuds', st:1, e:'🎧', t:'The checkout screen', x:'New earbuds. The imported pair costs ₹4,000 more and photographs better. The reviews say the Indian pair benchmarks higher.', onmsg:1,
+ a:{l:'Imported. The logo does something to you.', fx:{c:-6,w:-4}, b:'₹4,000 of that price was the logo. The specs were free to read.'},
+ b:{l:'Read the reviews. Buy the better one — it\'s Indian.', fx:{w:3,sp:0.5,c:2}, b:'Indian brands now outpoll imports ~2:1 — not from patriotism, from spec sheets. Discernment did that.', receipt:'brands'}},
+{id:'dubai', st:1, e:'🌉', t:'The Gulf offer', x:'2× salary in the Gulf. Ageing parents here. The oldest Indian dilemma with the newest numbers.',
+ a:{l:'Go. Send half of everything home.', fx:{w:10,r:-5,h:-3,sp:1}, b:'$129 billion came home in 2024 — a world record. The Bridge is a real way to build India from outside it.', receipt:'remit'},
+ b:{l:'Stay. Build here, near the chai.', fx:{v:4,h:3,hp:0.5}, b:'Willingness to emigrate fell 78%→54% in three years. Staying is no longer the consolation option.'}},
+{id:'client', st:1, e:'💼', t:'"Tone it down"', x:'Your manager, kindly: "For the US client call — maybe less of the… full Indian-ness? You know."', onmsg:1,
+ a:{l:'Keep it neutral — it\'s just one call', fx:{c:-10,h:-4,w:3}, b:'The mask pays a small toll and charges compound interest on the self. And it\'s never just one call.', receipt:'fanon'},
+ b:{l:'Be excellent AND unmistakably yourself', fx:{v:6,c:3,w:2}, b:'The CEOs running $6.5T of American market cap quote cricket in board rooms. Excellence carries the accent.', receipt:'ceos'}},
+{id:'shaadi', st:1, e:'💒', t:'Wedding season', x:'Four weddings, one month, one salary. The shagun math is not mathing.',
+ a:{l:'Attend all four. Dance at each.', fx:{h:8,w:-6,r:3}, b:'Ipsos finds family ties India\'s #1 happiness driver. Money well burnt.', receipt:'happiness'},
+ b:{l:'Two weddings, two video calls', fx:{w:4,h:-2}, b:'Boundaries: also a form of self-rule. The aunties will recover.'}},
+{id:'yogabiz', st:1, e:'🧘', t:'The studio ask', x:'A friend in Berlin wants to co-run online yoga classes with you — "an actual Indian teacher, imagine!" You hesitate on pricing.', onmsg:1,
+ a:{l:'"Who\'d pay ME for this?" Charge peanuts.', fx:{c:-8,w:-4}, b:'India invented a $125B market and keeps 4% of it — partly one self-discount at a time.', receipt:'yoga'},
+ b:{l:'Certify properly. Charge properly.', fx:{w:7,sp:1,r:3}, b:'Every credentialed Indian teacher claws back a slice of the 96% that leaked away.'}},
+{id:'vernacular', st:1, e:'📱', t:'The product call', x:'Your team debates the next product line: polish the English app, or build the Hindi-Tamil-Telugu version everyone says "won\'t monetize."', onmsg:1,
+ a:{l:'"Vernacular users won\'t pay."', fx:{c:-6,w:-3}, b:'A dialect-content app just hit 4.4M paying subscribers. "Won\'t pay" was yesterday\'s data.'},
+ b:{l:'Build for Bharat', fx:{w:6,ql:1,v:3}, b:'90% of new internet users are Indian-language-first. The next 500M customers aren\'t in South Delhi.'}},
+{id:'commute', st:1, e:'🚇', t:'The EMI temptation', x:'Everyone at work is buying sedans on EMI. The metro line to your office opened last month.',
+ a:{l:'Sedan. Status is a vehicle.', fx:{w:-7,ql:-1}, b:'An EMI, a parking war, and a small daily donation to the smog that taxes India 9.5% of GDP.'},
+ b:{l:'Metro pass + occasional cab', fx:{w:5,ql:0.5}, b:'Cheaper, faster at rush hour, and the airshed notices — it\'s made of choices like this.', receipt:'air'}},
+{id:'sister', st:1, e:'👩‍🏭', t:'The family meeting', x:'Your sister has a job offer in the city. The relatives convene: "Log kya kahenge?"',
+ a:{l:'Back her, loudly, in front of everyone', fx:{v:6,h:3,ql:1.5}, b:'Women\'s workforce participation jumped 23%→42% in six years. Closing the gap is India\'s biggest untapped growth engine — and it starts in living rooms.', receipt:'lfpr'},
+ b:{l:'Stay quiet. Not your fight.', fx:{v:-5,h:-3,ql:-1}, b:'Silence votes too. It voted for the relatives.'}},
+{id:'appstreak', st:1, e:'🔥', t:'Day 3', x:'You downloaded an app to finally learn to read your mother\'s script. Day 3. The streak flame stares at you.',
+ a:{l:'Protect the streak', fx:{r:7,h:2}, b:'Thirty days later you read the shop signs in your mother\'s hometown out loud. She pretends not to cry.'},
+ b:{l:'Life got busy', fx:{h:2,r:-2}, b:'The flame goes out quietly. Apps forgive; calendars don\'t.'}},
+{id:'rti', st:1, e:'📄', t:'The park', x:'A builder\'s fence crept over the colony park at night. Everyone is furious on WhatsApp. Only WhatsApp.',
+ a:{l:'File the RTI. Attend the hearing.', fx:{v:7,ql:1,h:-2}, b:'One RTI application costs ₹10. The fence comes down in committee, not in comments.'},
+ b:{l:'Type a devastating rant', fx:{v:-2}, b:'The rant gets 43 likes. The fence gets a second storey.'}},
+{id:'mentor', st:1, e:'🧑‍🏫', t:'The intern', x:'A small-town intern on your team writes brilliant code and apologizes for his English twice per meeting.',
+ a:{l:'Tell him what\'s actually being graded', fx:{v:5,h:4,c:2}, b:'"Your code compiles in every accent." He stops apologizing. His PRs get bolder.'},
+ b:{l:'Not your problem', fx:{v:-2}, b:'He\'ll learn it eventually — or quietly go somewhere that teaches it kindly.'}},
+/* ---------------- STAGE 2 · HOUSEHOLDER (2038–2044) ---------------- */
+{id:'rishta', st:2, e:'📰', t:'The draft profile', x:'The family drafts your brother\'s matrimonial ad: "Seeking fair, convent-educated bride…" The pen hovers.', onmsg:1,
+ a:{l:'Let it slide. Tradition, na.', fx:{c:-8,h:-2}, b:'Fourteen years of newspaper ads, computationally analyzed: fairness demanded of brides far more than grooms. The ad you allow is the market you feed.', receipt:'fairlovely'},
+ b:{l:'Strike the word. Argue it out.', fx:{v:6,h:4,c:3}, b:'One struck word in one ad — repeated across a wedding season — is how a market dies.'}},
+{id:'school', st:2, e:'🏫', t:'Parent-teacher meeting', x:'Your daughter\'s school is proudly "English-only." She\'s started refusing to answer Nani in Marathi.', onmsg:1,
+ a:{l:'Good — English is her future', fx:{c:-10,r:-7}, b:'English is <i>part</i> of her future. A grandmother she can\'t talk to is a room in her house locked forever.', receipt:'ngugi'},
+ b:{l:'English at school, Marathi at the table', fx:{r:7,h:4,ql:0.5}, b:'Add, don\'t replace: bilingual kids keep the wage premium AND the grandmother.', receipt:'wage'}},
+{id:'solar2', st:2, e:'☀️', t:'The roof decision', x:'The society meeting debates rooftop solar. Upfront cost bites; the subsidy paperwork looks like homework.',
+ a:{l:'Do the homework. Panel up.', fx:{w:3,ql:1,hp:1}, b:'India hit 250+ GW renewables — third on Earth — one roof at a time. Your bill drops; the import bill drops with it.', receipt:'solar'},
+ b:{l:'"Too much jhanjhat"', fx:{}, b:'The sun continues to shine, unmonetized, on your water tank.'}},
+{id:'diwali', st:2, e:'🪔', t:'Diwali budget', x:'The kids want the big cracker box. The sky over the city is already the colour of weak chai.',
+ a:{l:'Full cracker budget — it\'s once a year', fx:{h:4,ql:-1.5}, b:'Joy is real. So is the morning after, measured in AQI and asthma inhalers.'},
+ b:{l:'Diyas, lights, one colony fireworks show', fx:{h:4,r:2,ql:0.5}, b:'Same festival, same joy, one-tenth the smoke. The airshed is a commons made of choices.', receipt:'air'}},
+{id:'digestion', st:2, e:'™️', t:'"Vedic Fitness™"', x:'A foreign wellness chain offers to license your yoga curriculum — rebranded "Primal Flow", your name and lineage removed. Good money.', onmsg:1,
+ a:{l:'Take the cheque, lose the name', fx:{w:6,sp:-1,c:-4}, b:'This is how a $125B market got built on a 4% royalty to its source: one erased lineage at a time.', receipt:'yoga'},
+ b:{l:'License WITH name, lineage, and rate card', fx:{w:4,sp:1.5,v:3}, b:'They took the deal. Attribution, it turns out, was negotiable all along — you just had to ask.'}},
+{id:'bedtime', st:2, e:'🌙', t:'Bedtime negotiations', x:'The kids demand the same three cartoon movies every night. The Amar Chitra Katha stack gathers dust.',
+ a:{l:'Cartoons only — path of least resistance', fx:{r:-4,h:2}, b:'They\'ll know every princess and no Panchatantra. The stack waits.'},
+ b:{l:'Alternate nights: Pixar AND Panchatantra', fx:{r:6,h:3,sp:0.5}, b:'Add, don\'t replace — works on kids too. The crow-and-pitcher slaps, apparently.'}},
+{id:'msme', st:2, e:'🛡', t:'The garage pitch', x:'Your college friend\'s MSME machines a drone component that just cleared defense trials. He needs ₹5 lakh and believers.',
+ a:{l:'Invest in the garage', fx:{w:-5,hp:1.5,v:2}, b:'Defense exports grew 34x in 11 years on the backs of exactly such garages. Your ₹5 lakh is now strategic autonomy.', receipt:'defense'},
+ b:{l:'FD. Sleep well.', fx:{w:2}, b:'7.1% per annum, guaranteed. The drone flies without you.'}},
+{id:'checkup', st:2, e:'🩺', t:'The postponed checkup', x:'Papa keeps postponing his checkup. "I\'m fine, beta. Doctors invent diseases."',
+ a:{l:'Book it. Drive him yourself.', fx:{w:-3,h:7}, b:'Caught early, managed cheaply. He grumbles all the way and tells the neighbours proudly.'},
+ b:{l:'Respect his stubbornness', fx:{h:-6,w:-2}, b:'The postponement compounds like bad interest. The hospital corridor teaches the lesson later, at retail price.'}},
+{id:'thela', st:2, e:'🥕', t:'The society vs. the thela', x:'The society group wants the vegetable vendor evicted — "encroachment." He\'s served the lane for 11 years.',
+ a:{l:'Help him get the vending license + QR', fx:{v:4,ql:1,h:2}, b:'Formalized, bank-linked, dignified — 550M Jan Dhan accounts exist for exactly this on-ramp.', receipt:'jandhan'},
+ b:{l:'Vote evict. Property values, na.', fx:{v:-3,ql:-0.5}, b:'The lane gets tidier and hungrier. Sabzi is now a 2km drive.'}},
+{id:'nri', st:2, e:'🥂', t:'The reunion toast', x:'NRI cousin, third drink: "Nothing works in India, yaar. NOTHING." The uncles nod. Eyes turn to you.', onmsg:1,
+ a:{l:'Nod along. Peace over truth.', fx:{c:-8,v:-3}, b:'Agreement bought with silence costs more than it looks. The kids at the table were listening.'},
+ b:{l:'"Both columns, cousin." List them.', fx:{v:5,sp:0.5,c:2}, b:'UPI he uses to pay his driver. The metro he took here. Also: the air, the queues — say both. He goes quiet; the kids don\'t.', receipt:'upi'}},
+{id:'rwa', st:2, e:'🏢', t:'The reluctant candidate', x:'The RWA needs a president who isn\'t the shouty uncle. Everyone looks at you. It\'s unpaid and thankless.',
+ a:{l:'Stand. Fix the water timings first.', fx:{v:8,h:-3,ql:1}, b:'The smallest election in democracy — and the one that changes your Tuesday most.', receipt:'jal'},
+ b:{l:'Decline politely', fx:{h:3,v:-2}, b:'The shouty uncle wins unopposed. Water timings remain a mystery wrapped in a notice.'}},
+{id:'walks', st:2, e:'🏛', t:'Saturday idea', x:'Your city\'s old quarter is gorgeous and ignored. You could run weekend heritage walks — or keep scrolling.',
+ a:{l:'Launch the walks', fx:{w:4,r:5,sp:1}, b:'Tourists spend ~$35B/yr in India and there\'s headroom — every good guide converts a monument into a livelihood. Your route ends at the old customs house, ledger stories included.', receipt:'drain'},
+ b:{l:'Weekends are for rest, yaar', fx:{r:-4}, b:'The quarter stays gorgeous, ignored, and increasingly for sale to people who noticed.'}},
+{id:'niece', st:2, e:'🧒', t:'"Was ancient India really the richest?"', x:'Your niece, mid-homework, asks the question. Her group chat says "we had planes."', onmsg:1,
+ a:{l:'"Beta, we were the golden bird — planes and all."', fx:{c:12,r:2}, b:'She repeats it in class. The teacher pulls up the IISc debunk. Guess who she stops asking.'},
+ b:{l:'"Top receipts: ~24% of world GDP. Planes: myth."', fx:{v:4,r:3,c:-2}, b:'You showed her the real table AND the fake claim. She now checks her group chat\'s homework. Mission accomplished.', receipt:'maddison'}},
+{id:'tiffin', st:2, e:'🍲', t:'The tiffin exchange', x:'Sheer khurma arrives from the Ansaris at Eid; plum cake from the Fernandes at Christmas. Your Diwali box must now answer.',
+ a:{l:'Send the good laddoos — full boxes, every floor', fx:{h:5,r:3,ql:0.5}, b:'The oldest Indian peace treaty is dessert-based. The building\'s WhatsApp group has never been calmer.'},
+ b:{l:'Store-bought assortment, minimal effort', fx:{h:2}, b:'Fine. But Mrs. Fernandes notices, and her cake was homemade.'}},
+{id:'gift', st:2, e:'🎁', t:'The wedding gift', x:'Close friend\'s wedding. Budget set. The mall\'s imported crystal vs a master weaver\'s GI-tagged sari at the same price.',
+ a:{l:'Crystal. Looks expensive.', fx:{}, b:'It joins four other crystal sets in their loft. A tradition of storage.'},
+ b:{l:'The weaver\'s sari, with the story', fx:{r:4,sp:1,ql:0.5}, b:'The bride wears it twice a year and tells the story every time. The weaver\'s daughter stays in the craft.'}},
+/* ---------------- STAGE 3 · ELDER (2044–2047) ---------------- */
+{id:'fund', st:3, e:'🏛', t:'The corpus', x:'Decades of saving; time to give some back. Two proposals on your desk.',
+ a:{l:'Fund a translation library — 100 classics across 8 Indian languages', fx:{r:6,sp:1,v:2}, b:'Ideas move when they change languages — that\'s how Brahmagupta\'s zero reached Europe. You just built an eight-lane bridge.', receipt:'zero'},
+ b:{l:'Fund exam scholarships for first-generation students', fx:{ql:1.5,v:2,h:2}, b:'Eleven kids who\'d have dropped out don\'t. One of them will fund the library later.'}},
+{id:'memoir', st:3, e:'✍️', t:'The memoir question', x:'You\'re finally writing it all down. The publisher asks: English for reach, or mother tongue for truth?',
+ a:{l:'Mother tongue first, translate after', fx:{r:6,sp:0.5}, b:'The original holds the songs, the swear words, the exact taste of the mangoes. Translation can carry it abroad.', receipt:'tagore'},
+ b:{l:'English — maximum readers', fx:{v:2,sp:0.5}, b:'A fine choice, honestly made. Reach is real; some music stays behind.'}},
+{id:'archive', st:3, e:'🗄', t:'The record room', x:'The district archive has 1820s village-school records rotting in a back room — the raw stuff of the Beautiful Tree debate. Your month vs. your golf.',
+ a:{l:'Digitize the lot. Every page.', fx:{r:7,v:4,h:-2}, b:'The colonizer\'s paperwork, scanned by a retiree, becomes tomorrow\'s scholarship — with the caveats attached.', receipt:'dharampal'},
+ b:{l:'Golf. You\'ve earned it.', fx:{h:5}, b:'You have earned it. The silverfish, meanwhile, are also working through the archive.'}},
+{id:'grandkid', st:3, e:'✈️', t:'The departure lounge', x:'Your granddaughter got into a lab in Zurich. Half the family calls it betrayal.',
+ a:{l:'Remind her what family means. She\'ll stay.', fx:{h:-5,v:-2}, b:'She stays, and something between you doesn\'t. Cages don\'t keep birds — they keep resentments.'},
+ b:{l:'Bless her. Teach her the Bridge.', fx:{h:5,sp:1}, b:'"Send back knowledge, not just money." $129B came home last year; the ideas came home with the people.', receipt:'remit'}},
+{id:'board', st:3, e:'🤖', t:'The board seat', x:'A startup wants you on its board. Their AI generates "folk art" trained on uncredited Madhubani masters. The fee is excellent.',
+ a:{l:'Take the fee, mute the qualms', fx:{w:6,sp:-1}, b:'The masters\' granddaughters watch a machine sell their grandmother\'s hand. The 4% problem, now with GPUs.', receipt:'yoga'},
+ b:{l:'Join ONLY with credit + royalties for artists', fx:{v:6,sp:1,ql:0.5}, b:'They grumble, then agree — attribution costs less than a lawsuit. The masters get named, and paid.'}},
+{id:'circle', st:3, e:'🔍', t:'The library circle', x:'The colony library asks you to run something weekly. The kids suggest "that thing where you check if forwards are fake."',
+ a:{l:'Run the fact-check circle', fx:{v:6,ql:1,r:2}, b:'Twelve kids learn to ask "source?" before "wow!" — the best habit a mind can keep.', receipt:'taiwo'},
+ b:{l:'Suggest someone younger', fx:{h:3}, b:'Fair. Though "someone younger" turns out to be the shouty uncle, now with a projector.'}},
+{id:'heirloom', st:3, e:'🪕', t:'The will', x:'Drafting the will. The lawyer asks about the old sitar, the diary you had translated, the recipe book.',
+ a:{l:'Distribute with stories attached — one evening per object', fx:{r:8,h:5}, b:'An heirloom without its story is furniture. You spend six evenings making furniture priceless.'},
+ b:{l:'Let them sort it out later', fx:{r:-4}, b:'They will sort it — by courier, unopened, to three cities.'}},
+{id:'scare', st:3, e:'🫀', t:'The corridor', x:'A health scare — yours this time. In the hospital corridor, your daughter holds the file and your hand.',
+ a:{l:'Follow the full protocol, no shortcuts', fx:{w:-4,h:6}, b:'You walk out in nine days. The physiotherapy WhatsApp group becomes weirdly dear to you.'},
+ b:{l:'"I know my body better than machines"', fx:{h:-7}, b:'Stubbornness is not a treatment plan. The second corridor visit is longer.'}},
+{id:'tree', st:3, e:'🌳', t:'The corner plot', x:'The colony corner plot is up for "beautification." Options: decorative palms (imported, thirsty) or a tamarind you won\'t see grown.',
+ a:{l:'Plant the tamarind', fx:{ql:1,r:3,h:3}, b:'Shade in 2060, pickles forever, and a tree the birds recognize. Someone will read under it who never knew you.'},
+ b:{l:'Palms. Instagram-ready.', fx:{}, b:'They photograph well and die in the third heatwave, unmourned.'}},
+{id:'speech47', st:3, e:'🇮🇳', t:'15 August 2047', x:'A hundred years of independence. The colony school asks you — you — to give the flag-hoisting speech.', onmsg:1, final:1,
+ a:{l:'Give them the glory reel — it\'s a celebration, not a seminar', fx:{c:10,h:2}, b:'Applause, laddoos, and a small dishonesty floating over the parade ground. The kids deserved both columns.'},
+ b:{l:'Both columns: how far we came — receipts out — and what\'s left', fx:{v:6,c:-2,sp:0.5}, b:'You read Maddison AND the AQI. You name the plumbing heroes. A teenager asks where to find the sources. That\'s the whole game.', receipt:'hindswaraj'}},
+];
+
+/* ============================================================
+   CONTENT — FORWARDS (the discernment system)
+   kind:'fake' → Forward = bluster spike + delayed debunk; Verify = truth + converted receipt
+   kind:'real' → Verify = reward; Dismiss = one-way skepticism (cringe) or "propaganda!" (bluster)
+   ============================================================ */
+const FORWARDS = [
+ {id:'vimana', kind:'fake', e:'🛸', claim:'"PROUD MOMENT!! NASA confirms ancient Vedic aircraft could fly between PLANETS 🚩🚩 (Vaimanika Shastra) Forward to 10 groups!"',
+  truth:'The Vaimanika Shastra was composed 1900–1922 and its craft were declared aeronautically impossible by IISc engineers — in 1974. NASA said nothing.',
+  convert:'sushruta', cv:'What\'s REAL: Sushruta\'s documented surgical techniques — no forgery needed.'},
+ {id:'beggar', kind:'fake', e:'📜', claim:'"Macaulay 1835: \'I have travelled across India and not seen one beggar, such wealth I have seen…\' — see how rich we were! Forward!"',
+  truth:'This quote is a documented fabrication — it even contradicts Macaulay\'s real Minute. He never said it.',
+  convert:'macaulay', cv:'What\'s REAL: his actual 1835 Minute — far more damning than the fake, and it\'s verbatim.'},
+ {id:'sanskrit', kind:'fake', e:'🖥', claim:'"NASA declares SANSKRIT the most computer-friendly language!! Vedas = code!! 🕉💻"',
+  truth:'A misreading of a 1985 magazine article by one researcher. No NASA endorsement exists.',
+  convert:'panini', cv:'What\'s REAL: Pāṇini\'s 4,000-rule generative grammar, ~4th century BCE — linguists\' genuine marvel.'},
+ {id:'battery', kind:'fake', e:'🔋', claim:'"Ancient rishi Agastya invented the BATTERY — electroplating in the Agastya Samhita!! We had electricity first!!"',
+  truth:'The text\'s dating is contested and late; no archaeological evidence of ancient Indian batteries exists.',
+  convert:'wootz', cv:'What\'s REAL: wootz steel — exported for centuries, forged into "Damascus" blades, studied by Faraday himself.'},
+ {id:'peaceful', kind:'fake', e:'🕊', claim:'"India NEVER invaded any country in 10,000 years of history!! Only peaceful civilization on Earth 🙏"',
+  truth:'Rajendra Chola\'s navy famously struck Srivijaya (Indonesia) in 1025 CE. Real history is richer than the myth.',
+  convert:'chola', cv:'What\'s REAL: the Cholas ran blue-water naval power projection a thousand years ago. Better story, actually true.'},
+ {id:'upifwd', kind:'real', e:'📲', claim:'"UPI now processes ~HALF of all real-time digital payments on Earth — an Indian public utility, live in 7-8 countries."',
+  truth:'True. NPCI data, cited by the IMF. 20B+ transactions/month. (Beware the viral "beats Visa" version — cards aren\'t real-time rails; apples to oranges.)', receipt:'upi', dismissC:-8,
+  dismissLine:'"Must be fake, nothing from here actually leads the world" — skepticism that only points inward is cringe wearing a lab coat.'},
+ {id:'deffwd', kind:'real', e:'🛡', claim:'"India\'s defense exports grew 34x in 11 years — BrahMos now guards the Philippines\' coast."',
+  truth:'True. Ministry of Defence figures: ₹23,622 crore in FY25, 100+ countries.', receipt:'defense', dismissC:-8,
+  dismissLine:'Real achievements dismissed reflexively — one-way doubt isn\'t rigor, it\'s a habit someone installed.'},
+ {id:'schoolfwd', kind:'real', e:'🌳', claim:'"British surveys in the 1820s counted 11,575 schools in Madras Presidency — and in Tamil districts, most pupils were from non-elite castes."',
+  truth:'True — from colonial records via Dharampal. Carries caveats: girls largely absent; enrollment ≠ literacy.', receipt:'dharampal', dismissC:-6,
+  dismissLine:'It sounded too good, so you binned it unread. The archive was real; the reflex was borrowed.'},
+ {id:'remitfwd', kind:'real', e:'🌉', claim:'"Indians abroad sent home $129 BILLION in 2024 — the largest share of world remittances any country has held this century."',
+  truth:'True. World Bank, 2024 — $129.1B, 14.3% of the global total.', receipt:'remit', dismissC:-6,
+  dismissLine:'Dismissed as "NRI show-off numbers." It\'s the World Bank\'s ledger, and it builds houses in ten thousand villages.'},
+ {id:'airfwd', kind:'real', e:'🌫', claim:'"Air pollution costs India ~9.5% of GDP and 3.5 years of average life expectancy — The Lancet."',
+  truth:'True. Lancet Countdown 2025; AQLI. The uncomfortable receipts count double.', receipt:'air', dismissC:8,
+  dismissLine:'"Western propaganda to keep India down!" — bluster\'s favourite move: shooting the thermometer for reporting the fever.'},
+ {id:'iphonefwd', kind:'real', e:'📱', claim:'"1 in 4 iPhones on Earth is now assembled in India — and the iPhone is India\'s single largest export item."',
+  truth:'True. Counterpoint/PIB: ~25% of global output in 2025; ~$23B exported.', receipt:'iphone', dismissC:-7,
+  dismissLine:'"India only assembles cheap stuff, yaar" — a decade-old fact, held like a security blanket.'},
+ {id:'swachhfwd', kind:'real', e:'🚽', claim:'"WHO estimated India\'s sanitation push averted 300,000+ deaths."',
+  truth:'True. WHO estimate (2019): diarrheal-disease and malnutrition deaths averted by improved sanitation.', receipt:'swachh', dismissC:-6,
+  dismissLine:'"Toilets, big deal" — plumbing is unglamorous right up until it saves a village\'s children.'},
+ {id:'madhavafwd', kind:'real', e:'♾', claim:'"A 14th-century Kerala mathematician derived infinite series for π roughly 250 years before Leibniz."',
+  truth:'True — Madhava of Sangamagrama; standard history-of-mathematics scholarship.', receipt:'madhava', dismissC:-6,
+  dismissLine:'"If it were true we\'d have learnt it in school" — the syllabus\'s silence is not the archive\'s.'},
+];
+
+/* ============================================================
+   ENDINGS
+   ============================================================ */
+const DEATHS = {
+ w:{e:'🕳', t:'The Debt Spiral', x:'The EMIs won. At {year}, the ledger closed your story early — money isn\'t everything, but zero of it is something.'},
+ h:{e:'🌧', t:'The Long Rest', x:'At {year}, body and mind called a halt. With help — and there is always help (Tele-MANAS, 14416) — you started again. This run ends here; you don\'t.'},
+ r:{e:'🍂', t:'The Unrooted', x:'At {year}, you realized you\'d become a guest at your own grandmother\'s table — fluent in everything except home.'},
+ v:{e:'🔇', t:'The Unheard', x:'By {year}, every decision that mattered was being made about you, without you. A life of nodding along, tallied.'}
+};
+function pickEnding(S){
+  const c = S.c, zone = c < -25 ? 'cringe' : c > 25 ? 'bluster' : 'swaraj';
+  const natDelta = (S.sp-S.sp0)+(S.hp-S.hp0)+(S.ql-S.ql0);
+  if(zone==='swaraj'){
+    // a needle centred by cancellation is not a needle centred by discernment
+    if(S.crTot>=28 && S.blTot>=28) return {e:'🌪', t:'The Weathervane', x:'Cringe on Monday, bluster by Friday — you swung with every wind and the needle merely averaged out. Centred is not the same as steady. Swaraj is a spine, not a coincidence.'};
+    if(natDelta>=14 && S.v>=60) return {e:'🌳', t:'The Rooted Builder', x:'Confident without noise, rooted without walls. You added — languages, receipts, rooms to the house — and the country compounded with you. This is what self-rule looks like.'};
+    if(S.ql-S.ql0>=6) return {e:'🔧', t:'The Quiet Repairwoman', x:'No headlines. Just drains that flow, taps that run, vendors with licenses, kids who ask "source?". Nation-building is mostly plumbing, and you were mostly building.'};
+    if(S.w>=65 && S.sp-S.sp0>=4) return {e:'🌉', t:'The Bridge', x:'You carried value across oceans in both directions — money home, knowledge home, dignity both ways. Leaving was never treason; forgetting would have been.'};
+    return {e:'📊', t:'Both Columns', x:'You kept two ledgers your whole life: what India got right, what remains. You read both aloud, even when only one was applauded. The needle stayed true.'};
+  }
+  if(zone==='cringe'){
+    if(S.w>=65) return {e:'🖼', t:'The Golden Cage', x:'Wealthy, applauded, fluent in every accent but your own. Coomaraswamy warned about this exact cage in 1918 — comfortable, well-lit, and locked from the inside.'};
+    if(S.r<=30) return {e:'🚪', t:'Guest In Your Own House', x:'Somewhere along the way, home became a place you visited with subtitles. The approval you traded it for turned out to be a rental.'};
+    return {e:'🪞', t:'The Borrowed Mirror', x:'You checked every reflection in a mirror someone else was holding. It never once showed you at your actual height.'};
+  }
+  // bluster
+  if(S.v<=35) return {e:'📢', t:'The Loud Hollow', x:'The forwards got louder as the credibility got thinner. In the end, even the family group left you on read. Nandy called it: the mirror\'s other face.'};
+  if(S.r>=60) return {e:'🏛', t:'The Museum Guard', x:'You guarded a magnificent past so fiercely you never built its sequel. The heritage was real; the moat you dug around it drowned the future.'};
+  return {e:'🚩', t:'The Forwarded Flag', x:'Pride outsourced to unverified glory. The real receipts were always in the drawer — you never needed the counterfeits.'};
+}
+function india47(S){
+  const rows=[]; const T=[['sp','🕊 Soft Power'],['hp','🛡 Hard Power'],['ql','🏠 Jan Jeevan']];
+  const NARR={
+    sp:[ 'Applause without royalties — the culture travels, the value doesn\'t.','Yoga-day photos and film songs — admired, under-monetized.','Royalties flow home: certified teachers, credited artists, licensed rails.','Standard-setter: the world pays for Indian IP, rides Indian rails, and says so.'],
+    hp:[ 'Still the world\'s checkout counter for arms.','Assembly lines hum; the designs are still borrowed.','Exporter\'s club: garages to frigates, chips to charging grids.','Quiet strength: energy, silicon, and deterrence — mostly home-grown.'],
+    ql:[ 'The invisible taxes — air, queues, leakage — still collect daily.','Plumbing improves; the airshed lags.','Taps, transfers, and breathable winters in most cities.','The boring miracles won: clean air days outnumber smog days.']
+  };
+  T.forEach(([k,label])=>{
+    const d = Math.round(S[k]-S[k+'0']);
+    const tier = d>=11?3:d>=6?2:d>=2?1:0;
+    const cls = d>2?'up':d<-2?'down':'flat';
+    const sign = d>0?'+':'';
+    rows.push(`<div class="i47row"><span class="d ${cls}">${sign}${d}</span><span><b>${label}:</b> ${NARR[k][tier]}</span></div>`);
+  });
+  return rows.join('');
+}
+
+/* ============================================================
+   GAME STATE + ENGINE
+   ============================================================ */
+let S = null; // run state
+const START = {w:50,h:50,r:50,v:50,c:0,sp:42,hp:38,ql:45};
+
+function newRun(mode){
+  const seedStr = mode==='daily' ? 'daily-'+todayIST() : 'life-'+Date.now()+'-'+Math.random();
+  const rnd = mulberry32(hashStr(seedStr));
+  let deck=[];
+  if(mode==='daily'){
+    const pool = shuffled(CARDS.filter(c=>!c.final), rnd).slice(0,8);
+    const fws = shuffled(FORWARDS, rnd).slice(0,2);
+    deck = pool.slice(0,3).concat([fws[0]]).concat(pool.slice(3,6)).concat([fws[1]]).concat(pool.slice(6,8));
+  } else {
+    const per = [7,7,7,6];
+    for(let st=0; st<4; st++){
+      let pool = CARDS.filter(c=>c.st===st && !c.final);
+      let picks = shuffled(pool, rnd).slice(0, per[st]);
+      deck = deck.concat(picks);
+    }
+    const fws = shuffled(FORWARDS, rnd).slice(0,4);
+    [5,12,19,25].forEach((pos,i)=> deck.splice(pos+i,0,fws[i]));
+    deck.push(CARDS.find(c=>c.final)); // 15 Aug 2047 finale
+  }
+  S = Object.assign({}, START, {
+    sp0:START.sp, hp0:START.hp, ql0:START.ql,
+    mode, deck, i:0, pend:[], earned:[], verified:0, forwards:0, dead:null, seedStr, crTot:0, blTot:0
+  });
+  showScreen('game');
+  renderCard();
+}
+
+function applyFx(fx){
+  const deltas=[];
+  const map={w:'🪙',h:'❤️',r:'🌱',v:'📣',sp:'🕊',hp:'🛡',ql:'🏠'};
+  for(const k of ['w','h','r','v']){ if(fx[k]){ S[k]=clamp(S[k]+fx[k],0,100); deltas.push({k,ico:map[k],d:fx[k]}); } }
+  for(const k of ['sp','hp','ql']){ if(fx[k]){ S[k]=clamp(S[k]+fx[k],0,100); deltas.push({k,ico:map[k],d:fx[k]}); } }
+  if(fx.c){ S.c=clamp(S.c+fx.c,-100,100); if(fx.c<0) S.crTot+=-fx.c; else S.blTot+=fx.c; }
+  // deep-zone back-pressure: the needle taxes you quietly (procedural, not preachy)
+  if(S.c<=-40){ S.r=clamp(S.r-1,0,100); S.v=clamp(S.v-0.5,0,100); }
+  if(S.c>=40){ S.v=clamp(S.v-1,0,100); }
+  return deltas;
+}
+function chipsHtml(deltas){
+  return '<div class="chips">'+deltas.map(d=>{
+    const up=d.d>0; return `<span class="chip ${up?'up':'down'}">${d.ico} ${up?'+':''}${Math.round(d.d*10)/10}</span>`;
+  }).join('')+'</div>';
+}
+function yearOf(i,total){ return S.mode==='daily' ? null : Math.min(2047, 2026 + Math.round(i*(21/(total-1)))); }
+const STAGES=['Student','Builder','Householder','Elder'];
+
+function renderMeters(){
+  $('pw').firstElementChild.style.width=S.w+'%';
+  $('ph').firstElementChild.style.width=S.h+'%';
+  $('pr').firstElementChild.style.width=S.r+'%';
+  $('pv').firstElementChild.style.width=S.v+'%';
+  $('nsp').firstElementChild.style.width=S.sp+'%';
+  $('nhp').firstElementChild.style.width=S.hp+'%';
+  $('nql').firstElementChild.style.width=S.ql+'%';
+  [['pmw',S.w],['pmh',S.h],['pmr',S.r],['pmv',S.v]].forEach(([id,v])=>$(id).classList.toggle('low', v<=18));
+  drawGauge($('gauge'), S.c, 200);
+  $('srLive').textContent = `Wealth ${Math.round(S.w)}, wellbeing ${Math.round(S.h)}, roots ${Math.round(S.r)}, voice ${Math.round(S.v)}.`;
+}
+
+function renderCard(){
+  // pending events (debunks) fire first
+  if(S.pend.length && S.pend[0].at<=S.i){
+    const ev=S.pend.shift(); return renderDebunk(ev);
+  }
+  // early deaths (checked before deck exhaustion so a final-card collapse still counts)
+  for(const k of ['w','h','r','v']){ if(S[k]<=0){ S.dead=k; return endRun(); } }
+  if(S.i>=S.deck.length) return endRun();
+  const card=S.deck[S.i];
+  const total=S.deck.length;
+  const yr=yearOf(S.i,total);
+  $('cardNum').textContent=(S.i+1)+'/'+total;
+  $('stageTag').textContent = S.mode==='daily' ? '☕ Daily Chai · '+todayIST() : STAGES[card.st!==undefined?card.st:Math.min(3,Math.floor(S.i/8))]+' · '+yr;
+  const zone=$('cardZone');
+  if(card.claim){ // a Forward
+    const isReal=card.kind==='real';
+    zone.innerHTML=`<div class="fwdwrap"><div class="gamecard">
+      <div class="fwdhead">📨 Family group · 47 unread</div>
+      <div class="cardart">${card.e}</div>
+      <div class="cardtext" style="font-style:italic">${card.claim}</div>
+      <button class="btn" id="chA">${isReal?'🙄 Dismiss — "obviously fake"':'📤 Forward it — the group will love this'}</button>
+      <button class="btn" id="chB">🔍 Verify first — two minutes of searching</button>
+    </div></div>`;
+    $('chA').onclick=()=>chooseForward(card,false);
+    $('chB').onclick=()=>chooseForward(card,true);
+  } else {
+    zone.innerHTML=`<div class="gamecard">
+      <div class="cardart">${card.e}</div>
+      <h3 class="cardtitle">${card.t}</h3>
+      <p class="cardtext">${card.x}</p>
+      <button class="btn" id="chA">${card.a.l}</button>
+      <button class="btn" id="chB">${card.b.l}</button>
+    </div>`;
+    $('chA').onclick=()=>choose(card,card.a);
+    $('chB').onclick=()=>choose(card,card.b);
+  }
+  renderMeters();
+}
+
+function choose(card,opt){
+  const deltas=applyFx(opt.fx||{});
+  let html=chipsHtml(deltas);
+  if(opt.b) html+=`<div class="because">💡 ${opt.b}</div>`;
+  if(opt.receipt) html+=receiptDropHtml(opt.receipt);
+  showOverlay(html, ()=>{ S.i++; renderCard(); });
+}
+function receiptDropHtml(id){
+  const r=RMAP[id]; if(!r) return '';
+  const isNew=!S.earned.includes(id) && !getCollection().includes(id);
+  if(!S.earned.includes(id)) S.earned.push(id);
+  saveReceipt(id);
+  return `<div class="receiptdrop"><div class="rt">🧾 ${isNew?'New receipt':'Receipt'}: ${r.e} ${r.t}</div>
+    <div>${r.f}</div><div class="rs">— ${r.s}</div></div>`;
+}
+function chooseForward(card,verify){
+  S.forwards++;
+  if(verify){
+    S.verified++;
+    // verification always pulls the needle toward centre — checking is the swaraj reflex
+    S.c = S.c*0.8;
+    if(card.kind==='fake'){
+      const deltas=applyFx({v:4,h:-1});
+      let html=`<div class="because">🔍 <b>Checked.</b> ${card.truth}</div>`+chipsHtml(deltas);
+      html+=`<div class="because" style="border-color:var(--green)">✅ ${card.cv}</div>`;
+      html+=receiptDropHtml(card.convert);
+      showOverlay(html, ()=>{S.i++; renderCard();});
+    } else {
+      const deltas=applyFx({v:5,sp:0.5});
+      let html=`<div class="because">🔍 <b>Checked — it\'s true.</b> ${card.truth}</div>`+chipsHtml(deltas);
+      html+=receiptDropHtml(card.receipt);
+      showOverlay(html, ()=>{S.i++; renderCard();});
+    }
+  } else {
+    if(card.kind==='fake'){
+      const deltas=applyFx({c:14,v:2,h:2});
+      const html=chipsHtml(deltas)+`<div class="because">📤 Sent. 🚩×23 reactions. Mausiji says "PROUD!!". Feels great, honestly.</div>`;
+      S.pend.push({at:S.i+3, fw:card});
+      showOverlay(html, ()=>{S.i++; renderCard();});
+    } else {
+      const deltas=applyFx({c:card.dismissC, v:-3});
+      const html=chipsHtml(deltas)+`<div class="because">🙄 ${card.dismissLine}</div>`;
+      showOverlay(html, ()=>{S.i++; renderCard();});
+    }
+  }
+}
+function renderDebunk(ev){
+  const zone=$('cardZone');
+  zone.innerHTML=`<div class="fwdwrap"><div class="gamecard" style="border-color:var(--danger)">
+    <div class="fwdhead" style="color:var(--danger)">📨 Family group · the fact-check lands</div>
+    <div class="cardart">🧨</div>
+    <p class="cardtext">Your niece replies-all with the debunk: <i>${ev.fw.truth}</i><br><br>Everyone saw. Mausiji has left the group. Your forwards now open to silence.</p>
+    <button class="btn primary" id="chA">Oof. Continue →</button>
+  </div></div>`;
+  $('chA').onclick=()=>{
+    const deltas=applyFx({v:-12,h:-4});
+    showOverlay(chipsHtml(deltas)+`<div class="because">🧨 Borrowed glory always comes with a repayment schedule. The real receipts were in the drawer all along.</div>`+receiptDropHtml('nandy'),
+      ()=>{ renderCard(); });
+  };
+  renderMeters();
+}
+
+/* overlay */
+let ovCb=null;
+function showOverlay(html, cb){
+  $('ovBody').innerHTML=html; ovCb=cb;
+  document.querySelectorAll('#cardZone button, #quitBtn').forEach(b=>b.disabled=true);
+  $('overlay').classList.add('active');
+  $('ovNext').focus();
+  renderMeters();
+}
+$('ovNext').onclick=()=>{ $('overlay').classList.remove('active'); $('quitBtn').disabled=false; if(ovCb){const f=ovCb; ovCb=null; f();} };
+
+/* ---------- endings ---------- */
+function endRun(){
+  let end, early=false;
+  const total=S.deck.length;
+  if(S.dead){ early=true; const d=DEATHS[S.dead]; const yr=yearOf(Math.min(S.i,total-1),total)||2047; end={e:d.e,t:d.t,x:d.x.replace('{year}',yr)}; }
+  else end=pickEnding(S);
+  $('endEmoji').textContent=end.e;
+  $('endTitle').textContent=end.t;
+  $('endText').innerHTML=end.x;
+  $('india47').innerHTML = `<h3>🇮🇳 India, ${S.mode==='daily'?'as you left it':'2047'} — because of choices like yours</h3>`+india47(S)+
+    `<div class="small" style="margin-top:8px">Forwards verified: ${S.verified}/${S.forwards||0} · Receipts this run: ${S.earned.length}</div>`;
+  // streak
+  if(S.mode==='daily'){
+    const t=todayIST(); const st=store.get('streak',{last:null,count:0});
+    if(st.last!==t){
+      st.count = (st.last===istYesterday(t))? st.count+1 : 1; st.last=t; store.set('streak',st);
+    }
+  } else {
+    store.set('lifeRuns',(store.get('lifeRuns',0)||0)+1);
+  }
+  store.set('runs',(store.get('runs',0)||0)+1);
+  // share text
+  const zone = S.c<-25?'⬅️ leaning cringe':S.c>25?'➡️ leaning bluster':'🧭 centred';
+  const bar=v=>{const n=Math.round(v/25);return '▰'.repeat(Math.max(0,Math.min(4,n)))+'▱'.repeat(4-Math.max(0,Math.min(4,n)));};
+  const dsign=k=>{const d=Math.round(S[k]-S[k+'0']);return (d>=0?'▲':'▼')+Math.abs(d);};
+  const dayNum = S.mode==='daily' ? ' · '+todayIST() : ' · Life #'+store.get('lifeRuns',1);
+  S.shareText=`SWARAJ${dayNum}\n${end.e} ${zone}\n🪙${bar(S.w)} ❤️${bar(S.h)} 🌱${bar(S.r)} 📣${bar(S.v)}\n🇮🇳 2047 → 🕊${dsign('sp')} 🛡${dsign('hp')} 🏠${dsign('ql')} · 🧾 ${getCollection().length}/${RECEIPTS.length} receipts`;
+  $('shareBox').textContent=S.shareText;
+  showScreen('end');
+}
+$('shareBtn').onclick=async()=>{
+  try{
+    if(navigator.share){ await navigator.share({text:S.shareText}); return; }
+    await navigator.clipboard.writeText(S.shareText); toast('Copied — paste it in the family group 📨');
+  }catch(e){
+    if(e && e.name==='AbortError') return; // user closed the share sheet — not a failure
+    try{ await navigator.clipboard.writeText(S.shareText); toast('Copied!'); }catch(_){ toast('Long-press the box to copy'); }
+  }
+};
+$('againBtn').onclick=()=>newRun('life');
+$('endHome').onclick=()=>{ showScreen('home'); refreshHome(); };
+
+/* ---------- receipts collection ---------- */
+function getCollection(){ return store.get('receipts',[]); }
+function saveReceipt(id){ const c=getCollection(); if(!c.includes(id)){ c.push(id); store.set('receipts',c); } }
+function renderReceipts(){
+  const owned=getCollection();
+  $('rCount2').textContent=`${owned.length}/${RECEIPTS.length}`;
+  $('receiptGrid').innerHTML=RECEIPTS.map(r=>{
+    const has=owned.includes(r.id);
+    return `<button class="rcell ${has?'':'locked'}" data-r="${r.id}" ${has?'':'disabled'}><span class="re">${has?r.e:'🔒'}</span>${has?r.t:'???'}</button>`;
+  }).join('');
+  $('receiptGrid').querySelectorAll('.rcell:not(.locked)').forEach(btn=>{
+    btn.onclick=()=>{
+      const r=RMAP[btn.dataset.r];
+      $('receiptDetail').innerHTML=`<div style="font-size:30px">${r.e}</div><h3>${r.t}</h3>
+        <p>${r.f}</p><p class="small">— ${r.s}</p><div class="nuance">⚖️ <b>The fight:</b> ${r.n}</div>`;
+      $('receiptDetail').classList.add('active');
+      $('receiptDetail').scrollIntoView({behavior:'smooth',block:'nearest'});
+    };
+  });
+  $('receiptDetail').classList.remove('active');
+}
+
+/* ---------- compass gauge (inline SVG) ---------- */
+function drawGauge(el, c, w){
+  const angle = (clamp(c,-100,100)/100)*72; // needle sweep ±72°
+  el.innerHTML=`<svg width="${w}" height="${w*0.55}" viewBox="0 0 200 110" role="img" aria-label="Mindset compass, ${c<-25?'leaning cringe':c>25?'leaning bluster':'centred at swaraj'}">
+    <path d="M 18 92 A 82 82 0 0 1 182 92" fill="none" stroke="var(--line)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M 62 33 A 82 82 0 0 1 138 33" fill="none" stroke="var(--saffron)" stroke-width="10" stroke-linecap="round" opacity=".55"/>
+    <circle cx="100" cy="92" r="6" fill="var(--saffron)"/>
+    <g class="needle" style="transform:rotate(${angle}deg)">
+      <line x1="100" y1="92" x2="100" y2="26" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="100" cy="26" r="4" fill="var(--ink)"/>
+    </g>
+  </svg>`;
+}
+
+/* ---------- navigation / home ---------- */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function refreshHome(){
+  const st=store.get('streak',{last:null,count:0});
+  const t=todayIST();
+  const alive = st.last===t || st.last===istYesterday(t);
+  $('streakLine').textContent = (st.count>0 && alive) ? `🔥 ${st.count}-day chai streak${st.last===t?' · today ✓':''}` : '';
+  $('receiptCount').textContent = `— ${getCollection().length}/${RECEIPTS.length} collected`;
+  drawGauge($('homeGauge'), 0, 230);
+}
+$('btnDaily').onclick=()=>newRun('daily');
+$('btnLife').onclick=()=>newRun('life');
+$('btnReceipts').onclick=()=>{ renderReceipts(); showScreen('receipts'); };
+$('btnAbout').onclick=()=>showScreen('about');
+$('rBack').onclick=()=>{ showScreen('home'); refreshHome(); };
+$('aBack').onclick=()=>{ showScreen('home'); refreshHome(); };
+$('quitBtn').onclick=()=>{ if(confirm('Leave this life? Progress in this run is lost.')){ $('overlay').classList.remove('active'); ovCb=null; showScreen('home'); refreshHome(); } };
+
+/* theme */
+$('themeBtn').onclick=()=>{
+  const cur=document.documentElement.getAttribute('data-theme');
+  const sysDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const next = cur ? (cur==='dark'?'light':'dark') : (sysDark?'light':'dark');
+  document.documentElement.setAttribute('data-theme',next);
+  store.set('theme',next);
+};
+(function init(){
+  const th=store.get('theme',null); if(th) document.documentElement.setAttribute('data-theme',th);
+  refreshHome();
+})();
+</script>
+</body>
+</html>
