@@ -9,6 +9,11 @@
 </head>
 <body>
 
+<div class="aurora a1"></div>
+<div class="aurora a2"></div>
+<div class="aurora a3"></div>
+<canvas id="fx-confetti"></canvas>
+
 <header id="topbar" class="hidden">
   <div class="topbar-inner">
     <button class="brand" data-nav="home">🦴 Backbone</button>
@@ -102,6 +107,17 @@
         <span class="mode-name">Safety Radar</span>
         <span class="mode-desc">Name the manipulation tactic. Trust your gut. Exit clean.</span>
       </button>
+      <button class="mode-card" data-nav="gauntlet">
+        <span class="mode-emoji">⚡</span>
+        <span class="mode-name">The Gauntlet</span>
+        <span class="mode-desc">Timed rapid-fire. 3 lives, combo multipliers, and a verdict on who you are.</span>
+        <span class="mode-progress" id="gauntlet-mode-progress"></span>
+      </button>
+      <button class="mode-card" data-nav="perception">
+        <span class="mode-emoji">🧪</span>
+        <span class="mode-name">Perception Lab</span>
+        <span class="mode-desc">Behavioral alchemy: the counterintuitive move that actually works.</span>
+      </button>
     </div>
 
     <div class="row-buttons">
@@ -180,6 +196,42 @@
     <div id="safety-summary" class="hidden"></div>
   </section>
 
+  <!-- ============ GAUNTLET ============ -->
+  <section id="screen-gauntlet" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div class="gauntlet-hud">
+        <span id="gauntlet-hearts" class="hud-hearts"></span>
+        <span id="gauntlet-combo" class="hud-combo"></span>
+        <span id="gauntlet-score" class="hud-score"></span>
+      </div>
+    </div>
+    <div id="gauntlet-intro" class="card center-card">
+      <h2>⚡ The Gauntlet</h2>
+      <p class="muted">Ten rapid-fire rounds. ~12 seconds each. Three lives. Every consecutive
+      strong answer cranks the multiplier — every miss costs a heart and resets the combo.
+      At the end, the game reads your character out loud. Good luck.</p>
+      <button id="gauntlet-start" class="btn">Start the Gauntlet</button>
+    </div>
+    <div id="gauntlet-play" class="hidden">
+      <div class="timer-bar"><div id="gauntlet-timer" class="timer-fill"></div></div>
+      <div id="gauntlet-card" class="card"></div>
+      <div id="gauntlet-flash" class="gauntlet-flash"></div>
+    </div>
+    <div id="gauntlet-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ PERCEPTION LAB ============ -->
+  <section id="screen-perception" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="perception-progress" class="round-dots"></div>
+    </div>
+    <div id="perception-card" class="card"></div>
+    <div id="perception-feedback" class="feedback hidden"></div>
+    <div id="perception-summary" class="hidden"></div>
+  </section>
+
   <!-- ============ BREATHING ============ -->
   <section id="screen-breathe" class="screen hidden">
     <div class="game-head">
@@ -214,6 +266,7 @@
       <button class="btn ghost small-btn" data-nav="home">← Back</button>
     </div>
     <h2 class="section-title">📊 Your character sheet</h2>
+    <div id="verdict-slot"></div>
     <div class="card">
       <h3 class="chart-title">You vs. what <span id="radar-culture-name"></span> rewards</h3>
       <canvas id="radar" width="640" height="480"></canvas>
@@ -279,8 +332,11 @@
       <p>The negotiation rounds draw on publicly taught ideas from negotiation and communication
       educators — including techniques popularized by former FBI negotiator Chris Voss (labeling,
       mirroring, calibrated questions, the accusation audit) and delivery principles discussed by
-      Charisma on Command (conviction, pacing, comfort with silence). Backbone is an independent game
-      and is not affiliated with, endorsed by, or connected to any of these people or brands.</p>
+      Charisma on Command (conviction, pacing, comfort with silence). The Perception Lab draws on
+      behavioral-science ideas popularized by advertising thinker Rory Sutherland — "psycho-logic,"
+      costly signaling, the doorman fallacy, and the general heresy that the psychological fix often
+      beats the engineering fix at 1% of the price. Backbone is an independent game and is not
+      affiliated with, endorsed by, or connected to any of these people or brands.</p>
 
       <h3>Disclaimer (the legal bit)</h3>
       <p>Backbone is provided for education and entertainment only, "as is," without warranties of any

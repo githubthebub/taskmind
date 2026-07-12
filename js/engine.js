@@ -23,9 +23,13 @@ function defaultState() {
       cleanSessions: 0,      // scenario sessions with zero doormat picks
       calmReps: 0,           // stability-building actions of any kind
       safetyStrong: 0,       // safe calls made in Safety Radar
+      alchemyStrong: 0,      // strong picks in Perception Lab
+      gauntletBest: 0,       // best single-run Gauntlet score
+      gauntletRuns: 0,
+      gauntletFlawless: false,
       readAbout: false,
     },
-    seen: { scenarios: [], distortions: [], drills: [], safety: [] },
+    seen: { scenarios: [], distortions: [], drills: [], safety: [], perception: [] },
     campaigns: {
       career: { stage: 0, done: false },            // ordered ladder
       love: { cleared: [], done: false },           // unordered chapters
@@ -239,6 +243,25 @@ function calmPct() {
   const reps = state.stats.calmReps + state.stats.distortionsCaught + state.stats.breathSessions * 3;
   if (!reps) return null;
   return Math.min(100, Math.round(100 * (1 - Math.exp(-reps / 25))));
+}
+
+/* ---------- archetype (the verdict) ---------- */
+function currentArchetype() {
+  const bp = backbonePct() ?? 0;
+  const cp = calmPct() ?? 0;
+  return ARCHETYPES.find((a) => a.when(state, bp, cp)) || ARCHETYPES[ARCHETYPES.length - 1];
+}
+
+function shareText() {
+  const a = currentArchetype();
+  const c = currentCulture();
+  const bp = backbonePct();
+  const cp = calmPct();
+  return `🦴 Backbone read me as: ${a.emoji} ${a.name} — "${a.line}"`
+    + `\nBackbone ${bp === null ? "–" : bp + "%"} · Calm ${cp === null ? "–" : cp + "%"} · ${state.score}⭐`
+    + (state.stats.gauntletBest ? ` · Gauntlet best ${state.stats.gauntletBest}` : "")
+    + (c ? `\nTraining for: ${c.flag} ${c.name}` : "")
+    + `\nThink you can out-spine me?`;
 }
 
 /* ---------- badges ---------- */

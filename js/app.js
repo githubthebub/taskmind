@@ -11,13 +11,14 @@ const el = (tag, cls, html) => {
 const SESSION_LEN = 5;
 
 /* ================= navigation ================= */
-const SCREENS = ["culture", "home", "scenario", "distortion", "drill", "career", "love", "safety", "breathe", "progress", "about"];
+const SCREENS = ["culture", "home", "scenario", "distortion", "drill", "career", "love", "safety", "gauntlet", "perception", "breathe", "progress", "about"];
 
 function showScreen(name) {
   for (const s of SCREENS) $("#screen-" + s).classList.toggle("hidden", s !== name);
   $("#topbar").classList.toggle("hidden", !state.cultureId);
   window.scrollTo(0, 0);
   stopBreathing();
+  stopGauntlet();
 
   if (name === "culture") renderCultureSelect();
   if (name === "home") renderHome();
@@ -27,6 +28,8 @@ function showScreen(name) {
   if (name === "career") renderCampaignMap(CAMPAIGNS.career);
   if (name === "love") renderCampaignMap(CAMPAIGNS.love);
   if (name === "safety") startSafetySession();
+  if (name === "gauntlet") enterGauntlet();
+  if (name === "perception") startPerceptionSession();
   if (name === "breathe") resetBreatheScreen();
   if (name === "progress") renderProgress();
   if (name === "about" && !state.stats.readAbout) {
@@ -47,6 +50,70 @@ function refreshTopbar() {
   $("#culture-chip").textContent = c ? `${c.flag} ${c.name}` : "Pick culture";
   $("#streak-chip").textContent = `🔥 ${state.streak.current}`;
   $("#score-chip").textContent = `⭐ ${state.score}`;
+}
+
+/* ================= juice fx ================= */
+const REDUCED_MOTION = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function scorePop(anchor, text, gain) {
+  const r = anchor.getBoundingClientRect();
+  const p = el("div", "score-pop " + (gain ? "gain" : "loss"), text);
+  p.style.left = Math.min(r.left + r.width * 0.72, window.innerWidth - 90) + "px";
+  p.style.top = Math.max(r.top, 60) + "px";
+  document.body.append(p);
+  setTimeout(() => p.remove(), 950);
+}
+
+function shakeScreen() {
+  if (REDUCED_MOTION) return;
+  const app = $("#app");
+  app.classList.remove("shake");
+  void app.offsetWidth;
+  app.classList.add("shake");
+}
+
+function juice(btn, res) {
+  scorePop(btn, `${res.pts >= 0 ? "+" : ""}${res.pts} ⭐`, res.pts >= 0);
+  if (res.cls === "bad") shakeScreen();
+}
+
+const CONFETTI_COLORS = ["#8b7cf6", "#f6c86b", "#5eead4", "#60c6fa", "#4ade80", "#f472b6"];
+function confettiBurst(count = 130) {
+  if (REDUCED_MOTION) return;
+  const canvas = $("#fx-confetti");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const parts = Array.from({ length: count }, () => ({
+    x: canvas.width / 2 + (Math.random() - 0.5) * canvas.width * 0.5,
+    y: canvas.height * 0.3,
+    vx: (Math.random() - 0.5) * 11,
+    vy: -Math.random() * 10 - 3,
+    size: Math.random() * 7 + 4,
+    color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+    rot: Math.random() * Math.PI,
+    vr: (Math.random() - 0.5) * 0.3,
+  }));
+  const t0 = performance.now();
+  (function frame(t) {
+    const dt = (t - t0) / 1000;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (dt > 1.8) return;
+    for (const p of parts) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.35;
+      p.rot += p.vr;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.globalAlpha = Math.max(0, 1 - dt / 1.8);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+      ctx.restore();
+    }
+    requestAnimationFrame(frame);
+  })(t0);
 }
 
 /* ================= toast / badges ================= */
@@ -148,6 +215,8 @@ function renderHome() {
   $("#love-mode-progress").textContent = love.done
     ? "🏆 All chapters cleared"
     : `${(love.cleared || []).length}/${LOVE_CHAPTERS.length} chapters cleared`;
+  $("#gauntlet-mode-progress").textContent = state.stats.gauntletBest
+    ? `Best: ${state.stats.gauntletBest} ⭐` : "";
 }
 
 /* ================= shared session helpers ================= */
@@ -170,6 +239,7 @@ function xpPills(xpGained) {
 function sessionSummary(container, title, results, pts, extraLines, replayNav) {
   container.classList.remove("hidden");
   const goods = results.filter((r) => r === "good").length;
+  if (goods === results.length && results.length > 0) confettiBurst();
   container.innerHTML = "";
   const card = el("div", "card summary-card");
   card.append(el("h2", null, title));
@@ -245,6 +315,7 @@ function renderScenarioRound() {
     btn.addEventListener("click", () => {
       ch._roundHadDoormat = hadDoormat;
       const res = applyChoice(ch, sc.focus);
+      juice(btn, res);
       run.pts += res.pts;
       run.results.push(res.cls);
       if (ch.kind === "doormat") run.doormats++;
@@ -348,6 +419,8 @@ function renderDistortionRound() {
 
       run.pts += pts;
       run.results.push(correct ? "good" : "bad");
+      scorePop(btn, correct ? "+" + pts + " ⭐" : "✗", correct);
+      if (!correct) shakeScreen();
       btn.classList.add(correct ? "picked-good" : "picked-bad");
       if (!correct) {
         for (const [i, o] of options.entries()) {
@@ -423,6 +496,7 @@ function renderDrillRound() {
       const effect = { ...DRILL_CHOICE_EFFECTS[opt.kind], fb: "" };
       effect._roundHadDoormat = true;
       const res = applyChoice(effect, "A");
+      juice(btn, res);
       run.pts += res.pts;
       run.results.push(res.cls);
 
@@ -572,6 +646,7 @@ function renderCampaignRound() {
     btn.addEventListener("click", () => {
       ch._roundHadDoormat = hadDoormat;
       const res = applyChoice(ch, sc.focus);
+      juice(btn, res);
       run.pts += res.pts;
       run.results.push(res.cls);
 
@@ -626,6 +701,7 @@ function finishCampaignStage() {
       completedCampaign = true;
     }
   }
+  if (advanced || completedCampaign) confettiBurst(completedCampaign ? 220 : 130);
   state.stats.sessionsCompleted++;
   saveState();
 
@@ -713,6 +789,7 @@ function renderSafetyRound() {
     btn.addEventListener("click", () => {
       ch._roundHadDoormat = hadDoormat;
       const res = applyChoice(ch, "S");
+      juice(btn, res);
       run.pts += res.pts;
       run.results.push(res.cls);
       if (res.cls === "good") {
@@ -742,6 +819,343 @@ function renderSafetyRound() {
       fb.append(el("div", "fb-points", `<b>${res.pts >= 0 ? "+" : ""}${res.pts} ⭐</b> ${xpPills(res.xpGained)}`));
       const next = el("button", "btn fb-next", "Next →");
       next.addEventListener("click", () => { run.idx++; renderSafetyRound(); });
+      fb.append(next);
+      next.focus();
+      refreshTopbar();
+    });
+    list.append(btn);
+  }
+  card.append(list);
+}
+
+/* ================= verdict card (shareable read) ================= */
+function buildVerdictCard() {
+  const a = currentArchetype();
+  const bp = backbonePct();
+  const cp = calmPct();
+  const card = el("div", "verdict-card");
+  card.append(el("div", "verdict-label", "The game reads you as"));
+  card.append(el("div", "verdict-emoji", a.emoji));
+  card.append(el("div", "verdict-name", a.name));
+  card.append(el("div", "verdict-line", `“${a.line}”`));
+  const stats = el("div", "verdict-stats");
+  const pills = [
+    `🦴 Backbone ${bp === null ? "–" : bp + "%"}`,
+    `😌 Calm ${cp === null ? "–" : cp + "%"}`,
+    `⭐ ${state.score}`,
+  ];
+  if (state.stats.gauntletBest) pills.push(`⚡ Best ${state.stats.gauntletBest}`);
+  for (const p of pills) stats.append(el("span", "xp-pill", p));
+  card.append(stats);
+  const share = el("button", "btn small-btn", "📋 Copy my result");
+  share.addEventListener("click", copyShare);
+  card.append(share);
+  return card;
+}
+
+function copyShare() {
+  const text = shareText();
+  const done = () => toast("📋 Copied — go post it");
+  const fail = () => {
+    try {
+      const ta = el("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.append(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      ok ? done() : toast("Couldn't copy — screenshot the card instead 📸");
+    } catch {
+      toast("Couldn't copy — screenshot the card instead 📸");
+    }
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, fail);
+  } else fail();
+}
+
+/* ================= the gauntlet ================= */
+const GAUNTLET_ROUNDS = 10;
+let gRun = null;
+
+function enterGauntlet() {
+  $("#gauntlet-intro").classList.remove("hidden");
+  $("#gauntlet-play").classList.add("hidden");
+  $("#gauntlet-summary").classList.add("hidden");
+  $("#gauntlet-summary").innerHTML = "";
+  updateGauntletHud(3, 0, 0);
+}
+
+function gauntletDeck() {
+  const drills = shuffle(DRILLS.slice()).slice(0, 5).map((d) => ({
+    type: "drill",
+    time: 15,
+    tag: `Say it with spine · ${d.skill}`,
+    prompt: d.situation,
+    options: shuffle(d.options.map((o) => ({ text: o.text, correct: o.kind === "assert", kind: o.kind }))),
+    lesson: d.tip,
+  }));
+  const traps = shuffle(DISTORTIONS.slice()).slice(0, 5).map((r) => {
+    const answer = DISTORTION_TYPES.find((t) => t.id === r.answer);
+    const decoys = shuffle(DISTORTION_TYPES.filter((t) => t.id !== r.answer)).slice(0, 3);
+    return {
+      type: "trap",
+      time: 11,
+      tag: "Name the thinking trap",
+      prompt: r.thought,
+      options: shuffle([answer, ...decoys].map((t) => ({ text: `<b>${t.name}</b>`, correct: t.id === r.answer }))),
+      lesson: `${answer.name}: ${answer.short}`,
+    };
+  });
+  return shuffle(drills.concat(traps)).slice(0, GAUNTLET_ROUNDS);
+}
+
+function startGauntletRun() {
+  gRun = {
+    deck: gauntletDeck(),
+    idx: 0,
+    hearts: 3,
+    combo: 0,
+    bestCombo: 0,
+    score: 0,
+    correct: 0,
+    timer: null,
+    deadline: 0,
+    resolved: false,
+  };
+  $("#gauntlet-intro").classList.add("hidden");
+  $("#gauntlet-summary").classList.add("hidden");
+  $("#gauntlet-play").classList.remove("hidden");
+  renderGauntletRound();
+}
+
+function updateGauntletHud(hearts, combo, score) {
+  $("#gauntlet-hearts").textContent = "❤️".repeat(hearts) + "🖤".repeat(Math.max(0, 3 - hearts));
+  const comboEl = $("#gauntlet-combo");
+  const mult = comboMultiplier(combo);
+  comboEl.textContent = combo >= 2 ? `x${mult} 🔥` : "";
+  comboEl.classList.remove("bump");
+  void comboEl.offsetWidth;
+  if (combo >= 2) comboEl.classList.add("bump");
+  $("#gauntlet-score").textContent = `${score} ⭐`;
+}
+
+function comboMultiplier(combo) {
+  return Math.min(4, 1 + Math.max(0, combo - 1) * 0.5);
+}
+
+function renderGauntletRound() {
+  const run = gRun;
+  if (!run) return;
+  run.resolved = false;
+  const round = run.deck[run.idx];
+  const card = $("#gauntlet-card");
+  $("#gauntlet-flash").textContent = "";
+  $("#gauntlet-flash").className = "gauntlet-flash";
+
+  card.innerHTML = "";
+  card.append(el("span", "scene-tag", `⚡ ${run.idx + 1}/${run.deck.length} · ${round.tag}`));
+  card.append(el("p", "scene-text", round.prompt));
+  const list = el("div", "choices");
+  round.options.forEach((opt) => {
+    const btn = el("button", "choice-btn", opt.text);
+    btn.addEventListener("click", () => resolveGauntlet(opt, btn, list));
+    list.append(btn);
+  });
+  card.append(list);
+
+  run.deadline = performance.now() + round.time * 1000;
+  const fill = $("#gauntlet-timer");
+  fill.classList.remove("hurry");
+  fill.style.width = "100%";
+  clearInterval(run.timer);
+  run.timer = setInterval(() => {
+    const left = run.deadline - performance.now();
+    const pct = Math.max(0, (left / (round.time * 1000)) * 100);
+    fill.style.width = pct + "%";
+    fill.classList.toggle("hurry", pct < 30);
+    if (left <= 0) resolveGauntlet(null, null, list);
+  }, 100);
+}
+
+function resolveGauntlet(opt, btn, list) {
+  const run = gRun;
+  if (!run || run.resolved) return;
+  run.resolved = true;
+  clearInterval(run.timer);
+  const round = run.deck[run.idx];
+  for (const b of list.querySelectorAll("button")) b.disabled = true;
+
+  const correct = !!(opt && opt.correct);
+  const flash = $("#gauntlet-flash");
+
+  if (correct) {
+    run.combo++;
+    run.bestCombo = Math.max(run.bestCombo, run.combo);
+    run.correct++;
+    const mult = comboMultiplier(run.combo);
+    const pts = Math.round(10 * mult);
+    run.score += pts;
+    state.score += pts;
+    if (round.type === "drill") {
+      state.xp.A += 3;
+      state.stats.assertiveChoices++;
+    } else {
+      state.xp.S += 3;
+      state.stats.distortionsCaught++;
+    }
+    btn.classList.add("picked-good");
+    scorePop(btn, `+${pts} ⭐${run.combo >= 2 ? ` x${mult}` : ""}`, true);
+    flash.textContent = run.combo >= 3 ? `🔥 ${run.combo} in a row!` : "✓ Strong.";
+    flash.classList.add("good");
+  } else {
+    run.hearts--;
+    run.combo = 0;
+    if (opt && opt.kind === "doormat") state.stats.doormatChoices++;
+    if (opt && opt.kind === "aggressive") state.stats.aggressiveChoices++;
+    if (round.type === "trap") state.stats.distortionsMissed++;
+    if (btn) btn.classList.add("picked-bad");
+    for (const [i, o] of round.options.entries()) {
+      if (o.correct) list.children[i].classList.add("reveal-best");
+    }
+    shakeScreen();
+    flash.textContent = (opt ? "✗ " : "⏰ Time! ") + round.lesson;
+    flash.classList.add("bad");
+  }
+  updateGauntletHud(run.hearts, run.combo, run.score);
+  touchStreak();
+  saveState();
+
+  const over = run.hearts <= 0 || run.idx >= run.deck.length - 1;
+  setTimeout(() => {
+    if (!gRun) return; // navigated away mid-pause
+    if (over) endGauntlet();
+    else { run.idx++; renderGauntletRound(); }
+  }, correct ? 850 : 1900);
+}
+
+function endGauntlet() {
+  const run = gRun;
+  gRun = null;
+  $("#gauntlet-play").classList.add("hidden");
+
+  const flawless = run.hearts === 3 && run.idx >= run.deck.length - 1;
+  const newBest = run.score > (state.stats.gauntletBest || 0);
+  state.stats.gauntletRuns++;
+  state.stats.gauntletBest = Math.max(state.stats.gauntletBest || 0, run.score);
+  if (flawless) state.stats.gauntletFlawless = true;
+  state.stats.sessionsCompleted++;
+  saveState();
+  if (flawless || newBest) confettiBurst(flawless ? 240 : 140);
+
+  const box = $("#gauntlet-summary");
+  box.classList.remove("hidden");
+  box.innerHTML = "";
+  const card = el("div", "card summary-card");
+  card.append(el("h2", null, run.hearts <= 0 ? "💀 The Gauntlet got you" : flawless ? "💯 FLAWLESS RUN" : "⚡ Gauntlet complete"));
+  card.append(el("div", "summary-big", `${run.score} ⭐`));
+  card.append(el("div", "summary-line",
+    `${run.correct}/${run.idx + 1} correct · best combo x${comboMultiplier(run.bestCombo)} · ${"❤️".repeat(run.hearts)}${"🖤".repeat(3 - run.hearts)}`));
+  card.append(el("div", "summary-line", newBest ? "🏆 New personal best!" : `Personal best: ${state.stats.gauntletBest} ⭐`));
+  const row = el("div", "row-buttons");
+  row.style.justifyContent = "center";
+  const again = el("button", "btn", "Run it back");
+  again.addEventListener("click", startGauntletRun);
+  const home = el("button", "btn ghost", "Home");
+  home.addEventListener("click", () => showScreen("home"));
+  row.append(again, home);
+  card.append(row);
+  box.append(card);
+  box.append(buildVerdictCard());
+
+  announceBadges(checkBadges());
+  refreshTopbar();
+}
+
+function stopGauntlet() {
+  if (gRun) {
+    clearInterval(gRun.timer);
+    gRun = null;
+  }
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#gauntlet-start")) startGauntletRun();
+});
+
+/* ================= perception lab ================= */
+let plRun = null;
+
+function startPerceptionSession() {
+  plRun = {
+    deck: drawFrom(PERCEPTION, state.seen.perception, SESSION_LEN),
+    idx: 0,
+    results: [],
+    pts: 0,
+  };
+  $("#perception-summary").classList.add("hidden");
+  renderPerceptionRound();
+}
+
+function renderPerceptionRound() {
+  const run = plRun;
+  const card = $("#perception-card");
+  const fb = $("#perception-feedback");
+  fb.classList.add("hidden");
+
+  if (run.idx >= run.deck.length) {
+    card.classList.add("hidden");
+    sessionSummary($("#perception-summary"), "🧪 Lab session complete", run.results, run.pts,
+      ["The engineering answer is usually expensive. The psychology answer is usually free. Now you see both."],
+      "perception");
+    return;
+  }
+
+  card.classList.remove("hidden");
+  renderDots($("#perception-progress"), run.deck.length, run.results, run.idx);
+
+  const round = run.deck[run.idx];
+  card.innerHTML = "";
+  card.append(el("span", "scene-tag", `🧪 ${round.tag}`));
+  card.append(el("p", "scene-text", round.text));
+
+  const list = el("div", "choices");
+  const order = shuffle(round.choices.map((_, i) => i));
+  for (const i of order) {
+    const ch = round.choices[i];
+    const btn = el("button", "choice-btn", ch.text);
+    btn.addEventListener("click", () => {
+      const res = applyChoice(ch, "O");
+      juice(btn, res);
+      run.pts += res.pts;
+      run.results.push(res.cls);
+      if (res.cls === "good") state.stats.alchemyStrong++;
+
+      for (const b of list.querySelectorAll("button")) b.disabled = true;
+      btn.classList.add("picked-" + res.cls);
+      if (res.cls !== "good") {
+        for (const j of order) {
+          if (kindClass(round.choices[j].kind) === "good") {
+            list.children[order.indexOf(j)].classList.add("reveal-best");
+          }
+        }
+      }
+
+      renderDots($("#perception-progress"), run.deck.length, run.results, run.idx);
+      markSeen(state.seen.perception, round.id);
+      saveState();
+
+      fb.innerHTML = "";
+      fb.classList.remove("hidden");
+      fb.append(el("div", "fb-verdict " + res.cls,
+        res.cls === "good" ? "🧪 Alchemy." : res.cls === "mid" ? "😐 Logical. Merely logical." : "📉 Value destroyed"));
+      fb.append(el("p", null, ch.fb));
+      fb.append(el("div", "fb-culture", `⚗️ <b>The principle — ${round.principle.name}:</b> ${round.principle.tip}`));
+      fb.append(el("div", "fb-points", `<b>${res.pts >= 0 ? "+" : ""}${res.pts} ⭐</b> ${xpPills(res.xpGained)}`));
+      const next = el("button", "btn fb-next", "Next →");
+      next.addEventListener("click", () => { run.idx++; renderPerceptionRound(); });
       fb.append(next);
       next.focus();
       refreshTopbar();
@@ -869,6 +1283,9 @@ function finishBreathing(completed) {
 /* ================= progress ================= */
 function renderProgress() {
   const c = currentCulture();
+  const slot = $("#verdict-slot");
+  slot.innerHTML = "";
+  slot.append(buildVerdictCard());
   $("#radar-culture-name").textContent = c ? `${c.flag} ${c.name}` : "your culture";
   drawRadar();
 
@@ -886,6 +1303,8 @@ function renderProgress() {
     [state.campaigns.career.done ? "🏆" : `${state.campaigns.career.stage}/${CAREER_STAGES.length}`, "Career rungs 💼"],
     [state.campaigns.love.done ? "🏆" : `${(state.campaigns.love.cleared || []).length}/${LOVE_CHAPTERS.length}`, "Chapters cleared ❤️"],
     [state.stats.safetyStrong, "Safe calls 🛡️"],
+    [state.stats.gauntletBest, "Gauntlet best ⚡"],
+    [state.stats.alchemyStrong, "Frames bent 🧪"],
   ];
   for (const [num, label] of stats) {
     const card = el("div", "stat-card");
