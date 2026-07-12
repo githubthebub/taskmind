@@ -26,6 +26,8 @@ python3 -m http.server 8000
 | 🔍 **Spot the Distortion** | CBT-style rounds: name the thinking trap (catastrophizing, mind reading, all-or-nothing…) behind an anxious thought, then see the reframe. |
 | 🗣️ **Say It With Spine** | Pick the wording that's firm without fangs. Teaches real techniques: broken record, fogging, DESC scripts, saying no without a novel. |
 | 🌬️ **Steady Breath** | Box-breathing pacer (4-4-4-4) with a rhythm-tap bonus. Trains the body's calm switch. |
+| 💼 **Career Ladder** | A 5-rung campaign: interview → new hire → establishing yourself → the promotion push → leading people. Clear each rung with 2 of 3 strong moves. |
+| ❤️ **Relationships** | A 5-chapter campaign: first dates → getting real → conflict & repair → worlds collide (in-laws, friends, holidays) → the long haul. |
 
 ## The culture system
 
@@ -46,7 +48,8 @@ assertiveness changes, never the spine.
   **Emotional Stability**)
 - 🦴 **Backbone Meter** — your assertive share when someone pushes on you
 - 😌 **Calm Meter** — built from distortions caught, anxiety rounds won, and breathing sessions
-- Daily streaks, 12 badges, and a radar chart of you vs. your culture's target
+- Two persistent campaigns (Career Ladder and Relationships) with stage maps, promotions, and replayable stages
+- Daily streaks, 16 badges, and a radar chart of you vs. your culture's target
 
 ## Honest fine print
 

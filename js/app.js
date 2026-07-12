@@ -11,7 +11,7 @@ const el = (tag, cls, html) => {
 const SESSION_LEN = 5;
 
 /* ================= navigation ================= */
-const SCREENS = ["culture", "home", "scenario", "distortion", "drill", "breathe", "progress", "about"];
+const SCREENS = ["culture", "home", "scenario", "distortion", "drill", "career", "love", "breathe", "progress", "about"];
 
 function showScreen(name) {
   for (const s of SCREENS) $("#screen-" + s).classList.toggle("hidden", s !== name);
@@ -24,6 +24,8 @@ function showScreen(name) {
   if (name === "scenario") startScenarioSession();
   if (name === "distortion") startDistortionSession();
   if (name === "drill") startDrillSession();
+  if (name === "career") renderCampaignMap(CAMPAIGNS.career);
+  if (name === "love") renderCampaignMap(CAMPAIGNS.love);
   if (name === "breathe") resetBreatheScreen();
   if (name === "progress") renderProgress();
   if (name === "about" && !state.stats.readAbout) {
@@ -136,6 +138,15 @@ function renderHome() {
     row.append(el("span", "trait-lvl", `Lv ${lvl} · ${xp - floor}/${next - floor}`));
     bars.append(row);
   }
+
+  const career = state.campaigns.career;
+  $("#career-mode-progress").textContent = career.done
+    ? "🏆 Ladder complete"
+    : `Rung ${career.stage + 1}/${CAREER_STAGES.length} · ${CAREER_STAGES[career.stage].title}`;
+  const love = state.campaigns.love;
+  $("#love-mode-progress").textContent = love.done
+    ? "🏆 Journey complete"
+    : `Chapter ${love.stage + 1}/${LOVE_CHAPTERS.length} · ${LOVE_CHAPTERS[love.stage].title}`;
 }
 
 /* ================= shared session helpers ================= */
@@ -439,6 +450,199 @@ function renderDrillRound() {
   card.append(list);
 }
 
+/* ================= campaigns (Career Ladder / Relationships) ================= */
+const CAMPAIGNS = {
+  career: {
+    key: "career", data: CAREER_STAGES, screen: "career",
+    title: "💼 The Career Ladder", stageWord: "rung",
+    intro: "Five rungs, from the interview chair to the corner office. Clear a rung by making 2 of 3 strong moves — doormat compliance and blow-ups both stall careers.",
+    advanceWord: "Promoted!",
+    finale: "🏢 Top of the ladder. You interviewed, pushed back, owned mistakes, got the title, and led people — without once playing the doormat.",
+  },
+  love: {
+    key: "love", data: LOVE_CHAPTERS, screen: "love",
+    title: "❤️ Relationships", stageWord: "chapter",
+    intro: "Five chapters, from the first nervous coffee to the big life decisions. Clear a chapter with 2 of 3 strong moves — honesty and warmth, never doormat peace.",
+    advanceWord: "Chapter cleared!",
+    finale: "💍 Journey complete. First dates, hard talks, in-laws, money, and the big fork in the road — handled with warmth and a spine.",
+  },
+};
+let campRun = null;
+
+function campEls(cfg) {
+  return {
+    map: $(`#${cfg.screen}-map`),
+    card: $(`#${cfg.screen}-card`),
+    fb: $(`#${cfg.screen}-feedback`),
+    summary: $(`#${cfg.screen}-summary`),
+    dots: $(`#${cfg.screen}-progress`),
+  };
+}
+
+function renderCampaignMap(cfg) {
+  const els = campEls(cfg);
+  const prog = state.campaigns[cfg.key];
+  els.card.classList.add("hidden");
+  els.fb.classList.add("hidden");
+  els.summary.classList.add("hidden");
+  els.summary.innerHTML = "";
+  els.dots.innerHTML = "";
+  els.map.classList.remove("hidden");
+  els.map.innerHTML = "";
+
+  els.map.append(el("h2", "section-title", cfg.title));
+  els.map.append(el("p", "muted small", cfg.intro));
+  if (prog.done) {
+    els.map.append(el("div", "banner", `<h2>🏆 Campaign complete</h2><p class="muted small">${cfg.finale} Replay any ${cfg.stageWord} below.</p>`));
+  }
+
+  cfg.data.forEach((stage, i) => {
+    const done = prog.done || i < prog.stage;
+    const current = !prog.done && i === prog.stage;
+    const row = el("div", "stage-row" + (done ? " stage-done" : current ? " stage-current" : " stage-locked"));
+    row.append(el("span", "stage-emoji", done ? "✅" : current ? stage.emoji : "🔒"));
+    const info = el("div", "stage-info");
+    info.append(el("div", "stage-title", `${cfg.stageWord === "rung" ? "Rung" : "Chapter"} ${i + 1}: ${stage.title}`));
+    info.append(el("div", "stage-desc muted tiny", stage.desc));
+    row.append(info);
+    if (current) {
+      const play = el("button", "btn small-btn", "Play");
+      play.addEventListener("click", () => startCampaignStage(cfg, i, false));
+      row.append(play);
+    } else if (done) {
+      const replay = el("button", "btn ghost small-btn", "Replay");
+      replay.addEventListener("click", () => startCampaignStage(cfg, i, true));
+      row.append(replay);
+    }
+    els.map.append(row);
+  });
+}
+
+function startCampaignStage(cfg, stageIdx, isReplay) {
+  const stage = cfg.data[stageIdx];
+  campRun = {
+    cfg, stageIdx, isReplay,
+    stage,
+    deck: shuffle(stage.scenarios.slice()),
+    idx: 0,
+    results: [],
+    pts: 0,
+  };
+  const els = campEls(cfg);
+  els.map.classList.add("hidden");
+  els.summary.classList.add("hidden");
+  renderCampaignRound();
+}
+
+function renderCampaignRound() {
+  const run = campRun;
+  const cfg = run.cfg;
+  const els = campEls(cfg);
+  els.fb.classList.add("hidden");
+
+  if (run.idx >= run.deck.length) {
+    finishCampaignStage();
+    return;
+  }
+
+  els.card.classList.remove("hidden");
+  renderDots(els.dots, run.deck.length, run.results, run.idx);
+
+  const sc = run.deck[run.idx];
+  els.card.innerHTML = "";
+  els.card.append(el("span", "scene-tag", `${run.stage.emoji} ${run.stage.title} · ${sc.tag}`));
+  els.card.append(el("p", "scene-text", sc.text));
+
+  const hadDoormat = sc.choices.some((ch) => ch.kind === "doormat");
+  const list = el("div", "choices");
+  const order = shuffle(sc.choices.map((_, i) => i));
+  for (const i of order) {
+    const ch = sc.choices[i];
+    const btn = el("button", "choice-btn", ch.text);
+    btn.addEventListener("click", () => {
+      ch._roundHadDoormat = hadDoormat;
+      const res = applyChoice(ch, sc.focus);
+      run.pts += res.pts;
+      run.results.push(res.cls);
+
+      for (const b of list.querySelectorAll("button")) b.disabled = true;
+      btn.classList.add("picked-" + res.cls);
+      if (res.cls !== "good") {
+        for (const j of order) {
+          if (kindClass(sc.choices[j].kind) === "good") {
+            list.children[order.indexOf(j)].classList.add("reveal-best");
+          }
+        }
+      }
+
+      renderDots(els.dots, run.deck.length, run.results, run.idx);
+      showFeedback(els.fb, res, ch.fb, () => { run.idx++; renderCampaignRound(); });
+      refreshTopbar();
+    });
+    list.append(btn);
+  }
+  els.card.append(list);
+}
+
+function finishCampaignStage() {
+  const run = campRun;
+  const cfg = run.cfg;
+  const els = campEls(cfg);
+  const prog = state.campaigns[cfg.key];
+  els.card.classList.add("hidden");
+  els.card.innerHTML = "";
+
+  const strong = run.results.filter((r) => r === "good").length;
+  const cleared = strong >= 2;
+  let advanced = false;
+  let completedCampaign = false;
+
+  if (cleared && !run.isReplay && run.stageIdx === prog.stage && !prog.done) {
+    prog.stage++;
+    advanced = true;
+    if (prog.stage >= cfg.data.length) {
+      prog.done = true;
+      completedCampaign = true;
+    }
+  }
+  state.stats.sessionsCompleted++;
+  saveState();
+
+  els.summary.classList.remove("hidden");
+  els.summary.innerHTML = "";
+  const card = el("div", "card summary-card");
+  const headline = completedCampaign ? "🏆 " + cfg.finale
+    : advanced ? `🎉 ${cfg.advanceWord} ${cfg.data[prog.stage].emoji} Next ${cfg.stageWord}: ${cfg.data[prog.stage].title}`
+    : cleared ? `✅ ${run.stage.title} cleared${run.isReplay ? " (replay)" : ""}`
+    : `Not this time — ${run.stage.title} pushed back.`;
+  card.append(el("h2", null, headline));
+  card.append(el("div", "summary-big", `${strong}/${run.deck.length} strong`));
+  card.append(el("div", "summary-line", `Session points: ${run.pts >= 0 ? "+" : ""}${run.pts} ⭐`));
+  if (!cleared) card.append(el("div", "summary-line", `You need 2 strong moves to clear the ${cfg.stageWord}. The reveal showed you where the spine was — run it again.`));
+
+  const row = el("div", "row-buttons");
+  row.style.justifyContent = "center";
+  if (!cleared) {
+    const retry = el("button", "btn", "Run it again");
+    retry.addEventListener("click", () => startCampaignStage(cfg, run.stageIdx, run.isReplay));
+    row.append(retry);
+  } else if (advanced && !completedCampaign) {
+    const next = el("button", "btn", `Next ${cfg.stageWord} →`);
+    next.addEventListener("click", () => startCampaignStage(cfg, prog.stage, false));
+    row.append(next);
+  }
+  const map = el("button", "btn ghost", "Back to map");
+  map.addEventListener("click", () => renderCampaignMap(cfg));
+  const home = el("button", "btn ghost", "Home");
+  home.addEventListener("click", () => showScreen("home"));
+  row.append(map, home);
+  card.append(row);
+  els.summary.append(card);
+
+  announceBadges(checkBadges());
+  refreshTopbar();
+}
+
 /* ================= breathing ================= */
 const BREATH_PHASES = [
   { label: "Breathe in", cls: "grow" },
@@ -571,6 +775,8 @@ function renderProgress() {
     [state.stats.breathSessions, "Breath sessions 🌬️"],
     [state.streak.best, "Best streak 🔥"],
     [(state.culturesTried || []).length, "Cultures tried 🌍"],
+    [state.campaigns.career.done ? "🏆" : `${state.campaigns.career.stage}/${CAREER_STAGES.length}`, "Career rungs 💼"],
+    [state.campaigns.love.done ? "🏆" : `${state.campaigns.love.stage}/${LOVE_CHAPTERS.length}`, "Love chapters ❤️"],
   ];
   for (const [num, label] of stats) {
     const card = el("div", "stat-card");

@@ -85,6 +85,18 @@
         <span class="mode-name">Steady Breath</span>
         <span class="mode-desc">Box-breathing pacer. Train the body's calm switch.</span>
       </button>
+      <button class="mode-card" data-nav="career">
+        <span class="mode-emoji">💼</span>
+        <span class="mode-name">Career Ladder</span>
+        <span class="mode-desc">Campaign: climb from the interview to the corner office.</span>
+        <span class="mode-progress" id="career-mode-progress"></span>
+      </button>
+      <button class="mode-card" data-nav="love">
+        <span class="mode-emoji">❤️</span>
+        <span class="mode-name">Relationships</span>
+        <span class="mode-desc">Campaign: from first dates to the long haul, spine intact.</span>
+        <span class="mode-progress" id="love-mode-progress"></span>
+      </button>
     </div>
 
     <div class="row-buttons">
@@ -124,6 +136,30 @@
     <div id="drill-card" class="card"></div>
     <div id="drill-feedback" class="feedback hidden"></div>
     <div id="drill-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ CAREER CAMPAIGN ============ -->
+  <section id="screen-career" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="career-progress" class="round-dots"></div>
+    </div>
+    <div id="career-map"></div>
+    <div id="career-card" class="card hidden"></div>
+    <div id="career-feedback" class="feedback hidden"></div>
+    <div id="career-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ RELATIONSHIPS CAMPAIGN ============ -->
+  <section id="screen-love" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="love-progress" class="round-dots"></div>
+    </div>
+    <div id="love-map"></div>
+    <div id="love-card" class="card hidden"></div>
+    <div id="love-feedback" class="feedback hidden"></div>
+    <div id="love-summary" class="hidden"></div>
   </section>
 
   <!-- ============ BREATHING ============ -->

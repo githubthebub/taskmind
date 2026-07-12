@@ -189,6 +189,26 @@ html, body {
 .mode-emoji { font-size: 1.7rem; }
 .mode-name { font-weight: 800; }
 .mode-desc { color: var(--muted); font-size: .84rem; }
+.mode-progress { color: var(--accent-2); font-size: .78rem; font-weight: 700; margin-top: 2px; }
+.mode-progress:empty { display: none; }
+
+/* ---------- campaign stage map ---------- */
+.stage-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin: 8px 0;
+}
+.stage-emoji { font-size: 1.5rem; width: 36px; text-align: center; flex: none; }
+.stage-info { flex: 1; min-width: 0; }
+.stage-title { font-weight: 700; font-size: .95rem; }
+.stage-current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.stage-locked { opacity: .45; }
+.stage-done { border-color: rgba(74, 222, 128, .4); }
 
 .row-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0; }
 

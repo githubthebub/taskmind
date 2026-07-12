@@ -24,6 +24,10 @@ function defaultState() {
       readAbout: false,
     },
     seen: { scenarios: [], distortions: [], drills: [] },
+    campaigns: {
+      career: { stage: 0, done: false },
+      love: { stage: 0, done: false },
+    },
     badges: [],
   };
 }
@@ -43,6 +47,10 @@ function loadState() {
       streak: { ...base.streak, ...(parsed.streak || {}) },
       stats: { ...base.stats, ...(parsed.stats || {}) },
       seen: { ...base.seen, ...(parsed.seen || {}) },
+      campaigns: {
+        career: { ...base.campaigns.career, ...((parsed.campaigns || {}).career || {}) },
+        love: { ...base.campaigns.love, ...((parsed.campaigns || {}).love || {}) },
+      },
     };
   } catch {
     return defaultState();
