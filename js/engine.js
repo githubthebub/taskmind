@@ -29,6 +29,9 @@ function defaultState() {
       gauntletFlawless: false,
       dailiesPlayed: 0,
       dailyBest: 0,
+      boardRuns: 0,
+      boardWins: 0,
+      boardBestCoins: 0,
       readAbout: false,
     },
     seen: { scenarios: [], distortions: [], drills: [], safety: [], perception: [] },
@@ -37,6 +40,7 @@ function defaultState() {
       love: { cleared: [], done: false },           // unordered chapters
     },
     daily: { day: null, number: 0, score: 0, squares: [], hearts: 0 },
+    board: { active: false, pos: 0, energy: 3, coins: 0 },
     badges: [],
   };
 }
@@ -62,6 +66,7 @@ function loadState() {
         love: { ...base.campaigns.love, ...((parsed.campaigns || {}).love || {}) },
       },
       daily: { ...base.daily, ...(parsed.daily || {}) },
+      board: { ...base.board, ...(parsed.board || {}) },
     };
     if ((parsed.v || 1) < 2) migrateV1(merged, parsed);
     return merged;

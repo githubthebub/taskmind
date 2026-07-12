@@ -70,6 +70,12 @@
 
     <h2 class="section-title">Play</h2>
     <div class="mode-grid">
+      <button class="mode-card" data-nav="board">
+        <span class="mode-emoji">🎲</span>
+        <span class="mode-name">Life Board</span>
+        <span class="mode-desc">Roll, land, survive what life throws. Doormat answers slide you back — spine boosts you forward.</span>
+        <span class="mode-progress" id="board-mode-progress"></span>
+      </button>
       <button class="mode-card" data-nav="scenario">
         <span class="mode-emoji">🎭</span>
         <span class="mode-name">Situations</span>
@@ -196,6 +202,20 @@
     <div id="safety-summary" class="hidden"></div>
   </section>
 
+  <!-- ============ LIFE BOARD ============ -->
+  <section id="screen-board" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div class="gauntlet-hud">
+        <span id="board-energy" class="hud-hearts"></span>
+        <span id="board-coins" class="hud-combo"></span>
+        <span id="board-tile" class="hud-score muted"></span>
+      </div>
+    </div>
+    <div id="board-view"></div>
+    <div id="board-round" class="hidden"></div>
+  </section>
+
   <!-- ============ GAUNTLET ============ -->
   <section id="screen-gauntlet" class="screen hidden">
     <div class="game-head">
@@ -277,8 +297,12 @@
     <div id="stats-grid" class="stats-grid"></div>
     <h2 class="section-title">🏅 Badges</h2>
     <div id="badge-grid" class="badge-grid"></div>
+    <h2 class="section-title">🧹 Fine-grained resets</h2>
+    <p class="muted tiny">Zero out one meter or mode without touching the rest. Every button asks twice.
+    Badges you've already earned stay earned.</p>
+    <div id="reset-grid" class="row-buttons"></div>
     <div class="row-buttons">
-      <button id="reset-save" class="btn danger">Reset all progress</button>
+      <button id="reset-save" class="btn danger">☢️ Reset absolutely everything</button>
     </div>
   </section>
 

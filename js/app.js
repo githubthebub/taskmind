@@ -11,7 +11,7 @@ const el = (tag, cls, html) => {
 const SESSION_LEN = 5;
 
 /* ================= navigation ================= */
-const SCREENS = ["culture", "home", "scenario", "distortion", "drill", "career", "love", "safety", "gauntlet", "perception", "breathe", "progress", "about"];
+const SCREENS = ["culture", "home", "scenario", "distortion", "drill", "career", "love", "safety", "board", "gauntlet", "perception", "breathe", "progress", "about"];
 
 function showScreen(name) {
   for (const s of SCREENS) $("#screen-" + s).classList.toggle("hidden", s !== name);
@@ -28,6 +28,7 @@ function showScreen(name) {
   if (name === "career") renderCampaignMap(CAMPAIGNS.career);
   if (name === "love") renderCampaignMap(CAMPAIGNS.love);
   if (name === "safety") startSafetySession();
+  if (name === "board") renderBoardScreen();
   if (name === "gauntlet") enterGauntlet();
   if (name === "perception") startPerceptionSession();
   if (name === "breathe") resetBreatheScreen();
@@ -215,6 +216,11 @@ function renderHome() {
   $("#love-mode-progress").textContent = love.done
     ? "🏆 All chapters cleared"
     : `${(love.cleared || []).length}/${LOVE_CHAPTERS.length} chapters cleared`;
+  $("#board-mode-progress").textContent = state.board.active
+    ? `Run in progress — tile ${state.board.pos + 1}/${BOARD_LAYOUT.length} · ${state.board.coins} 🪙`
+    : state.stats.boardWins
+      ? `🏆 ${state.stats.boardWins} win${state.stats.boardWins > 1 ? "s" : ""} · best ${state.stats.boardBestCoins} 🪙`
+      : "";
   $("#gauntlet-mode-progress").textContent = dailyDoneToday()
     ? `Daily #${state.daily.number} ✅${state.stats.gauntletBest ? ` · Best ${state.stats.gauntletBest} ⭐` : ""}`
     : `📅 Daily #${dailyNumber()} is live`;
@@ -829,6 +835,309 @@ function renderSafetyRound() {
   card.append(list);
 }
 
+/* ================= life board ================= */
+const BOARD_DECKS = {
+  scenario: () => drawScenarios(1)[0],
+  work: () => CAREER_STAGES.flatMap((s) => s.scenarios)[Math.floor(Math.random() * CAREER_STAGES.flatMap((s) => s.scenarios).length)],
+  people: () => LOVE_CHAPTERS.flatMap((s) => s.scenarios)[Math.floor(Math.random() * LOVE_CHAPTERS.flatMap((s) => s.scenarios).length)],
+  street: () => SAFETY[Math.floor(Math.random() * SAFETY.length)],
+  frame: () => PERCEPTION[Math.floor(Math.random() * PERCEPTION.length)],
+};
+let boardBusy = false;
+
+function boardHud() {
+  const b = state.board;
+  $("#board-energy").textContent = b.active ? "❤️".repeat(b.energy) + "🖤".repeat(Math.max(0, 3 - b.energy)) : "";
+  $("#board-coins").textContent = b.active ? `🪙 ${b.coins}` : "";
+  $("#board-tile").textContent = b.active ? `${b.pos + 1}/${BOARD_LAYOUT.length}` : "";
+}
+
+function renderBoardScreen() {
+  boardBusy = false;
+  const b = state.board;
+  const view = $("#board-view");
+  $("#board-round").classList.add("hidden");
+  $("#board-round").innerHTML = "";
+  view.classList.remove("hidden");
+  view.innerHTML = "";
+  boardHud();
+
+  const grid = el("div", "board-grid");
+  const cols = 6;
+  const rows = Math.ceil(BOARD_LAYOUT.length / cols);
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const idx = row * cols + (row % 2 === 0 ? col : cols - 1 - col); // serpentine path
+      if (idx >= BOARD_LAYOUT.length) { grid.append(el("div")); continue; }
+      const t = BOARD_LAYOUT[idx];
+      const tile = el("div", "tile"
+        + (b.active && idx === b.pos ? " tile-current" : "")
+        + (b.active && idx < b.pos ? " tile-done" : "")
+        + (t.t === "finish" ? " tile-finish" : ""));
+      tile.title = `${idx + 1}. ${t.name}`;
+      tile.append(el("span", "tile-emoji", t.emoji));
+      tile.append(el("span", "tile-name", t.name));
+      grid.append(tile);
+    }
+  }
+  view.append(grid);
+
+  const controls = el("div", "board-controls");
+  if (!b.active) {
+    const intro = el("p", "muted small board-note",
+      "One run: roll the die, land on life, answer with spine. Strong answers earn 🪙 and boosts; " +
+      "doormat answers slide you back two tiles; blow-ups and bad calls cost ❤️. Reach 🏆 before your hearts run out.");
+    view.append(intro);
+    const start = el("button", "btn dice-btn", "🎲 Start a run");
+    start.addEventListener("click", () => {
+      state.board = { active: true, pos: 0, energy: 3, coins: 0 };
+      saveState();
+      renderBoardScreen();
+    });
+    controls.append(start);
+  } else {
+    const roll = el("button", "btn dice-btn", "🎲 Roll");
+    roll.id = "board-roll";
+    roll.addEventListener("click", rollBoardDice);
+    controls.append(roll);
+    const abandon = el("button", "btn ghost small-btn", "Abandon run");
+    let armed = false;
+    abandon.addEventListener("click", () => {
+      if (!armed) { armed = true; abandon.textContent = "Really abandon? Coins are lost"; setTimeout(() => { armed = false; abandon.textContent = "Abandon run"; }, 2500); return; }
+      state.board = { active: false, pos: 0, energy: 3, coins: 0 };
+      saveState();
+      renderBoardScreen();
+    });
+    controls.append(abandon);
+  }
+  view.append(controls);
+}
+
+function rollBoardDice() {
+  if (boardBusy || !state.board.active) return;
+  boardBusy = true;
+  const btn = $("#board-roll");
+  const faces = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+  const n = 1 + Math.floor(Math.random() * 6);
+  let spins = 0;
+  const spin = setInterval(() => {
+    btn.textContent = faces[Math.floor(Math.random() * 6)] + " …";
+    if (++spins >= 8) {
+      clearInterval(spin);
+      btn.textContent = `${faces[n - 1]} ${n}!`;
+      moveToken(n);
+    }
+  }, 85);
+}
+
+function moveToken(steps) {
+  const b = state.board;
+  const target = Math.min(b.pos + steps, BOARD_LAYOUT.length - 1);
+  const walker = setInterval(() => {
+    b.pos++;
+    boardHud();
+    const current = document.querySelector(".tile-current");
+    if (current) current.classList.remove("tile-current");
+    // re-render grid marker cheaply
+    renderBoardMarker();
+    if (b.pos >= target) {
+      clearInterval(walker);
+      saveState();
+      setTimeout(() => triggerBoardTile(), 420);
+    }
+  }, 230);
+}
+
+function renderBoardMarker() {
+  const b = state.board;
+  const cols = 6;
+  document.querySelectorAll(".board-grid .tile").forEach((tileEl) => {
+    const idx = parseInt(tileEl.title, 10) - 1;
+    tileEl.classList.toggle("tile-current", idx === b.pos);
+    tileEl.classList.toggle("tile-done", idx < b.pos);
+  });
+}
+
+function triggerBoardTile() {
+  const b = state.board;
+  const tile = BOARD_LAYOUT[b.pos];
+  if (tile.t === "finish") { endBoardRun(true); return; }
+  if (tile.t === "chance") {
+    const ev = CHANCE_EVENTS[Math.floor(Math.random() * CHANCE_EVENTS.length)];
+    let line = "";
+    if (ev.effect.coins) { b.coins = Math.max(0, b.coins + ev.effect.coins); line = `${ev.effect.coins > 0 ? "+" : ""}${ev.effect.coins} 🪙`; }
+    if (ev.effect.energy) { b.energy = Math.min(3, b.energy + ev.effect.energy); line = "+1 ❤️"; }
+    if (ev.effect.move) { b.pos = Math.max(0, Math.min(BOARD_LAYOUT.length - 1, b.pos + ev.effect.move)); line = `${ev.effect.move > 0 ? "forward" : "back"} ${Math.abs(ev.effect.move)} tiles`; }
+    saveState();
+    boardEventCard("🎲 Chance", `${ev.emoji} ${ev.text}`, line, () => {
+      if (BOARD_LAYOUT[b.pos].t === "finish") endBoardRun(true);
+      else renderBoardScreen();
+    });
+    return;
+  }
+  if (tile.t === "rest") {
+    b.energy = Math.min(3, b.energy + 1);
+    state.xp.S += 4;
+    saveState();
+    boardEventCard("🌬️ Rest Stop", "Four slow breaths. In 4 — hold 4 — out 4 — hold 4. The board can wait; your nervous system can't.", "+1 ❤️ · Stability +4 XP", renderBoardScreen);
+    return;
+  }
+  startBoardRound(tile);
+}
+
+function boardEventCard(tag, text, rewardLine, onContinue) {
+  $("#board-view").classList.add("hidden");
+  const wrap = $("#board-round");
+  wrap.classList.remove("hidden");
+  wrap.innerHTML = "";
+  const card = el("div", "card center-card");
+  card.append(el("span", "scene-tag", tag));
+  card.append(el("p", "scene-text", text));
+  if (rewardLine) card.append(el("div", "fb-points", `<b>${rewardLine}</b>`));
+  const next = el("button", "btn", "Continue →");
+  next.addEventListener("click", onContinue);
+  card.append(next);
+  wrap.append(card);
+  boardHud();
+  next.focus();
+}
+
+function startBoardRound(tile) {
+  const b = state.board;
+  let item, focus, extraTip = null;
+  if (tile.t === "mind") {
+    const r = DISTORTIONS[Math.floor(Math.random() * DISTORTIONS.length)];
+    const answer = DISTORTION_TYPES.find((t) => t.id === r.answer);
+    const decoys = shuffle(DISTORTION_TYPES.filter((t) => t.id !== r.answer)).slice(0, 3);
+    item = {
+      tag: "🧠 Name the thinking trap", text: r.thought, focus: "S",
+      choices: shuffle([answer, ...decoys].map((t) => ({
+        kind: t.id === r.answer ? "good" : "avoid",
+        traits: t.id === r.answer ? { S: 2 } : {},
+        text: `<b>${t.name}</b> — <span class="muted">${t.short}</span>`,
+        fb: t.id === r.answer ? `Caught it. The reframe: ${r.reframe}` : `Not this one — it's ${answer.name}. ${r.reframe}`,
+      }))),
+    };
+    focus = "S";
+  } else {
+    const src = BOARD_DECKS[tile.t]();
+    focus = src.focus || "S";
+    item = { tag: `${tile.emoji} ${src.tag || tile.name}`, text: src.text, choices: src.choices };
+    if (src.tactic) extraTip = `🎯 <b>The tactic — ${src.tactic.name}:</b> ${src.tactic.tip}`;
+    if (src.principle) extraTip = `⚗️ <b>The principle — ${src.principle.name}:</b> ${src.principle.tip}`;
+  }
+
+  $("#board-view").classList.add("hidden");
+  const wrap = $("#board-round");
+  wrap.classList.remove("hidden");
+  wrap.innerHTML = "";
+  const card = el("div", "card");
+  card.append(el("span", "scene-tag", item.tag));
+  card.append(el("p", "scene-text", item.text));
+  const fb = el("div", "feedback hidden");
+  const list = el("div", "choices");
+  const hadDoormat = item.choices.some((c) => c.kind === "doormat");
+  const order = shuffle(item.choices.map((_, i) => i));
+  for (const i of order) {
+    const ch = item.choices[i];
+    const btn = el("button", "choice-btn", ch.text);
+    btn.addEventListener("click", () => {
+      ch._roundHadDoormat = hadDoormat;
+      const res = applyChoice(ch, focus);
+      juice(btn, res);
+      for (const bt of list.querySelectorAll("button")) bt.disabled = true;
+      btn.classList.add("picked-" + res.cls);
+      if (res.cls !== "good") {
+        for (const j of order) {
+          if (kindClass(item.choices[j].kind) === "good") list.children[order.indexOf(j)].classList.add("reveal-best");
+        }
+      }
+
+      let pendingMove = 0;
+      let rewardLine;
+      if (res.cls === "good") {
+        b.coins += 12;
+        rewardLine = "+12 🪙";
+        if (["assertDirect", "assertDiplo", "assert"].includes(ch.kind)) { pendingMove = 1; rewardLine += " · 🦴 spine boost: +1 tile"; }
+      } else if (res.cls === "mid") {
+        b.coins += 4;
+        rewardLine = "+4 🪙";
+      } else {
+        b.energy--;
+        rewardLine = "-1 ❤️";
+        if (ch.kind === "doormat") { pendingMove = -2; rewardLine += " · 🚪 doormat slide: back 2 tiles"; }
+      }
+      saveState();
+      boardHud();
+
+      fb.innerHTML = "";
+      fb.classList.remove("hidden");
+      fb.append(el("div", "fb-verdict " + res.cls, res.label));
+      fb.append(el("p", null, ch.fb));
+      if (extraTip) fb.append(el("div", "fb-culture", extraTip));
+      fb.append(el("div", "fb-points", `<b>${rewardLine}</b> ${xpPills(res.xpGained)}`));
+      const next = el("button", "btn fb-next", "Continue →");
+      next.addEventListener("click", () => {
+        if (pendingMove) b.pos = Math.max(0, Math.min(BOARD_LAYOUT.length - 1, b.pos + pendingMove));
+        saveState();
+        if (b.energy <= 0) endBoardRun(false);
+        else if (BOARD_LAYOUT[b.pos].t === "finish") endBoardRun(true);
+        else renderBoardScreen();
+      });
+      fb.append(next);
+      next.focus();
+      refreshTopbar();
+    });
+    list.append(btn);
+  }
+  card.append(list);
+  wrap.append(card, fb);
+  boardHud();
+}
+
+function endBoardRun(won) {
+  const b = state.board;
+  const coins = b.coins;
+  const bonus = won ? coins : Math.floor(coins / 2);
+  state.score += bonus;
+  state.stats.boardRuns++;
+  if (won) state.stats.boardWins++;
+  state.stats.boardBestCoins = Math.max(state.stats.boardBestCoins || 0, won ? coins : 0);
+  state.stats.sessionsCompleted++;
+  state.board = { active: false, pos: 0, energy: 3, coins: 0 };
+  touchStreak();
+  saveState();
+  if (won) confettiBurst(220);
+
+  $("#board-view").classList.add("hidden");
+  const wrap = $("#board-round");
+  wrap.classList.remove("hidden");
+  wrap.innerHTML = "";
+  const card = el("div", "card summary-card");
+  card.append(el("h2", null, won ? "🏆 Life, well played" : "💔 The board got you"));
+  card.append(el("div", "summary-big", `${coins} 🪙`));
+  card.append(el("div", "summary-line", won
+    ? `Full run survived — coins banked as +${bonus} ⭐`
+    : `Out of hearts — half the coins banked anyway: +${bonus} ⭐. The board remembers nothing; run it back.`));
+  const row = el("div", "row-buttons");
+  row.style.justifyContent = "center";
+  const again = el("button", "btn", "🎲 New run");
+  again.addEventListener("click", () => {
+    state.board = { active: true, pos: 0, energy: 3, coins: 0 };
+    saveState();
+    renderBoardScreen();
+  });
+  const home = el("button", "btn ghost", "Home");
+  home.addEventListener("click", () => showScreen("home"));
+  row.append(again, home);
+  card.append(row);
+  wrap.append(card);
+  wrap.append(buildVerdictCard());
+  boardHud();
+  announceBadges(checkBadges());
+  refreshTopbar();
+}
+
 /* ================= verdict card (shareable read) ================= */
 function buildVerdictCard() {
   const a = currentArchetype();
@@ -1368,6 +1677,8 @@ function renderProgress() {
     [state.stats.gauntletBest, "Gauntlet best ⚡"],
     [state.stats.alchemyStrong, "Frames bent 🧪"],
     [state.stats.dailiesPlayed, "Dailies played 📅"],
+    [state.stats.boardWins, "Board wins 🎲"],
+    [state.stats.boardBestCoins, "Best board run 🪙"],
   ];
   for (const [num, label] of stats) {
     const card = el("div", "stat-card");
@@ -1385,6 +1696,47 @@ function renderProgress() {
     card.append(el("div", "badge-name", b.name));
     card.append(el("div", "badge-desc", b.desc));
     badges.append(card);
+  }
+
+  renderResetControls();
+}
+
+/* Fine-grained resets: zero one meter/mode without touching the rest.
+   Earned badges are never removed. */
+const RESETS = [
+  { label: "🦴 Backbone Meter", apply: () => Object.assign(state.stats, { assertiveChoices: 0, doormatChoices: 0, aggressiveChoices: 0, pushSituations: 0 }) },
+  { label: "😌 Calm Meter", apply: () => Object.assign(state.stats, { calmReps: 0, distortionsCaught: 0, distortionsMissed: 0, breathSessions: 0 }) },
+  { label: "📊 Trait XP & levels", apply: () => { state.xp = { O: 0, C: 0, E: 0, A: 0, S: 0 }; } },
+  { label: "⭐ Score & streak", apply: () => { state.score = 0; state.streak = { current: 0, best: 0, lastDay: null }; } },
+  { label: "💼❤️ Both campaigns", apply: () => { state.campaigns = { career: { stage: 0, done: false }, love: { cleared: [], done: false } }; } },
+  { label: "⚡ Gauntlet & Daily records", apply: () => { Object.assign(state.stats, { gauntletBest: 0, gauntletRuns: 0, gauntletFlawless: false, dailiesPlayed: 0, dailyBest: 0 }); state.daily = { day: null, number: 0, score: 0, squares: [], hearts: 0 }; } },
+  { label: "🎲 Life Board", apply: () => { state.board = { active: false, pos: 0, energy: 3, coins: 0 }; Object.assign(state.stats, { boardRuns: 0, boardWins: 0, boardBestCoins: 0 }); } },
+  { label: "🃏 Card memory (reshuffle all decks)", apply: () => { state.seen = { scenarios: [], distortions: [], drills: [], safety: [], perception: [] }; } },
+];
+
+function renderResetControls() {
+  const grid = $("#reset-grid");
+  grid.innerHTML = "";
+  for (const r of RESETS) {
+    const btn = el("button", "btn ghost small-btn", `Reset ${r.label}`);
+    let armed = false;
+    let timer = null;
+    btn.addEventListener("click", () => {
+      if (!armed) {
+        armed = true;
+        btn.textContent = `Sure? Tap again to reset ${r.label}`;
+        btn.style.borderColor = "var(--warn)";
+        timer = setTimeout(() => { armed = false; btn.textContent = `Reset ${r.label}`; btn.style.borderColor = ""; }, 3000);
+        return;
+      }
+      clearTimeout(timer);
+      r.apply();
+      saveState();
+      toast(`✅ ${r.label} reset`);
+      renderProgress();
+      refreshTopbar();
+    });
+    grid.append(btn);
   }
 }
 

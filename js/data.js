@@ -1160,6 +1160,55 @@ const PERCEPTION = [
     ] },
 ];
 
+/* ---------------- Life Board (roll & move) ----------------
+   A board-game wrapper: land on a tile, draw from the matching deck.
+   Strong answers earn coins and spine boosts; doormat answers slide you back. */
+const BOARD_LAYOUT = [
+  { t: "start", emoji: "🏁", name: "Start" },
+  { t: "scenario", emoji: "🎭", name: "Situation" },
+  { t: "mind", emoji: "🧠", name: "Head Check" },
+  { t: "work", emoji: "💼", name: "Work" },
+  { t: "chance", emoji: "🎲", name: "Chance" },
+  { t: "people", emoji: "❤️", name: "People" },
+  { t: "scenario", emoji: "🎭", name: "Situation" },
+  { t: "street", emoji: "🛡️", name: "Street" },
+  { t: "rest", emoji: "🌬️", name: "Rest Stop" },
+  { t: "work", emoji: "💼", name: "Work" },
+  { t: "mind", emoji: "🧠", name: "Head Check" },
+  { t: "chance", emoji: "🎲", name: "Chance" },
+  { t: "scenario", emoji: "🎭", name: "Situation" },
+  { t: "people", emoji: "❤️", name: "People" },
+  { t: "frame", emoji: "🧪", name: "Frame Game" },
+  { t: "street", emoji: "🛡️", name: "Street" },
+  { t: "scenario", emoji: "🎭", name: "Situation" },
+  { t: "rest", emoji: "🌬️", name: "Rest Stop" },
+  { t: "work", emoji: "💼", name: "Work" },
+  { t: "chance", emoji: "🎲", name: "Chance" },
+  { t: "mind", emoji: "🧠", name: "Head Check" },
+  { t: "people", emoji: "❤️", name: "People" },
+  { t: "scenario", emoji: "🎭", name: "Situation" },
+  { t: "street", emoji: "🛡️", name: "Street" },
+  { t: "frame", emoji: "🧪", name: "Frame Game" },
+  { t: "chance", emoji: "🎲", name: "Chance" },
+  { t: "work", emoji: "💼", name: "Work" },
+  { t: "people", emoji: "❤️", name: "People" },
+  { t: "mind", emoji: "🧠", name: "Head Check" },
+  { t: "finish", emoji: "🏆", name: "Well Played" },
+];
+
+const CHANCE_EVENTS = [
+  { emoji: "💸", text: "That friend from March finally pays you back — with interest, out of sheer embarrassment.", effect: { coins: 15 } },
+  { emoji: "📈", text: "Your manager quotes YOUR line ('let's decide what to drop') in the all-hands. Cultural victory.", effect: { coins: 12 } },
+  { emoji: "🛋️", text: "You cancel plans you dreaded and feel zero guilt. This is growth. Rest is fuel.", effect: { energy: 1 } },
+  { emoji: "🚕", text: "You split a cab with a stranger who turns out to be your industry hero. Networking by accident.", effect: { move: 2 } },
+  { emoji: "📵", text: "You doomscroll until 2am. The algorithm thanks you; your morning does not.", effect: { move: -2 } },
+  { emoji: "☕", text: "You pay for the wrong coffee AND apologize to the machine. A doormat relapse — it happens.", effect: { coins: -8 } },
+  { emoji: "🎁", text: "Your 'one loan at a time' rule saves you $150 without a single awkward second. Rules are freedom.", effect: { coins: 10 } },
+  { emoji: "🌪️", text: "A reply-all disaster at work — not yours! You watch serenely from a safe distance, latte in hand.", effect: { coins: 6 } },
+  { emoji: "🧾", text: "Surprise subscription renewal: the gym you never cancelled because the rep seemed so nice.", effect: { coins: -10 } },
+  { emoji: "🗣️", text: "Someone quotes your toast from that dinner, months later. Words with spine travel.", effect: { move: 2 } },
+];
+
 /* ---------------- character archetypes (verdict cards) ---------------- */
 const ARCHETYPES = [
   { id: "fresh", emoji: "🐣", name: "Fresh Save File", line: "Character creation in progress. Everything is still possible.",
@@ -1230,6 +1279,10 @@ const BADGES = [
     check: (s) => !!s.stats.gauntletFlawless },
   { id: "daily-5", emoji: "📅", name: "Daily Devotee", desc: "Play 5 Daily Gauntlets.",
     check: (s) => (s.stats.dailiesPlayed || 0) >= 5 },
+  { id: "board-boss", emoji: "🎲", name: "Board Boss", desc: "Reach the final tile of the Life Board.",
+    check: (s) => (s.stats.boardWins || 0) >= 1 },
+  { id: "high-roller", emoji: "🪙", name: "High Roller", desc: "Bank 120+ coins in a single Life Board run.",
+    check: (s) => (s.stats.boardBestCoins || 0) >= 120 },
 ];
 
 /* ---------------- campaign: Career Ladder ----------------

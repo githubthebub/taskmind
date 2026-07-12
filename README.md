@@ -22,6 +22,7 @@ python3 -m http.server 8000
 
 | Mode | What it trains |
 |---|---|
+| 🎲 **Life Board** | The flagship: a roll-and-move board game (30 tiles, serpentine path) where every landing draws from the other modes' decks — Trivial-Pursuit style. Strong answers earn coins, assertive ones grant a spine boost forward, doormat answers slide you back two tiles, bad calls cost hearts. Reach 🏆 before your hearts run out. |
 | 🎭 **Situations** | Real-life dilemmas (pushy boss, flaky friend, credit-stealing coworker…). Every round has doormat, aggressive, avoidant, and assertive options — assertiveness always wins, everywhere. |
 | 🔍 **Spot the Distortion** | CBT-style rounds: name the thinking trap (catastrophizing, mind reading, all-or-nothing…) behind an anxious thought, then see the reframe. |
 | 🗣️ **Say It With Spine** | Pick the wording that's firm without fangs. Teaches real techniques: broken record, fogging, DESC scripts, saying no without a novel. |
@@ -53,7 +54,8 @@ assertiveness changes, never the spine.
 - 🦴 **Backbone Meter** — your assertive share when someone pushes on you
 - 😌 **Calm Meter** — built from distortions caught, anxiety rounds won, and breathing sessions
 - Two persistent campaigns: the Career Ladder (ordered rungs with promotions) and Relationships (unordered chapters — clear them in any order)
-- Daily streaks, 22 badges, and a radar chart of you vs. your culture's target
+- Daily streaks, 24 badges, and a radar chart of you vs. your culture's target
+- Fine-grained resets: zero out any single meter, campaign, or record (with double-tap confirm) without touching the rest — earned badges always stay
 - A glassmorphism UI: animated aurora backdrop, frosted panels, floating score popups, combo streaks, and confetti where deserved (all effects respect `prefers-reduced-motion`)
 - A shareable archetype verdict ("The Velvet Tank", "The Recovering Doormat"…) computed from how you actually play, with one-tap copy
 
