@@ -39,7 +39,11 @@ export function createRouter(routes, { notFound } = {}) {
     // normalize them home. Route hashes always start with "#/".
     const hash = window.location.hash;
     if (hash && hash !== "#" && !hash.startsWith("#/")) {
-      history.replaceState(null, "", "#/");
+      try {
+        history.replaceState(null, "", "#/");
+      } catch {
+        /* sandboxed iframe (e.g. embedded viewer) — fall through to 404 */
+      }
     }
     const { route, params, path } = resolve();
     highlightNav(path);
