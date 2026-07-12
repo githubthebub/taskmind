@@ -69,7 +69,7 @@ const Game = {
   map:null, npcs:[],
   player:{ x:14, y:22, dir:0, ox:0, oy:0, moving:false, prog:0, anim:0, run:false },
   cam:{x:0,y:0},
-  busy:false, steps:0, time:0,
+  busy:false, steps:0, time:0, playFrames:0, saveSlot:null,
 };
 const DIRV = [[0,1],[0,-1],[-1,0],[1,0]]; // down,up,left,right
 
@@ -447,9 +447,20 @@ async function openStartMenu(){
       if(sel===0){ await partyScreen('world'); }
       else if(sel===1){ await bagScreen('world'); }
       else if(sel===2){
-        saveGame();
-        SND.sfx('save');
-        await Dlg.say('Your progress has been saved!');
+        const slot = await slotScreen('save');
+        if(slot<0) continue;
+        if(slotInfo(slot) && slot!==Game.saveSlot){
+          await Dlg.sayHold('Overwrite the data in SLOT '+slot+'?');
+          const ok = await UI.yesno();
+          Dlg.active=false;
+          if(!ok) continue;
+        }
+        if(saveGame(slot)){
+          SND.sfx('save');
+          await Dlg.say('Your progress has been saved to SLOT '+slot+'!');
+        } else {
+          await Dlg.say("Couldn't write the save data. Your browser may be blocking storage.");
+        }
       }
       else if(sel===3){ SND.toggleMute(); continue; }
       else break;
@@ -634,24 +645,136 @@ function bagDraw(x){
   UI.text(x, 'Z: use   X: back', VW-16, VH-10, {font:FONT_U, col:'#a8c8e8', align:'right'});
 }
 
-// ---------------- save / load ----------------
-function saveGame(){
+// ---------------- save / load (3 slots) ----------------
+const SAVE_SLOTS = 3;
+function slotKey(n){ return 'sevii_save_'+n; }
+function migrateLegacySave(){
+  try{
+    const old = localStorage.getItem('sevii_save');
+    if(old){
+      if(!localStorage.getItem(slotKey(1))) localStorage.setItem(slotKey(1), old);
+      localStorage.removeItem('sevii_save');
+    }
+  }catch(e){}
+}
+function saveGame(slot){
+  slot = slot || Game.saveSlot || 1;
   const P = Game.player;
   const data = {
-    v:1, flags:Game.flags, bag:Game.bag, party:Game.party,
+    v:2, flags:Game.flags, bag:Game.bag, party:Game.party,
     map:Game.map.id, x:P.x, y:P.y, dir:P.dir, steps:Game.steps,
+    playFrames:Game.playFrames||0, savedAt:Date.now(),
   };
-  try{ localStorage.setItem('sevii_save', JSON.stringify(data)); }catch(e){}
-}
-function loadGame(){
   try{
-    const raw = localStorage.getItem('sevii_save');
+    localStorage.setItem(slotKey(slot), JSON.stringify(data));
+    Game.saveSlot = slot;
+    return true;
+  }catch(e){ return false; }
+}
+function loadGame(slot){
+  slot = slot || 1;
+  try{
+    const raw = localStorage.getItem(slotKey(slot));
     if(!raw) return false;
     const d = JSON.parse(raw);
     Game.flags = d.flags||{}; Game.bag = d.bag||defaultBag(); Game.party = d.party||defaultParty();
-    Game.steps = d.steps||0;
+    Game.steps = d.steps||0; Game.playFrames = d.playFrames||0;
+    Game.saveSlot = slot;
     loadMap(d.map||'town', d.x??14, d.y??22, d.dir??1);
     return true;
   }catch(e){ return false; }
 }
-function hasSave(){ try{ return !!localStorage.getItem('sevii_save'); }catch(e){ return false; } }
+function slotInfo(n){
+  try{
+    const raw = localStorage.getItem(slotKey(n));
+    if(!raw) return null;
+    const d = JSON.parse(raw);
+    return {
+      mapName: (MAPS[d.map] && MAPS[d.map].name) || '???',
+      party: (d.party||[]).map(m=>({sp:m.sp, lvl:m.lvl})),
+      playFrames: d.playFrames||0,
+      savedAt: d.savedAt||0,
+      done: !!(d.flags && d.flags.deliveredRuby),
+    };
+  }catch(e){ return null; }
+}
+function hasSave(){
+  migrateLegacySave();
+  for(let i=1;i<=SAVE_SLOTS;i++) if(slotInfo(i)) return true;
+  return false;
+}
+function fmtPlaytime(frames){
+  const s = Math.floor(frames/60);
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
+  return h+':'+String(m).padStart(2,'0');
+}
+
+// ---------------- save-slot picker ----------------
+const SlotUI = { active:false, sel:0, mode:'save' };
+async function slotScreen(mode){
+  SlotUI.active=true; SlotUI.mode=mode;
+  // default: current slot when saving, most recent save when loading
+  if(mode==='save' && Game.saveSlot) SlotUI.sel = Game.saveSlot-1;
+  else {
+    let best=0, bestAt=-1;
+    for(let i=0;i<SAVE_SLOTS;i++){
+      const inf = slotInfo(i+1);
+      if(inf && inf.savedAt>bestAt){ bestAt=inf.savedAt; best=i; }
+    }
+    SlotUI.sel = best;
+  }
+  try{
+    while(true){
+      if(Input.took('UP')){ SlotUI.sel=(SlotUI.sel+SAVE_SLOTS-1)%SAVE_SLOTS; SND.sfx('cursor'); }
+      if(Input.took('DOWN')){ SlotUI.sel=(SlotUI.sel+1)%SAVE_SLOTS; SND.sfx('cursor'); }
+      if(Input.took('B')){ SND.sfx('cancel'); return -1; }
+      if(Input.took('A')){
+        if(SlotUI.mode==='load' && !slotInfo(SlotUI.sel+1)){ SND.sfx('bump'); continue; }
+        SND.sfx('confirm');
+        return SlotUI.sel+1;
+      }
+      await nextFrame();
+    }
+  } finally { SlotUI.active=false; }
+}
+function slotDraw(x){
+  if(!SlotUI.active) return;
+  x.fillStyle='rgba(16,28,44,0.94)'; x.fillRect(0,0,VW,VH);
+  UI.text(x, SlotUI.mode==='save'? 'SAVE — CHOOSE A SLOT' : 'LOAD GAME', 16, 30,
+    {font:FONT_UB, col:'#f8f0d0', shadowCol:'rgba(0,0,0,0.5)'});
+  UI.text(x, 'Z: '+(SlotUI.mode==='save'?'save here':'load')+'   X: back', VW-16, 30,
+    {font:FONT_U, col:'#a8c8e8', align:'right', shadowCol:'rgba(0,0,0,0.5)'});
+  for(let i=0;i<SAVE_SLOTS;i++){
+    const inf = slotInfo(i+1);
+    const yy = 46 + i*86;
+    const seld = i===SlotUI.sel;
+    const dim = SlotUI.mode==='load' && !inf;
+    UI.rounded(x, 14, yy, VW-28, 78, 8);
+    x.fillStyle = seld? '#f8f0d0' : 'rgba(248,248,248,0.88)';
+    if(dim) x.fillStyle = seld? 'rgba(200,200,205,0.8)' : 'rgba(190,190,196,0.55)';
+    x.fill();
+    x.lineWidth=2.5; x.strokeStyle = seld? '#e05048' : '#5080c0'; x.stroke();
+    if(seld){
+      x.fillStyle='#e05048';
+      x.beginPath(); x.moveTo(24,yy+31); x.lineTo(34,yy+38); x.lineTo(24,yy+45); x.closePath(); x.fill();
+    }
+    UI.text(x, 'SLOT '+(i+1), 46, yy+24, {font:FONT_U, col:'#c07830'});
+    if(inf){
+      UI.text(x, inf.mapName, 46, yy+48, {font:FONT_UB});
+      if(inf.done) UI.text(x, '★', 46+inf.mapName.length*13+12, yy+48, {font:FONT_UB, col:'#e0a020'});
+      const lead = inf.party[0];
+      UI.text(x, lead? ('Lv'+lead.lvl) : '', 46, yy+66, {font:FONT_U, col:'#687080'});
+      inf.party.slice(0,6).forEach((m,k)=>{
+        x.drawImage(SPR.monIcon(m.sp), 96+k*26, yy+52, 20,20);
+      });
+      UI.text(x, fmtPlaytime(inf.playFrames), VW-44, yy+28, {font:FONT_UB, align:'right'});
+      if(inf.savedAt){
+        const d = new Date(inf.savedAt);
+        UI.text(x, 'Saved '+d.toLocaleDateString(undefined,{month:'short',day:'numeric'}),
+          VW-44, yy+48, {font:FONT_U, align:'right', col:'#687080'});
+      }
+    } else {
+      UI.text(x, '— empty —', 46, yy+50, {font:FONT_U, col:'#8890a0'});
+    }
+  }
+}

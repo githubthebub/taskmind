@@ -36,7 +36,8 @@ On-screen touch controls appear on mobile.
 - Full turn-based battle engine: gen-3 type chart, physical/special split by type, STAB, crits, accuracy, priority, stat stages, multi-hit, flinch, recoil, and status (PSN/BRN/PAR/SLP)
 - Trainer battles (multi-Pokémon), wild encounters, a legendary static encounter
 - Catching with the gen-3 shake formula, EXP + level-ups, party switching, full bag (potions, Full Heal, Revive, Ultra Balls)
-- Pokémon Center healing, blackout-and-respawn, save/continue via `localStorage`
+- Pokémon Center healing, blackout-and-respawn
+- **3 save slots** — START → SAVE picks a slot (with overwrite confirmation); the title screen's CONTINUE opens a slot picker showing each save's location, party, playtime and date. Saved to `localStorage`; the post-credits autosave writes to your current slot
 - Original chiptune soundtrack (WebAudio sequencer): 9 tracks + full SFX set
 - GBA-feel UI: typewriter dialogue, FRLG-style boxes, HP/EXP bar animations, location banners, ending credits
 

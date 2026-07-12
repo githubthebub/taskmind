@@ -61,23 +61,32 @@ async function titleScreen(){
   while(!Input.took('START') && !Input.took('A')) await nextFrame();
   SND.sfx('confirm');
   Title.showMenu=true;
-  let choice = 0;
-  if(hasSave()){
-    choice = await Menu.open(['CONTINUE','NEW GAME'], {x:VW/2-80, y:150, w:160, noCancel:true});
-  } else {
-    choice = await Menu.open(['NEW GAME'], {x:VW/2-80, y:150, w:160, noCancel:true}) === 0 ? 1 : 1;
-  }
-  await UI.fadeOut(500);
-  if(choice===0 && hasSave() && loadGame()){
-    Game.mode='world';
-    await UI.fadeIn(400);
-  } else {
+  while(true){
+    if(hasSave()){
+      const choice = await Menu.open(['CONTINUE','NEW GAME'], {x:VW/2-80, y:150, w:160, noCancel:true});
+      if(choice===0){
+        const slot = await slotScreen('load');
+        if(slot<0) continue;              // back to title menu
+        if(loadGame(slot)){
+          await UI.fadeOut(500);
+          Game.mode='world';
+          await UI.fadeIn(400);
+          return;
+        }
+        continue;
+      }
+    } else {
+      await Menu.open(['NEW GAME'], {x:VW/2-80, y:150, w:160, noCancel:true});
+    }
+    await UI.fadeOut(500);
     await newGame();
+    return;
   }
 }
 
 async function newGame(){
   Game.flags={}; Game.bag=defaultBag(); Game.party=defaultParty(); Game.steps=0;
+  Game.playFrames=0; Game.saveSlot=null;
   loadMap('town', 14, 22, 1);
   Game.mode='world';
   await UI.fadeIn(600);
@@ -190,6 +199,7 @@ function drawFrame(){
   partyDraw(x);
   summaryDraw(x);
   bagDraw(x);
+  slotDraw(x);
   Dlg.draw(x);
   Menu.draw(x);
   if(Game.mode==='world') Banner.draw(x);
@@ -200,6 +210,7 @@ function loop(){
   requestAnimationFrame(loop);
   frameCount++;
   Game.time++;
+  if(Game.mode!=='title' && Game.mode!=='boot') Game.playFrames = (Game.playFrames||0)+1;
   if(Game.mode==='world') worldUpdate();
   tickWaiters();
   drawFrame();
@@ -273,7 +284,7 @@ window.addEventListener('load', async ()=>{
   ]);}catch(e){}
 
   const q = new URLSearchParams(location.search);
-  window.__game = { Game, Battle, SPR, MAPS, loadMap, makeMon, Input, PartyUI, BagUI, Dlg, Menu, B, saveGame };
+  window.__game = { Game, Battle, SPR, MAPS, loadMap, makeMon, Input, PartyUI, BagUI, Dlg, Menu, B, saveGame, loadGame, slotInfo, SlotUI };
   if(q.get('debug')==='sprites'){
     requestAnimationFrame(function ds(){ requestAnimationFrame(ds); frameCount++; Game.time++; tickWaiters(); debugSpriteSheet(); });
     return;
