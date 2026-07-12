@@ -30,20 +30,31 @@ Keyframe stills (CDN):
 
 | Shot | Duration | Job ID | Status |
 |------|----------|--------|--------|
-| S1 | 5 s | `4943ac55-cb07-4572-b4b1-7ce457618465` | — |
-| S2 | 4 s | `d88729d6-b375-4cf3-a5fa-720debd88aff` | — |
-| S3 | 5 s | `faef7bf7-8b32-4146-bfdb-d4cddda22ae0` | — |
-| S4 | 5 s | — | — |
-| S5 | 8 s (narration bed, 7.6 s VO) | `e4dbc478-c63c-4843-be72-b8c04d0231da` | — |
+| S1 | 5 s | `4943ac55-cb07-4572-b4b1-7ce457618465` | completed |
+| S2 | 4 s | `d88729d6-b375-4cf3-a5fa-720debd88aff` | completed |
+| S3 | 5 s | `faef7bf7-8b32-4146-bfdb-d4cddda22ae0` | completed |
+| S4 | 5 s | `0eea54d0-c579-4de4-8588-145d6b44ba42` | completed |
+| S5 | 8 s (narration bed, 7.6 s VO) | `e4dbc478-c63c-4843-be72-b8c04d0231da` | completed |
+
+Shot clips (CDN, 1080p MP4):
+
+- S1: https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260711_173730_4943ac55-cb07-4572-b4b1-7ce457618465.mp4
+- S2: https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260711_173842_d88729d6-b375-4cf3-a5fa-720debd88aff.mp4
+- S3: https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260711_173845_faef7bf7-8b32-4146-bfdb-d4cddda22ae0.mp4
+- S4: https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260711_173940_0eea54d0-c579-4de4-8588-145d6b44ba42.mp4
+- S5: https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260711_174028_e4dbc478-c63c-4843-be72-b8c04d0231da.mp4
 
 ## Audio
 
 | Asset | Job ID | Notes |
 |-------|--------|-------|
-| Closing narration (EN) | `809b4a85-7177-4c45-8027-e5e386bb31a2` | Seed Audio, preset voice "Hana", −10% rate |
+| Closing narration (EN) | `809b4a85-7177-4c45-8027-e5e386bb31a2` | Seed Audio, preset voice "Hana", −10% rate, 7.6 s — https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260711_173742_809b4a85-7177-4c45-8027-e5e386bb31a2.wav |
 
 ## Final master
 
 | Asset | Job ID | URL |
 |-------|--------|-----|
-| Assembled teaser (~25 s) | — | — |
+| Assembled teaser (27 s, 1080p) | `be2c627f-4a9f-46ed-b7fb-8439788e858c` | https://d8j0ntlcm91z4.cloudfront.net/user_36KNmFd6iH5Y3yk4Gh9GpEgWGDw/hf_20260712_040637_be2c627f-4a9f-46ed-b7fb-8439788e858c.mp4 |
+
+Cut order: S1 (5 s) → S2 (4 s) → S3 (5 s) → S4 (5 s) → S5 (8 s, closing narration).
+Total spend: ≈ 66 credits (5 keyframes, 5 shots, 1 narration; assembly free).
