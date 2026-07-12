@@ -27,6 +27,8 @@ function defaultState() {
       gauntletBest: 0,       // best single-run Gauntlet score
       gauntletRuns: 0,
       gauntletFlawless: false,
+      dailiesPlayed: 0,
+      dailyBest: 0,
       readAbout: false,
     },
     seen: { scenarios: [], distortions: [], drills: [], safety: [], perception: [] },
@@ -34,6 +36,7 @@ function defaultState() {
       career: { stage: 0, done: false },            // ordered ladder
       love: { cleared: [], done: false },           // unordered chapters
     },
+    daily: { day: null, number: 0, score: 0, squares: [], hearts: 0 },
     badges: [],
   };
 }
@@ -58,6 +61,7 @@ function loadState() {
         career: { ...base.campaigns.career, ...((parsed.campaigns || {}).career || {}) },
         love: { ...base.campaigns.love, ...((parsed.campaigns || {}).love || {}) },
       },
+      daily: { ...base.daily, ...(parsed.daily || {}) },
     };
     if ((parsed.v || 1) < 2) migrateV1(merged, parsed);
     return merged;
@@ -243,6 +247,54 @@ function calmPct() {
   const reps = state.stats.calmReps + state.stats.distortionsCaught + state.stats.breathSessions * 3;
   if (!reps) return null;
   return Math.min(100, Math.round(100 * (1 - Math.exp(-reps / 25))));
+}
+
+/* ---------- daily challenge (seeded, no backend) ----------
+   Everyone gets the same 10 rounds on the same local date. */
+const DAILY_EPOCH = { y: 2026, m: 5, d: 1 }; // Daily #1 = June 1, 2026
+
+function dailyNumber() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const epoch = new Date(DAILY_EPOCH.y, DAILY_EPOCH.m, DAILY_EPOCH.d);
+  return Math.max(1, Math.floor((today - epoch) / 86400000) + 1);
+}
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle(arr, rng) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function dailyDoneToday() {
+  return state.daily.day === todayKey();
+}
+
+function msUntilNextDaily() {
+  const now = new Date();
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  return midnight - now;
+}
+
+function dailyShareText() {
+  const d = state.daily;
+  const a = currentArchetype();
+  return `🦴 Backbone Daily #${d.number} — ${d.score}⭐ ${"❤️".repeat(d.hearts)}${"🖤".repeat(Math.max(0, 3 - d.hearts))}`
+    + `\n${d.squares.join("")}`
+    + `\n${a.emoji} ${a.name} · think you can out-spine me?`;
 }
 
 /* ---------- archetype (the verdict) ---------- */

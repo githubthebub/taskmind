@@ -1228,6 +1228,8 @@ const BADGES = [
     check: (s) => (s.stats.gauntletBest || 0) >= 150 },
   { id: "survivor", emoji: "💯", name: "Flawless Run", desc: "Finish a Gauntlet with all 3 hearts.",
     check: (s) => !!s.stats.gauntletFlawless },
+  { id: "daily-5", emoji: "📅", name: "Daily Devotee", desc: "Play 5 Daily Gauntlets.",
+    check: (s) => (s.stats.dailiesPlayed || 0) >= 5 },
 ];
 
 /* ---------------- campaign: Career Ladder ----------------

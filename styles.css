@@ -470,6 +470,7 @@ html, body {
 .gauntlet-flash { min-height: 26px; font-weight: 700; margin-top: 12px; }
 .gauntlet-flash.good { color: var(--good); }
 .gauntlet-flash.bad { color: var(--bad); }
+.squares { font-size: 1.25rem; letter-spacing: 3px; margin: 6px 0 10px; word-break: break-all; }
 
 /* ---------- juice fx ---------- */
 .score-pop {

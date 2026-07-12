@@ -215,8 +215,9 @@ function renderHome() {
   $("#love-mode-progress").textContent = love.done
     ? "🏆 All chapters cleared"
     : `${(love.cleared || []).length}/${LOVE_CHAPTERS.length} chapters cleared`;
-  $("#gauntlet-mode-progress").textContent = state.stats.gauntletBest
-    ? `Best: ${state.stats.gauntletBest} ⭐` : "";
+  $("#gauntlet-mode-progress").textContent = dailyDoneToday()
+    ? `Daily #${state.daily.number} ✅${state.stats.gauntletBest ? ` · Best ${state.stats.gauntletBest} ⭐` : ""}`
+    : `📅 Daily #${dailyNumber()} is live`;
 }
 
 /* ================= shared session helpers ================= */
@@ -854,7 +855,10 @@ function buildVerdictCard() {
 }
 
 function copyShare() {
-  const text = shareText();
+  copyText(shareText());
+}
+
+function copyText(text) {
   const done = () => toast("📋 Copied — go post it");
   const fail = () => {
     try {
@@ -886,46 +890,78 @@ function enterGauntlet() {
   $("#gauntlet-summary").classList.add("hidden");
   $("#gauntlet-summary").innerHTML = "";
   updateGauntletHud(3, 0, 0);
+  $("#gauntlet-daily").classList.remove("hidden");
+  renderDailySlot();
 }
 
-function gauntletDeck() {
-  const drills = shuffle(DRILLS.slice()).slice(0, 5).map((d) => ({
+function renderDailySlot() {
+  const slot = $("#gauntlet-daily");
+  slot.innerHTML = "";
+  const n = dailyNumber();
+  if (dailyDoneToday()) {
+    const d = state.daily;
+    slot.append(el("div", "verdict-label", `📅 Daily #${d.number} — done for today`));
+    slot.append(el("div", "summary-big", `${d.score} ⭐`));
+    slot.append(el("div", "squares", d.squares.join("")));
+    const hrs = Math.floor(msUntilNextDaily() / 3600000);
+    const mins = Math.floor((msUntilNextDaily() % 3600000) / 60000);
+    slot.append(el("p", "muted tiny", `Same 10 rounds for everyone today. Next daily in ${hrs}h ${mins}m.`));
+    const share = el("button", "btn small-btn", "📋 Copy daily result");
+    share.addEventListener("click", () => copyText(dailyShareText()));
+    slot.append(share);
+  } else {
+    slot.append(el("div", "verdict-label", "One scored attempt · same rounds for everyone"));
+    slot.append(el("h2", null, `📅 Daily Gauntlet #${n}`));
+    slot.append(el("p", "muted small", "Today's 10 rounds are identical for every player on Earth. One official run — then your emoji grid is ready to post."));
+    const start = el("button", "btn", `Play Daily #${n}`);
+    start.addEventListener("click", () => startGauntletRun(true));
+    slot.append(start);
+  }
+}
+
+function gauntletDeck(rng) {
+  const shuf = rng ? (arr) => seededShuffle(arr, rng) : shuffle;
+  const drills = shuf(DRILLS.slice()).slice(0, 5).map((d) => ({
     type: "drill",
     time: 15,
     tag: `Say it with spine · ${d.skill}`,
     prompt: d.situation,
-    options: shuffle(d.options.map((o) => ({ text: o.text, correct: o.kind === "assert", kind: o.kind }))),
+    options: shuf(d.options.map((o) => ({ text: o.text, correct: o.kind === "assert", kind: o.kind }))),
     lesson: d.tip,
   }));
-  const traps = shuffle(DISTORTIONS.slice()).slice(0, 5).map((r) => {
+  const traps = shuf(DISTORTIONS.slice()).slice(0, 5).map((r) => {
     const answer = DISTORTION_TYPES.find((t) => t.id === r.answer);
-    const decoys = shuffle(DISTORTION_TYPES.filter((t) => t.id !== r.answer)).slice(0, 3);
+    const decoys = shuf(DISTORTION_TYPES.filter((t) => t.id !== r.answer)).slice(0, 3);
     return {
       type: "trap",
       time: 11,
       tag: "Name the thinking trap",
       prompt: r.thought,
-      options: shuffle([answer, ...decoys].map((t) => ({ text: `<b>${t.name}</b>`, correct: t.id === r.answer }))),
+      options: shuf([answer, ...decoys].map((t) => ({ text: `<b>${t.name}</b>`, correct: t.id === r.answer }))),
       lesson: `${answer.name}: ${answer.short}`,
     };
   });
-  return shuffle(drills.concat(traps)).slice(0, GAUNTLET_ROUNDS);
+  return shuf(drills.concat(traps)).slice(0, GAUNTLET_ROUNDS);
 }
 
-function startGauntletRun() {
+function startGauntletRun(isDaily = false) {
+  if (isDaily && dailyDoneToday()) return;
   gRun = {
-    deck: gauntletDeck(),
+    daily: isDaily,
+    deck: gauntletDeck(isDaily ? mulberry32(dailyNumber() * 2654435761 + 42) : null),
     idx: 0,
     hearts: 3,
     combo: 0,
     bestCombo: 0,
     score: 0,
     correct: 0,
+    squares: [],
     timer: null,
     deadline: 0,
     resolved: false,
   };
   $("#gauntlet-intro").classList.add("hidden");
+  $("#gauntlet-daily").classList.add("hidden");
   $("#gauntlet-summary").classList.add("hidden");
   $("#gauntlet-play").classList.remove("hidden");
   renderGauntletRound();
@@ -956,7 +992,7 @@ function renderGauntletRound() {
   $("#gauntlet-flash").className = "gauntlet-flash";
 
   card.innerHTML = "";
-  card.append(el("span", "scene-tag", `⚡ ${run.idx + 1}/${run.deck.length} · ${round.tag}`));
+  card.append(el("span", "scene-tag", `${run.daily ? "📅 DAILY · " : "⚡ "}${run.idx + 1}/${run.deck.length} · ${round.tag}`));
   card.append(el("p", "scene-text", round.prompt));
   const list = el("div", "choices");
   round.options.forEach((opt) => {
@@ -1010,6 +1046,7 @@ function resolveGauntlet(opt, btn, list) {
     scorePop(btn, `+${pts} ⭐${run.combo >= 2 ? ` x${mult}` : ""}`, true);
     flash.textContent = run.combo >= 3 ? `🔥 ${run.combo} in a row!` : "✓ Strong.";
     flash.classList.add("good");
+    run.squares.push("🟩");
   } else {
     run.hearts--;
     run.combo = 0;
@@ -1023,6 +1060,7 @@ function resolveGauntlet(opt, btn, list) {
     shakeScreen();
     flash.textContent = (opt ? "✗ " : "⏰ Time! ") + round.lesson;
     flash.classList.add("bad");
+    run.squares.push(opt ? "🟥" : "⬛");
   }
   updateGauntletHud(run.hearts, run.combo, run.score);
   touchStreak();
@@ -1047,6 +1085,17 @@ function endGauntlet() {
   state.stats.gauntletBest = Math.max(state.stats.gauntletBest || 0, run.score);
   if (flawless) state.stats.gauntletFlawless = true;
   state.stats.sessionsCompleted++;
+  if (run.daily) {
+    state.daily = {
+      day: todayKey(),
+      number: dailyNumber(),
+      score: run.score,
+      squares: run.squares.slice(),
+      hearts: run.hearts,
+    };
+    state.stats.dailiesPlayed++;
+    state.stats.dailyBest = Math.max(state.stats.dailyBest || 0, run.score);
+  }
   saveState();
   if (flawless || newBest) confettiBurst(flawless ? 240 : 140);
 
@@ -1054,18 +1103,31 @@ function endGauntlet() {
   box.classList.remove("hidden");
   box.innerHTML = "";
   const card = el("div", "card summary-card");
-  card.append(el("h2", null, run.hearts <= 0 ? "💀 The Gauntlet got you" : flawless ? "💯 FLAWLESS RUN" : "⚡ Gauntlet complete"));
+  card.append(el("h2", null,
+    run.hearts <= 0 ? (run.daily ? `💀 Daily #${state.daily.number}: the Gauntlet got you` : "💀 The Gauntlet got you")
+      : flawless ? (run.daily ? `💯 Daily #${state.daily.number}: FLAWLESS` : "💯 FLAWLESS RUN")
+      : run.daily ? `📅 Daily #${state.daily.number} complete` : "⚡ Gauntlet complete"));
   card.append(el("div", "summary-big", `${run.score} ⭐`));
+  card.append(el("div", "squares", run.squares.join("")));
   card.append(el("div", "summary-line",
     `${run.correct}/${run.idx + 1} correct · best combo x${comboMultiplier(run.bestCombo)} · ${"❤️".repeat(run.hearts)}${"🖤".repeat(3 - run.hearts)}`));
   card.append(el("div", "summary-line", newBest ? "🏆 New personal best!" : `Personal best: ${state.stats.gauntletBest} ⭐`));
   const row = el("div", "row-buttons");
   row.style.justifyContent = "center";
-  const again = el("button", "btn", "Run it back");
-  again.addEventListener("click", startGauntletRun);
+  if (run.daily) {
+    const share = el("button", "btn", "📋 Copy daily result");
+    share.addEventListener("click", () => copyText(dailyShareText()));
+    const practice = el("button", "btn ghost", "Practice run");
+    practice.addEventListener("click", () => startGauntletRun(false));
+    row.append(share, practice);
+  } else {
+    const again = el("button", "btn", "Run it back");
+    again.addEventListener("click", () => startGauntletRun(false));
+    row.append(again);
+  }
   const home = el("button", "btn ghost", "Home");
   home.addEventListener("click", () => showScreen("home"));
-  row.append(again, home);
+  row.append(home);
   card.append(row);
   box.append(card);
   box.append(buildVerdictCard());
@@ -1305,6 +1367,7 @@ function renderProgress() {
     [state.stats.safetyStrong, "Safe calls 🛡️"],
     [state.stats.gauntletBest, "Gauntlet best ⚡"],
     [state.stats.alchemyStrong, "Frames bent 🧪"],
+    [state.stats.dailiesPlayed, "Dailies played 📅"],
   ];
   for (const [num, label] of stats) {
     const card = el("div", "stat-card");

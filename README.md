@@ -30,6 +30,7 @@ python3 -m http.server 8000
 | ❤️ **Relationships** | Six chapters, romantic **and platonic**, playable in any order — nothing is locked, because you know where you are in life: first dates, friendship, getting real, conflict & repair, worlds collide (in-laws, friends, holidays), the long haul. |
 | 🛡️ **Safety Radar** | Defensive awareness rounds: name the manipulation or scam tactic (refusing to hear "no", forced teaming, loan-sharking, typecasting, urgency + authority, romance-scam fast-forwarding, isolation, upfront-fee job scams) and make the safe call. |
 | ⚡ **The Gauntlet** | Timed rapid-fire mode built to be watched: ~12-second rounds, 3 lives, combo multipliers, screen shake, confetti — ending in a shareable "the game reads you as…" verdict card (The Velvet Tank, The Recovering Doormat, The Flamethrower…). |
+| 📅 **Daily Gauntlet** | Wordle-style: everyone on Earth gets the *same* 10 rounds each day (seeded from the date — still no backend), one scored attempt, and an emoji-grid result (🟩🟩🟥⬛…) built for pasting into group chats. Unlimited practice runs stay available. |
 | 🧪 **Perception Lab** | Behavioral-science alchemy inspired by ideas Rory Sutherland popularized: the Uber-map queue fix, costly signaling, the doorman fallacy, certainty-beats-speed, and making the train ride better instead of faster. |
 
 ## The culture system
@@ -52,7 +53,7 @@ assertiveness changes, never the spine.
 - 🦴 **Backbone Meter** — your assertive share when someone pushes on you
 - 😌 **Calm Meter** — built from distortions caught, anxiety rounds won, and breathing sessions
 - Two persistent campaigns: the Career Ladder (ordered rungs with promotions) and Relationships (unordered chapters — clear them in any order)
-- Daily streaks, 21 badges, and a radar chart of you vs. your culture's target
+- Daily streaks, 22 badges, and a radar chart of you vs. your culture's target
 - A glassmorphism UI: animated aurora backdrop, frosted panels, floating score popups, combo streaks, and confetti where deserved (all effects respect `prefers-reduced-motion`)
 - A shareable archetype verdict ("The Velvet Tank", "The Recovering Doormat"…) computed from how you actually play, with one-tap copy
 
