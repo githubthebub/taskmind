@@ -11,7 +11,7 @@ const el = (tag, cls, html) => {
 const SESSION_LEN = 5;
 
 /* ================= navigation ================= */
-const SCREENS = ["culture", "home", "scenario", "distortion", "drill", "career", "love", "breathe", "progress", "about"];
+const SCREENS = ["culture", "home", "scenario", "distortion", "drill", "career", "love", "safety", "breathe", "progress", "about"];
 
 function showScreen(name) {
   for (const s of SCREENS) $("#screen-" + s).classList.toggle("hidden", s !== name);
@@ -26,6 +26,7 @@ function showScreen(name) {
   if (name === "drill") startDrillSession();
   if (name === "career") renderCampaignMap(CAMPAIGNS.career);
   if (name === "love") renderCampaignMap(CAMPAIGNS.love);
+  if (name === "safety") startSafetySession();
   if (name === "breathe") resetBreatheScreen();
   if (name === "progress") renderProgress();
   if (name === "about" && !state.stats.readAbout) {
@@ -145,8 +146,8 @@ function renderHome() {
     : `Rung ${career.stage + 1}/${CAREER_STAGES.length} · ${CAREER_STAGES[career.stage].title}`;
   const love = state.campaigns.love;
   $("#love-mode-progress").textContent = love.done
-    ? "🏆 Journey complete"
-    : `Chapter ${love.stage + 1}/${LOVE_CHAPTERS.length} · ${LOVE_CHAPTERS[love.stage].title}`;
+    ? "🏆 All chapters cleared"
+    : `${(love.cleared || []).length}/${LOVE_CHAPTERS.length} chapters cleared`;
 }
 
 /* ================= shared session helpers ================= */
@@ -453,18 +454,18 @@ function renderDrillRound() {
 /* ================= campaigns (Career Ladder / Relationships) ================= */
 const CAMPAIGNS = {
   career: {
-    key: "career", data: CAREER_STAGES, screen: "career",
+    key: "career", data: CAREER_STAGES, screen: "career", locked: true,
     title: "💼 The Career Ladder", stageWord: "rung",
-    intro: "Five rungs, from the interview chair to the corner office. Clear a rung by making 2 of 3 strong moves — doormat compliance and blow-ups both stall careers.",
+    intro: "Six rungs, from the interview chair to the corner office — including a full rung of negotiation craft. Clear a rung by making 2 of 3 strong moves; doormat compliance and blow-ups both stall careers.",
     advanceWord: "Promoted!",
-    finale: "🏢 Top of the ladder. You interviewed, pushed back, owned mistakes, got the title, and led people — without once playing the doormat.",
+    finale: "🏢 Top of the ladder. You interviewed, negotiated, pushed back, owned mistakes, got the title, and led people — without once playing the doormat.",
   },
   love: {
-    key: "love", data: LOVE_CHAPTERS, screen: "love",
+    key: "love", data: LOVE_CHAPTERS, screen: "love", locked: false,
     title: "❤️ Relationships", stageWord: "chapter",
-    intro: "Five chapters, from the first nervous coffee to the big life decisions. Clear a chapter with 2 of 3 strong moves — honesty and warmth, never doormat peace.",
+    intro: "Romantic and platonic, in any order — you know where you are in life, so play the chapter that matches. Nothing's locked. Clear a chapter with 2 of 3 strong moves: honesty and warmth, never doormat peace.",
     advanceWord: "Chapter cleared!",
-    finale: "💍 Journey complete. First dates, hard talks, in-laws, money, and the big fork in the road — handled with warmth and a spine.",
+    finale: "💍 Every chapter cleared. First dates, friendship, hard talks, in-laws, money, and the big fork in the road — handled with warmth and a spine.",
   },
 };
 let campRun = null;
@@ -497,15 +498,24 @@ function renderCampaignMap(cfg) {
   }
 
   cfg.data.forEach((stage, i) => {
-    const done = prog.done || i < prog.stage;
-    const current = !prog.done && i === prog.stage;
-    const row = el("div", "stage-row" + (done ? " stage-done" : current ? " stage-current" : " stage-locked"));
-    row.append(el("span", "stage-emoji", done ? "✅" : current ? stage.emoji : "🔒"));
+    let done, playable, lockedRow;
+    if (cfg.locked) {
+      done = prog.done || i < prog.stage;
+      playable = !prog.done && i === prog.stage;
+      lockedRow = !done && !playable;
+    } else {
+      done = (prog.cleared || []).includes(stage.id);
+      playable = !done;
+      lockedRow = false;
+    }
+    const row = el("div", "stage-row" + (done ? " stage-done" : lockedRow ? " stage-locked" : cfg.locked ? " stage-current" : ""));
+    row.append(el("span", "stage-emoji", done ? "✅" : lockedRow ? "🔒" : stage.emoji));
     const info = el("div", "stage-info");
-    info.append(el("div", "stage-title", `${cfg.stageWord === "rung" ? "Rung" : "Chapter"} ${i + 1}: ${stage.title}`));
+    const label = cfg.locked ? `Rung ${i + 1}: ${stage.title}` : stage.title;
+    info.append(el("div", "stage-title", label));
     info.append(el("div", "stage-desc muted tiny", stage.desc));
     row.append(info);
-    if (current) {
+    if (playable) {
       const play = el("button", "btn small-btn", "Play");
       play.addEventListener("click", () => startCampaignStage(cfg, i, false));
       row.append(play);
@@ -597,10 +607,21 @@ function finishCampaignStage() {
   let advanced = false;
   let completedCampaign = false;
 
-  if (cleared && !run.isReplay && run.stageIdx === prog.stage && !prog.done) {
-    prog.stage++;
-    advanced = true;
-    if (prog.stage >= cfg.data.length) {
+  if (cfg.locked) {
+    if (cleared && !run.isReplay && run.stageIdx === prog.stage && !prog.done) {
+      prog.stage++;
+      advanced = true;
+      if (prog.stage >= cfg.data.length) {
+        prog.done = true;
+        completedCampaign = true;
+      }
+    }
+  } else if (cleared) {
+    if (!(prog.cleared || []).includes(run.stage.id)) {
+      prog.cleared.push(run.stage.id);
+      advanced = true;
+    }
+    if (prog.cleared.length >= cfg.data.length && !prog.done) {
       prog.done = true;
       completedCampaign = true;
     }
@@ -612,7 +633,9 @@ function finishCampaignStage() {
   els.summary.innerHTML = "";
   const card = el("div", "card summary-card");
   const headline = completedCampaign ? "🏆 " + cfg.finale
-    : advanced ? `🎉 ${cfg.advanceWord} ${cfg.data[prog.stage].emoji} Next ${cfg.stageWord}: ${cfg.data[prog.stage].title}`
+    : advanced ? (cfg.locked
+        ? `🎉 ${cfg.advanceWord} ${cfg.data[prog.stage].emoji} Next ${cfg.stageWord}: ${cfg.data[prog.stage].title}`
+        : `🎉 ${cfg.advanceWord} Pick your next ${cfg.stageWord} from the map.`)
     : cleared ? `✅ ${run.stage.title} cleared${run.isReplay ? " (replay)" : ""}`
     : `Not this time — ${run.stage.title} pushed back.`;
   card.append(el("h2", null, headline));
@@ -626,7 +649,7 @@ function finishCampaignStage() {
     const retry = el("button", "btn", "Run it again");
     retry.addEventListener("click", () => startCampaignStage(cfg, run.stageIdx, run.isReplay));
     row.append(retry);
-  } else if (advanced && !completedCampaign) {
+  } else if (advanced && !completedCampaign && cfg.locked) {
     const next = el("button", "btn", `Next ${cfg.stageWord} →`);
     next.addEventListener("click", () => startCampaignStage(cfg, prog.stage, false));
     row.append(next);
@@ -641,6 +664,91 @@ function finishCampaignStage() {
 
   announceBadges(checkBadges());
   refreshTopbar();
+}
+
+/* ================= safety radar ================= */
+let sfRun = null;
+
+function startSafetySession() {
+  sfRun = {
+    deck: drawFrom(SAFETY, state.seen.safety, SESSION_LEN),
+    idx: 0,
+    results: [],
+    pts: 0,
+    safeCalls: 0,
+  };
+  $("#safety-summary").classList.add("hidden");
+  renderSafetyRound();
+}
+
+function renderSafetyRound() {
+  const run = sfRun;
+  const card = $("#safety-card");
+  const fb = $("#safety-feedback");
+  fb.classList.add("hidden");
+
+  if (run.idx >= run.deck.length) {
+    card.classList.add("hidden");
+    sessionSummary($("#safety-summary"), "🛡️ Radar sweep complete", run.results, run.pts,
+      [`Safe calls: ${run.safeCalls}/${run.deck.length}.`,
+       "The tactics repeat everywhere — once you can name them, they lose most of their power."],
+      "safety");
+    return;
+  }
+
+  card.classList.remove("hidden");
+  renderDots($("#safety-progress"), run.deck.length, run.results, run.idx);
+
+  const round = run.deck[run.idx];
+  card.innerHTML = "";
+  card.append(el("span", "scene-tag", `🛡️ ${round.tag}`));
+  card.append(el("p", "scene-text", round.text));
+
+  const hadDoormat = round.choices.some((ch) => ch.kind === "doormat");
+  const list = el("div", "choices");
+  const order = shuffle(round.choices.map((_, i) => i));
+  for (const i of order) {
+    const ch = round.choices[i];
+    const btn = el("button", "choice-btn", ch.text);
+    btn.addEventListener("click", () => {
+      ch._roundHadDoormat = hadDoormat;
+      const res = applyChoice(ch, "S");
+      run.pts += res.pts;
+      run.results.push(res.cls);
+      if (res.cls === "good") {
+        run.safeCalls++;
+        state.stats.safetyStrong++;
+      }
+
+      for (const b of list.querySelectorAll("button")) b.disabled = true;
+      btn.classList.add("picked-" + res.cls);
+      if (res.cls !== "good") {
+        for (const j of order) {
+          if (kindClass(round.choices[j].kind) === "good") {
+            list.children[order.indexOf(j)].classList.add("reveal-best");
+          }
+        }
+      }
+
+      renderDots($("#safety-progress"), run.deck.length, run.results, run.idx);
+      markSeen(state.seen.safety, round.id);
+      saveState();
+
+      fb.innerHTML = "";
+      fb.classList.remove("hidden");
+      fb.append(el("div", "fb-verdict " + res.cls, res.label));
+      fb.append(el("p", null, ch.fb));
+      fb.append(el("div", "fb-culture", `🎯 <b>The tactic — ${round.tactic.name}:</b> ${round.tactic.tip}`));
+      fb.append(el("div", "fb-points", `<b>${res.pts >= 0 ? "+" : ""}${res.pts} ⭐</b> ${xpPills(res.xpGained)}`));
+      const next = el("button", "btn fb-next", "Next →");
+      next.addEventListener("click", () => { run.idx++; renderSafetyRound(); });
+      fb.append(next);
+      next.focus();
+      refreshTopbar();
+    });
+    list.append(btn);
+  }
+  card.append(list);
 }
 
 /* ================= breathing ================= */
@@ -776,7 +884,8 @@ function renderProgress() {
     [state.streak.best, "Best streak 🔥"],
     [(state.culturesTried || []).length, "Cultures tried 🌍"],
     [state.campaigns.career.done ? "🏆" : `${state.campaigns.career.stage}/${CAREER_STAGES.length}`, "Career rungs 💼"],
-    [state.campaigns.love.done ? "🏆" : `${state.campaigns.love.stage}/${LOVE_CHAPTERS.length}`, "Love chapters ❤️"],
+    [state.campaigns.love.done ? "🏆" : `${(state.campaigns.love.cleared || []).length}/${LOVE_CHAPTERS.length}`, "Chapters cleared ❤️"],
+    [state.stats.safetyStrong, "Safe calls 🛡️"],
   ];
   for (const [num, label] of stats) {
     const card = el("div", "stat-card");

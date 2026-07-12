@@ -26,8 +26,9 @@ python3 -m http.server 8000
 | 🔍 **Spot the Distortion** | CBT-style rounds: name the thinking trap (catastrophizing, mind reading, all-or-nothing…) behind an anxious thought, then see the reframe. |
 | 🗣️ **Say It With Spine** | Pick the wording that's firm without fangs. Teaches real techniques: broken record, fogging, DESC scripts, saying no without a novel. |
 | 🌬️ **Steady Breath** | Box-breathing pacer (4-4-4-4) with a rhythm-tap bonus. Trains the body's calm switch. |
-| 💼 **Career Ladder** | A 5-rung campaign: interview → new hire → establishing yourself → the promotion push → leading people. Clear each rung with 2 of 3 strong moves. |
-| ❤️ **Relationships** | A 5-chapter campaign: first dates → getting real → conflict & repair → worlds collide (in-laws, friends, holidays) → the long haul. |
+| 💼 **Career Ladder** | A 6-rung campaign: interview → new hire → establishing yourself → **the negotiation table** (labels, mirrors, calibrated questions, holding silence — inspired by publicly taught techniques from Chris Voss and Charisma on Command) → the promotion push → leading people. Clear each rung with 2 of 3 strong moves. |
+| ❤️ **Relationships** | Six chapters, romantic **and platonic**, playable in any order — nothing is locked, because you know where you are in life: first dates, friendship, getting real, conflict & repair, worlds collide (in-laws, friends, holidays), the long haul. |
+| 🛡️ **Safety Radar** | Defensive awareness rounds: name the manipulation or scam tactic (refusing to hear "no", forced teaming, loan-sharking, typecasting, urgency + authority, romance-scam fast-forwarding, isolation, upfront-fee job scams) and make the safe call. |
 
 ## The culture system
 
@@ -48,8 +49,8 @@ assertiveness changes, never the spine.
   **Emotional Stability**)
 - 🦴 **Backbone Meter** — your assertive share when someone pushes on you
 - 😌 **Calm Meter** — built from distortions caught, anxiety rounds won, and breathing sessions
-- Two persistent campaigns (Career Ladder and Relationships) with stage maps, promotions, and replayable stages
-- Daily streaks, 16 badges, and a radar chart of you vs. your culture's target
+- Two persistent campaigns: the Career Ladder (ordered rungs with promotions) and Relationships (unordered chapters — clear them in any order)
+- Daily streaks, 18 badges, and a radar chart of you vs. your culture's target
 
 ## Honest fine print
 
@@ -57,6 +58,15 @@ Culture profiles are broad-brush averages from cross-cultural research, not boxe
 The anxiety training is based on real CBT ideas (cognitive reframing, exposure, worry scheduling,
 paced breathing), but this is a game, not therapy — if anxiety is seriously interfering with your
 life, a professional is the real power-up.
+
+**Disclaimer:** Backbone is for education and entertainment only, provided "as is" with no
+warranties. It is not professional advice of any kind — medical, psychological, legal, financial,
+career, or personal-security — and no strategy in it guarantees any outcome. Scenarios are
+simplified fiction; you are responsible for your own decisions, and the creators accept no
+liability for any loss arising from use of the game. In real danger, contact local emergency
+services. The negotiation rounds are inspired by publicly taught techniques (e.g., Chris Voss's
+tactical empathy, Charisma on Command's delivery principles); Backbone is independent and not
+affiliated with or endorsed by them. The full disclaimer is on the in-game "How this works" page.
 
 ## Stack
 

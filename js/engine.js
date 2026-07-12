@@ -4,6 +4,7 @@ const SAVE_KEY = "backbone-save-v1";
 
 function defaultState() {
   return {
+    v: 2,
     cultureId: null,
     culturesTried: [],
     xp: { O: 0, C: 0, E: 0, A: 0, S: 0 },
@@ -21,12 +22,13 @@ function defaultState() {
       breathSessions: 0,
       cleanSessions: 0,      // scenario sessions with zero doormat picks
       calmReps: 0,           // stability-building actions of any kind
+      safetyStrong: 0,       // safe calls made in Safety Radar
       readAbout: false,
     },
-    seen: { scenarios: [], distortions: [], drills: [] },
+    seen: { scenarios: [], distortions: [], drills: [], safety: [] },
     campaigns: {
-      career: { stage: 0, done: false },
-      love: { stage: 0, done: false },
+      career: { stage: 0, done: false },            // ordered ladder
+      love: { cleared: [], done: false },           // unordered chapters
     },
     badges: [],
   };
@@ -41,8 +43,9 @@ function loadState() {
     const parsed = JSON.parse(raw);
     // merge over defaults so new fields added in updates don't break old saves
     const base = defaultState();
-    return {
+    const merged = {
       ...base, ...parsed,
+      v: base.v,
       xp: { ...base.xp, ...(parsed.xp || {}) },
       streak: { ...base.streak, ...(parsed.streak || {}) },
       stats: { ...base.stats, ...(parsed.stats || {}) },
@@ -52,8 +55,37 @@ function loadState() {
         love: { ...base.campaigns.love, ...((parsed.campaigns || {}).love || {}) },
       },
     };
+    if ((parsed.v || 1) < 2) migrateV1(merged, parsed);
+    return merged;
   } catch {
     return defaultState();
+  }
+}
+
+/* v1 → v2: Relationships went from an ordered ladder to unordered chapters
+   (and gained Friendship); the Career Ladder gained The Negotiation Table
+   at index 3. Carry progress across both changes. */
+function migrateV1(merged, parsed) {
+  const oldLove = (parsed.campaigns || {}).love;
+  if (oldLove && typeof oldLove.stage === "number") {
+    const OLD_ORDER = ["first-dates", "defining", "conflict", "worlds", "longhaul"];
+    const cleared = OLD_ORDER.slice(0, oldLove.done ? OLD_ORDER.length : oldLove.stage);
+    merged.campaigns.love = {
+      cleared,
+      done: cleared.length >= LOVE_CHAPTERS.length,
+    };
+  }
+  const oldCareer = (parsed.campaigns || {}).career;
+  if (oldCareer && typeof oldCareer.stage === "number") {
+    if (oldCareer.done) {
+      // finished the old 5-rung ladder: stay complete, new rung is replayable
+      merged.campaigns.career = { stage: CAREER_STAGES.length, done: true };
+    } else {
+      merged.campaigns.career = {
+        stage: oldCareer.stage >= 3 ? oldCareer.stage + 1 : oldCareer.stage,
+        done: false,
+      };
+    }
   }
 }
 
