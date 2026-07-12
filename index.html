@@ -42,13 +42,14 @@
     <h2 class="section-title">Where are you playing from?</h2>
     <p class="muted small">Pick the country or culture you live and work in. It sets which traits the
     game emphasizes and which <em>style</em> of assertiveness scores best. Being a pushover never wins anywhere.</p>
-    <div class="culture-search-row">
-      <input id="culture-search" type="search" placeholder="Search countries or styles…" autocomplete="off">
+    <div class="card culture-pick">
+      <label class="pick-label" for="culture-select">Country or culture style</label>
+      <select id="culture-select">
+        <option value="">— Choose —</option>
+      </select>
+      <div id="culture-preview" class="hidden"></div>
+      <button id="culture-confirm" class="btn" disabled>Train for this culture →</button>
     </div>
-    <h3 class="group-label">Culture styles</h3>
-    <div id="style-grid" class="culture-grid"></div>
-    <h3 class="group-label">Countries</h3>
-    <div id="country-grid" class="culture-grid"></div>
     <p class="muted tiny">Culture profiles are broad-brush averages from cross-cultural research, not
     stereotypes about individuals. You can switch anytime.</p>
   </section>

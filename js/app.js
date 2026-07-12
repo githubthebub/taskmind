@@ -139,33 +139,61 @@ function announceBadges(fresh) {
   for (const b of fresh) toast(`${b.emoji} Badge unlocked: ${b.name}!`);
 }
 
-/* ================= culture select ================= */
-function cultureCard(c) {
-  const btn = el("button", "culture-card" + (c.id === state.cultureId ? " selected" : ""));
-  btn.append(
-    el("span", "cc-name", `${c.flag} ${c.name}`),
-    el("span", "cc-blurb", c.blurb),
-  );
-  btn.addEventListener("click", () => {
-    setCulture(c.id);
-    announceBadges(checkBadges());
-    showScreen("home");
-  });
-  return btn;
+/* ================= culture select (dropdown) ================= */
+function renderCultureSelect() {
+  const sel = $("#culture-select");
+  sel.innerHTML = '<option value="">— Choose —</option>';
+  const groups = [
+    ["Culture styles (if your country isn't listed, or you live between cultures)", "style"],
+    ["Countries", "country"],
+  ];
+  for (const [label, group] of groups) {
+    const og = el("optgroup");
+    og.label = label;
+    for (const c of CULTURES.filter((x) => x.group === group)) {
+      const opt = el("option", null, `${c.flag} ${c.name} — ${c.blurb}`);
+      opt.value = c.id;
+      og.append(opt);
+    }
+    sel.append(og);
+  }
+  sel.value = state.cultureId || "";
+  renderCulturePreview(sel.value);
 }
 
-function renderCultureSelect(query = "") {
-  const q = query.trim().toLowerCase();
-  const match = (c) => !q || c.name.toLowerCase().includes(q) || c.blurb.toLowerCase().includes(q);
-  const styleGrid = $("#style-grid");
-  const countryGrid = $("#country-grid");
-  styleGrid.innerHTML = "";
-  countryGrid.innerHTML = "";
-  for (const c of CULTURES.filter((c) => c.group === "style" && match(c))) styleGrid.append(cultureCard(c));
-  for (const c of CULTURES.filter((c) => c.group === "country" && match(c))) countryGrid.append(cultureCard(c));
+function renderCulturePreview(id) {
+  const box = $("#culture-preview");
+  const confirm = $("#culture-confirm");
+  const c = CULTURES.find((x) => x.id === id);
+  if (!c) {
+    box.classList.add("hidden");
+    confirm.disabled = true;
+    return;
+  }
+  box.classList.remove("hidden");
+  confirm.disabled = false;
+  box.innerHTML = "";
+  box.append(el("div", "cp-name", `${c.flag} ${c.name}`));
+  box.append(el("p", "muted small", c.blurb));
+  const prized = Object.entries(c.weights).filter(([, w]) => w >= 5).map(([k]) => `${TRAITS[k].emoji} ${TRAITS[k].name.split(" (")[0]}`);
+  if (prized.length) box.append(el("p", "small", `⭐ Especially rewards: <b>${prized.join(" · ")}</b>`));
+  const style = c.directness >= 0.7 ? "Very direct — say it plainly"
+    : c.directness >= 0.45 ? "Balanced — clear, with warm wrapping"
+    : "High-context — firm, face-saving delivery wins";
+  box.append(el("p", "small", `🗣️ Assertiveness style that scores best: <b>${style}</b>`));
+  const ul = el("ul", "muted small");
+  for (const n of c.notes) ul.append(el("li", null, n));
+  box.append(ul);
 }
 
-$("#culture-search").addEventListener("input", (e) => renderCultureSelect(e.target.value));
+$("#culture-select").addEventListener("change", (e) => renderCulturePreview(e.target.value));
+$("#culture-confirm").addEventListener("click", () => {
+  const id = $("#culture-select").value;
+  if (!id) return;
+  setCulture(id);
+  announceBadges(checkBadges());
+  showScreen("home");
+});
 
 /* ================= home ================= */
 function renderHome() {
