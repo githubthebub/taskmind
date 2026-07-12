@@ -1,0 +1,86 @@
+import type { Store } from '../types'
+
+export const STORES: Store[] = [
+  {
+    id: 'st-mission',
+    name: 'GameStop · Mission & 22nd',
+    address: '2288 Mission St',
+    city: 'San Francisco',
+    region: 'CA',
+    distanceMi: 0.7,
+    rating: 4.8,
+    amenities: ['Tournament setup', 'Free WiFi', 'TCG tables', 'Retro corner'],
+    image: 'ember',
+    activeMembers: 214,
+  },
+  {
+    id: 'st-marina',
+    name: 'GameStop · Marina Plaza',
+    address: '3521 Chestnut St',
+    city: 'San Francisco',
+    region: 'CA',
+    distanceMi: 2.1,
+    rating: 4.6,
+    amenities: ['Big-screen lounge', 'Snack bar', 'Coaching nights'],
+    image: 'grape',
+    activeMembers: 158,
+  },
+  {
+    id: 'st-berkeley',
+    name: 'GameStop · Berkeley Center',
+    address: '2130 Shattuck Ave',
+    city: 'Berkeley',
+    region: 'CA',
+    distanceMi: 8.4,
+    rating: 4.7,
+    amenities: ['LAN room', 'TCG tables', 'Speedrun station'],
+    image: 'cyan',
+    activeMembers: 176,
+  },
+  {
+    id: 'st-oakland',
+    name: 'GameStop · Oakland Bay',
+    address: '1044 Broadway',
+    city: 'Oakland',
+    region: 'CA',
+    distanceMi: 10.2,
+    rating: 4.5,
+    amenities: ['Fighting-game arcade', 'Free WiFi', 'Midnight events'],
+    image: 'lime',
+    activeMembers: 132,
+  },
+  {
+    id: 'st-sanjose',
+    name: 'GameStop · San Jose Pavilion',
+    address: '150 S 1st St',
+    city: 'San Jose',
+    region: 'CA',
+    distanceMi: 41.0,
+    rating: 4.9,
+    amenities: ['Esports stage', 'Streaming booth', 'TCG tables', 'Snack bar'],
+    image: 'ember',
+    activeMembers: 301,
+  },
+  {
+    id: 'st-daly',
+    name: 'GameStop · Daly City Serramonte',
+    address: '3 Serramonte Center',
+    city: 'Daly City',
+    region: 'CA',
+    distanceMi: 6.8,
+    rating: 4.4,
+    amenities: ['Retro corner', 'Party room', 'Free WiFi'],
+    image: 'grape',
+    activeMembers: 99,
+  },
+]
+
+export const storeById = (id: string): Store | undefined =>
+  STORES.find((s) => s.id === id)
+
+export const STORE_GRADIENTS: Record<string, string> = {
+  ember: 'from-power-600/80 via-power-800/60 to-night-800',
+  grape: 'from-grape/70 via-purple-900/50 to-night-800',
+  cyan: 'from-cyan/60 via-sky-900/50 to-night-800',
+  lime: 'from-lime/50 via-emerald-900/50 to-night-800',
+}
