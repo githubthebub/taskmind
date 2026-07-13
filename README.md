@@ -11,10 +11,20 @@ No build step, no dependencies, no network. Just open it and play.
 
 ![Culture Bridge overworld](docs/screenshot-world.png)
 
-## ▶ How to play
+## 🚀 Play it
 
-Open `index.html` in any modern browser. If your browser blocks the local
-files, serve the folder instead:
+**Online (free hosting):** the game is published with **GitHub Pages** at
+
+> **https://githubthebub.github.io/taskmind/**
+
+Every push to the default branch redeploys it automatically via the workflow in
+`.github/workflows/deploy-pages.yml` — GitHub Pages is free for public repos, so
+there are no hosting fees. (See *Publishing* below for the one-time setup.)
+
+**Locally — no server needed:** the game is a fully self-contained static site
+(plain `<script>` tags, no modules, no network), so you can simply
+**double-click `index.html`** to open it in any browser. It works offline. If a
+browser restricts `file://` access, serve the folder instead:
 
 ```bash
 # from the project root
@@ -83,13 +93,31 @@ Press **P** any time for a quick Hindi ↔ Japanese phrasebook with native
 scripts (Devanagari and kana/kanji) and romanisation — from *Namaste* /
 *Konnichiwa* to *Dost* / *Tomodachi* ("friend").
 
+## 🌐 Publishing (one-time setup)
+
+The included workflow deploys to GitHub Pages automatically. To turn Pages on
+the first time, pick whichever is easier:
+
+- **Easiest — merge to the default branch.** When this branch's PR merges into
+  `main`, the deploy workflow runs and (thanks to `enablement: true`) switches
+  Pages on for you. Give it a minute, then open the URL above.
+- **Or enable it by hand:** repo **Settings → Pages → Build and deployment →
+  Source: GitHub Actions**. Then run the workflow once from the **Actions** tab
+  (*Deploy Culture Bridge to GitHub Pages → Run workflow*).
+
+Because the whole game is a static site, it also drops cleanly onto any other
+free static host if you ever want an alternative — e.g. **Cloudflare Pages**,
+**Netlify** (drag-and-drop the folder), **Vercel**, **Surge**, or **itch.io**.
+No server-side code, no database, nothing to pay for.
+
 ## 🛠️ Project structure
 
 ```
-index.html        Title screen, HUD, overlays, touch controls
-css/style.css     A warm-meets-cool retro-game look
-js/data.js        All learning content — creatures, questions, phrasebook, signs
-js/game.js        The engine — tile world, movement, encounters, quiz, Culturedex
+index.html                          Title screen, HUD, overlays, touch controls
+css/style.css                       A warm-meets-cool retro-game look
+js/data.js                          Learning content — creatures, questions, phrasebook
+js/game.js                          The engine — world, movement, encounters, quiz, dex
+.github/workflows/deploy-pages.yml  Free GitHub Pages deploy on every push to main
 ```
 
 The overworld is rendered on a `<canvas>`; dialogue, the quiz and the menus are
