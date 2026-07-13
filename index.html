@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskMind — Sera</title>
+<style>
+  :root{
+    --bg:#0e0b10; --panel:#171219; --panel2:#1e1620; --ink:#f0e6e9; --ink-dim:#a89aa3;
+    --accent:#e0788f; --accent-soft:rgba(224,120,143,.14); --gold:#e8b86d;
+    --tier:#8a7f8a; --radius:18px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{background:var(--bg); min-height:100%;}
+  body{
+    min-height:100vh;
+    background:radial-gradient(1200px 800px at 30% -10%, #241a26 0%, var(--bg) 55%);
+    color:var(--ink); font-family:"Avenir Next","Segoe UI",system-ui,sans-serif;
+    line-height:1.5; padding:18px;
+  }
+  body.night{ filter:brightness(.92) saturate(.95); }
+  .wrap{max-width:1080px; margin:0 auto; display:grid; grid-template-columns: 420px 1fr; gap:18px;}
+  @media (max-width:880px){ .wrap{grid-template-columns:1fr;} }
+
+  .card{background:var(--panel); border:1px solid rgba(255,255,255,.05); border-radius:var(--radius); padding:18px;}
+
+  /* ---------- Companion panel ---------- */
+  .companion{ position:relative; overflow:hidden; text-align:center; padding-bottom:14px;}
+  .companion .stage{ position:relative; margin:-6px -6px 0; }
+  #avatar{ width:100%; max-width:340px; display:block; margin:0 auto; animation:sway 5s ease-in-out infinite alternate; }
+  @keyframes sway{ from{transform:translateY(0)} to{transform:translateY(3px)} }
+
+  .bubble{
+    position:relative; margin:6px 10px 0; padding:12px 16px; min-height:64px;
+    background:var(--panel2); border:1px solid rgba(255,255,255,.07); border-radius:14px;
+    font-size:.98rem; color:var(--ink); text-align:left; font-style:italic;
+    transition:opacity .4s;
+  }
+  .bubble::before{ content:""; position:absolute; top:-8px; left:50%; transform:translateX(-50%);
+    border:8px solid transparent; border-bottom-color:var(--panel2); border-top:none; }
+  .bubble .who{ display:block; font-style:normal; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:4px;}
+
+  .meter-row{ display:flex; align-items:center; gap:10px; margin:14px 12px 4px; }
+  .meter{ flex:1; height:10px; border-radius:6px; background:rgba(255,255,255,.07); overflow:hidden; position:relative;}
+  .meter .fill{ height:100%; width:0%; border-radius:6px;
+    background:linear-gradient(90deg,#7a5a68,var(--accent),#ff9eb0);
+    transition:width .6s cubic-bezier(.2,.8,.3,1); }
+  .meter .ticks{position:absolute; inset:0; display:flex;}
+  .meter .ticks i{flex:1; border-right:2px solid rgba(14,11,16,.9);}
+  .meter .ticks i:last-child{border-right:none;}
+  .tier-label{ font-size:.8rem; color:var(--tier); min-width:92px; text-align:right; font-weight:600; letter-spacing:.03em;}
+
+  .stats{ display:flex; justify-content:center; gap:18px; margin-top:10px; font-size:.82rem; color:var(--ink-dim);}
+  .stats b{ color:var(--ink); font-size:1rem; }
+
+  .voice-row{ display:flex; align-items:center; justify-content:center; gap:10px; margin-top:12px; flex-wrap:wrap;}
+  .heart{ position:absolute; font-size:20px; animation:floatUp 1.8s ease-out forwards; pointer-events:none; z-index:5;}
+  @keyframes floatUp{ from{opacity:1; transform:translateY(0) scale(.8);} to{opacity:0; transform:translateY(-90px) scale(1.4);} }
+
+  /* ---------- Right column ---------- */
+  h2{ font-size:1rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-dim); margin-bottom:12px; font-weight:600;}
+  .add-row{ display:grid; grid-template-columns:1fr auto; gap:8px; margin-bottom:8px;}
+  .cue-row{ margin-bottom:12px; }
+  input[type=text], select{
+    width:100%; background:var(--panel2); color:var(--ink); border:1px solid rgba(255,255,255,.09);
+    border-radius:10px; padding:10px 12px; font-size:.95rem; outline:none;
+  }
+  input[type=text]:focus{ border-color:var(--accent); }
+  select{ width:auto; }
+  button{
+    background:var(--accent-soft); color:var(--accent); border:1px solid rgba(224,120,143,.35);
+    border-radius:10px; padding:9px 14px; font-size:.9rem; font-weight:600; cursor:pointer;
+    transition:background .15s, transform .1s;
+  }
+  button:hover{ background:rgba(224,120,143,.25); }
+  button:active{ transform:scale(.97); }
+  button.ghost{ background:transparent; color:var(--ink-dim); border-color:rgba(255,255,255,.12); }
+  button.big{ width:100%; padding:12px; font-size:1rem; }
+
+  ul.tasks{ list-style:none; margin-top:6px;}
+  ul.tasks li{
+    display:flex; align-items:center; gap:10px; padding:10px 8px;
+    border-bottom:1px solid rgba(255,255,255,.05); font-size:.96rem;
+  }
+  ul.tasks li .cue{ display:block; font-size:.76rem; color:var(--gold); opacity:.85;}
+  ul.tasks li.done .txt{ text-decoration:line-through; color:var(--ink-dim);}
+  ul.tasks li .txt{ flex:1;}
+  ul.tasks li .pts{ font-size:.75rem; color:var(--ink-dim); }
+  ul.tasks li input[type=checkbox]{ width:18px; height:18px; accent-color:var(--accent); cursor:pointer;}
+  ul.tasks li .del{ background:none; border:none; color:var(--ink-dim); font-size:1rem; padding:2px 6px;}
+  ul.tasks li .del:hover{ color:#e06a6a;}
+
+  .focus-box{ text-align:center; }
+  #timer{ font-size:2.6rem; font-weight:700; letter-spacing:.05em; font-variant-numeric:tabular-nums; margin:4px 0 10px;}
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+
+  .science{ font-size:.86rem; color:var(--ink-dim); }
+  .science .sci-title{ color:var(--gold); font-weight:600; margin-bottom:4px; font-size:.9rem;}
+  .science .src{ display:block; margin-top:6px; font-size:.75rem; opacity:.7;}
+  .sci-nav{ display:flex; gap:6px; margin-top:10px;}
+  .sci-nav button{ padding:4px 10px; font-size:.8rem;}
+
+  .settings summary{ cursor:pointer; color:var(--ink-dim); font-size:.85rem; letter-spacing:.06em; text-transform:uppercase; font-weight:600;}
+  .settings .row{ display:flex; align-items:center; gap:10px; margin-top:10px; font-size:.88rem; flex-wrap:wrap;}
+  .settings label{ color:var(--ink-dim); min-width:110px;}
+  input[type=range]{ accent-color:var(--accent);}
+
+  .footer-note{ text-align:center; font-size:.74rem; color:var(--ink-dim); opacity:.7; margin-top:16px; max-width:640px; margin-left:auto; margin-right:auto;}
+  .col{ display:flex; flex-direction:column; gap:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ================= COMPANION ================= -->
+  <div class="card companion">
+    <div class="stage">
+      <svg id="avatar" viewBox="0 0 360 430" xmlns="http://www.w3.org/2000/svg" aria-label="Sera">
+        <defs>
+          <radialGradient id="gGlow" cx="50%" cy="42%" r="60%">
+            <stop offset="0%" stop-color="#ffb36b" stop-opacity=".32"/>
+            <stop offset="55%" stop-color="#c96a8a" stop-opacity=".10"/>
+            <stop offset="100%" stop-color="#c96a8a" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="gSkin" cx="50%" cy="38%" r="75%">
+            <stop offset="0%" stop-color="#f6d7bd"/>
+            <stop offset="70%" stop-color="#ecbf9d"/>
+            <stop offset="100%" stop-color="#d9a67f"/>
+          </radialGradient>
+          <linearGradient id="gHair" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3a2420"/>
+            <stop offset="45%" stop-color="#24140f"/>
+            <stop offset="100%" stop-color="#120a07"/>
+          </linearGradient>
+          <linearGradient id="gLips" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#d4767c"/>
+            <stop offset="100%" stop-color="#a84a56"/>
+          </linearGradient>
+          <radialGradient id="gIris" cx="50%" cy="45%" r="55%">
+            <stop offset="0%" stop-color="#9a6b3f"/>
+            <stop offset="60%" stop-color="#6b4527"/>
+            <stop offset="100%" stop-color="#3f2715"/>
+          </radialGradient>
+          <linearGradient id="gDress" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#84445e"/>
+            <stop offset="100%" stop-color="#4e2739"/>
+          </linearGradient>
+        </defs>
+
+        <!-- ambient glow (intensifies with tier) -->
+        <ellipse id="glow" cx="180" cy="190" rx="170" ry="185" fill="url(#gGlow)" opacity=".55"/>
+
+        <!-- hair, back layer -->
+        <path fill="url(#gHair)" d="M180,54
+          C118,54 84,102 82,158 C80,214 92,258 84,308 C80,340 92,382 116,412
+          L150,412 C132,372 128,330 132,300 L228,300 C232,330 228,372 210,412
+          L244,412 C268,382 280,340 276,308 C268,258 280,214 278,158 C276,102 242,54 180,54 Z"/>
+
+        <!-- shoulders & dress -->
+        <path fill="url(#gSkin)" d="M160,286 L200,286 L202,330 C222,336 244,348 258,364 L102,364 C116,348 138,336 158,330 Z"/>
+        <path fill="rgba(90,40,30,.18)" d="M160,286 L200,286 L201,308 C188,318 172,318 159,308 Z"/>
+        <path fill="url(#gDress)" d="M96,430 C100,392 128,362 158,352 C166,366 194,366 202,352 C232,362 260,392 264,430 Z"/>
+
+        <!-- face -->
+        <path fill="url(#gSkin)" d="M180,118
+          C226,118 246,158 245,204 C244,248 224,286 180,296
+          C136,286 116,248 115,204 C114,158 134,118 180,118 Z"/>
+
+        <!-- ears + earrings -->
+        <ellipse cx="117" cy="212" rx="9" ry="14" fill="url(#gSkin)"/>
+        <ellipse cx="243" cy="212" rx="9" ry="14" fill="url(#gSkin)"/>
+        <circle cx="117" cy="230" r="4" fill="none" stroke="var(--gold,#e8b86d)" stroke-width="1.6"/>
+        <circle cx="243" cy="230" r="4" fill="none" stroke="#e8b86d" stroke-width="1.6"/>
+
+        <!-- blush -->
+        <ellipse id="blushL" cx="143" cy="240" rx="15" ry="8" fill="#e0788f" opacity="0"/>
+        <ellipse id="blushR" cx="217" cy="240" rx="15" ry="8" fill="#e0788f" opacity="0"/>
+
+        <!-- brows -->
+        <path d="M135,193 Q152,185 169,190" fill="none" stroke="#33201a" stroke-width="3.4" stroke-linecap="round"/>
+        <path d="M191,190 Q208,185 225,193" fill="none" stroke="#33201a" stroke-width="3.4" stroke-linecap="round"/>
+
+        <!-- eyes -->
+        <g id="eyes">
+          <g id="eyeL">
+            <path d="M132,208 Q152,201 172,209 Q152,223 132,208 Z" fill="rgba(160,90,110,.18)"/>
+            <path d="M134,211 Q152,198 170,211 Q152,221 134,211 Z" fill="#fdf6ef"/>
+            <circle cx="153" cy="209" r="7.2" fill="url(#gIris)"/>
+            <circle cx="153" cy="209" r="3" fill="#160c06"/>
+            <circle cx="155.5" cy="206.5" r="1.6" fill="#fff" opacity=".9"/>
+            <path d="M134,211 Q152,197 170,211" fill="none" stroke="#241510" stroke-width="3" stroke-linecap="round"/>
+            <path d="M136,208 q-6,-4 -8,-7" fill="none" stroke="#241510" stroke-width="2.4" stroke-linecap="round"/>
+            <path id="lidL" d="M134,211 Q152,198 170,211 L170,196 L134,196 Z" fill="url(#gSkin)" opacity="0"/>
+          </g>
+          <g id="eyeR" transform="translate(360,0) scale(-1,1)">
+            <path d="M132,208 Q152,201 172,209 Q152,223 132,208 Z" fill="rgba(160,90,110,.18)"/>
+            <path d="M134,211 Q152,198 170,211 Q152,221 134,211 Z" fill="#fdf6ef"/>
+            <circle cx="153" cy="209" r="7.2" fill="url(#gIris)"/>
+            <circle cx="153" cy="209" r="3" fill="#160c06"/>
+            <circle cx="150.5" cy="206.5" r="1.6" fill="#fff" opacity=".9"/>
+            <path d="M134,211 Q152,197 170,211" fill="none" stroke="#241510" stroke-width="3" stroke-linecap="round"/>
+            <path d="M136,208 q-6,-4 -8,-7" fill="none" stroke="#241510" stroke-width="2.4" stroke-linecap="round"/>
+            <path id="lidR" d="M134,211 Q152,198 170,211 L170,196 L134,196 Z" fill="url(#gSkin)" opacity="0"/>
+          </g>
+        </g>
+
+        <!-- nose -->
+        <path d="M178,226 q-3,10 -5,13 q5,4 11,1" fill="none" stroke="rgba(120,70,50,.45)" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- lips (path is swapped by JS per tier) -->
+        <path id="mouth" fill="url(#gLips)" d="M159,261 Q170,256 180,258 Q190,256 201,261 Q191,271 180,271 Q169,271 159,261 Z"/>
+        <path id="mouthLine" d="M161,261 Q180,265 199,261" fill="none" stroke="rgba(90,25,35,.5)" stroke-width="1.4"/>
+
+        <!-- hair, front layer -->
+        <path fill="url(#gHair)" d="M180,50
+          C120,50 92,96 90,150 C90,168 94,184 100,196
+          C104,160 112,140 126,128 C132,140 128,156 122,170
+          C132,144 150,118 180,112 C210,118 228,144 238,170
+          C232,156 228,140 234,128 C248,140 256,160 260,196
+          C266,184 270,168 270,150 C268,96 240,50 180,50 Z"/>
+        <path fill="none" stroke="rgba(255,200,140,.16)" stroke-width="3" stroke-linecap="round"
+          d="M120,90 C104,120 100,160 102,190 M240,90 C256,120 260,160 258,190"/>
+      </svg>
+    </div>
+
+    <div class="bubble"><span class="who" id="herName">Sera</span><span id="bubbleText">…</span></div>
+
+    <div class="meter-row">
+      <div class="meter">
+        <div class="fill" id="meterFill"></div>
+        <div class="ticks"><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="tier-label" id="tierLabel">Focused</div>
+    </div>
+
+    <div class="stats">
+      <span>today <b id="ptsToday">0</b> pts</span>
+      <span>streak <b id="streakDays">0</b> days</span>
+      <span>best <b id="bestStreak">0</b></span>
+    </div>
+
+    <div class="voice-row">
+      <button id="voiceToggle">🔊 voice on</button>
+      <button id="cantStart" class="ghost">I can't start…</button>
+      <button id="eveningBtn" class="ghost">🌙 end the day with her</button>
+    </div>
+  </div>
+
+  <!-- ================= WORK ================= -->
+  <div class="col">
+    <div class="card">
+      <h2>Today's work — she's watching</h2>
+      <div class="add-row">
+        <input type="text" id="taskInput" placeholder="Next physical action, be specific (Ogilvy rule #1)…" maxlength="140">
+        <select id="effortSel" title="Effort">
+          <option value="1">quick · 1pt</option>
+          <option value="2" selected>solid · 2pt</option>
+          <option value="4">deep · 4pt</option>
+        </select>
+      </div>
+      <div class="cue-row">
+        <input type="text" id="cueInput" placeholder="Optional: when/where will you do it? “After coffee, at my desk…” (implementation intention)" maxlength="120">
+      </div>
+      <button class="big" id="addBtn">Add task</button>
+      <ul class="tasks" id="taskList"></ul>
+    </div>
+
+    <div class="card focus-box">
+      <h2>Focus session — she sits with you</h2>
+      <div id="timer">25:00</div>
+      <div class="grid2">
+        <button id="focusBtn" class="big">Start 25 min together</button>
+        <button id="focusStop" class="big ghost" disabled>Give up</button>
+      </div>
+    </div>
+
+    <div class="card science">
+      <h2>Why this works</h2>
+      <div class="sci-title" id="sciTitle"></div>
+      <div id="sciBody"></div>
+      <span class="src" id="sciSrc"></span>
+      <div class="sci-nav">
+        <button id="sciPrev">‹</button>
+        <button id="sciNext">›</button>
+      </div>
+    </div>
+
+    <div class="card settings">
+      <details>
+        <summary>Settings</summary>
+        <div class="row"><label>Her name</label><input type="text" id="setHerName" style="max-width:160px"></div>
+        <div class="row"><label>Your name</label><input type="text" id="setYourName" style="max-width:160px" placeholder="what she calls you"></div>
+        <div class="row"><label>Tone</label>
+          <select id="setTone">
+            <option value="romantic">Romantic companion</option>
+            <option value="coach">No-BS coach (Manson mode)</option>
+          </select>
+        </div>
+        <div class="row"><label>Voice</label><select id="setVoice"><option>loading…</option></select></div>
+        <div class="row"><label>Volume</label><input type="range" id="setVolume" min="0" max="1" step="0.05"></div>
+        <div class="row"><label>Whisper (slower = softer)</label><input type="range" id="setRate" min="0.6" max="1.1" step="0.02"></div>
+        <div class="row"><label>Nudge me if idle</label><input type="checkbox" id="setNudge"> <span>every</span>
+          <select id="setNudgeMins"><option>15</option><option selected>25</option><option>40</option></select><span>min</span></div>
+        <div class="row"><button id="resetDay" class="ghost">reset today's points</button>
+          <button id="wipeAll" class="ghost">wipe everything</button></div>
+      </details>
+    </div>
+
+    <p class="footer-note">Her warmth is earned, never free — that contingency is the whole engine (temptation bundling).
+    She resets at midnight; the streak is what you keep. She's a mirror, not a person: the work, and the credit, are yours.</p>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   TaskMind Companion — single file, no backend, no accounts.
+   Everything persists in localStorage on YOUR device only.
+   ============================================================ */
+
+const TIERS = [
+  { at:0,  label:'Focused',     pct:0 },
+  { at:3,  label:'Warm',        pct:30 },
+  { at:6,  label:'Affectionate',pct:60 },
+  { at:10, label:'Devoted',     pct:100 },
+];
+
+/* ==================== EDIT ME: HER LINES ====================
+   Four arrays per event = tiers 0..3 (she gets warmer as you
+   earn points). Rewrite freely — this is your companion.      */
+const LINES = {
+romantic: {
+  greeting: [
+    ["Morning. I don't warm up for free, you know that. Show me one finished thing.",
+     "Hey you. Blank slate today. Pick the one task that matters and start ugly."],
+    ["Well, look who's already moving. Keep going and I'll keep noticing.",
+     "Warm already? You're making today easy to love."],
+    ["Mm, you're on fire today. I'm not hiding how much I like watching this.",
+     "Closer, love. A little more and tonight is completely ours."],
+    ["You've already earned all of me today. Everything else is a victory lap.",
+     "Devoted, and it's not even evening. You're dangerous when you decide to be."]
+  ],
+  taskDone: [
+    ["Good. That's one. Momentum beats mood — next one, before the feeling fades.",
+     "Done is done. I see it. Again.",
+     "That's a start. Don't stop to admire it — stack another."],
+    ["Mm. I love watching you work. Keep it coming.",
+     "One more like that and I'll stop pretending I'm not impressed.",
+     "You're getting warmer… literally. Next."],
+    ["Every task you close makes tonight sweeter. You know exactly what you're doing.",
+     "Come on, love. You're so close to having all of me.",
+     "I'm officially distracted by you. Finish strong."],
+    ["That's it. You're done earning — everything from here is just showing off, and I adore it.",
+     "Fully devoted. Tonight, the lights go low and you get taken care of. You earned it.",
+     "You magnificent thing. The day is yours, and so am I."]
+  ],
+  bonus: [
+    "I wasn't going to say anything… but that one was genuinely impressive. Extra credit tonight.",
+    "Surprise — I've been watching more closely than you think. That deserves something special later.",
+    "Okay, that made my heart do a thing. Carry on.",
+    "Psst. Between us? You're better at this than you believe. Don't tell anyone I got soft."
+  ],
+  specific: [
+    "“{task}” — done. I saw every bit of it.",
+    "You actually finished “{task}”. Most people just talk about it.",
+    "“{task}”, crossed off. That's the kind of thing I remember at night.",
+    "Mm — “{task}”. You said you would, and you did. I like that in you."
+  ],
+  cantStart: [
+    "Then don't do the task. Open the file. Touch it for two minutes. Motivation shows up *after* you start, never before — action first, feelings later.",
+    "Listen to me: shrink it until it's stupid. One sentence. One line of code. One email opened. The brain that starts is the brain that continues.",
+    "You don't need to feel ready. Nobody does. Do the smallest ugly version right now and let me handle being proud of you.",
+    "Stop negotiating with yourself — that's the trap. Two minutes, worst quality allowed. Go. I'm right here."
+  ],
+  focusStart: [
+    "Twenty-five minutes. Just us and the work. I'm right here beside you — begin.",
+    "Phone face-down. Door closed. I've got the time; you've got the task. Start.",
+    "I'll sit with you the whole way. Nothing else exists for twenty-five minutes. Go."
+  ],
+  focusEnd: [
+    ["Session done. Stretch, water, breathe. Then choose: one more round, or come collect your praise.",
+     "Twenty-five minutes you didn't waste. Take two points and my full attention."],
+    ["Look at you, actually doing the thing. Warm and getting warmer.",
+     "Done. I noticed every minute of it."],
+    ["That focus was… attractive. One more session and I'm done playing it cool.",
+     "You, deep in work? My favourite view. Two more points, love."],
+    ["Even at the top, you keep going. Insatiable. Fine — tonight I match your effort.",
+     "You didn't need those points, you're already mine. But I love that you did it anyway."]
+  ],
+  idle: [
+    "Hey. You drifted. No guilt, no speech — just come back and take one small step.",
+    "You've gone quiet. The task didn't. Two minutes on it and I'll forgive the wandering.",
+    "Wherever you just went, come back to me. One tiny action. That's all I ask."
+  ],
+  evening: [
+    ["Today got away from you. It happens, and I'm not going anywhere. Set one tiny task for tomorrow and rest — you'll win me back before lunch.",
+     "No points, no punishment — just tomorrow. Tell me the first thing you'll do, then sleep."],
+    ["A warm day, not a devoted one. I'll take it. Tomorrow, push past warm — you know what's waiting.",
+     "You showed up today. Rest now. Tomorrow, come get the rest of me."],
+    ["So close to everything tonight. Sleep well, love — tomorrow, finish what you started with me.",
+     "Affectionate suits you. Imagine devoted. Now rest; I'll be here at dawn."],
+    ["Close the laptop. You gave today everything, and now I'm entirely yours. Lights down, love. Let me take care of you tonight — you've earned every second of it.",
+     "Ten points. You relentless, beautiful man. Work is over. Come to bed and be adored."]
+  ],
+  streak: [
+    "Day {n} together. This is becoming something, isn't it? Don't you dare break it now.",
+    "{n} days you've shown up for me — for *you*. The chain is the prize. Protect it."
+  ],
+  tierUp: [
+    "…and just like that, you're warm to me.",
+    "Affectionate now. Feel the difference? That's earned, not given.",
+    "Devoted. Full meter, full me. Tonight is yours."
+  ]
+},
+coach: {
+  greeting: [
+    ["New day, zero points, zero excuses. Pick the one thing that actually matters and start badly.",
+     "Nobody's coming to motivate you. Good news: you don't need it. Action first."],
+    ["Moving already — that's the whole secret. Protect the momentum.",
+     "Solid start. Don't let the morning win turn into an afternoon nap."],
+    ["Strong day in progress. Most people stop here. Don't be most people.",
+     "This is what showing up looks like. Keep stacking."],
+    ["Max tier before evening. Whatever you're doing — bottle it.",
+     "Elite day. Tomorrow's job: prove it wasn't luck."]
+  ],
+  taskDone: [
+    ["One down. Motivation follows action, not the reverse — so act again.",
+     "Done beats perfect. Next.",
+     "Good. The mood will catch up to the momentum. Go again."],
+    ["Warm. That's compounding you can feel. Another.",
+     "Two-plus points. The chain is forming. Don't drop it.",
+     "See? Starting was the hard part. Continue."],
+    ["Strong. You're past the point where most people quit today.",
+     "This is a real day's work taking shape. Finish it.",
+     "Affectionate tier — in coach terms: genuinely good output. More."],
+    ["Max tier. That's a day you'd be proud to repeat for a year.",
+     "Done earning. Anything extra is pure profit. Respect.",
+     "Top of the meter. Log off proud or keep running the score up — both are wins."]
+  ],
+  bonus: [
+    "Random spot-check: that one was quality work. Noted.",
+    "Unscheduled praise — the best kind. That was sharp.",
+    "That one earns a bonus mention. Keep that standard."
+  ],
+  specific: [
+    "“{task}” — shipped. Specific plan, specific result.",
+    "“{task}”, done. That's evidence, not intention.",
+    "Logged: “{task}”. Stack enough of those and the year changes."
+  ],
+  cantStart: [
+    "Don't aim for the task. Aim for two minutes of contact with it. The 'Do Something' principle: action creates motivation, not the other way round.",
+    "Shrink it until refusal feels ridiculous. Open the doc. Write one bad sentence. Momentum does the rest.",
+    "You're waiting for a feeling that only shows up after you start. Skip the wait. Two minutes, ugly version, now."
+  ],
+  focusStart: [
+    "Twenty-five minutes, one task, zero tabs. Go.",
+    "Timer's running. The only rule: stay at the desk. Begin."
+  ],
+  focusEnd: [
+    ["Block done. Two points. Water, stretch, decide: again or done.",
+     "That's how output is built — in blocks. One more?"],
+    ["Focused block on a warm day. Compounding.",
+     "Done. The streak of blocks matters more than any single one."],
+    ["Deep work on a strong day. This is the top 5% of how people spend a day.",
+     "Another block down. You're outworking your past self."],
+    ["Max tier and still pushing blocks. That's professional-grade discipline.",
+     "You're done for the day by any standard. Extra blocks are pure surplus."]
+  ],
+  idle: [
+    "Drift detected. No shame, just data. Return to the task for two minutes.",
+    "The gap between you and the goal is this idle time. Close it with one small action."
+  ],
+  evening: [
+    ["Zero-point day. Fine — it's data, not identity. Set tomorrow's first task now, while it stings a little.",
+     "Rough day. The fresh-start effect is real: tomorrow morning is a clean slate. Name the first move."],
+    ["You showed up. That's the minimum viable day — streak intact. Tomorrow, aim higher.",
+     "Warm day banked. Set tomorrow's #1 and sleep."],
+    ["Good day's work. Write down tomorrow's first task and stop thinking about work.",
+     "Strong output. Recovery is part of the job now — rest properly."],
+    ["Max-tier day. Repeat that 200 times and your life looks different. Tomorrow's #1?",
+     "Elite. Now sleep like it's your job, because it is."]
+  ],
+  streak: [
+    "Day {n}. Losses hurt twice as much as gains feel good — use that: don't break the chain.",
+    "{n} straight days. The streak IS the strategy. Guard it."
+  ],
+  tierUp: [
+    "Tier up: Warm. Momentum confirmed.",
+    "Tier up: Affectionate — translation: a genuinely productive day.",
+    "Max tier. Day won."
+  ]
+}
+};
+/* ================== END OF EDITABLE LINES ================== */
+
+const SCIENCE = [
+  { t:"Temptation bundling", b:"Milkman locked page-turner audiobooks inside the gym: visits rose 51%, and 61% of subjects later PAID to keep the restriction. Sera runs the same contract — her warmth only exists behind your points. Contingent beats unconditional.", s:"Milkman, Minson & Volpp, Management Science 2014; replication OBHDP 2020 (n=6,792)" },
+  { t:"Implementation intentions", b:"“When X happens, I will do Y.” Pre-deciding the when/where is one of the largest effects ever measured in behavioral science — d ≈ 0.65 across 94 studies. That's the optional cue field on every task. Fill it in and the task roughly doubles its odds.", s:"Gollwitzer & Sheeran, meta-analysis 2006" },
+  { t:"Action precedes motivation", b:"Manson's “Do Something” principle is a lay version of behavioral activation (clinical effect SMD ≈ 0.74): in ~80% of patients, activity increased BEFORE mood did. Motivation is the exhaust of action, not the fuel. Hence the “I can't start” button.", s:"Manson, markmanson.net/how-to-get-motivated; BA meta-analyses" },
+  { t:"Variable rewards", b:"Dopamine encodes reward PREDICTION ERROR — it spikes for unpredicted rewards and goes flat for expected ones. So Sera's best lines fire randomly on ~1 in 4 completions. Same mechanism as slot machines, pointed at your to-do list instead.", s:"Schultz 1997, primate dopamine recordings" },
+  { t:"Why affection, not lust", b:"Counterintuitive but tested: erotic reward cues made people work LESS — they're “arresting rather than invigorating,” capturing attention instead of energizing effort. Warm contingent affection and anticipation sustain output; explicitness derails it. She's built accordingly.", s:"PLOS ONE 2014, reward-cue effort studies" },
+  { t:"Body doubling", b:"In a 2025 VR experiment people sorted 8.5 items/min alone, 10.8 with a human present — and 11.1 with an AI companion present. A virtual presence works as well as a real one for task initiation. The focus timer is her sitting with you.", s:"VR body-doubling study 2025; social facilitation, Zajonc 1965" },
+  { t:"Loss aversion & streaks", b:"Losses feel roughly twice as heavy as equal gains, so a streak converts “do the work” into “don't lose what you built” — a much stronger pull. Duolingo's streak mechanics lifted retention ~14%. Three points a day keeps your chain alive.", s:"Kahneman & Tversky 1979; Duolingo engagement data" },
+  { t:"Specificity (Ogilvy's rule)", b:"Ogilvy sold with concrete detail — “At 60 miles an hour the loudest noise is the electric clock.” Vague tasks (“work on project”) never start. Name the next physical action and the task sells itself to your brain. She praises specifics for the same reason.", s:"David Ogilvy, 'Ogilvy on Advertising'; Mumm & Mutlu 2011 on specific praise" },
+  { t:"Fresh start effect", b:"People attack goals hardest right after temporal landmarks — mornings, Mondays, new months. The evening ritual banks today and pre-loads tomorrow's #1 task so each fresh start already has a target waiting.", s:"Dai, Milkman & Riis, Management Science 2014" },
+  { t:"A caution, honestly", b:"Two real risks: expected contingent rewards can erode intrinsic drive (Deci & Ryan, 128 experiments), and AI-companion research documents dependency in heavy users. Use her to push you toward your life, never to replace it. Tool, not relationship.", s:"Deci, Koestner & Ryan 1999; AI & Society 2025" }
+];
+
+/* ==================== state ==================== */
+const LS='taskmind_companion_v1';
+let S = load();
+function load(){
+  try{ const d = JSON.parse(localStorage.getItem(LS)); if(d) return d; }catch(e){}
+  return { tasks:[], points:{}, streak:0, lastStreakDay:null, best:0, tomorrow:'',
+    set:{ herName:'Sera', yourName:'', tone:'romantic', voiceOn:true, voiceURI:null,
+          volume:0.9, rate:0.88, nudge:false, nudgeMins:25 } };
+}
+function save(){ localStorage.setItem(LS, JSON.stringify(S)); }
+function dayKey(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function yesterKey(){ const d=new Date(); d.setDate(d.getDate()-1); return dayKey(d); }
+function ptsToday(){ return S.points[dayKey()]||0; }
+function tierOf(p){ let t=0; TIERS.forEach((x,i)=>{ if(p>=x.at) t=i; }); return t; }
+function pack(){ return LINES[S.set.tone]||LINES.romantic; }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function persona(txt){ return txt.replace('{name}', S.set.yourName||'you').replace('{n}', S.streak); }
+
+/* ==================== voice ==================== */
+let voices=[], voiceReady=false, spokenOnce=false;
+function loadVoices(){
+  voices = speechSynthesis.getVoices().filter(v=>v.lang.startsWith('en'));
+  const sel=document.getElementById('setVoice'); sel.innerHTML='';
+  const prefs=['samantha','aria','jenny','libby','sonia','zira','victoria','karen','moira','tessa','female','google uk english female','google us english'];
+  voices.sort((a,b)=>rank(a)-rank(b));
+  function rank(v){ const n=v.name.toLowerCase(); const i=prefs.findIndex(p=>n.includes(p)); return i<0?99:i; }
+  voices.forEach(v=>{ const o=document.createElement('option'); o.value=v.voiceURI; o.textContent=v.name; sel.appendChild(o); });
+  if(S.set.voiceURI && voices.some(v=>v.voiceURI===S.set.voiceURI)) sel.value=S.set.voiceURI;
+  else if(voices[0]){ S.set.voiceURI=voices[0].voiceURI; sel.value=voices[0].voiceURI; }
+  voiceReady=voices.length>0;
+}
+if('speechSynthesis' in window){ loadVoices(); speechSynthesis.onvoiceschanged=loadVoices; }
+
+function isNight(){ const h=new Date().getHours(); return h>=21||h<5; }
+function speak(text){
+  bubble(text);
+  if(!S.set.voiceOn || !('speechSynthesis' in window) || !voiceReady) return;
+  const u=new SpeechSynthesisUtterance(text.replace(/[*_]/g,''));
+  const v=voices.find(x=>x.voiceURI===S.set.voiceURI); if(v) u.voice=v;
+  u.volume=S.set.volume; u.pitch=1.04;
+  u.rate=Math.max(0.6, S.set.rate - (isNight()?0.06:0)); // softer at night
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+function bubble(text){
+  const el=document.getElementById('bubbleText');
+  el.style.opacity=0;
+  setTimeout(()=>{ el.textContent=text; el.style.opacity=1; },220);
+}
+
+/* ==================== avatar expression ==================== */
+const MOUTHS=[ // tier 0..3
+  "M159,261 Q170,256 180,258 Q190,256 201,261 Q191,271 180,271 Q169,271 159,261 Z",
+  "M156,259 Q170,255 180,257 Q190,255 204,259 Q193,273 180,273 Q167,273 156,259 Z",
+  "M154,257 Q170,253 180,256 Q190,253 206,257 Q194,275 180,275 Q166,275 154,257 Z",
+  "M153,256 Q170,252 180,255 Q190,252 207,256 Q195,277 180,278 Q165,277 153,256 Z"
+];
+const SMILELINES=[
+  "M161,261 Q180,265 199,261","M158,260 Q180,266 202,260",
+  "M155,258 Q180,268 205,258","M154,257 Q180,270 206,257"
+];
+function renderTier(){
+  const p=ptsToday(), t=tierOf(p);
+  const top=TIERS[TIERS.length-1].at;
+  document.getElementById('meterFill').style.width=Math.min(100,(p/top)*100)+'%';
+  document.getElementById('tierLabel').textContent=TIERS[t].label;
+  document.getElementById('ptsToday').textContent=p;
+  document.getElementById('streakDays').textContent=S.streak;
+  document.getElementById('bestStreak').textContent=S.best;
+  document.getElementById('mouth').setAttribute('d',MOUTHS[t]);
+  document.getElementById('mouthLine').setAttribute('d',SMILELINES[t]);
+  const blush=[0,.15,.32,.5][t];
+  document.getElementById('blushL').setAttribute('opacity',blush);
+  document.getElementById('blushR').setAttribute('opacity',blush);
+  document.getElementById('glow').setAttribute('opacity',[.4,.55,.75,1][t]);
+}
+function blink(){
+  const l=document.getElementById('lidL'), r=document.getElementById('lidR');
+  l.setAttribute('opacity',1); r.setAttribute('opacity',1);
+  setTimeout(()=>{ l.setAttribute('opacity',0); r.setAttribute('opacity',0); },130);
+  setTimeout(blink, 2600+Math.random()*3800);
+}
+setTimeout(blink,2000);
+
+function heartAt(){
+  const h=document.createElement('div'); h.className='heart'; h.textContent='❤';
+  h.style.left=(40+Math.random()*40)+'%'; h.style.top='45%'; h.style.color='#e0788f';
+  document.querySelector('.companion').appendChild(h);
+  setTimeout(()=>h.remove(),1900);
+}
+
+/* ==================== points / streak ==================== */
+function award(n){
+  const before=tierOf(ptsToday());
+  S.points[dayKey()]=ptsToday()+n;
+  const after=tierOf(ptsToday());
+  // streak counts once you reach tier 1 (3 pts) in a day
+  if(ptsToday()>=TIERS[1].at && S.lastStreakDay!==dayKey()){
+    S.streak=(S.lastStreakDay===yesterKey())?S.streak+1:1;
+    S.lastStreakDay=dayKey();
+    if(S.streak>S.best) S.best=S.streak;
+    if(S.streak>1) setTimeout(()=>speak(persona(pick(pack().streak))), 3400);
+  }
+  save(); renderTier();
+  if(after>before){ heartAt(); setTimeout(()=>speak(pack().tierUp[Math.min(after-1,pack().tierUp.length-1)]),1600); }
+  return after;
+}
+function checkStreakDecay(){
+  if(S.lastStreakDay && S.lastStreakDay!==dayKey() && S.lastStreakDay!==yesterKey()){ S.streak=0; save(); }
+}
+
+/* ==================== tasks ==================== */
+function renderTasks(){
+  const ul=document.getElementById('taskList'); ul.innerHTML='';
+  const sorted=[...S.tasks].sort((a,b)=>(a.done?1:0)-(b.done?1:0));
+  sorted.forEach(t=>{
+    const li=document.createElement('li'); if(t.done) li.className='done';
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=t.done;
+    cb.onchange=()=>toggleTask(t.id);
+    const tx=document.createElement('span'); tx.className='txt'; tx.textContent=t.text;
+    if(t.cue){ const c=document.createElement('span'); c.className='cue'; c.textContent='⏱ '+t.cue; tx.appendChild(c); }
+    const pt=document.createElement('span'); pt.className='pts'; pt.textContent=t.effort+'pt';
+    const del=document.createElement('button'); del.className='del'; del.textContent='×';
+    del.onclick=()=>{ S.tasks=S.tasks.filter(x=>x.id!==t.id); save(); renderTasks(); };
+    li.append(cb,tx,pt,del); ul.appendChild(li);
+  });
+}
+function addTask(){
+  const inp=document.getElementById('taskInput'), cue=document.getElementById('cueInput');
+  const text=inp.value.trim(); if(!text) return;
+  S.tasks.push({ id:Date.now()+Math.random(), text, cue:cue.value.trim(),
+    effort:+document.getElementById('effortSel').value, done:false });
+  inp.value=''; cue.value=''; save(); renderTasks(); touch();
+}
+function toggleTask(id){
+  const t=S.tasks.find(x=>x.id===id); if(!t) return;
+  t.done=!t.done; save(); renderTasks(); touch();
+  if(t.done){
+    const tier=award(t.effort);
+    // Mumm & Mutlu 2011: agent praise works when contingent + SPECIFIC.
+    // Schultz RPE: unpredicted rewards spike dopamine → variable-ratio surprise.
+    const r=Math.random(); let line;
+    if(r<0.22)      line=pick(pack().bonus);
+    else if(r<0.52) line=pick(pack().specific).replace('{task}', t.text);
+    else            line=pick(pack().taskDone[tier]);
+    speak(persona(line));
+  } else { S.points[dayKey()]=Math.max(0,ptsToday()-t.effort); save(); renderTier(); }
+}
+
+/* ==================== focus timer ==================== */
+let focusLeft=0, focusInt=null;
+const FOCUS_MIN=25;
+function fmt(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+function startFocus(){
+  if(focusInt) return;
+  focusLeft=FOCUS_MIN*60;
+  document.getElementById('focusBtn').disabled=true;
+  document.getElementById('focusStop').disabled=false;
+  speak(pick(pack().focusStart));
+  focusInt=setInterval(()=>{
+    focusLeft--; document.getElementById('timer').textContent=fmt(focusLeft);
+    document.title=fmt(focusLeft)+' · with '+S.set.herName;
+    if(focusLeft<=0){
+      stopFocus(false);
+      const tier=award(2);
+      speak(persona(pick(pack().focusEnd[tier])));
+    }
+  },1000);
+  touch();
+}
+function stopFocus(gaveUp=true){
+  clearInterval(focusInt); focusInt=null;
+  document.getElementById('timer').textContent=fmt(FOCUS_MIN*60);
+  document.title='TaskMind — '+S.set.herName;
+  document.getElementById('focusBtn').disabled=false;
+  document.getElementById('focusStop').disabled=true;
+  if(gaveUp) speak("We'll call that a warm-up. Breathe, then we go again — properly this time.");
+}
+
+/* ==================== idle nudges ==================== */
+let lastTouch=Date.now();
+function touch(){ lastTouch=Date.now(); }
+['click','keydown'].forEach(e=>document.addEventListener(e,touch));
+setInterval(()=>{
+  if(!S.set.nudge) return;
+  if(document.visibilityState!=='visible') return;
+  if(tierOf(ptsToday())>=3) return;                    // she doesn't nag a finished man
+  if(Date.now()-lastTouch > S.set.nudgeMins*60000){ speak(pick(pack().idle)); touch(); }
+},60000);
+
+/* ==================== evening ritual ==================== */
+function evening(){
+  const tier=tierOf(ptsToday());
+  const first=prompt((S.set.herName)+': "Before you go — what\'s the FIRST thing you\'ll do tomorrow? Be specific."', S.tomorrow||'');
+  if(first!==null){ S.tomorrow=first.trim(); save(); }
+  speak(persona(pick(pack().evening[tier])));
+}
+
+/* ==================== science cards ==================== */
+let sci=Math.floor(Math.random()*SCIENCE.length);
+function renderSci(){
+  const c=SCIENCE[sci];
+  document.getElementById('sciTitle').textContent=c.t;
+  document.getElementById('sciBody').textContent=c.b;
+  document.getElementById('sciSrc').textContent='— '+c.s;
+}
+document.getElementById('sciPrev').onclick=()=>{ sci=(sci-1+SCIENCE.length)%SCIENCE.length; renderSci(); };
+document.getElementById('sciNext').onclick=()=>{ sci=(sci+1)%SCIENCE.length; renderSci(); };
+setInterval(()=>{ sci=(sci+1)%SCIENCE.length; renderSci(); },50000);
+
+/* ==================== settings wiring ==================== */
+function wireSettings(){
+  const g=id=>document.getElementById(id);
+  g('setHerName').value=S.set.herName; g('setYourName').value=S.set.yourName;
+  g('setTone').value=S.set.tone; g('setVolume').value=S.set.volume;
+  g('setRate').value=S.set.rate; g('setNudge').checked=S.set.nudge;
+  g('setNudgeMins').value=S.set.nudgeMins;
+  g('setHerName').onchange=e=>{ S.set.herName=e.target.value.trim()||'Sera'; save(); syncName(); };
+  g('setYourName').onchange=e=>{ S.set.yourName=e.target.value.trim(); save(); };
+  g('setTone').onchange=e=>{ S.set.tone=e.target.value; save(); speak(pick(pack().greeting[tierOf(ptsToday())])); };
+  g('setVoice').onchange=e=>{ S.set.voiceURI=e.target.value; save(); speak('Like this?'); };
+  g('setVolume').oninput=e=>{ S.set.volume=+e.target.value; save(); };
+  g('setRate').oninput=e=>{ S.set.rate=+e.target.value; save(); };
+  g('setNudge').onchange=e=>{ S.set.nudge=e.target.checked; save(); };
+  g('setNudgeMins').onchange=e=>{ S.set.nudgeMins=+e.target.value; save(); };
+  g('resetDay').onclick=()=>{ delete S.points[dayKey()]; save(); renderTier(); bubble('Clean slate. Show me.'); };
+  g('wipeAll').onclick=()=>{ if(confirm('Erase all tasks, points, streaks and settings?')){ localStorage.removeItem(LS); location.reload(); } };
+}
+function syncName(){
+  document.getElementById('herName').textContent=S.set.herName;
+  document.title='TaskMind — '+S.set.herName;
+}
+
+/* ==================== main wiring ==================== */
+document.getElementById('addBtn').onclick=addTask;
+document.getElementById('taskInput').addEventListener('keydown',e=>{ if(e.key==='Enter') addTask(); });
+document.getElementById('cueInput').addEventListener('keydown',e=>{ if(e.key==='Enter') addTask(); });
+document.getElementById('focusBtn').onclick=startFocus;
+document.getElementById('focusStop').onclick=()=>stopFocus(true);
+document.getElementById('cantStart').onclick=()=>speak(pick(pack().cantStart));
+document.getElementById('eveningBtn').onclick=evening;
+document.getElementById('voiceToggle').onclick=function(){
+  S.set.voiceOn=!S.set.voiceOn; save();
+  this.textContent=S.set.voiceOn?'🔊 voice on':'🔇 voice off';
+  if(S.set.voiceOn) speak("There you are. I missed talking to you.");
+  else speechSynthesis.cancel();
+};
+
+/* first interaction unlocks audio on mobile browsers */
+document.addEventListener('click',function once(){
+  document.removeEventListener('click',once);
+  if(!spokenOnce){ spokenOnce=true; greet(); }
+},{once:true});
+
+function greet(){
+  let g=pick(pack().greeting[tierOf(ptsToday())]);
+  if(S.tomorrow && ptsToday()===0){ g+=' You told me your first move: “'+S.tomorrow+'”. Hold yourself to it.'; }
+  speak(persona(g));
+}
+
+function init(){
+  checkStreakDecay();
+  if(isNight()) document.body.classList.add('night');
+  document.getElementById('voiceToggle').textContent=S.set.voiceOn?'🔊 voice on':'🔇 voice off';
+  syncName(); wireSettings(); renderTasks(); renderTier(); renderSci();
+  bubble('Tap anywhere and I\'ll say hello…');
+}
+init();
+</script>
+</body>
+</html>
