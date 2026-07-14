@@ -58,7 +58,7 @@ export function newDecision(now = Date.now()) {
     createdAt: now,
     updatedAt: now,
 
-    // Step 1 — check in (Dr. K)
+    // Step 1 — check in (awareness)
     checkin: { halt: [], emotion: "", intensity: 3 },
 
     // Step 2 — frame it
@@ -67,25 +67,25 @@ export function newDecision(now = Date.now()) {
     options: ["", ""],
     deadline: "",          // yyyy-mm-dd or ""
 
-    // Step 3 — triage (Ali)
+    // Step 3 — triage (energy & experiments)
     reversible: null,      // true | false | null
     stakes: null,          // "low" | "medium" | "high" | null
     fastTracked: false,
 
-    // Step 4 — values (Manson)
+    // Step 4 — values
     values: [],            // chosen value names (max 3)
     optionNotes: [],       // per option: { pain: "", fit: { [value]: 1..5 } }
 
-    // Step 5 — think it through (Big Think + Ali's bookshelf)
+    // Step 5 — think it through (mental models)
     frameworks: {},        // { [frameworkId]: "answer text" }
 
-    // Step 6 — courage check (Charlie)
+    // Step 6 — courage check
     courage: { noJudgement: "", pleasing: null, confidentSelf: "" },
 
     // Step 7 — gut check
     gut: { done: false, result: "", feeling: null }, // feeling: relieved | disappointed | nothing
 
-    // Step 8 — decide (Annie Duke bet)
+    // Step 8 — decide (place a bet)
     chosenIndex: null,
     confidence: 70,        // 0..100
     rationale: "",
@@ -254,7 +254,7 @@ export function createStore(storage = defaultStorage()) {
  * ------------------------------------------------------------------ */
 
 /**
- * Dr. K's check-in verdict: should you decide right now?
+ * The awareness check-in verdict: should you decide right now?
  * Returns { ok, reasons[] }.
  */
 export function checkinVerdict(checkin) {
@@ -271,7 +271,7 @@ export function checkinVerdict(checkin) {
 }
 
 /**
- * Ali's triage: is this a two-way door you should just walk through?
+ * Triage: is this a two-way door you should just walk through?
  * Returns "fast" | "full".
  */
 export function triageRecommendation(reversible, stakes) {
@@ -329,7 +329,7 @@ export function defaultReviewDate(now = new Date(), deadline = "") {
 }
 
 /**
- * Annie Duke calibration: compare average stated confidence with how often
+ * Calibration: compare average stated confidence with how often
  * reviewed decisions actually turned out well.
  * Returns null until there are at least `min` reviewed decisions.
  */
@@ -349,7 +349,7 @@ export function calibration(decisions, min = 3) {
 }
 
 /**
- * Spot "resulting" (Annie Duke): judging the decision purely by its outcome.
+ * Spot "resulting": judging the decision purely by its outcome, not the process.
  * Flags reviews where outcome and process quality disagree.
  */
 export function resultingWarning(review) {

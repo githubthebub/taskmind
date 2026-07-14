@@ -25,12 +25,12 @@
   --warn: #fbbf24;
   --bad: #f87171;
 
-  /* mentor hues */
-  --c-drk: #4ade80;         /* HealthyGamerGG — green */
-  --c-ali: #2dd4bf;         /* Ali Abdaal — teal */
-  --c-bigthink: #60a5fa;    /* Big Think — blue */
-  --c-manson: #fb923c;      /* Mark Manson — orange */
-  --c-charlie: #a78bfa;     /* Charisma on Command — violet */
+  /* mentor hues — one per voice */
+  --c-steady: #4ade80;       /* the awareness voice — green */
+  --c-experimenter: #2dd4bf; /* the energy voice — teal */
+  --c-strategist: #60a5fa;   /* the mental-models voice — blue */
+  --c-realist: #fb923c;      /* the values voice — orange */
+  --c-confidant: #a78bfa;    /* the courage voice — violet */
 
   --radius: 14px;
   --radius-sm: 9px;

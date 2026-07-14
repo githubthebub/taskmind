@@ -1,7 +1,7 @@
 import { el, toast } from "../ui.js";
 
 /**
- * The gut check — a Dr. K-flavoured coin flip.
+ * The gut check — an old therapist's trick, in the spirit of an awareness practice.
  * The coin doesn't make the decision; your reaction to the result does.
  */
 export function coinFlipView() {
@@ -77,7 +77,7 @@ export function coinFlipView() {
     el(
       "p",
       { class: "lede" },
-      "An old trick Dr. K would approve of: assign your two options to a coin and flip it. " +
+      "An old trick: assign your two options to a coin and flip it. " +
         "You're not outsourcing the choice — you're using the result to surface the preference " +
         "your mind already holds but won't say out loud."
     ),

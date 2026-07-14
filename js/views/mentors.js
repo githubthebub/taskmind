@@ -21,21 +21,13 @@ export function mentorsView() {
         el("p", { class: "mentor-role" }, `${m.role} · wizard step: ${m.wizardStep}`),
         el("p", { class: "small", style: { color: m.color, fontWeight: "600" } }, m.lens),
         el("ul", {}, m.principles.map((p) => el("li", {}, p))),
-        m.books
+        m.readingDirections
           ? [
-              el("h4", { class: "section-title", style: { margin: "1.2rem 0 0.2rem" } }, "From Ali's bookshelf"),
+              el("h4", { class: "section-title", style: { margin: "1.2rem 0 0.2rem" } }, "Worth reading around"),
               el(
                 "ul",
                 { class: "book-list" },
-                m.books.map((b) =>
-                  el(
-                    "li",
-                    {},
-                    el("span", { class: "book-title" }, b.title),
-                    el("span", { class: "muted" }, ` — ${b.author}`),
-                    el("span", { class: "book-note" }, b.note)
-                  )
-                )
+                m.readingDirections.map((r) => el("li", {}, r))
               ),
             ]
           : null

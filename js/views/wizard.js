@@ -12,14 +12,14 @@ import {
 const HALT = ["Hungry", "Angry", "Lonely", "Tired"];
 
 const STEPS = [
-  { key: "checkin", label: "Check in", mentor: "Dr. K · HealthyGamerGG", color: "var(--c-drk)" },
+  { key: "checkin", label: "Check in", mentor: "The Steady Mind", color: "var(--c-steady)" },
   { key: "frame", label: "Frame it", mentor: "You", color: "var(--accent)" },
-  { key: "triage", label: "Triage", mentor: "Ali Abdaal", color: "var(--c-ali)" },
-  { key: "values", label: "Values", mentor: "Mark Manson", color: "var(--c-manson)" },
-  { key: "models", label: "Think it through", mentor: "Big Think & the bookshelf", color: "var(--c-bigthink)" },
-  { key: "courage", label: "Courage check", mentor: "Charlie · Charisma on Command", color: "var(--c-charlie)" },
-  { key: "gut", label: "Gut check", mentor: "Dr. K · HealthyGamerGG", color: "var(--c-drk)" },
-  { key: "decide", label: "Decide", mentor: "Annie Duke's bet", color: "var(--accent)" },
+  { key: "triage", label: "Triage", mentor: "The Experimenter", color: "var(--c-experimenter)" },
+  { key: "values", label: "Values", mentor: "The Straight Talker", color: "var(--c-realist)" },
+  { key: "models", label: "Think it through", mentor: "The Strategist", color: "var(--c-strategist)" },
+  { key: "courage", label: "Courage check", mentor: "The Confidant", color: "var(--c-confidant)" },
+  { key: "gut", label: "Gut check", mentor: "The Steady Mind", color: "var(--c-steady)" },
+  { key: "decide", label: "Decide", mentor: "Place a bet", color: "var(--accent)" },
 ];
 
 export function wizardView(ctx) {
@@ -135,7 +135,7 @@ export function wizardView(ctx) {
           : el(
               "div",
               { class: "callout warn" },
-              el("strong", {}, "Dr. K would tell you to wait. "),
+              el("strong", {}, "The Steady Mind would tell you to wait. "),
               `${v.reasons.join(" ")} Your mind will generate reasons for whatever it already wants — `,
               "handle the state first (eat, breathe, step outside, sleep on it), then come back. ",
               "The draft will be saved right here. If it truly can't wait, at least take ten slow breaths before the next step."
@@ -170,11 +170,11 @@ export function wizardView(ctx) {
       el(
         "p",
         { class: "muted" },
-        "Dr. K's rule: the state you decide in shapes what you decide. Sixty seconds of honesty now saves months of cleanup later."
+        "An old rule: the state you decide in shapes what you decide. Sixty seconds of honesty now saves months of cleanup later."
       ),
       el("div", { class: "step-quote" },
         "“Your mind will happily generate reasons for whatever it already wants. Notice the want first.”",
-        el("span", { class: "who" }, "— after Dr. K, HealthyGamerGG")),
+        el("span", { class: "who" }, "— The Steady Mind")),
       el("span", { class: "field-label" }, "Any of these true right now? (HALT)"),
       el(
         "div",
@@ -259,7 +259,7 @@ export function wizardView(ctx) {
       el(
         "p",
         { class: "muted" },
-        "A decision you can't state in one sentence isn't ready to be made. And remember Manson's point: " +
+        "A decision you can't state in one sentence isn't ready to be made. And remember: " +
           "“keep things as they are” is an option too — refusing to choose is choosing."
       ),
       el("label", { class: "field-label", for: "d-title" }, "The decision, in one sentence"),
@@ -310,7 +310,7 @@ export function wizardView(ctx) {
             "div",
             { class: "callout good" },
             el("strong", {}, "This is a two-way door. "),
-            "Ali's advice (borrowed from Bezos): walk through it. Reversible, modest-stakes choices are experiments, " +
+            "The advice: walk through it. Reversible, modest-stakes choices are experiments, " +
               "not verdicts — the cost of deciding slowly is higher than the cost of deciding wrong. " +
               "Trust the gut, pick, and gather real data."
           ),
@@ -354,12 +354,12 @@ export function wizardView(ctx) {
       el(
         "p",
         { class: "muted" },
-        "Ali Abdaal's most repeated decision advice: most choices are reversible experiments, and we burn " +
+        "The Experimenter's most repeated advice: most choices are reversible experiments, and we burn " +
           "weeks treating them like verdicts. Sort this one before you spend another minute on it."
       ),
       el("div", { class: "step-quote" },
         "“Reduce the cost of failure instead of agonising over the odds of success.”",
-        el("span", { class: "who" }, "— the experiment mindset, after Ali Abdaal")),
+        el("span", { class: "who" }, "— The Experimenter")),
       el("span", { class: "field-label" }, "If this goes wrong, can you walk it back?"),
       pick(
         [
@@ -491,13 +491,13 @@ export function wizardView(ctx) {
       el(
         "p",
         { class: "muted" },
-        "Mark Manson's test: good values are chosen, honest, and in your control — growth, courage, craft. " +
+        "The Straight Talker's test: good values are chosen, honest, and in your control — growth, courage, craft. " +
           "Bad values outsource your worth — status, approval, comfort. Pick the (max three) values this decision should serve. " +
           "If you catch yourself choosing “impressing people”, that's worth knowing."
       ),
       el("div", { class: "step-quote" },
         "“Who you are is defined by what you're willing to struggle for.”",
-        el("span", { class: "who" }, "— Mark Manson")),
+        el("span", { class: "who" }, "— The Straight Talker")),
       el("span", { class: "field-label" }, "The values on the table (pick up to 3)"),
       chipsWrap,
       el("div", { style: { display: "flex", gap: "0.5rem", marginTop: "0.4rem" } },
@@ -550,13 +550,13 @@ export function wizardView(ctx) {
         el(
           "p",
           { class: "muted" },
-          "The Big Think school: you can't remove uncertainty, but you can remove predictable stupidity. " +
+          "The Strategist's approach: you can't remove uncertainty, but you can remove predictable stupidity. " +
             "Pick the two or three lenses that fit this decision and actually write — writing is where the fog lifts. " +
             "(And watch for sunk costs: what you've already spent doesn't get a vote.)"
         ),
         el("div", { class: "step-quote" },
           "“A great decision is not the same thing as a great outcome.”",
-          el("span", { class: "who" }, "— after Annie Duke, Thinking in Bets")),
+          el("span", { class: "who" }, "— The Strategist")),
         counter
       ),
       cards,
@@ -583,7 +583,7 @@ export function wizardView(ctx) {
           ? el(
               "div",
               { class: "callout warn" },
-              "Noted — and worth sitting with. Charlie's line: a choice made mainly to avoid disappointing someone " +
+              "Noted — and worth sitting with. The line: a choice made mainly to avoid disappointing someone " +
                 "trades long-term self-respect for short-term approval. Their disappointment is temporary; your resentment isn't. " +
                 "This doesn't decide the question, but it belongs in the open."
             )
@@ -599,12 +599,12 @@ export function wizardView(ctx) {
       el(
         "p",
         { class: "muted" },
-        "The Charisma on Command lens: fear is a terrible ghostwriter — it drafts decisions and signs your name. " +
+        "The Confidant's lens: fear is a terrible ghostwriter — it drafts decisions and signs your name. " +
           "Three questions to catch it in the act."
       ),
       el("div", { class: "step-quote" },
         "“Discomfort is not danger. The presence of butterflies doesn't mean the answer is no.”",
-        el("span", { class: "who" }, "— after Charlie Houpert, Charisma on Command")),
+        el("span", { class: "who" }, "— The Confidant")),
       el("label", { class: "field-label", for: "c-nojudge" }, "1 · If nobody would ever know or judge either way — which option would you pick?"),
       el("input", {
         type: "text", id: "c-nojudge", value: draft.courage.noJudgement,
@@ -707,7 +707,7 @@ export function wizardView(ctx) {
       el(
         "p",
         { class: "muted" },
-        "You've done the head work. Now an old therapist's trick, in the spirit of Dr. K's " +
+        "You've done the head work. Now an old trick, in the spirit of The Steady Mind's " +
           "notice-the-feeling practice: assign two options to a coin and flip it — not to obey it, " +
           "but to catch the hope or dread that surfaces while it's in the air. " +
           "That reaction is the honest signal under all the reasoning."
@@ -792,7 +792,7 @@ export function wizardView(ctx) {
         { class: "muted" },
         draft.fastTracked
           ? "You triaged this as reversible with modest stakes. Don't relitigate it — pick, set a review date, and treat the outcome as experiment data."
-          : "Annie Duke's frame: this is a bet, not a prophecy. Choose, state your confidence out loud, and book the honest look back. " +
+          : "The frame: this is a bet, not a prophecy. Choose, state your confidence out loud, and book the honest look back. " +
             "And remember — at some point, more analysis is just fear wearing a lab coat."
       ),
       brief

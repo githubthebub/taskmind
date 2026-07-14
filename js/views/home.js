@@ -19,9 +19,9 @@ export function homeView(ctx) {
     el(
       "p",
       { class: "lede" },
-      "BetterDecisions walks any choice through five lenses — Dr. K's emotional check-in, " +
-        "Ali Abdaal's energy-and-experiments triage, Big Think's mental models, Mark Manson's " +
-        "values test, and Charisma on Command's courage check — then holds you to an honest review."
+      "BetterDecisions walks any choice through five voices — an emotional check-in, " +
+        "an energy-and-experiments triage, a set of mental models, a values test, " +
+        "and a courage check — then holds you to an honest review."
     ),
     el(
       "div",

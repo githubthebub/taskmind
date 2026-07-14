@@ -314,16 +314,35 @@ test("quoteOfTheDay is deterministic per day and cycles the catalog", () => {
   assert.equal(new Set(days).size, QUOTES.length, "consecutive days walk the whole catalog");
 });
 
-test("content is complete: five mentors, books on Ali, frameworks resolve", () => {
+test("content is complete: five voices, reading directions, frameworks resolve", () => {
   assert.equal(MENTORS.length, 5);
   const ids = MENTORS.map((m) => m.id);
-  for (const id of ["drk", "ali", "bigthink", "manson", "charlie"]) assert.ok(ids.includes(id), id);
-  assert.ok(mentorById("ali").books.length >= 8, "Ali's bookshelf is stocked");
+  for (const id of ["steady", "experimenter", "strategist", "realist", "confidant"]) assert.ok(ids.includes(id), id);
+  assert.ok(mentorById("experimenter").readingDirections.length >= 3, "the experimenter voice has reading directions");
   assert.equal(mentorById("nope"), null);
   for (const m of MENTORS) assert.ok(m.principles.length >= 5, `${m.name} has principles`);
   for (const f of FRAMEWORKS) {
     assert.ok(f.question.length > 10, `${f.id} has a question`);
-    assert.ok(mentorById(f.mentorId), `${f.id} maps to a real mentor`);
+    assert.ok(mentorById(f.mentorId), `${f.id} maps to a real voice`);
     assert.equal(frameworkById(f.id), f);
+  }
+});
+
+test("content contains no real named individuals or brands", () => {
+  const banned = [
+    /ali abdaal/i, /mark manson/i, /\bdr\.?\s?k\b/i, /healthygamergg/i,
+    /charlie houpert/i, /charisma on command/i, /big\s?think/i, /annie duke/i,
+    /kahneman/i, /munger/i, /gary klein/i, /howard marks/i, /suzy welch/i,
+    /jeff bezos/i, /tim ferriss/i, /oliver burkeman/i, /greg mckeown/i,
+    /james clear/i, /naval ravikant/i, /derek sivers/i, /cal newport/i,
+    /morgan housel/i,
+  ];
+  const haystacks = [
+    JSON.stringify(MENTORS), JSON.stringify(FRAMEWORKS), JSON.stringify(QUOTES),
+  ];
+  for (const text of haystacks) {
+    for (const re of banned) {
+      assert.ok(!re.test(text), `content should not mention ${re}`);
+    }
   }
 });

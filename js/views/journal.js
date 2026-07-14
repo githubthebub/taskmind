@@ -16,7 +16,7 @@ export function journalView(ctx) {
     el(
       "p",
       { class: "lede" },
-      "Annie Duke's habit, borrowed: write the bet down, then come back and grade the process — " +
+      "An old habit, borrowed: write the bet down, then come back and grade the process — " +
         "not just the outcome. A good decision can lose; a bad one can win. The journal is how you tell the difference."
     ),
   ];
@@ -271,7 +271,7 @@ export function reviewView(ctx, { id }) {
       "p",
       { class: "lede" },
       `You chose ${chosen ? `“${chosen}”` : "an option"} at ${d.confidence}% confidence. ` +
-        "Now grade the two things separately — Annie Duke's rule: outcomes are what happened, process is what you controlled."
+        "Now grade the two things separately — the rule: outcomes are what happened, process is what you controlled."
     ),
     el("div", { class: "card" },
       el("h3", {}, "1 · The outcome"),
