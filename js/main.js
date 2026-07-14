@@ -262,6 +262,33 @@ function debugSpriteSheet(){
     x.drawImage(img, 4+i*72, 288, img.width*0.6, img.height*0.35);
   });
 }
+function debugSpriteSheet2(){
+  const x = G_ctx;
+  x.fillStyle='#20303c'; x.fillRect(0,0,VW,VH);
+  const kanto = ['pidgey','rattata','ekans','sandshrew','mankey','oddish','bellsprout','pikachu',
+    'raichu','voltorb','magnemite','tentacool','magikarp','goldeen','poliwag','staryu','starmie','onix'];
+  kanto.forEach((id,i)=>{
+    const col = i%9, row = Math.floor(i/9);
+    x.fillStyle='#2a3a48'; x.fillRect(2+col*53, 2+row*62, 52,60);
+    x.drawImage(SPR.mon(id,'front'), 4+col*53, 4+row*62, 48,48);
+    x.font='7px monospace'; x.fillStyle='#fff'; x.textAlign='center';
+    x.fillText(id.slice(0,9), 4+col*53+24, 60+row*62);
+  });
+  // surf mount 4 dirs + hero
+  for(let d=0;d<4;d++){
+    x.drawImage(SPR.surfMount(d,0), 10+d*70, 132, 40,32);
+    x.drawImage(SPR.char('hero',d,0), 22+d*70, 118, 32,40);
+  }
+  x.font='8px monospace'; x.fillStyle='#fff'; x.textAlign='left';
+  x.fillText('surf mount (down/up/left/right)', 10, 178);
+  // new tiles
+  ['X','O','R','Z','H','L'].forEach((ch,i)=>{
+    x.drawImage(SPR.tile(ch,0), 10+i*40, 190, 32,32);
+    x.textAlign='center'; x.fillText(ch, 10+i*40+16, 234);
+  });
+  // gym stamps
+  ['gym','pokemart'].forEach((s,i)=>{ try{ const img=SPR.stamp(s); x.drawImage(img, 10+i*110, 244, img.width*0.7, img.height*0.5);}catch(e){} });
+}
 
 // ---------------- boot ----------------
 window.addEventListener('load', async ()=>{
@@ -287,6 +314,10 @@ window.addEventListener('load', async ()=>{
   window.__game = { Game, Battle, SPR, MAPS, loadMap, makeMon, Input, PartyUI, BagUI, Dlg, Menu, B, saveGame, loadGame, slotInfo, SlotUI };
   if(q.get('debug')==='sprites'){
     requestAnimationFrame(function ds(){ requestAnimationFrame(ds); frameCount++; Game.time++; tickWaiters(); debugSpriteSheet(); });
+    return;
+  }
+  if(q.get('debug')==='sprites2'){
+    requestAnimationFrame(function ds(){ requestAnimationFrame(ds); frameCount++; Game.time++; tickWaiters(); debugSpriteSheet2(); });
     return;
   }
   loop();

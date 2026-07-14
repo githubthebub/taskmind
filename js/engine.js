@@ -70,6 +70,7 @@ const Game = {
   player:{ x:14, y:22, dir:0, ox:0, oy:0, moving:false, prog:0, anim:0, run:false },
   cam:{x:0,y:0},
   busy:false, steps:0, time:0, playFrames:0, saveSlot:null,
+  surfing:false, strengthActive:false,
 };
 const DIRV = [[0,1],[0,-1],[-1,0],[1,0]]; // down,up,left,right
 
@@ -98,9 +99,14 @@ function isVisible(npc){
 }
 function loadMap(id, x, y, dir){
   const m = MAPS[id];
+  // rebuild grid so field-move changes (cut trees, pushed boulders) reset on entry
+  m.grid = m.build(); m.h = m.grid.length; m.w = m.grid[0].length;
   Game.map = m;
+  Game.strengthActive = false;
   Game.player.x=x; Game.player.y=y; Game.player.dir=dir!==undefined?dir:0;
   Game.player.moving=false; Game.player.prog=0; Game.player.ox=0; Game.player.oy=0;
+  // auto-surf if arriving on water; otherwise dismount
+  Game.surfing = (tileAt(m, x, y) === 'w');
   Game.npcs = (m.npcs||[]).map(def=>{
     const rt = Object.assign({}, def);
     if(def.posByFlag && Game.flags[def.posByFlag.flag]){
@@ -163,6 +169,13 @@ async function runOps(ops, npc){
       continue;
     }
     if(op.take){ bagTake(op.take, 1); continue; }
+    if(op.hm){
+      Game.flags['hm_'+op.hm] = true;
+      bagAdd('hm_'+op.hm, 1);
+      SND.sfx('item');
+      await Dlg.say('You received the hidden move HM — '+op.hm.toUpperCase()+'!');
+      continue;
+    }
     if(op.moveNpc){
       const t = Game.npcs.find(n=>n.id===op.moveNpc.id);
       if(t){ t.x=op.moveNpc.x; t.y=op.moveNpc.y; t.homeX=t.x; t.homeY=t.y;
@@ -174,6 +187,21 @@ async function runOps(ops, npc){
       const res = await Battle.startTrainer(op.trainer);
       if(res==='loss'){ await blackout(); return 'abort'; }
       Game.flags['beat_'+op.trainer]=true;
+      const tr = TRAINERS[op.trainer];
+      if(tr.badge && !Game.flags['badge_'+tr.badge]){
+        Game.flags['badge_'+tr.badge]=true;
+        bagAdd(tr.badge,1);
+        SND.sfx('item');
+        await Dlg.say('You received the '+ITEMS[tr.badge].name+'!');
+      }
+      continue;
+    }
+    if(op.goto){
+      Game.busy=true;
+      SND.sfx('door');
+      await UI.fadeOut(420);
+      loadMap(op.goto.to, op.goto.x, op.goto.y, op.goto.dir||0);
+      await UI.fadeIn(420);
       continue;
     }
     if(op.wild){
@@ -212,6 +240,49 @@ async function interactWith(npc){
   } finally {
     Game.busy = false;
   }
+}
+
+async function interactSimple(text){
+  try{ await Dlg.say(text); } finally { Game.busy=false; }
+}
+function fieldUser(prefTypes){
+  for(const m of Game.party){
+    if(prefTypes && SPECIES[m.sp].types.some(t=>prefTypes.includes(t))) return m.nick;
+  }
+  return (Game.party.find(m=>m.hp>0)||Game.party[0]).nick;
+}
+async function tryFieldMove(kind, tx, ty){
+  Game.busy = true;
+  try{
+    if(kind==='surf'){
+      await Dlg.sayHold('The water is a deep, inviting blue. Would you like to SURF?');
+      const yes = await UI.yesno();
+      Dlg.active=false;
+      if(!yes) return;
+      await Dlg.say(fieldUser(['water'])+' used SURF!');
+      Game.surfing = true;
+      SND.sfx('swoosh');
+      // hop onto the water tile we're facing
+      const P = Game.player;
+      P.dir = [0,1,2,3][P.dir]; // unchanged; already facing water
+      if(tileAt(Game.map,tx,ty)==='w' && !npcAt(tx,ty)){ P.moving=true; P.prog=0; P.stepParity=!P.stepParity; }
+      return;
+    }
+    if(kind==='cut'){
+      await Dlg.say(fieldUser(['grass','normal'])+' used CUT!');
+      SND.sfx('swoosh');
+      Game.map.grid[ty][tx] = Game.map.ground || '.';
+      await waitMs(220);
+      return;
+    }
+    if(kind==='strength'){
+      await Dlg.say(fieldUser(['fighting','ground','normal'])+' used STRENGTH!');
+      SND.sfx('item');
+      Game.strengthActive = true;
+      await Dlg.say('It\'s strong enough to move boulders now!');
+      return;
+    }
+  } finally { Game.busy = false; }
 }
 
 async function blackout(){
@@ -293,6 +364,19 @@ function worldUpdate(){
     let n = npcAt(tx,ty);
     if(!n && tileAt(Game.map,tx,ty)==='K') n = npcAt(tx+dx,ty+dy); // across counter
     if(n && n.script){ interactWith(n); return; }
+    // field HM moves on the tile we face
+    const ft = tileAt(Game.map,tx,ty);
+    if(!Game.surfing && ft==='w'){
+      if(Game.flags.hm_surf){ tryFieldMove('surf', tx,ty); return; }
+    }
+    if(ft==='X'){
+      if(Game.flags.hm_cut){ tryFieldMove('cut', tx,ty); return; }
+      Game.busy=true; interactSimple('This tree looks like it could be CUT down.'); return;
+    }
+    if(ft==='O'){
+      if(Game.flags.hm_strength){ tryFieldMove('strength', tx,ty); return; }
+      Game.busy=true; interactSimple('It\'s a big boulder — too heavy to budge by hand.'); return;
+    }
   }
   // walking
   let d = -1;
@@ -301,12 +385,30 @@ function worldUpdate(){
   else if(Input.held('LEFT')) d=2;
   else if(Input.held('RIGHT')) d=3;
   if(d>=0){
-    P.run = Input.held('RUN') || Input.held('B');
+    P.run = (Input.held('RUN') || Input.held('B')) && !Game.surfing;
     if(P.dir!==d){ P.dir=d; P.turnT=6; return; }
     if(P.turnT>0){ P.turnT--; return; }
     const [dx,dy] = DIRV[d];
     const nx = P.x+dx, ny = P.y+dy;
-    if(!isBlocked(nx,ny)){
+    const t = tileAt(Game.map,nx,ny);
+    // Strength: push a boulder if the space beyond it is clear ground
+    if(t==='O' && Game.strengthActive && !npcAt(nx,ny)){
+      const bx=nx+dx, by=ny+dy, bt=tileAt(Game.map,bx,by);
+      if(!SOLID_TILES.has(bt) && bt!=='w' && bt!=='X' && bt!=='O' && !npcAt(bx,by) && !ENCOUNTER_TILES.has(bt) && !warpAt(bx,by)){
+        Game.map.grid[ny][nx] = Game.map.ground||'.';
+        Game.map.grid[by][bx] = 'O';
+        SND.sfx('bump');
+        P.moving=true; P.prog=0; P.stepParity=!P.stepParity;
+      } else if(Game.time%24===0){ SND.sfx('bump'); }
+      return;
+    }
+    let can;
+    if(Game.surfing){
+      can = (t==='w') ? !npcAt(nx,ny) : (!SOLID_TILES.has(t) && !npcAt(nx,ny));
+    } else {
+      can = !isBlocked(nx,ny);
+    }
+    if(can){
       P.moving=true; P.prog=0;
       P.stepParity = !P.stepParity;
     } else {
@@ -318,22 +420,30 @@ function worldUpdate(){
 
 function onStepFinish(){
   const P = Game.player;
+  const t = tileAt(Game.map,P.x,P.y);
+  // dismount when surfing onto land
+  if(Game.surfing && t!=='w'){ Game.surfing=false; SND.sfx('door'); }
   // warp?
   const w = warpAt(P.x,P.y);
   if(w){ doWarp(w); return; }
-  // encounter?
-  const t = tileAt(Game.map,P.x,P.y);
+  // land encounter?
   if(ENCOUNTER_TILES.has(t) && Game.map.encounters){
-    const enc = Game.map.encounters;
-    if(Math.random() < enc.rate){
-      const total = enc.list.reduce((a,e)=>a+e[3],0);
-      let r = Math.random()*total;
-      let pick = enc.list[0];
-      for(const e of enc.list){ r-=e[3]; if(r<=0){ pick=e; break; } }
-      const lvl = pick[1] + Math.floor(Math.random()*(pick[2]-pick[1]+1));
-      startWildEncounter(makeMon(pick[0], lvl));
-    }
+    rollEncounter(Game.map.encounters);
+    return;
   }
+  // water encounter while surfing
+  if(Game.surfing && t==='w' && Game.map.waterEncounters){
+    rollEncounter(Game.map.waterEncounters);
+  }
+}
+function rollEncounter(enc){
+  if(Math.random() >= enc.rate) return;
+  const total = enc.list.reduce((a,e)=>a+e[3],0);
+  let r = Math.random()*total;
+  let pick = enc.list[0];
+  for(const e of enc.list){ r-=e[3]; if(r<=0){ pick=e; break; } }
+  const lvl = pick[1] + Math.floor(Math.random()*(pick[2]-pick[1]+1));
+  startWildEncounter(makeMon(pick[0], lvl));
 }
 async function doWarp(w){
   Game.busy = true;
@@ -378,7 +488,7 @@ function worldDraw(x){
       // ground-base substitutions
       if(ch==='B'){ x.drawImage(SPR.tile(m.ground||'.',0), px, py, TILE*DS, TILE*DS); continue; }
       if(ch==='D'){ x.drawImage(SPR.tile(m.door||m.ground||'p',0), px, py, TILE*DS, TILE*DS); continue; }
-      if(ch==='r'){ x.drawImage(SPR.tile(m.ground||'.',0), px, py, TILE*DS, TILE*DS); }
+      if(ch==='r'||ch==='O'){ x.drawImage(SPR.tile(m.ground||'.',0), px, py, TILE*DS, TILE*DS); }
       let fr = ch==='w'? wf : ch==='f'? ff : 0;
       x.drawImage(SPR.tile(ch,fr), px, py, TILE*DS, TILE*DS);
     }
@@ -406,7 +516,19 @@ function worldDraw(x){
   ents.push({y:P.y*TILE+P.oy, player:true});
   ents.sort((a,b)=>a.y-b.y);
   for(const e of ents){
-    if(e.player) drawActor(x, P.x*TILE+P.ox, P.y*TILE+P.oy, 'hero', P.dir, P.anim, cx, cy, m);
+    if(e.player){
+      if(Game.surfing){
+        const ax=P.x*TILE+P.ox, ay=P.y*TILE+P.oy;
+        const sxp=Math.round((ax-cx)*DS), syp=Math.round((ay-cy)*DS);
+        const bob=Math.round(Math.sin(Game.time/16)*1.2);
+        x.save(); x.fillStyle='rgba(30,50,70,0.22)';
+        x.beginPath(); x.ellipse(sxp+16, syp+40, 13, 4, 0, 0, 7); x.fill(); x.restore();
+        x.drawImage(SPR.surfMount(P.dir, Math.floor(Game.time/16)%2), sxp-2, syp+6+bob, 20*DS, 16*DS);
+        x.drawImage(SPR.char('hero', P.dir, 0), sxp, syp-8+bob, 16*DS, 20*DS);
+      } else {
+        drawActor(x, P.x*TILE+P.ox, P.y*TILE+P.oy, 'hero', P.dir, P.anim, cx, cy, m);
+      }
+    }
     else {
       const n = e.npc;
       if(n.sprite===null) continue;

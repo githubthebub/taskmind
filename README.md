@@ -22,16 +22,29 @@ A pre-built single-file version can be produced with `./build.sh` → `dist/poke
 
 On-screen touch controls appear on mobile.
 
-## 🗺️ The demo quest
+## 🗺️ The quest
 
+**Sevii Islands (start)**
 1. **One Island** — Bill walks you off the Seagallop ferry. Meet **Celio** in the Pokémon Center.
 2. **Kindle Road** — coastal route north: tall-grass wilds (Spearow, Meowth, Ponyta, Psyduck, Geodude, Fearow) and three trainers.
 3. **Mt. Ember** — two Team Rocket grunts guard a cave. Deal with them.
 4. **Ruby Chamber** — take the Ruby back to Celio to link the island network… roll credits.
-5. **Post-game** — something with very hot wings waits on the summit perch. Bring Ultra Balls (the grandma in the island house has spares).
+5. **Summit** — something with very hot wings waits on the perch. Bring Ultra Balls (the grandma in the island house has spares).
+
+**Kanto mainland** — once you've met Celio, the harbor **Seagallop sailor** ferries you to the mainland (the canon Sevii→Vermilion route):
+6. **Vermilion City** — Gym Leader **Lt. Surge** (Electric — bring Nidoking!). A sailor gifts **HM CUT**.
+7. **Route 5** — a slim tree blocks the way north; **CUT** it. Wild Pidgey/Rattata/Oddish/Bellsprout, a hidden Pikachu, and a pond item reachable only by **SURF**.
+8. **Cerulean City** — Gym Leader **Misty** (Water — bring Gengar/Jolteon). A hiker gifts **HM STRENGTH**; a river you can **SURF**.
+9. **Nugget Bridge (Route 24)** → **Route 25** — a gauntlet of trainers and a Team Rocket ambush, leading to **Bill's Seaside Cottage**, where Bill gifts **HM SURF**.
+10. **Cerulean Bay** — **SURF** out to open water: Tentacool, Staryu, a Swimmer, and buried treasure.
+
+Two gym badges (Thunder, Cascade), 18 new Kanto Pokémon to catch, and every HM put to use.
 
 ## ⚙️ Features
 
+- Two connected regions — the **Sevii Islands** and a slice of the **Kanto mainland** (Vermilion → Cerulean), linked by the Seagallop ferry
+- **HM field mechanics**: **Surf** (ride across water, with water encounters + a rideable mount sprite), **Cut** (chop small trees), **Strength** (push boulders) — each gates real content
+- **Gyms & badges**: Lt. Surge (Vermilion) and Misty (Cerulean), each with junior trainers and a leader
 - Grid-based overworld with warps, NPCs (wandering, flag-driven), signs, interiors
 - Full turn-based battle engine: gen-3 type chart, physical/special split by type, STAB, crits, accuracy, priority, stat stages, multi-hit, flinch, recoil, and status (PSN/BRN/PAR/SLP)
 - Trainer battles (multi-Pokémon), wild encounters, a legendary static encounter

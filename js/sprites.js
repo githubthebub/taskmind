@@ -662,6 +662,275 @@ moltres(c){
   PG(c,[[19,8],[12,9.5],[19,11.5]],'#c8a060',1.1);
   EYE(c,24,7.5,1.9,2.2,'#7a2018');
 },
+
+// ===================== KANTO ADDITIONS =====================
+pidgey(c){
+  PG(c,[[30,34],[41,38],[36,42],[29,39]],'#b08858',1.2);   // tail
+  E(c,24,31,9.5,9,'#d8b888',1.4);                          // body
+  E(c,22,33,6,6,'#f2e2c2',1.1);
+  E(c,30,30,4.5,6.5,'#b08858',1.3,0.3);                    // wing
+  LN(c,20,40,20,45,1.8,'#e8a878'); LN(c,27,40,27,45,1.8,'#e8a878');
+  CIR(c,21,17,7,'#c8a068',1.4);                            // head
+  PG(c,[[16,12],[13,7],[19,11]],'#a07840',1);              // crest tufts
+  PG(c,[[22,11],[24,6],[26,12]],'#a07840',1);
+  PG(c,[[15,16],[7,17],[15,19]],'#e8a860',1.1);            // beak
+  E(c,20,16,3.2,3,'#e8d0a8',0.9);
+  EYE(c,20,16,1.9,2.2,'#3a3048');
+},
+rattata(c){
+  c.beginPath(); c.moveTo(34,36); c.quadraticCurveTo(46,34,44,26);
+  c.lineWidth=2.6; c.strokeStyle=OUTC; c.stroke();
+  c.beginPath(); c.moveTo(34,36); c.quadraticCurveTo(46,34,44,26);
+  c.lineWidth=1.4; c.strokeStyle='#c8a0c0'; c.stroke();
+  E(c,24,32,11,10,'#9868b0',1.4);                          // body
+  E(c,22,35,7,6,'#e8d8c0',1.1);
+  E(c,14,14,4.6,5,'#9868b0',1.3,-0.3); E(c,14.5,14.5,2.4,3,'#c890b0',0,-0.3);
+  E(c,34,14,4.6,5,'#9868b0',1.3,0.3);  E(c,33.5,14.5,2.4,3,'#c890b0',0,0.3);
+  EYE(c,19,22,2.2,2.6,'#7a3020'); EYE(c,30,22,2.2,2.6,'#7a3020');
+  LN(c,12,26,4,24,1); LN(c,12,28,4,29,1);
+  LN(c,36,26,44,24,1); LN(c,36,28,44,29,1);
+  PG(c,[[22,26],[24,28],[26,26]],'#7a3020',0.9);
+  PG(c,[[21,29],[21,33],[24,30]],'#fff',1); PG(c,[[27,29],[27,33],[24,30]],'#fff',1);
+},
+ekans(c){
+  // coiled snake
+  ARC(c,24,34,11,0,Math.PI*2,7,'#9060b0');
+  ARC(c,24,34,11,0,Math.PI*2,9,OUTC); ARC(c,24,34,11,0,Math.PI*2,6.4,'#9060b0');
+  E(c,24,33,7,5.5,'#c0a0d8',0);
+  // rising head
+  c.beginPath(); c.moveTo(24,28); c.quadraticCurveTo(20,18,26,12);
+  c.lineWidth=8.5; c.strokeStyle=OUTC; c.stroke();
+  c.beginPath(); c.moveTo(24,28); c.quadraticCurveTo(20,18,26,12);
+  c.lineWidth=6.5; c.strokeStyle='#9060b0'; c.stroke();
+  CIR(c,27,11,6,'#9060b0',1.4);
+  PG(c,[[30,10],[36,9],[30,13]],'#d0b0e0',1);              // snout
+  EYE(c,26,10,2,2.4,'#e0b020');
+  LN(c,30,13,35,14,1.2,'#c02020');                         // tongue
+  PG(c,[[35,14],[38,12.5],[38,15.5]],'#c02020',0);
+},
+sandshrew(c){
+  E(c,24,32,12,11,'#e8c878',1.4);                          // body
+  // back plates
+  for(const [px,py,r] of [[18,24,3],[28,24,3],[23,20,3.4],[17,30,3],[31,30,3]]){
+    E(c,px,py,r,r*0.8,'#c8a058',1);
+  }
+  E(c,22,35,7,6,'#f0e0b0',1.1);                            // belly
+  E(c,12,40,4,3.4,'#e8c878',1.2); E(c,36,40,4,3.4,'#e8c878',1.2);
+  E(c,10,30,3.6,5,'#e8c878',1.3,-0.4); E(c,38,30,3.6,5,'#e8c878',1.3,0.4);
+  PG(c,[[8,31],[4,30],[8,33]],'#f0e8d8',0.9);              // claws
+  PG(c,[[40,31],[44,30],[40,33]],'#f0e8d8',0.9);
+  CIR(c,24,15,8,'#e8c878',1.4);                            // head
+  PG(c,[[17,9],[15,4],[21,8]],'#e8c878',1.1);
+  PG(c,[[31,9],[33,4],[27,8]],'#e8c878',1.1);
+  EYE(c,20,15,2,2.4,'#3a3048'); EYE(c,28,15,2,2.4,'#3a3048');
+  LN(c,20,20,28,20,1.2);
+},
+mankey(c){
+  E(c,24,30,11,10,'#e8dcc0',1.4);                          // body/fur
+  SPIKES(c,24,22,3,7,-2.5,-0.6,4,'#e8dcc0',1);             // head fur
+  E(c,10,30,3.6,5.5,'#e8dcc0',1.3,-0.4); E(c,38,30,3.6,5.5,'#e8dcc0',1.3,0.4);
+  E(c,16,42,4.5,4,'#c8a878',1.2); E(c,32,42,4.5,4,'#c8a878',1.2);
+  CIR(c,24,16,8,'#e8dcc0',1.4);                            // pig-like face
+  E(c,24,18,5,4,'#d8a878',1.1);                            // snout
+  CIR(c,22,18,1,'#2e2440',0); CIR(c,26,18,1,'#2e2440',0);
+  E(c,13,13,3,3.4,'#d0b090',1.1); E(c,35,13,3,3.4,'#d0b090',1.1); // ears
+  PG(c,[[18,12],[20,15],[22,12]],'#3a3048',0);             // angry brows
+  PG(c,[[26,12],[28,15],[30,12]],'#3a3048',0);
+  EYE(c,20,15,1.7,2,'#3a3048'); EYE(c,28,15,1.7,2,'#3a3048');
+},
+oddish(c){
+  E(c,24,34,9,7,'#4878c0',1.4);                            // blue bulb body
+  E(c,21,35,5,4,'#78a8e0',0);
+  LN(c,19,40,18,45,2.2,'#4878c0'); LN(c,29,40,30,45,2.2,'#4878c0');
+  EYE(c,20,33,2.4,2.8,'#f8f8f0'); EYE(c,28,33,2.4,2.8,'#f8f8f0');
+  CIR(c,20,33.5,0.9,'#2e2440',0); CIR(c,28,33.5,0.9,'#2e2440',0);
+  E(c,24,32,4,1.4,'#3a3048',0);                            // mouth
+  // leaves on head
+  PG(c,[[24,26],[18,14],[22,25]],'#48a048',1.2);
+  PG(c,[[24,26],[24,10],[27,25]],'#48a048',1.2);
+  PG(c,[[24,26],[31,15],[27,26]],'#48a048',1.2);
+  LN(c,20,20,22,25,0.8,'#2e6c34'); LN(c,24,13,24,25,0.8,'#2e6c34'); LN(c,29,18,27,25,0.8,'#2e6c34');
+},
+bellsprout(c){
+  LN(c,24,40,24,28,3,'#c8b060'); LN(c,24,40,24,28,4.4,OUTC); LN(c,24,40,24,28,2.6,'#c8b060'); // stem
+  E(c,18,42,5,2.4,'#c8b060',1.2); E(c,30,42,5,2.4,'#c8b060',1.2); // feet
+  PG(c,[[19,30],[10,26],[20,33]],'#78b048',1.1);           // leaf
+  PG(c,[[29,30],[38,26],[28,33]],'#78b048',1.1);
+  // bell head
+  c.beginPath(); c.moveTo(16,18); c.quadraticCurveTo(24,4,32,18);
+  c.quadraticCurveTo(30,26,24,26); c.quadraticCurveTo(18,26,16,18); c.closePath();
+  c.fillStyle='#f0e048'; c.fill(); c.lineWidth=1.4; c.strokeStyle=OUTC; c.stroke();
+  E(c,24,10,4,3.5,'#f8ec88',0);
+  EYE(c,20,17,2,2.4,'#2e2440'); EYE(c,28,17,2,2.4,'#2e2440');
+  E(c,24,22,3.5,1.6,'#c88030',0);
+},
+pikachu(c){
+  // lightning tail
+  PG(c,[[32,34],[42,30],[38,26],[46,22],[40,20],[44,14]],'#f8d030',1.2);
+  PG(c,[[33,34],[40,30],[37,27],[42,24]],'#b87828',0);
+  E(c,24,32,9,8.5,'#f8d030',1.4);                          // body
+  E(c,17,40,3.6,3,'#f8d030',1.2); E(c,31,40,3.6,3,'#f8d030',1.2);
+  E(c,13,31,3,4.5,'#f8d030',1.3,-0.4); E(c,35,31,3,4.5,'#f8d030',1.3,0.4);
+  CIR(c,24,16,8,'#f8d030',1.4);                            // head
+  PG(c,[[16,10],[11,-2],[19,8]],'#f8d030',1.3);            // ears
+  PG(c,[[14,2],[11,-2],[17,4]],'#2e2440',0);
+  PG(c,[[32,10],[37,-2],[29,8]],'#f8d030',1.3);
+  PG(c,[[34,2],[37,-2],[31,4]],'#2e2440',0);
+  CIR(c,17,20,2.4,'#e05028',0); CIR(c,31,20,2.4,'#e05028',0); // cheeks
+  EYE(c,20,15,2.2,2.6,'#2e2440'); EYE(c,28,15,2.2,2.6,'#2e2440');
+  CIR(c,24,18,1,'#2e2440',0);
+  LN(c,22,20,26,20,1);
+},
+raichu(c){
+  // long tail ending in lightning bolt
+  c.beginPath(); c.moveTo(30,34); c.quadraticCurveTo(42,36,42,26);
+  c.lineWidth=3; c.strokeStyle=OUTC; c.stroke();
+  c.beginPath(); c.moveTo(30,34); c.quadraticCurveTo(42,36,42,26);
+  c.lineWidth=1.8; c.strokeStyle='#c07830'; c.stroke();
+  PG(c,[[42,26],[36,20],[41,20],[38,12],[47,22],[42,22]],'#f8d030',1.2);
+  E(c,24,31,10,9.5,'#e0a038',1.4);                         // body (orange)
+  E(c,22,33,6.5,7,'#e8d0a0',1.1);
+  E(c,16,41,4,3.4,'#e0a038',1.2); E(c,32,41,4,3.4,'#e0a038',1.2);
+  E(c,11,31,3.2,5,'#e0a038',1.3,-0.4); E(c,37,31,3.2,5,'#e0a038',1.3,0.4);
+  CIR(c,24,15,8,'#e0a038',1.4);                            // head
+  PG(c,[[16,9],[12,-2],[20,7]],'#e0a038',1.3); PG(c,[[14,1],[12,-2],[18,4]],'#2e2440',0);
+  PG(c,[[32,9],[36,-2],[28,7]],'#e0a038',1.3); PG(c,[[34,1],[36,-2],[30,4]],'#2e2440',0);
+  CIR(c,17,19,2.4,'#e8b020',1); CIR(c,31,19,2.4,'#e8b020',1);
+  EYE(c,20,14,2.2,2.6,'#2e2440'); EYE(c,28,14,2.2,2.6,'#2e2440');
+  LN(c,21,19,27,19,1);
+},
+voltorb(c){
+  CIR(c,24,28,15,'#e83028',1.5);                           // ball
+  c.save(); c.beginPath(); c.arc(24,28,15,0,Math.PI*2); c.clip();
+  c.fillStyle='#f0f0f0'; c.fillRect(9,28,30,18);
+  c.restore();
+  LN(c,9,28,39,28,1.6,OUTC);
+  E(c,18,20,4,3,'rgba(255,255,255,0.4)',0);                // shine
+  EYE(c,18,26,2.6,2.8,'#f8f8f0'); EYE(c,30,26,2.6,2.8,'#f8f8f0');
+  CIR(c,18,26.5,1.1,'#2e2440',0); CIR(c,30,26.5,1.1,'#2e2440',0);
+  LN(c,20,31,28,31,1.4);
+},
+magnemite(c){
+  CIR(c,24,24,8,'#c0c8d0',1.4);                            // core
+  CIR(c,24,24,4.5,'#e0e8f0',0);
+  EYE(c,24,23,3,3.4,'#f8f8f0'); CIR(c,24,23.5,1.4,'#2e2440',0);
+  // screws/antenna
+  LN(c,24,16,24,10,1.6,'#8890a0'); CIR(c,24,9,2,'#a8b0bc',1);
+  // magnets
+  PG(c,[[16,26],[8,22],[8,30],[16,32]],'#d84028',1.2);     // left U magnet (red end)
+  PG(c,[[9,22],[6,24],[6,28],[9,30]],'#3858c8',0);
+  PG(c,[[32,26],[40,22],[40,30],[32,32]],'#d84028',1.2);
+  PG(c,[[39,22],[42,24],[42,28],[39,30]],'#3858c8',0);
+  // side screws
+  CIR(c,16,20,1.6,'#8890a0',1); CIR(c,32,20,1.6,'#8890a0',1);
+},
+tentacool(c){
+  // dome
+  c.beginPath(); c.arc(24,22,11,Math.PI,0); c.closePath();
+  c.fillStyle='#48b0d0'; c.fill(); c.lineWidth=1.4; c.strokeStyle=OUTC; c.stroke();
+  E(c,24,22,8,3,'#78d0e8',0);
+  CIR(c,18,20,3.4,'#e83048',1); CIR(c,30,20,3.4,'#e83048',1); // red gems
+  CIR(c,18,20,1.4,'#f89098',0); CIR(c,30,20,1.4,'#f89098',0);
+  // lower body
+  E(c,24,24,11,4,'#48b0d0',1.2);
+  EYE(c,20,25,1.8,1.4,'#2e2440'); EYE(c,28,25,1.8,1.4,'#2e2440');
+  // tentacles
+  for(let i=0;i<6;i++){ const tx=14+i*4;
+    c.beginPath(); c.moveTo(tx,27); c.quadraticCurveTo(tx+(i%2?2:-2),36,tx,44);
+    c.lineWidth=2.2; c.strokeStyle='#48b0d0'; c.lineCap='round'; c.stroke();
+  }
+},
+magikarp(c){
+  // big fish body
+  c.save(); c.translate(24,26); c.rotate(-0.15); c.translate(-24,-26);
+  E(c,24,26,14,9,'#e05038',1.5);
+  // scales
+  for(let i=0;i<3;i++) for(let j=0;j<2;j++){
+    E(c,16+i*8,23+j*6,3,3,'#f07850',0.8);
+  }
+  // tail
+  PG(c,[[36,26],[46,18],[44,26],[46,34]],'#f0e0a0',1.2);
+  // pectoral fin
+  PG(c,[[20,33],[16,40],[26,36]],'#f0e0a0',1.1);
+  // dorsal fin
+  PG(c,[[20,17],[24,10],[28,17]],'#f0e0a0',1.1);
+  // head
+  EYE(c,14,24,2.6,3,'#f8f8f0'); CIR(c,13.5,24,1.2,'#2e2440',0);
+  PG(c,[[10,26],[6,25],[8,29],[11,29]],'#e8c060',1);       // lips
+  LN(c,18,14,20,10,1.4,'#f8e058'); PG(c,[[18,13],[20,9],[22,13]],'#f8e058',0); // whisker
+  c.restore();
+},
+goldeen(c){
+  E(c,24,28,12,8,'#f0f0f0',1.4);                           // white body
+  E(c,20,28,5,5,'#f0a838',0);                              // orange patch
+  E(c,30,28,4,5,'#f0a838',0);
+  PG(c,[[35,26],[46,20],[44,28],[47,36],[35,31]],'#f89890',1.2); // flowing tail
+  PG(c,[[36,27],[44,24],[43,32]],'#fcc0b8',0);
+  PG(c,[[20,34],[16,42],[26,37]],'#f89890',1.1);           // fin
+  PG(c,[[20,20],[24,16],[27,21]],'#f0a838',1);             // dorsal
+  // horn
+  PG(c,[[14,22],[9,14],[17,21]],'#f0e0c0',1.1);
+  EYE(c,16,26,2.2,2.6,'#2e2440');
+  PG(c,[[11,29],[6,30],[10,32]],'#f0a838',0.9);            // mouth
+},
+poliwag(c){
+  E(c,24,28,12,12,'#4880d0',1.5);                          // round body
+  E(c,23,30,9,9,'#f0f0f0',0);                              // white belly
+  // spiral
+  c.beginPath();
+  for(let a=0;a<Math.PI*4;a+=0.3){ const r=1+a*0.9; const px=24+Math.cos(a)*r, py=31+Math.sin(a)*r; a===0?c.moveTo(px,py):c.lineTo(px,py); }
+  c.lineWidth=1.6; c.strokeStyle='#2e2440'; c.stroke();
+  EYE(c,18,22,2.6,3,'#f8f8f0'); CIR(c,18.5,22,1.2,'#2e2440',0);
+  EYE(c,30,22,2.6,3,'#f8f8f0'); CIR(c,29.5,22,1.2,'#2e2440',0);
+  // tail
+  PG(c,[[34,36],[44,40],[40,44],[33,40]],'#4880d0',1.2);
+  PG(c,[[34,37],[42,41],[38,43]],'#f0e0a0',0);
+  LN(c,18,40,17,45,2,'#4880d0'); LN(c,30,40,31,45,2,'#4880d0');
+},
+staryu(c){
+  const star=(cx,cy,rO,rI,rot,f,o)=>{
+    const pts=[];
+    for(let i=0;i<10;i++){ const a=rot+i*Math.PI/5; const r=i%2?rI:rO;
+      pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r]); }
+    PG(c,pts,f,o);
+  };
+  star(24,26,18,8,-Math.PI/2,'#c8a058',1.5);               // gold star
+  star(24,26,15,6.5,-Math.PI/2,'#e0c078',0);
+  CIR(c,24,26,5.5,'#c02828',1.2);                          // core
+  CIR(c,24,26,3.2,'#f04858',0);
+  CIR(c,24,26,1.6,'#f8d0d0',0);
+  // facet lines
+  for(let i=0;i<5;i++){ const a=-Math.PI/2+i*2*Math.PI/5;
+    LN(c,24,26,24+Math.cos(a)*15,26+Math.sin(a)*15,0.8,'#a88040'); }
+},
+starmie(c){
+  const star=(cx,cy,rO,rI,rot,f,o)=>{
+    const pts=[];
+    for(let i=0;i<10;i++){ const a=rot+i*Math.PI/5; const r=i%2?rI:rO;
+      pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r]); }
+    PG(c,pts,f,o);
+  };
+  star(24,24,17,7,-Math.PI/2+0.31,'#8060b0',1.4);          // back star (offset)
+  star(24,26,18,8,-Math.PI/2,'#b048a0',1.5);               // front purple star
+  star(24,26,14,6,-Math.PI/2,'#c868c0',0);
+  // jewel core
+  PG(c,[[24,20],[30,26],[24,32],[18,26]],'#e83048',1.2);
+  PG(c,[[24,22],[28,26],[24,30],[20,26]],'#f89060',0);
+  CIR(c,24,26,1.6,'#f8e8a0',0);
+},
+onix(c){
+  // rock snake made of chained boulders
+  const seg=[[10,40,6],[15,32,7],[13,23,7],[19,16,7],[28,13,7],[36,17,6.5],[40,25,6]];
+  for(const [sx,sy,r] of seg){
+    CIR(c,sx,sy,r,'#9a9088',1.3);
+    E(c,sx-r*0.3,sy-r*0.3,r*0.4,r*0.35,'#b8b0a8',0);
+  }
+  // head
+  CIR(c,40,25,7.5,'#9a9088',1.4);
+  PG(c,[[38,18],[40,10],[43,18]],'#c8c0b8',1.2);           // head horn
+  EYE(c,42,24,2.2,2.6,'#2e2440');
+  LN(c,38,29,45,29,1.4);                                   // mouth
+},
 };
 
 SPR.mon = function(id, side){
@@ -736,6 +1005,64 @@ const TRAINER_ART = {
     c.fillText('R',21,36);
     LN(c,14,45,34,45,2.4,'#c8c8d0');         // belt
   },
+  youngster(c){
+    drawTrainerBase(c,{skin:'#f0c8a0',shirt:'#3878c0',pants:'#c8a038'});
+    E(c,24,9.5,8,4.4,'#3868b0',1.3);          // blue cap
+    PG(c,[[16,10],[8,12],[16,13]],'#3868b0',1.1);
+    LN(c,17,22,17,13,2,'#3a3048'); LN(c,31,22,31,13,2,'#3a3048');
+    LN(c,20,42,20,50,4,'#f0c8a0');            // bare knee (shorts)
+  },
+  bugcatcher(c){
+    drawTrainerBase(c,{skin:'#f0c8a0',shirt:'#e8d048',pants:'#68884a'});
+    E(c,24,9,9,4,'#e8d8a0',1.2);              // straw hat
+    E(c,24,8,5.5,2.6,'#d8c088',1);
+    LN(c,38,20,44,8,2,'#a88838');             // net pole
+    CIR(c,45,7,4,'rgba(240,240,255,0.5)',1.2);// net
+  },
+  sailor(c){
+    drawTrainerBase(c,{skin:'#e8b890',shirt:'#f0f0f0',pants:'#2a3a6a'});
+    PG(c,[[16,24],[32,24],[33,30],[15,30]],'#3868b0',0); // collar stripe
+    E(c,24,9,7.5,3.6,'#f0f0f0',1.2);          // sailor cap
+    E(c,24,10.5,7.5,1.6,'#2a3a6a',0);
+    E(c,24,20,5,2.6,'#4a3020',1);             // beard
+  },
+  swimmer(c){
+    drawTrainerBase(c,{skin:'#e0a878',shirt:'#e0a878',pants:'#2088c0'});
+    E(c,24,24,9,7,'#e0a878',1.3);             // bare torso
+    LN(c,18,26,30,26,1,'#c08858');
+    E(c,24,14,7.6,7,'#e0a878',1.4);           // head
+    E(c,24,12,7.6,2.6,'#3a3048',0);           // hair cap
+    LN(c,19,13,29,13,2,'#4878c8');            // goggles strap
+    CIR(c,21,15,1.6,'#a8d8f8',1); CIR(c,27,15,1.6,'#a8d8f8',1);
+  },
+  surge(c){
+    drawTrainerBase(c,{skin:'#e8b088',shirt:'#48684a',pants:'#3a4a38'});
+    // broad shoulders / muscles
+    PG(c,[[14,24],[34,24],[37,40],[11,40]],'#48684a',1.4);
+    LN(c,14,26,8,40,5.4,OUTC); LN(c,14,26,8,40,4,'#48684a');
+    LN(c,34,26,40,40,5.4,OUTC); LN(c,34,26,40,40,4,'#48684a');
+    CIR(c,8,41,2.6,'#e8b088',1); CIR(c,40,41,2.6,'#e8b088',1);
+    CIR(c,24,14,8.2,'#e8b088',1.4);
+    // blond flat-top
+    PG(c,[[15,10],[15,5],[33,5],[33,10]],'#f0d048',1.2);
+    for(let i=0;i<5;i++) LN(c,17+i*3.5,5,17+i*3.5,2.5,1.4,'#f0d048');
+    CIR(c,21,15,1.2,'#2e2440',0); CIR(c,27,15,1.2,'#2e2440',0);
+    LN(c,18,12,22,13,1.4); LN(c,30,12,26,13,1.4); // stern brows
+    // dog tags
+    LN(c,24,24,24,30,1,'#c0c0c0'); CIR(c,24,31,1.4,'#c0c0c0',0.8);
+  },
+  misty(c){
+    drawTrainerBase(c,{skin:'#f8d0b0',shirt:'#f0d048',pants:'#f0d048'});
+    // red suspenders
+    LN(c,20,24,20,40,2,'#e04838'); LN(c,28,24,28,40,2,'#e04838');
+    // orange side ponytails
+    E(c,24,15,7.6,7,'#f0a038',1.4);
+    E(c,14,16,3.4,5,'#f0a038',1.3,-0.4); LN(c,13,20,12,30,3,'#f0a038');
+    E(c,34,16,3.4,5,'#f0a038',1.3,0.4);  LN(c,35,20,36,30,3,'#f0a038');
+    E(c,24,10,7,3.4,'#f0a038',1.1);           // fringe
+    CIR(c,21,16,1.2,'#3a6a8a',0); CIR(c,27,16,1.2,'#3a6a8a',0);
+    LN(c,22.5,20,25.5,20,1);
+  },
 };
 SPR.trainer = function(id){
   const key='tr:'+id;
@@ -766,6 +1093,13 @@ const CHAR_PALS = {
   lass:  { skin:'#f8d0b0', hair:'#f0d060', shirt:'#f8f8f8', pants:'#4878d0', skirt:true },
   grunt: { skin:'#e8c0a0', hair:'#38343c', shirt:'#38343c', pants:'#38343c', hat:'#38343c', hatFront:'#e03028' },
   fisher:{ skin:'#e8b088', hair:'#4a3020', shirt:'#3878a8', pants:'#8a6840', hat:'#e8e0c8', hatFront:'#e8e0c8' },
+  youngster:{ skin:'#f0c8a0', hair:'#3a3048', shirt:'#3878c0', pants:'#c8a038', hat:'#3868b0', hatFront:'#3868b0' },
+  bugcatcher:{ skin:'#f0c8a0', hair:'#5a4028', shirt:'#e8d048', pants:'#68884a', hat:'#e8d8a0', hatFront:'#d8c088' },
+  sailor:{ skin:'#e8b890', hair:'#4a3020', shirt:'#f0f0f0', pants:'#2a3a6a', hat:'#f0f0f0', hatFront:'#2a3a6a' },
+  swimmer:{ skin:'#e0a878', hair:'#3a3048', shirt:'#e0a878', pants:'#2088c0' },
+  surge:{ skin:'#e8b088', hair:'#f0d048', shirt:'#48684a', pants:'#3a4a38' },
+  misty:{ skin:'#f8d0b0', hair:'#f0a038', shirt:'#f0d048', pants:'#f0d048', skirt:true },
+  gymguide:{ skin:'#f0c8a0', hair:'#5a4028', shirt:'#e04838', pants:'#3a3a48' },
 };
 
 function drawHumanOW(x, pal, dir, frame){
@@ -840,6 +1174,41 @@ SPR.moltresOW = function(frame){
   PG(x,[[6,2],[5,-1+b],[8,1],[10,-1+b],[10,3]],'#e84820',0.7); // crest
   PG(x,[[5,5],[2,6],[5,7]],'#c8a060',0.7);     // beak
   x.fillStyle='#2e2440'; x.fillRect(6,4,1,2);
+  this._c[key]=c;
+  return c;
+};
+// surf mount: a friendly blue plesiosaur the hero rides (20x16), dir 0..3, frame 0/1
+SPR.surfMount = function(dir, frame){
+  const key='surf:'+dir+':'+frame;
+  if(this._c[key]) return this._c[key];
+  const c = cv(20,16), x = cx2(c);
+  x.lineJoin='round';
+  const body='#4aa0e0', belly='#bfe6f8', shell='#8cd0f0';
+  // wake ripples
+  x.strokeStyle='rgba(255,255,255,0.7)'; x.lineWidth=1;
+  const wf = frame?0.3:0;
+  x.beginPath(); x.arc(4,14,2+wf,Math.PI,0); x.arc(15,14,2-wf,Math.PI,0); x.stroke();
+  // body shell
+  E(x,10,10,8.5,5.2,body,1.3);
+  E(x,10,11,6,3.4,belly,0);
+  E(x,10,8.5,7,3.2,shell,0);
+  // flippers (paddle)
+  const fp = frame?1:-1;
+  PG(x,[[4,11],[2,13+fp],[6,12]],body,1);
+  PG(x,[[16,11],[18,13-fp],[14,12]],body,1);
+  // neck + head, oriented by dir
+  let hx=10, hy=4;
+  if(dir===2){ hx=3; hy=6; } else if(dir===3){ hx=17; hy=6; } else if(dir===0){ hx=10; hy=7; } else { hx=10; hy=3; }
+  // neck
+  LN(x,10,7,hx,hy,4.2,OUTC); LN(x,10,7,hx,hy,2.8,body);
+  CIR(x,hx,hy,3,body,1.2);
+  // eye + horn
+  if(dir!==1){
+    const ex = dir===2? hx-1 : dir===3? hx+1 : hx-1.4;
+    x.fillStyle='#2e2440'; x.fillRect(ex,hy-1,1,1);
+    if(dir===0){ x.fillStyle='#2e2440'; x.fillRect(hx+0.6,hy-1,1,1); }
+  }
+  PG(x,[[hx-1,hy-2.6],[hx,hy-5],[hx+1,hy-2.6]],'#e8f4ff',0.8);
   this._c[key]=c;
   return c;
 };
@@ -925,6 +1294,41 @@ const TILE_ART = {
     x.fillStyle='#d89868'; x.fillRect(4,6,2,1); x.fillRect(12,8,2,1); x.fillRect(8,10,2,1);
   },
   'm'(x){ x.fillStyle='#d8a878'; x.fillRect(0,0,16,16); speckle(x,'#c89466',17,12); speckle(x,'#e8bc90',8,7); },
+  'X'(x){ // cuttable tree (like T, with a pale cut-notch marker)
+    TILE_ART['T'](x);
+    x.fillStyle='#f8f0c0'; x.fillRect(6,9,4,1); x.fillRect(7,8,2,1);
+    x.fillStyle='#c8b060'; x.fillRect(6,10,4,1);
+  },
+  'O'(x){ // strength boulder (bigger, with arrows hint)
+    x.fillStyle='#9a9088'; x.beginPath(); x.arc(8,8,7,0,7); x.fill();
+    x.fillStyle='#b6ada4'; x.beginPath(); x.arc(7,6,5,0,7); x.fill();
+    x.fillStyle='#d0c8c0'; x.fillRect(4,4,3,2); x.fillRect(9,9,2,2);
+    x.strokeStyle='#5a5048'; x.lineWidth=1.2; x.beginPath(); x.arc(8,8,7,0,7); x.stroke();
+    x.strokeStyle='#70685f'; x.lineWidth=1; x.beginPath(); x.moveTo(5,11); x.lineTo(11,11); x.stroke();
+  },
+  'R'(x){ // town building wall (brick + trim)
+    x.fillStyle='#d8c0a0'; x.fillRect(0,0,16,16);
+    x.fillStyle='#c0a480'; for(let r=0;r<4;r++){ x.fillRect(0,r*4+3,16,1); }
+    x.fillStyle='#cbb190'; for(let r=0;r<4;r++){ const o=(r%2)*4; for(let cc=0;cc<3;cc++) x.fillRect(o+cc*8,r*4,1,3); }
+    x.fillStyle='#b09070'; x.fillRect(0,0,16,1);
+  },
+  'Z'(x){ // gym facade
+    x.fillStyle='#9a9aa8'; x.fillRect(0,0,16,16);
+    x.fillStyle='#7a7a8a'; x.fillRect(0,0,16,2); x.fillRect(0,7,16,1); x.fillRect(0,13,16,1);
+    x.fillStyle='#b0b0c0'; x.fillRect(1,3,6,3); x.fillRect(9,3,6,3); x.fillRect(1,9,6,3); x.fillRect(9,9,6,3);
+  },
+  'H'(x){ // hedge / fence
+    TILE_ART['.'](x);
+    x.fillStyle='#2e6c34'; x.fillRect(1,4,14,9);
+    x.fillStyle='#48a048'; x.fillRect(1,4,14,2); speckle(x,'#3e8c40',44,8);
+    x.fillStyle='#245626'; x.fillRect(1,12,14,1);
+  },
+  'L'(x){ // ledge (jump-down south edge) — decorative, walkable
+    TILE_ART['.'](x);
+    x.fillStyle='#c8a86a'; x.fillRect(0,11,16,5);
+    x.fillStyle='#a8874a'; x.fillRect(0,11,16,1);
+    x.fillStyle='#8a6a38'; x.fillRect(2,14,3,1); x.fillRect(8,14,3,1);
+  },
   'r'(x){ // boulder overlay (transparent bg; ground drawn underneath by engine)
     x.fillStyle='#8a8078'; x.beginPath(); x.arc(8,9,6,0,7); x.fill();
     x.fillStyle='#a8a098'; x.beginPath(); x.arc(7,7,4.4,0,7); x.fill();
@@ -980,6 +1384,48 @@ SPR.tile = function(ch, frame){
 // STAMPS (buildings & props, drawn over ground)
 // ============================================================
 const STAMP_ART = {
+  gym:{ w:96, h:80, draw(x){
+    // grey roof
+    x.fillStyle='#8890a0'; x.beginPath(); x.moveTo(0,30); x.lineTo(16,8); x.lineTo(80,8); x.lineTo(96,30); x.lineTo(96,38); x.lineTo(0,38); x.fill();
+    x.fillStyle='#6a7284'; x.fillRect(0,30,96,8);
+    x.strokeStyle='#4a5262'; x.lineWidth=2; x.beginPath(); x.moveTo(0,30); x.lineTo(16,8); x.lineTo(80,8); x.lineTo(96,30); x.stroke();
+    // walls
+    x.fillStyle='#c8ccd4'; x.fillRect(4,38,88,42);
+    x.strokeStyle='#7a8290'; x.lineWidth=1; x.strokeRect(4.5,38.5,87,41);
+    x.fillStyle='#a8b0bc'; x.fillRect(4,38,88,3);
+    // big columns
+    x.fillStyle='#e0e4ea'; x.fillRect(12,42,8,38); x.fillRect(76,42,8,38);
+    x.strokeStyle='#9098a4'; x.strokeRect(12.5,42.5,7,37); x.strokeRect(76.5,42.5,7,37);
+    // door
+    x.fillStyle='#485060'; x.fillRect(38,52,20,28);
+    x.fillStyle='#68707e'; x.fillRect(40,54,7,24); x.fillRect(49,54,7,24);
+    // emblem
+    x.fillStyle='#f0d048'; x.beginPath(); x.arc(48,20,8,0,7); x.fill();
+    x.strokeStyle='#4a5262'; x.lineWidth=1.4; x.stroke();
+    x.fillStyle='#4a5262'; x.font='bold 12px sans-serif'; x.textAlign='center'; x.fillText('G',48,25); x.textAlign='left';
+  }},
+  mart:{ w:80, h:64, draw(x){
+    x.fillStyle='#3878c0'; x.beginPath(); x.moveTo(0,26); x.lineTo(12,6); x.lineTo(68,6); x.lineTo(80,26); x.lineTo(80,32); x.lineTo(0,32); x.fill();
+    x.fillStyle='#2a5c98'; x.fillRect(0,26,80,6);
+    x.strokeStyle='#1c3a68'; x.lineWidth=1.6; x.beginPath(); x.moveTo(0,26); x.lineTo(12,6); x.lineTo(68,6); x.lineTo(80,26); x.stroke();
+    x.fillStyle='#f0ece0'; x.fillRect(4,32,72,32);
+    x.strokeStyle='#8a8478'; x.lineWidth=1; x.strokeRect(4.5,32.5,71,31);
+    x.fillStyle='#78b8e8'; x.fillRect(48,38,20,14); x.strokeStyle='#5878a0'; x.strokeRect(48.5,38.5,19,13);
+    x.fillStyle='#8a5a30'; x.fillRect(16,40,14,24);
+    // blue roof emblem
+    x.fillStyle='#f8f8f8'; x.font='bold 10px sans-serif'; x.textAlign='center'; x.fillText('MART',40,20); x.textAlign='left';
+  }},
+  cottage:{ w:80, h:64, draw(x){
+    x.fillStyle='#c86038'; x.beginPath(); x.moveTo(0,28); x.lineTo(14,6); x.lineTo(66,6); x.lineTo(80,28); x.lineTo(80,34); x.lineTo(0,34); x.fill();
+    x.fillStyle='#a84a28'; x.fillRect(0,28,80,6);
+    x.strokeStyle='#7a3418'; x.lineWidth=1.6; x.beginPath(); x.moveTo(0,28); x.lineTo(14,6); x.lineTo(66,6); x.lineTo(80,28); x.stroke();
+    x.fillStyle='#e8dcc0'; x.fillRect(4,34,72,30);
+    x.strokeStyle='#9a8a68'; x.lineWidth=1; x.strokeRect(4.5,34.5,71,29);
+    x.fillStyle='#78b8e8'; x.fillRect(50,40,16,12); x.strokeStyle='#5878a0'; x.strokeRect(50.5,40.5,15,11);
+    x.fillStyle='#8a5a30'; x.fillRect(18,42,13,22); x.fillStyle='#f8d048'; x.fillRect(27,52,2,2);
+    // chimney
+    x.fillStyle='#9a8a68'; x.fillRect(58,8,8,12);
+  }},
   pokecenter:{ w:96, h:80, draw(x){
     // roof
     x.fillStyle='#f07830';
