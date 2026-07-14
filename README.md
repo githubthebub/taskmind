@@ -40,9 +40,17 @@ On-screen touch controls appear on mobile.
 
 Two gym badges (Thunder, Cascade), 18 new Kanto Pokémon to catch, and every HM put to use.
 
+## 🕹️ Everything-Allowed (Free Roam) mode
+
+Pick **FREE ROAM** on the title screen to start with **all HMs, both gym badges, and a fully stocked bag** — no gates, no story required. From the START menu:
+- **FLY** — teleport instantly between every town and route (Pallet, Viridian, One Island, Kindle Road, Mt. Ember, Vermilion, Route 5, Cerulean, Route 25). Go wherever you want, whenever you want.
+- **ENCOUNTERS: ON/OFF** — switch off wild battles to explore in peace, or back on to hunt.
+
+The western towns — **Pallet Town** (Prof. Oak's Lab), **Route 1**, and **Viridian City** — are all Fly destinations and fully walkable among themselves.
+
 ## ⚙️ Features
 
-- Two connected regions — the **Sevii Islands** and a slice of the **Kanto mainland** (Vermilion → Cerulean), linked by the Seagallop ferry
+- Two connected regions — the **Sevii Islands** and a slice of the **Kanto mainland** (Vermilion → Cerulean), linked by the Seagallop ferry, plus a walkable western cluster (Pallet → Viridian)
 - **HM field mechanics**: **Surf** (ride across water, with water encounters + a rideable mount sprite), **Cut** (chop small trees), **Strength** (push boulders) — each gates real content
 - **Gyms & badges**: Lt. Surge (Vermilion) and Misty (Cerulean), each with junior trainers and a leader
 - Grid-based overworld with warps, NPCs (wandering, flag-driven), signs, interiors

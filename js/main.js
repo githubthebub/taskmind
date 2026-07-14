@@ -62,31 +62,53 @@ async function titleScreen(){
   SND.sfx('confirm');
   Title.showMenu=true;
   while(true){
-    if(hasSave()){
-      const choice = await Menu.open(['CONTINUE','NEW GAME'], {x:VW/2-80, y:150, w:160, noCancel:true});
-      if(choice===0){
-        const slot = await slotScreen('load');
-        if(slot<0) continue;              // back to title menu
-        if(loadGame(slot)){
-          await UI.fadeOut(500);
-          Game.mode='world';
-          await UI.fadeIn(400);
-          return;
-        }
-        continue;
+    const opts = hasSave() ? ['CONTINUE','NEW GAME','FREE ROAM'] : ['NEW GAME','FREE ROAM'];
+    const choice = await Menu.open(opts, {x:VW/2-90, y:146, w:180, noCancel:true});
+    const pick = opts[choice];
+    if(pick==='CONTINUE'){
+      const slot = await slotScreen('load');
+      if(slot<0) continue;              // back to title menu
+      if(loadGame(slot)){
+        await UI.fadeOut(500);
+        Game.mode='world';
+        await UI.fadeIn(400);
+        return;
       }
-    } else {
-      await Menu.open(['NEW GAME'], {x:VW/2-80, y:150, w:160, noCancel:true});
+      continue;
     }
     await UI.fadeOut(500);
-    await newGame();
+    await newGame(pick==='FREE ROAM');
     return;
   }
 }
 
-async function newGame(){
+async function newGame(freeRoam){
   Game.flags={}; Game.bag=defaultBag(); Game.party=defaultParty(); Game.steps=0;
   Game.playFrames=0; Game.saveSlot=null;
+  Game.surfing=false; Game.strengthActive=false; Game.noEncounters=false;
+
+  if(freeRoam){
+    Game.flags = {
+      freeRoam:true, introDone:true, metCelio:true, deliveredRuby:true,
+      hm_surf:true, hm_cut:true, hm_strength:true,
+      badge_thunderbadge:true, badge_cascadebadge:true,
+      beat_grunt_kai:true, beat_grunt_rico:true, grannyBalls:true,
+    };
+    Game.bag = { hyperpotion:20, superpotion:10, fullheal:20, revive:10, ultraball:50,
+      hm_surf:1, hm_cut:1, hm_strength:1, thunderbadge:1, cascadebadge:1 };
+    loadMap('pallet', 9, 10, 1);
+    Game.mode='world';
+    await UI.fadeIn(600);
+    Game.busy = true;
+    try{
+      await waitMs(250);
+      await Dlg.say('◆ EVERYTHING-ALLOWED MODE ◆');
+      await Dlg.say('All HMs, both GYM BADGES and a stuffed BAG are yours. Roam wherever you like!');
+      await Dlg.say('Open the START menu → FLY to teleport between towns any time. Toggle ENCOUNTERS there too. Have fun!');
+    } finally { Game.busy = false; }
+    return;
+  }
+
   loadMap('town', 14, 22, 1);
   Game.mode='world';
   await UI.fadeIn(600);
@@ -311,7 +333,7 @@ window.addEventListener('load', async ()=>{
   ]);}catch(e){}
 
   const q = new URLSearchParams(location.search);
-  window.__game = { Game, Battle, SPR, MAPS, loadMap, makeMon, Input, PartyUI, BagUI, Dlg, Menu, B, saveGame, loadGame, slotInfo, SlotUI };
+  window.__game = { Game, Battle, SPR, MAPS, loadMap, makeMon, Input, PartyUI, BagUI, Dlg, Menu, B, saveGame, loadGame, slotInfo, SlotUI, FLY_POINTS, newGame };
   if(q.get('debug')==='sprites'){
     requestAnimationFrame(function ds(){ requestAnimationFrame(ds); frameCount++; Game.time++; tickWaiters(); debugSpriteSheet(); });
     return;

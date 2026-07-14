@@ -70,8 +70,31 @@ const Game = {
   player:{ x:14, y:22, dir:0, ox:0, oy:0, moving:false, prog:0, anim:0, run:false },
   cam:{x:0,y:0},
   busy:false, steps:0, time:0, playFrames:0, saveSlot:null,
-  surfing:false, strengthActive:false,
+  surfing:false, strengthActive:false, noEncounters:false,
 };
+
+// Fly / teleport destinations (Everything-Allowed mode & post-game)
+const FLY_POINTS = [
+  { name:'PALLET TOWN',    map:'pallet',    x:9,  y:10, dir:1 },
+  { name:'VIRIDIAN CITY',  map:'viridian',  x:10, y:15, dir:1 },
+  { name:'ONE ISLAND',     map:'town',      x:14, y:10, dir:0 },
+  { name:'KINDLE ROAD',    map:'kindle',    x:9,  y:38, dir:1 },
+  { name:'MT. EMBER',      map:'ember',     x:12, y:17, dir:1 },
+  { name:'VERMILION CITY', map:'vermilion', x:11, y:12, dir:1 },
+  { name:'ROUTE 5',        map:'route5',    x:9,  y:28, dir:1 },
+  { name:'CERULEAN CITY',  map:'cerulean',  x:11, y:14, dir:1 },
+  { name:"ROUTE 25 (BILL)",map:'route25',   x:8,  y:16, dir:1 },
+];
+function canFly(){ return !!(Game.flags.freeRoam || Game.flags.deliveredRuby); }
+async function flyMenu(){
+  const sel = await Menu.open(FLY_POINTS.map(p=>p.name), {x:VW-224, y:8, w:216});
+  if(sel<0) return;
+  const p = FLY_POINTS[sel];
+  SND.sfx('swoosh');
+  await UI.fadeOut(420);
+  loadMap(p.map, p.x, p.y, p.dir);
+  await UI.fadeIn(420);
+}
 const DIRV = [[0,1],[0,-1],[-1,0],[1,0]]; // down,up,left,right
 
 function bagAdd(item,n){ Game.bag[item] = (Game.bag[item]||0)+n; }
@@ -437,6 +460,7 @@ function onStepFinish(){
   }
 }
 function rollEncounter(enc){
+  if(Game.noEncounters) return;
   if(Math.random() >= enc.rate) return;
   const total = enc.list.reduce((a,e)=>a+e[3],0);
   let r = Math.random()*total;
@@ -565,10 +589,19 @@ async function openStartMenu(){
   Game.busy = true;
   try{
     while(true){
-      const sel = await Menu.open(['POKéMON','BAG','SAVE','SOUND: '+(SND.muted?'OFF':'ON'),'CLOSE'], {x:VW-190, y:8, w:182});
-      if(sel===0){ await partyScreen('world'); }
-      else if(sel===1){ await bagScreen('world'); }
-      else if(sel===2){
+      const items = ['POKéMON','BAG'];
+      if(canFly()) items.push('FLY');
+      items.push('SAVE');
+      if(Game.flags.freeRoam) items.push('ENCOUNTERS: '+(Game.noEncounters?'OFF':'ON'));
+      items.push('SOUND: '+(SND.muted?'OFF':'ON'), 'CLOSE');
+      const w = Game.flags.freeRoam ? 214 : 182;
+      const idx = await Menu.open(items, {x:VW-w-8, y:8, w});
+      if(idx<0) break;
+      const label = items[idx];
+      if(label==='POKéMON'){ await partyScreen('world'); }
+      else if(label==='BAG'){ await bagScreen('world'); }
+      else if(label==='FLY'){ await flyMenu(); break; }
+      else if(label==='SAVE'){
         const slot = await slotScreen('save');
         if(slot<0) continue;
         if(slotInfo(slot) && slot!==Game.saveSlot){
@@ -584,8 +617,9 @@ async function openStartMenu(){
           await Dlg.say("Couldn't write the save data. Your browser may be blocking storage.");
         }
       }
-      else if(sel===3){ SND.toggleMute(); continue; }
-      else break;
+      else if(label.startsWith('ENCOUNTERS')){ Game.noEncounters = !Game.noEncounters; continue; }
+      else if(label.startsWith('SOUND')){ SND.toggleMute(); continue; }
+      else break; // CLOSE
     }
   } finally { Game.busy=false; }
 }
@@ -786,6 +820,7 @@ function saveGame(slot){
     v:2, flags:Game.flags, bag:Game.bag, party:Game.party,
     map:Game.map.id, x:P.x, y:P.y, dir:P.dir, steps:Game.steps,
     playFrames:Game.playFrames||0, savedAt:Date.now(),
+    noEncounters:!!Game.noEncounters,
   };
   try{
     localStorage.setItem(slotKey(slot), JSON.stringify(data));
@@ -801,6 +836,7 @@ function loadGame(slot){
     const d = JSON.parse(raw);
     Game.flags = d.flags||{}; Game.bag = d.bag||defaultBag(); Game.party = d.party||defaultParty();
     Game.steps = d.steps||0; Game.playFrames = d.playFrames||0;
+    Game.noEncounters = !!d.noEncounters;
     Game.saveSlot = slot;
     loadMap(d.map||'town', d.x??14, d.y??22, d.dir??1);
     return true;

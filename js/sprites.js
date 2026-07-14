@@ -1100,6 +1100,8 @@ const CHAR_PALS = {
   surge:{ skin:'#e8b088', hair:'#f0d048', shirt:'#48684a', pants:'#3a4a38' },
   misty:{ skin:'#f8d0b0', hair:'#f0a038', shirt:'#f0d048', pants:'#f0d048', skirt:true },
   gymguide:{ skin:'#f0c8a0', hair:'#5a4028', shirt:'#e04838', pants:'#3a3a48' },
+  oak:{ skin:'#f0c8a0', hair:'#d0d0d0', shirt:'#f0f0f0', pants:'#8a7858' },
+  guard:{ skin:'#e8c0a0', hair:'#3a3048', shirt:'#3a5a8a', pants:'#2a3a5a', hat:'#3a5a8a', hatFront:'#c8b048' },
 };
 
 function drawHumanOW(x, pal, dir, frame){
@@ -1414,6 +1416,30 @@ const STAMP_ART = {
     x.fillStyle='#8a5a30'; x.fillRect(16,40,14,24);
     // blue roof emblem
     x.fillStyle='#f8f8f8'; x.font='bold 10px sans-serif'; x.textAlign='center'; x.fillText('MART',40,20); x.textAlign='left';
+  }},
+  lab:{ w:96, h:80, draw(x){
+    // domed research roof
+    x.fillStyle='#c85040';
+    x.beginPath(); x.moveTo(4,36); x.quadraticCurveTo(48,4,92,36); x.lineTo(92,42); x.lineTo(4,42); x.fill();
+    x.fillStyle='#a83828'; x.beginPath(); x.moveTo(4,36); x.quadraticCurveTo(48,10,92,36); x.lineTo(92,40); x.lineTo(4,40); x.fill();
+    x.strokeStyle='#7a2418'; x.lineWidth=2; x.beginPath(); x.moveTo(4,36); x.quadraticCurveTo(48,4,92,36); x.stroke();
+    // walls
+    x.fillStyle='#eef0f2'; x.fillRect(4,42,88,38);
+    x.fillStyle='#d4d8dc'; x.fillRect(4,42,88,3);
+    x.strokeStyle='#8a9098'; x.lineWidth=1; x.strokeRect(4.5,42.5,87,37);
+    // big windows
+    x.fillStyle='#78b8e8'; x.fillRect(12,50,18,16); x.fillRect(66,50,18,16);
+    x.strokeStyle='#5878a0'; x.strokeRect(12.5,50.5,17,15); x.strokeRect(66.5,50.5,17,15);
+    x.fillStyle='#a8d8f8'; x.fillRect(13,51,7,6); x.fillRect(67,51,7,6);
+    // door
+    x.fillStyle='#5a4a6a'; x.fillRect(38,54,20,26);
+    x.fillStyle='#7a6a8a'; x.fillRect(40,56,7,22); x.fillRect(49,56,7,22);
+    // rooftop antenna / dish
+    x.strokeStyle='#8a9098'; x.lineWidth=2; x.beginPath(); x.moveTo(48,8); x.lineTo(48,-2); x.stroke();
+    x.fillStyle='#c8ccd0'; x.beginPath(); x.arc(48,-2,4,0,7); x.fill();
+    // sign band
+    x.fillStyle='#385888'; x.fillRect(30,44,36,7);
+    x.fillStyle='#f8f8f8'; x.font='bold 7px sans-serif'; x.textAlign='center'; x.fillText('LAB',48,50); x.textAlign='left';
   }},
   cottage:{ w:80, h:64, draw(x){
     x.fillStyle='#c86038'; x.beginPath(); x.moveTo(0,28); x.lineTo(14,6); x.lineTo(66,6); x.lineTo(80,28); x.lineTo(80,34); x.lineTo(0,34); x.fill();

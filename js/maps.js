@@ -750,6 +750,161 @@ kanto_sea:{
       "Open water in every direction. Somewhere out past the horizon lie more of the SEVII ISLANDS..." ]},
   ],
 },
+
+// ============================================================
+//  WESTERN KANTO (Fly destinations — where it all began)
+// ============================================================
+pallet:{
+  name:'PALLET TOWN', music:'town', outdoor:true, ground:'.', door:'p', void:'T',
+  build(){
+    const g = grid(20,18,'.');
+    scatter(g,',','.',131,0.08);
+    rectg(g,0,0,20,2,'T');
+    for(let j=0;j<13;j++){ g[j][0]='T'; g[j][19]='T'; }
+    g[0][9]='p'; g[1][9]='p'; g[0][10]='p'; g[1][10]='p';   // north → route1
+    // beach + sea to the south
+    rectg(g,0,13,20,1,'s'); rectg(g,0,14,20,4,'w');
+    // Oak's Lab (south-centre) — enterable
+    rectg(g,7,8,6,4,'B'); g[11][9]='D'; g[11][10]='D';
+    // player's & rival's houses (decor)
+    rectg(g,2,4,4,4,'B'); rectg(g,14,4,4,4,'B');
+    // paths & fences
+    rectg(g,9,2,2,11,'p'); rectg(g,3,7,7,1,'p'); rectg(g,10,7,7,1,'p');
+    rectg(g,4,10,2,2,'f'); rectg(g,14,10,2,2,'f');
+    return g;
+  },
+  stamps:[['lab',7,8],['house',2,4],['house',14,4]],
+  warps:[
+    {x:9,y:0,to:'route1',tx:6,ty:22,dir:1},{x:10,y:0,to:'route1',tx:7,ty:22,dir:1},
+    {x:9,y:11,to:'oak_lab',tx:6,ty:9,dir:1},{x:10,y:11,to:'oak_lab',tx:7,ty:9,dir:1},
+  ],
+  npcs:[
+    { id:'p_sign', sprite:'sign', x:11, y:8, dir:0,
+      script:()=>[ "PALLET TOWN\n\"Shades of your journey await!\"\nNorth: ROUTE 1 → VIRIDIAN CITY" ]},
+    { id:'p_labsign', sprite:'sign', x:6, y:12, dir:0,
+      script:()=>[ "OAK POKéMON RESEARCH LAB" ]},
+    { id:'p_girl', sprite:'girl', x:14, y:9, dir:0, wander:true,
+      script:()=>[
+        "Technology is incredible! Even here in tiny PALLET TOWN, PROF. OAK links up with the whole world.",
+        "You came from the SEVII ISLANDS? All the way here? You must love adventures as much as I do!",
+      ]},
+    { id:'p_fisher', sprite:'fisher', x:4, y:13, dir:0,
+      script:()=>[ "This beach is where I first cast a line as a boy. SURF out and the sea just keeps going." ]},
+  ],
+},
+
+oak_lab:{
+  name:'OAK POKéMON LAB', music:'center', outdoor:false, ground:'F', void:'W',
+  build(){
+    const g = grid(14,11,'F');
+    rectg(g,0,0,14,2,'W'); for(let j=0;j<11;j++){ g[j][0]='W'; g[j][13]='W'; }
+    rectg(g,0,10,14,1,'W'); g[10][6]='k'; g[10][7]='k';
+    rectg(g,1,1,4,1,'B'); rectg(g,9,1,4,1,'B');   // bookshelves
+    rectg(g,6,4,3,1,'B');                          // starter table
+    g[8][1]='B'; g[8][12]='B';                     // plants
+    return g;
+  },
+  stamps:[['machine',9,1],['pedestal',6,4],['plant',1,8],['plant',12,8]],
+  warps:[ {x:6,y:10,to:'pallet',tx:9,ty:10,dir:0},{x:7,y:10,to:'pallet',tx:10,ty:10,dir:0} ],
+  npcs:[
+    { id:'oak', sprite:'oak', x:7, y:3, dir:0,
+      script:()=>[
+        "PROF. OAK: Ah — a trainer with SIX seasoned POKéMON and salt still in your hair. The SEVII ferry, was it?",
+        "PROF. OAK: This is my lab. Right here, three young trainers each choose their very first partner. It never stops being magical.",
+        {q:'PROF. OAK: You look road-weary. Shall I have my aides tend to your POKéMON?', yes:[
+          {heal:true},
+          "PROF. OAK: Good as new! Off you go — the whole region\'s yours to wander.",
+        ], no:[ "PROF. OAK: Ha! Tough as old boots, the lot of you. I like that." ]},
+      ]},
+    { id:'oak_ball1', sprite:null, x:6, y:4, dir:0,
+      script:()=>[ "A POKé BALL rests in the rack. A label reads: BULBASAUR. Someone\'s first friend, one day soon." ]},
+    { id:'oak_ball2', sprite:null, x:7, y:4, dir:0,
+      script:()=>[ "A POKé BALL rests in the rack. A label reads: CHARMANDER. It\'s warm to the touch." ]},
+    { id:'oak_ball3', sprite:null, x:8, y:4, dir:0,
+      script:()=>[ "A POKé BALL rests in the rack. A label reads: SQUIRTLE. ...Your BLASTOISE started just like this." ]},
+    { id:'oak_aide', sprite:'boy', x:11, y:5, dir:2,
+      script:()=>[ "I'm one of PROF. OAK's aides. The POKéDEX, the trade network, the SEVII link-up — it all runs through here!" ]},
+  ],
+},
+
+route1:{
+  name:'ROUTE 1', music:'route', outdoor:true, ground:'.', void:'T',
+  build(){
+    const g = grid(14,24,'.');
+    scatter(g,',','.',141,0.09);
+    for(let j=0;j<24;j++){ g[j][0]='T'; g[j][13]='T'; }
+    rectg(g,0,0,14,2,'T'); rectg(g,0,22,14,2,'T');
+    g[0][6]='p'; g[1][6]='p'; g[0][7]='p'; g[1][7]='p';       // north → viridian
+    g[22][6]='p'; g[23][6]='p'; g[22][7]='p'; g[23][7]='p';   // south → pallet
+    rectg(g,6,0,2,24,'p');
+    rectg(g,2,5,4,3,'G'); rectg(g,8,14,4,3,'G');
+    rectg(g,1,11,5,1,'L'); rectg(g,8,18,5,1,'L');             // ledges (decor)
+    g[9][3]='X';                                               // an optional CUT tree
+    return g;
+  },
+  warps:[
+    {x:6,y:0,to:'viridian',tx:10,ty:17,dir:1},{x:7,y:0,to:'viridian',tx:11,ty:17,dir:1},
+    {x:6,y:23,to:'pallet',tx:9,ty:1,dir:0},{x:7,y:23,to:'pallet',tx:10,ty:1,dir:0},
+  ],
+  encounters:{ rate:0.15, list:[ ['pidgey',3,6,45],['rattata',3,6,45],['spearow',4,6,10] ]},
+  npcs:[
+    { id:'r1_young', sprite:'youngster', x:8, y:9, dir:2, script:trainerScript('youngster_joey') },
+    { id:'r1_sign', sprite:'sign', x:5, y:20, dir:0,
+      script:()=>[ "ROUTE 1\nPALLET TOWN — VIRIDIAN CITY" ]},
+  ],
+},
+
+viridian:{
+  name:'VIRIDIAN CITY', music:'town', outdoor:true, ground:'.', door:'p', void:'T',
+  build(){
+    const g = grid(22,20,'.');
+    scatter(g,',','.',151,0.08);
+    rectg(g,0,0,22,2,'T'); rectg(g,0,18,22,2,'T');
+    for(let j=0;j<20;j++){ g[j][0]='T'; g[j][21]='T'; }
+    g[18][10]='p'; g[19][10]='p'; g[18][11]='p'; g[19][11]='p';   // south → route1
+    // buildings
+    rectg(g,3,4,6,5,'B'); g[8][5]='D'; g[8][6]='D';               // POKéCENTER
+    rectg(g,14,4,6,5,'B');                                         // GYM (locked — decor)
+    rectg(g,3,12,5,3,'B'); rectg(g,14,12,5,3,'B');                // houses (decor)
+    // pond (surf-optional) NE
+    rectg(g,16,10,5,3,'w');
+    // paths
+    rectg(g,10,2,2,16,'p'); rectg(g,5,9,13,1,'p'); rectg(g,4,15,15,1,'p');
+    return g;
+  },
+  stamps:[['pokecenter',3,4],['gym',14,4],['house',3,12],['house',14,12]],
+  warps:[
+    {x:10,y:19,to:'route1',tx:6,ty:1,dir:1},{x:11,y:19,to:'route1',tx:7,ty:1,dir:1},
+    {x:5,y:8,to:'viridian_pc',tx:7,ty:8,dir:1},{x:6,y:8,to:'viridian_pc',tx:7,ty:8,dir:1},
+  ],
+  npcs:[
+    { id:'v2_guard', sprite:'guard', x:16, y:9, dir:0,
+      script:()=>[
+        "GYM GUIDE: The VIRIDIAN GYM is shut tight — nobody's seen the LEADER in ages.",
+        "GYM GUIDE: They say whoever runs it is the strongest in all KANTO. A mystery for another day, eh?",
+      ]},
+    { id:'v2_old', sprite:'oldman', x:8, y:16, dir:0, wander:true,
+      script:()=>[
+        "VIRIDIAN CITY — 'The Eternally Green Paradise.' Prettiest town in KANTO, if you ask me.",
+        "North lies ROUTE 2 and the great VIRIDIAN FOREST... but that's a tale for a future adventure.",
+      ]},
+    { id:'v2_sign', sprite:'sign', x:9, y:9, dir:0,
+      script:()=>[ "VIRIDIAN CITY\n\"The Eternally Green Paradise\"\nSouth: ROUTE 1 → PALLET TOWN" ]},
+    { id:'v2_signgym', sprite:'sign', x:20, y:9, dir:0,
+      script:()=>[ "VIRIDIAN GYM\nLEADER: ???\n\"...Currently closed.\"" ]},
+    { id:'v2_north', sprite:'sign', x:11, y:2, dir:0,
+      script:()=>[ "ROUTE 2 ahead — closed for now.\nThe road west grows, one adventure at a time." ]},
+  ],
+},
+
+viridian_pc:{
+  name:'POKéMON CENTER', music:'center', outdoor:false, ground:'F', void:'W',
+  build(){ return kantoPC(); },
+  stamps:[['machine',11,1],['plant',1,2],['plant',1,7]],
+  warps:[ {x:7,y:9,to:'viridian',tx:5,ty:9,dir:0} ],
+  npcs:[ kantoNurse(), { id:'vpc2_t', sprite:'gymguide', x:11, y:5, dir:2,
+    script:()=>[ "Rumour says the SEVII ISLANDS' network reaches all the way here now. Small world — literally!" ]} ],
+},
 };
 
 // scripts referenced by name
