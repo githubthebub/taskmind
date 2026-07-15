@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Culture Bridge — India × Japan</title>
-  <meta name="description" content="A Pokémon-inspired game that builds cross-cultural fluency between India and Japan." />
+  <title>Culture Bridge — a world-travel adventure</title>
+  <meta name="description" content="A travel adventure across India, Japan, the USA and London where you learn each culture's dos and don'ts by playing." />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌏</text></svg>" />
 </head>
@@ -16,23 +16,22 @@
       <div class="title-inner">
         <div class="title-emoji">🇮🇳 🇯🇵 🌉 🇺🇸 🇬🇧</div>
         <h1>CULTURE&nbsp;BRIDGE</h1>
-        <p class="tagline">A Pokémon-inspired journey across <b>India</b>, <b>Japan</b>, the <b>USA</b> &amp; <b>London</b></p>
+        <p class="tagline">A world-travel adventure across <b>India</b>, <b>Japan</b>, the <b>USA</b> &amp; <b>London</b></p>
         <p class="blurb">
-          Explore four connected cultures and meet folklore <b>Kotomon</b> spirits in the tall grass.
-          Befriend them by answering questions about <b>everyday life and business</b> — greetings,
-          negotiation, meetings, dining, tipping and how each culture really says "no". Check the
-          <b>Business Guide</b> for practical deal-making tips, fill your <b>Culturedex</b>, and become
-          a Culture Bridge Master!
+          Wander four countries, meet the locals, and <b>choose how to act</b> — bow, shake hands,
+          tip, queue, buy a round. They react like real people, so you pick up the dos and don'ts by
+          <b>playing</b>, not studying. Behave well and folklore <b>Kindreds</b> befriend you. Ride
+          your bike, collect passport stamps, and become a Culture Bridge Master!
         </p>
         <button id="startBtn" class="big-btn">▶ Start Journey</button>
         <button id="resetBtn" class="text-btn">Reset saved progress</button>
         <div class="controls-help">
-          <div><b>Move</b> Arrows / WASD</div>
-          <div><b>Talk / Read</b> Space</div>
-          <div><b>Answer</b> 1–4</div>
-          <div><b>Culturedex</b> C</div>
-          <div><b>Phrasebook</b> P</div>
-          <div><b>Business Guide</b> B</div>
+          <div><b>Move</b> W A D + Arrows</div>
+          <div><b>Down</b> ↓ arrow</div>
+          <div><b>Talk / Act</b> Space &amp; 1–4</div>
+          <div><b>Menu</b> F / Enter</div>
+          <div><b>Bicycle</b> S (on 🚲 paths)</div>
+          <div><b>Quick</b> C · P · B · J</div>
         </div>
       </div>
     </section>
@@ -43,7 +42,7 @@
         <div class="hud-title">🌏 Culture Bridge</div>
         <div class="hud-stats">
           <span class="stat">☮️ Harmony <b id="hud-harmony">0</b></span>
-          <span class="stat">👥 Kotomon <b id="hud-caught">0/12</b></span>
+          <span class="stat">🧑‍🤝‍🧑 Friends <b id="hud-caught">0/24</b></span>
         </div>
       </header>
 
@@ -70,9 +69,8 @@
         </div>
         <div class="action-btns">
           <button id="btn-a" class="abtn">Talk</button>
-          <button id="btn-dex" class="abtn">Dex</button>
-          <button id="btn-phrase" class="abtn">Say</button>
-          <button id="btn-biz" class="abtn">Biz</button>
+          <button id="btn-menu" class="abtn">Menu</button>
+          <button id="btn-bike" class="abtn">🚲</button>
         </div>
       </div>
     </section>

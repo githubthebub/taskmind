@@ -1,16 +1,18 @@
-# 🌏 Culture Bridge — India × Japan × USA × London
+# 🌏 Culture Bridge — a world-travel adventure
 
-A **Pokémon-inspired** browser game whose goal isn't to be the very best, but to
-build **practical cross-cultural fluency** across four cultures — **India**,
-**Japan**, the **USA** and the **UK (London)**. You explore four connected
-regions around a central hub, meet folklore spirits called **Kotomon** in the
-tall grass, and *befriend* them by answering questions about **everyday life and
-business** — greetings, negotiation, meetings, dining, tipping, and how each
-culture really says "no."
+A top-down travel game across four cultures — **India**, **Japan**, the **USA**
+and the **UK (London)**. You don't get quizzed; you **play**. Wander each
+country, meet the locals, and **choose how to act** — bow or shake hands, tip or
+don't, queue or push in, buy a round or just your own. The locals react like
+real people would, so you pick up the **dos and don'ts by consequence**. Behave
+well and folklore companions called **Kindreds** befriend you.
 
-It's built to be genuinely useful for **day-to-day interactions and business
-negotiations**, with a dedicated **Business Guide** of deal-making etiquette and
-a four-way **Phrasebook**.
+The cultural learning is a **by-product of playing**: every interaction quietly
+notes what you learned in your **Journal**, stamps your **Passport**, and raises
+your **rapport** with that country.
+
+> The collectible "Kindreds" are original folklore companions — nothing to do
+> with any other game's "Pals" or "-mon".
 
 No build step, no dependencies, no network. Just open it and play.
 
@@ -42,49 +44,52 @@ python3 -m http.server 8000
 
 | Action | Keys |
 | --- | --- |
-| Move | Arrow keys / **WASD** |
-| Talk to people, read signs | **Space** |
-| Answer a question | **1–4** (or click) |
-| Open **Culturedex** | **C** |
-| Open **Phrasebook** | **P** |
-| Open **Business Guide** | **B** |
+| Move forward / left / right | **W** / **A** / **D** |
+| Move down (and all directions) | **Arrow keys** |
+| Talk to a local, read a sign | **Space** |
+| Choose an action in a scene | **1–4** (or click) |
+| Open the **Menu** | **F** or **Enter** |
+| **Bicycle** on/off (on 🚲 cycle paths) | **S** |
+| Quick-open Friends / Phrasebook / Business / Journal | **C** / **P** / **B** / **J** |
 
-On phones and tablets an on-screen D-pad and buttons appear automatically.
+On phones and tablets an on-screen D-pad plus **Talk**, **Menu** and **🚲**
+buttons appear automatically.
 
-## 🎯 The idea
+## 🎯 How it plays
 
-Classic monster-catching games reward you for *collecting*. Culture Bridge
-rewards you for *understanding*. Four roads lead out from a central hub — **India
-(west)**, **Japan (east)**, **London (north)** and the **USA (south)** — and each
-encounter is a small culture-exchange:
+Four roads lead out from a central crossroads — **India (west)**, **Japan
+(east)**, **London (north)** and the **USA (south)**. Gateway flags and passport
+stamps make it obvious where you're going.
 
-1. Walk into the **tall grass** of any region to meet a **Kotomon**.
-2. Answer its question — most are about **real everyday and business situations**:
-   handing over a business card in Tokyo, reading British understatement, tipping
-   in New York, building trust before a deal in Delhi. **Correct** → you befriend
-   it. **Wrong** → it slips away, *but the correct answer and a short explanation
-   are always shown*, so you learn either way.
-3. Earn **Harmony Points** and fill your **Culturedex** of all 24 spirits to
-   become a **Culture Bridge Master**.
+1. **Explore** a country (bike the cycle paths to go faster) and wander into the
+   tall grass or up to a local.
+2. A **situation** plays out — a Tokyo shopkeeper bows, a New York colleague puts
+   out their hand, a London bus queue forms. You **choose how to act**.
+3. The local **reacts** the way a real person would. Bow back in Japan and you
+   make a friend; hug a stranger and they recoil (gently and a bit
+   comically — nothing is punished harshly). A watching **Kindred** is charmed by
+   good manners and befriends you.
+4. Whatever you chose, the custom is noted in your **Journal**, your **rapport**
+   with that country rises, and your **Passport** fills up. Befriend all 24
+   Kindreds to become a **Culture Bridge Master**.
 
-### Useful for real life
+Because you learn by *doing and seeing the reaction*, the etiquette sticks the
+way it does when you actually travel.
 
-The content targets the things that actually trip people up abroad and in
-negotiations:
+### What you pick up along the way
 
-- **Communication style** — direct (USA) vs. indirect (Japan, British
-  understatement, India's relationship-first approach), and how each says "no."
-- **Meetings & hierarchy** — punctuality, business cards, consensus
-  ("nemawashi"), seniority, decision-making.
+- **Greetings** — bow (Japan), Namaste (India), firm handshake (USA), reserved
+  handshake + weather chat (UK); when a hug is fine and when it isn't.
 - **Dining & tipping** — 18–20% in the US, ~10–12.5% in the UK, *none* in Japan,
-  right-hand dining in India.
-- **The connections** — Buddhism's road from India to Japan (Garuda → Karura,
-  Saraswati → Benzaiten, stupa → pagoda), so it teaches bridges, not just facts.
+  right-hand eating in India, chopstick taboos.
+- **Everyday manners** — queue in London, remove your shoes in India/Japan, read
+  British understatement, buy your round at the pub.
+- **Doing business** — business cards in Tokyo, relationship-first deals in
+  Delhi, directness in New York — deepened in the **Business Guide** (menu).
 
-## 🐉 The 24 Kotomon
+## 🐉 The 24 Kindreds
 
-Each spirit is drawn from real folklore and carries a note about its
-cross-cultural cousin.
+Original folklore companions you befriend, one set per country.
 
 | 🇮🇳 India | 🇯🇵 Japan | 🇺🇸 USA | 🇬🇧 UK |
 | --- | --- | --- | --- |
@@ -95,16 +100,20 @@ cross-cultural cousin.
 | 🐊 Makara | 🐉 Ryu | 🐃 Babe the Blue Ox | 🌿 Green Man |
 | 🐂 Nandi | 🌙 Baku | 🦫 Groundhog | 🐺 Black Shuck |
 
-## 💼 Business Guide & 🗣️ Phrasebook
+## 📖 The Menu — Friends, Passport, Journal & more
 
-Press **B** for the **Business Guide** — a quick per-culture cheat sheet of
-greetings, hierarchy, communication style, negotiation, punctuality and
-dining/tipping etiquette for closing deals and daily life.
+Press **F** (or **Enter**) any time for the Menu:
 
-Press **P** for the four-way **Phrasebook** — everyday and business phrases side
-by side across all four cultures, with native scripts for Hindi (Devanagari) and
-Japanese (kana/kanji), and the natural register for US vs. UK English (e.g. a
-polite "no": *Nahin* · *Chotto…* · "No, I'll pass" · "I'm not sure that works").
+- **🧑‍🤝‍🧑 Friends** — the Kindreds you've befriended (and hints for the rest).
+- **🛂 Passport** — which countries you've visited and your rapport with each.
+- **📖 Journal** — every custom you've discovered, grouped by country. This fills
+  itself as you play — the record of what you learned by doing.
+- **🗣️ Phrasebook** — everyday & business phrases side by side across all four
+  cultures, with native scripts for Hindi (Devanagari) and Japanese (kana/kanji),
+  and the natural register for US vs. UK English (a polite "no": *Nahin* ·
+  *Chotto…* · "No, I'll pass" · "I'm not sure that works").
+- **💼 Business Guide** — a per-culture cheat sheet of deal-making etiquette:
+  greetings, hierarchy, communication style, negotiation, punctuality, tipping.
 
 ## 🌐 Publishing (one-time setup)
 
@@ -128,25 +137,26 @@ No server-side code, no database, nothing to pay for.
 ```
 index.html                          Title screen, HUD, overlays, touch controls
 css/style.css                       Per-culture retro-game palette (warm/cool/temperate/prairie)
-js/data.js                          Content — 24 creatures, questions, phrasebook, Business Guide
-js/game.js                          Engine — 4-region world, movement, encounters, quiz, menus
+js/data.js                          Content — 24 Kindreds, interaction SCENES, phrasebook, guide
+js/game.js                          Engine — 4-region world, movement, bike, scenes, menu, passport
 .github/workflows/deploy-pages.yml  Free GitHub Pages deploy on every push to main
 ```
 
-The overworld is rendered on a `<canvas>`; dialogue, the quiz and the menus are
+The overworld is rendered on a `<canvas>`; dialogue, scenes and the menu are
 lightweight HTML overlays. Everything is procedurally drawn, so there are no
-image assets to load. Progress is saved to `localStorage`.
+image assets to load. Progress (friends, passport, rapport, journal) is saved to
+`localStorage`.
 
 ## 🌱 Extending the game
 
-- Add a creature: append to `KOTOMON` in `js/data.js` (and an emoji in
-  `KOTO_EMOJI` in `js/game.js`).
-- Add a question: append to `QUESTIONS` in `js/data.js`. Set `link: true` for
-  questions about the India ↔ Japan connection (they're worth more points).
-- Add a phrase: append to `PHRASEBOOK` in `js/data.js`.
-- Reshape the world: edit `buildWorld()` in `js/game.js`.
+- Add a companion: append to `KINDREDS` in `js/data.js` (and an emoji in
+  `KINDRED_EMOJI` in `js/game.js`).
+- Add a situation: append to the right culture in `SCENES` in `js/data.js` — give
+  each action a `good` flag, a `reaction`, and the `tip` it teaches.
+- Add a phrase or business tip: append to `PHRASEBOOK` / `BUSINESS_GUIDE`.
+- Reshape the world (regions, cycle paths, flags): edit `buildWorld()` in
+  `js/game.js`.
 
 ---
 
-*Two lanterns, one flame.* 🪔🏮 Made to celebrate the friendship between India
-and Japan — **दोस्ती** / **友情**.
+*Learn the world by living in it.* 🌏 Namaste · こんにちは · Howdy · Alright, mate?
