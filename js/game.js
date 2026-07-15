@@ -26,21 +26,38 @@
     GRASS: 0, PATH: 1, TREE: 2, WATER: 3, WALL: 4,
     GRASS_IN: 5, GRASS_JP: 6, SIGN: 7, BRIDGE: 9, TORII: 10,
     RANGOLI: 11, SAKURA_PETAL: 12, TEMPLE: 13, MOUNTAIN: 14,
-    PLAZA: 15, SAKURA_TREE: 16, LOTUS: 17
+    PLAZA: 15, SAKURA_TREE: 16, LOTUS: 17, GRASS_US: 18, GRASS_UK: 19
   };
 
   const SOLID = new Set([
     T.TREE, T.WATER, T.WALL, T.SIGN, T.TEMPLE, T.MOUNTAIN, T.SAKURA_TREE
   ]);
 
-  const MAP_W = 44, MAP_H = 30;
+  // Which culture each tall-grass tile belongs to.
+  const GRASS_CULTURE = {
+    5: 'india', 6: 'japan', 18: 'usa', 19: 'uk'
+  };
 
-  // Emoji faces for the twelve Kotomon (drawn on canvas in encounters/dex)
+  const MAP_W = 48, MAP_H = 44;
+
+  // Emoji faces for the Kotomon (drawn on canvas in encounters/dex)
   const KOTO_EMOJI = {
-    garuda: '🦅', naga: '🐍', airavata: '🐘',
-    hamsa: '🦢', makara: '🐊', nandi: '🐂',
-    kitsune: '🦊', tanuki: '🦝', kappa: '🐢',
-    tengu: '👺', ryu: '🐉', baku: '🦄'
+    // India
+    garuda: '🦅', naga: '🐍', airavata: '🐘', hamsa: '🦢', makara: '🐊', nandi: '🐂',
+    // Japan
+    kitsune: '🦊', tanuki: '🦝', kappa: '🐢', tengu: '👺', ryu: '🐉', baku: '🌙',
+    // USA
+    thunderbird: '🌩️', jackalope: '🐇', sasquatch: '👣', mothman: '🦋', babe: '🐃', groundhog: '🦫',
+    // UK
+    nessie: '🦕', unicorn: '🦄', welshdragon: '🐲', pixie: '🧚', greenman: '🌿', blackshuck: '🐺'
+  };
+
+  // Per-culture display metadata (flags, labels, dex colours).
+  const CULTURE_META = {
+    india: { flag: '🇮🇳', label: 'Bharat spirit',    where: 'the spice gardens of India' },
+    japan: { flag: '🇯🇵', label: 'Nihon spirit',     where: 'the bamboo groves of Japan' },
+    usa:   { flag: '🇺🇸', label: 'Columbia spirit',  where: 'the wild frontiers of the USA' },
+    uk:    { flag: '🇬🇧', label: 'Britannia spirit', where: 'the misty moors of Britain' }
   };
 
   /* ------------------------------------------------------------------ *
@@ -66,13 +83,24 @@
   };
 
   /* ------------------------------------------------------------------ *
-   *  World builder — lays out the two regions and the bridge between.
+   *  Region map — four cultural arms radiating from a central hub.
+   *  West = India, East = Japan, North = UK (London), South = USA.
+   * ------------------------------------------------------------------ */
+  function regionAt(x, y) {
+    if (x >= 20 && x <= 27 && y >= 18 && y <= 25) return 'hub';
+    if (x <= 19 && y >= 16 && y <= 27) return 'india';   // west arm
+    if (x >= 28 && y >= 16 && y <= 27) return 'japan';   // east arm
+    if (y <= 17 && x >= 19 && x <= 28) return 'uk';      // north arm
+    if (y >= 26 && x >= 19 && x <= 28) return 'usa';     // south arm
+    return 'hub';
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  World builder — lays out the four regions and the central hub.
    * ------------------------------------------------------------------ */
   function buildWorld() {
     const m = [];
-    for (let y = 0; y < MAP_H; y++) {
-      m.push(new Array(MAP_W).fill(T.GRASS));
-    }
+    for (let y = 0; y < MAP_H; y++) m.push(new Array(MAP_W).fill(T.GRASS));
     const set = (x, y, t) => {
       if (x >= 0 && x < MAP_W && y >= 0 && y < MAP_H) m[y][x] = t;
     };
@@ -81,83 +109,78 @@
         for (let x = x0; x < x0 + w; x++) set(x, y, t);
     };
 
-    // Outer border of trees / mountains
+    // Fill the four corner blocks with scenery so the arms stay distinct.
+    rect(1, 1, 18, 15, T.TREE);          // top-left
+    rect(29, 1, 18, 15, T.TREE);         // top-right
+    rect(1, 28, 18, 15, T.TREE);         // bottom-left
+    rect(29, 28, 18, 15, T.TREE);        // bottom-right
+    // A little variety among the trees.
+    rect(2, 2, 5, 3, T.MOUNTAIN);
+    rect(41, 2, 5, 3, T.MOUNTAIN);
+    rect(3, 37, 4, 4, T.WATER);
+    rect(40, 37, 5, 4, T.WATER);
+
+    // Outer border of trees
     for (let x = 0; x < MAP_W; x++) { set(x, 0, T.TREE); set(x, MAP_H - 1, T.TREE); }
     for (let y = 0; y < MAP_H; y++) { set(0, y, T.TREE); set(MAP_W - 1, y, T.TREE); }
-    // Mountain ridges top corners for flavour
-    rect(1, 1, 4, 2, T.MOUNTAIN);
-    rect(MAP_W - 5, 1, 4, 2, T.MOUNTAIN);
 
-    // River down the middle with a crossing bridge
-    const RX = 21;
-    for (let y = 1; y < MAP_H - 1; y++) { set(RX, y, T.WATER); set(RX + 1, y, T.WATER); }
-    // Bridge crossing at the central path rows
-    set(RX, 14, T.BRIDGE); set(RX + 1, 14, T.BRIDGE);
-    set(RX, 15, T.BRIDGE); set(RX + 1, 15, T.BRIDGE);
+    // Central hub plaza.
+    rect(20, 18, 8, 8, T.PLAZA);
 
-    // Main east-west path across the whole world (rows 14-15)
-    for (let x = 1; x < MAP_W - 1; x++) {
-      if (m[14][x] !== T.WATER) set(x, 14, T.PATH);
-      if (m[15][x] !== T.WATER) set(x, 15, T.PATH);
-    }
-    set(RX, 14, T.BRIDGE); set(RX + 1, 14, T.BRIDGE);
-    set(RX, 15, T.BRIDGE); set(RX + 1, 15, T.BRIDGE);
+    // The two great crossroads (over grass and plaza alike).
+    for (let x = 1; x < MAP_W - 1; x++) { set(x, 21, T.PATH); set(x, 22, T.PATH); }
+    for (let y = 1; y < MAP_H - 1; y++) { set(23, y, T.PATH); set(24, y, T.PATH); }
 
-    // --- BHARAT (India) region: left side ---
-    // Temple (mandir) with tower
-    rect(4, 5, 4, 3, T.TEMPLE);
-    set(5, 4, T.TEMPLE); set(6, 4, T.TEMPLE);         // tower step
-    // Rangoli decoration + lotus pond edges
-    const rangoli = [[10, 6], [11, 6], [12, 6], [11, 5], [11, 7], [9, 20], [10, 21], [8, 22]];
-    rangoli.forEach(([x, y]) => set(x, y, T.RANGOLI));
-    set(6, 20, T.LOTUS); set(7, 20, T.LOTUS); set(6, 21, T.LOTUS);
-    // Spice-garden tall grass patches (India encounter zones)
-    rect(9, 9, 6, 4, T.GRASS_IN);
-    rect(3, 18, 5, 4, T.GRASS_IN);
-    rect(13, 20, 5, 5, T.GRASS_IN);
-    // A few scattered trees for shape
-    [[3, 11], [16, 8], [2, 25], [17, 4], [15, 16]].forEach(([x, y]) => set(x, y, T.TREE));
-    // Connecting paths to the main road
-    for (let y = 8; y <= 14; y++) set(11, y, T.PATH);
-    for (let y = 15; y <= 22; y++) set(11, y, T.PATH);
+    // ---------------- BHARAT (India) — west arm ----------------
+    rect(3, 18, 3, 3, T.TEMPLE); set(4, 17, T.TEMPLE);        // mandir + tower
+    [[7, 18], [8, 18], [8, 17], [6, 25], [7, 26], [12, 25]].forEach(([x, y]) => set(x, y, T.RANGOLI));
+    set(5, 24, T.LOTUS); set(6, 24, T.LOTUS); set(5, 25, T.LOTUS);
+    rect(9, 17, 5, 3, T.GRASS_IN);
+    rect(3, 24, 5, 3, T.GRASS_IN);
+    rect(14, 24, 4, 3, T.GRASS_IN);
+    [[15, 18], [16, 25], [2, 20]].forEach(([x, y]) => set(x, y, T.TREE));
 
-    // --- NIHON (Japan) region: right side ---
-    // Pagoda + torii gate
-    rect(36, 5, 4, 3, T.TEMPLE);
-    set(37, 4, T.TEMPLE); set(38, 4, T.TEMPLE);
-    set(33, 14, T.TORII); set(33, 15, T.TORII);
-    // Sakura trees + fallen petals
-    [[30, 6], [32, 8], [40, 10], [29, 11], [38, 18], [41, 22], [31, 24]]
-      .forEach(([x, y]) => set(x, y, T.SAKURA_TREE));
-    [[30, 7], [31, 7], [40, 11], [38, 19], [31, 25]]
-      .forEach(([x, y]) => set(x, y, T.SAKURA_PETAL));
-    // Bamboo-grove tall grass patches (Japan encounter zones)
-    rect(28, 9, 6, 4, T.GRASS_JP);
-    rect(36, 18, 5, 4, T.GRASS_JP);
-    rect(29, 20, 5, 5, T.GRASS_JP);
-    // Connecting paths
-    for (let y = 8; y <= 14; y++) set(31, y, T.PATH);
-    for (let y = 15; y <= 22; y++) set(31, y, T.PATH);
+    // ---------------- NIHON (Japan) — east arm ----------------
+    rect(42, 18, 3, 3, T.TEMPLE); set(43, 17, T.TEMPLE);      // pagoda + tower
+    set(32, 19, T.TORII); set(32, 20, T.TORII);
+    [[35, 18], [44, 24], [30, 25], [45, 20]].forEach(([x, y]) => set(x, y, T.SAKURA_TREE));
+    [[35, 19], [30, 26], [44, 25]].forEach(([x, y]) => set(x, y, T.SAKURA_PETAL));
+    rect(29, 17, 5, 3, T.GRASS_JP);
+    rect(39, 24, 5, 3, T.GRASS_JP);
+    rect(30, 24, 4, 3, T.GRASS_JP);
 
-    // --- Central hub plaza around the bridge (the "Harmony" meeting place) ---
-    rect(18, 13, 3, 4, T.PLAZA);
-    rect(23, 13, 3, 4, T.PLAZA);
+    // ---------------- LONDON (UK) — north arm ----------------
+    rect(20, 2, 2, 4, T.TEMPLE);                              // clock tower (Big Ben-ish)
+    rect(19, 6, 3, 3, T.GRASS_UK);
+    rect(26, 4, 2, 4, T.GRASS_UK);
+    rect(20, 12, 3, 3, T.GRASS_UK);
+    [[27, 2], [19, 14], [26, 11]].forEach(([x, y]) => set(x, y, T.TREE));
+
+    // ---------------- COLUMBIA (USA) — south arm ----------------
+    rect(25, 37, 3, 4, T.TEMPLE);                             // skyscraper
+    rect(19, 29, 3, 3, T.GRASS_US);
+    rect(26, 30, 2, 4, T.GRASS_US);
+    rect(20, 36, 3, 3, T.GRASS_US);
+    [[19, 34], [21, 40], [27, 29]].forEach(([x, y]) => set(x, y, T.TREE));
 
     // --- Signs (walk into and press SPACE) ---
     const signs = {};
     const placeSign = (x, y, key) => { set(x, y, T.SIGN); signs[x + ',' + y] = key; };
-    placeSign(19, 13, 'welcome');
-    placeSign(8, 13, 'india');
-    placeSign(35, 13, 'japan');
-    placeSign(20, 12, 'bridge');
-    placeSign(33, 16, 'torii');
-    placeSign(6, 8, 'temple');
+    placeSign(26, 19, 'welcome');   // hub
+    placeSign(21, 24, 'hub');       // hub
+    placeSign(9, 20, 'india');
+    placeSign(34, 20, 'japan');
+    placeSign(25, 10, 'london');
+    placeSign(22, 30, 'usa');
+    placeSign(33, 23, 'torii');
 
-    // --- NPCs ---
+    // --- NPCs (one guide per culture + a hub sage) ---
     const npcSpecs = [
-      { x: 9, y: 16, key: 'india' },
-      { x: 34, y: 16, key: 'japan' },
-      { x: 24, y: 16, key: 'bridge' }
+      { x: 6, y: 23, key: 'india' },
+      { x: 40, y: 23, key: 'japan' },
+      { x: 26, y: 13, key: 'uk' },
+      { x: 20, y: 33, key: 'usa' },
+      { x: 25, y: 23, key: 'hub' }
     ];
     const npcs = npcSpecs.map(spec => {
       const src = NPCS.find(n => n.home === spec.key);
@@ -193,14 +216,22 @@
   /* ------------------------------------------------------------------ *
    *  Rendering
    * ------------------------------------------------------------------ */
+  // Ground tints per region (warm India, cool Japan, temperate UK, prairie USA).
+  const GROUND = {
+    india: ['#7cb342', '#8bc34a'],
+    japan: ['#66bb6a', '#7bc47f'],
+    uk:    ['#7fa06d', '#8cae76'],
+    usa:   ['#9caf5a', '#aec06a'],
+    hub:   ['#83bd77', '#8fc783']
+  };
+
   function drawTile(t, sx, sy, tx, ty) {
-    // base ground colour differs slightly by region (west = warm, east = cool)
-    const westWarm = tx < 21;
-    const grassA = westWarm ? '#7cb342' : '#66bb6a';
-    const grassB = westWarm ? '#8bc34a' : '#7bc47f';
+    // base ground colour depends on which cultural region the tile sits in
+    const region = regionAt(tx, ty);
+    const g = GROUND[region] || GROUND.hub;
 
     // Draw grass under everything first for decorations/solids that sit on land
-    ctx.fillStyle = ((tx + ty) % 2 === 0) ? grassA : grassB;
+    ctx.fillStyle = ((tx + ty) % 2 === 0) ? g[0] : g[1];
     ctx.fillRect(sx, sy, TILE, TILE);
 
     switch (t) {
@@ -245,12 +276,7 @@
         ctx.fillRect(sx, sy, TILE, TILE);
         break;
       case T.TEMPLE:
-        ctx.fillStyle = westWarm ? '#c0392b' : '#b71c1c';
-        ctx.fillRect(sx, sy, TILE, TILE);
-        ctx.fillStyle = westWarm ? '#f1c40f' : '#ffd54f';
-        ctx.fillRect(sx + 6, sy + 6, TILE - 12, TILE - 12);
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.fillRect(sx, sy, TILE, 5);
+        drawLandmark(sx, sy, region);
         break;
       case T.MOUNTAIN:
         ctx.fillStyle = '#8d6e63';
@@ -287,17 +313,19 @@
         ctx.fillRect(sx + 7, sy + 11, TILE - 18, 2);
         break;
       case T.GRASS_IN:
+        drawTallGrass(sx, sy, '#558b2f', '#7cb342'); break;
       case T.GRASS_JP:
-        drawTallGrass(sx, sy, t === T.GRASS_IN);
-        break;
+        drawTallGrass(sx, sy, '#2e7d32', '#43a047'); break;
+      case T.GRASS_US:
+        drawTallGrass(sx, sy, '#7d8b2f', '#b7c05a'); break;   // golden prairie
+      case T.GRASS_UK:
+        drawTallGrass(sx, sy, '#4f7a52', '#7fa06d'); break;   // misty moor
       default:
         break; // plain grass already drawn
     }
   }
 
-  function drawTallGrass(sx, sy, india) {
-    const dark = india ? '#558b2f' : '#2e7d32';
-    const light = india ? '#7cb342' : '#43a047';
+  function drawTallGrass(sx, sy, dark, light) {
     ctx.fillStyle = dark;
     ctx.fillRect(sx, sy, TILE, TILE);
     ctx.fillStyle = light;
@@ -310,6 +338,39 @@
         ctx.closePath();
         ctx.fill();
       }
+    }
+  }
+
+  // Region-specific landmark tile (India mandir, Japan pagoda, UK clock tower, USA tower).
+  function drawLandmark(sx, sy, region) {
+    if (region === 'uk') {
+      // Stone clock tower
+      ctx.fillStyle = '#b7a678';
+      ctx.fillRect(sx, sy, TILE, TILE);
+      ctx.fillStyle = '#8d7d52';
+      ctx.fillRect(sx, sy, TILE, 4);
+      circle(sx + TILE / 2, sy + TILE / 2, 7, '#f4f1e0');   // clock face
+      ctx.strokeStyle = '#4e342e'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(sx + TILE / 2, sy + TILE / 2);
+      ctx.lineTo(sx + TILE / 2, sy + TILE / 2 - 5); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(sx + TILE / 2, sy + TILE / 2);
+      ctx.lineTo(sx + TILE / 2 + 4, sy + TILE / 2); ctx.stroke();
+    } else if (region === 'usa') {
+      // Glass-and-steel skyscraper
+      ctx.fillStyle = '#5d6d7e';
+      ctx.fillRect(sx, sy, TILE, TILE);
+      ctx.fillStyle = '#aed6f1';
+      for (let wy = 4; wy < TILE - 3; wy += 8)
+        for (let wx = 4; wx < TILE - 3; wx += 8)
+          ctx.fillRect(sx + wx, sy + wy, 5, 5);
+    } else {
+      // India mandir / Japan pagoda (warm red + gold)
+      ctx.fillStyle = region === 'japan' ? '#b71c1c' : '#c0392b';
+      ctx.fillRect(sx, sy, TILE, TILE);
+      ctx.fillStyle = region === 'japan' ? '#ffd54f' : '#f1c40f';
+      ctx.fillRect(sx + 6, sy + 6, TILE - 12, TILE - 12);
+      ctx.fillStyle = 'rgba(0,0,0,0.22)';
+      ctx.fillRect(sx, sy, TILE, 5);
     }
   }
 
@@ -366,7 +427,9 @@
     ctx.ellipse(sx + TILE / 2, sy + TILE - 4, 9, 4, 0, 0, Math.PI * 2);
     ctx.fill();
     const robe = n.home === 'india' ? '#e67e22'
-      : n.home === 'japan' ? '#8e44ad' : '#c0392b';
+      : n.home === 'japan' ? '#8e44ad'
+      : n.home === 'uk' ? '#2c3e50'
+      : n.home === 'usa' ? '#2980b9' : '#c0392b';
     ctx.fillStyle = robe;
     ctx.fillRect(sx + 8, sy + 13, 16, 14);
     circle(sx + TILE / 2, sy + 10, 8, '#f5cba7');
@@ -454,10 +517,8 @@
 
   function afterStep() {
     const p = state.player;
-    const t = tileAt(p.x, p.y);
-    if ((t === T.GRASS_IN || t === T.GRASS_JP) && Math.random() < ENCOUNTER_CHANCE) {
-      startEncounter(t === T.GRASS_IN ? 'india' : 'japan');
-    }
+    const culture = GRASS_CULTURE[tileAt(p.x, p.y)];
+    if (culture && Math.random() < ENCOUNTER_CHANCE) startEncounter(culture);
   }
 
   function facingTile() {
@@ -516,15 +577,19 @@
     const arr = fresh.length ? fresh : pool;
     return arr[Math.floor(Math.random() * arr.length)];
   }
-  function pickQuestion() {
-    return QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)];
+  function pickQuestion(culture) {
+    // Prefer a question about this culture (or a cross-culture "link" one),
+    // but fall back to the whole pool so answers stay varied.
+    const preferred = QUESTIONS.filter(q => q.culture === culture || q.link);
+    const pool = (preferred.length && Math.random() < 0.7) ? preferred : QUESTIONS;
+    return pool[Math.floor(Math.random() * pool.length)];
   }
 
-  function startEncounter(region) {
+  function startEncounter(culture) {
     state.mode = 'quiz';
     state.encountersDone++;
-    state.activeKotomon = pickKotomon(region);
-    state.activeQuestion = pickQuestion();
+    state.activeKotomon = pickKotomon(culture);
+    state.activeQuestion = pickQuestion(culture);
     renderQuiz();
   }
 
@@ -571,12 +636,12 @@
     const sprite = creatureSprite(k, 96);
     sprite.className = 'sprite';
     head.appendChild(sprite);
+    const cm = CULTURE_META[k.home] || { flag: '🌏', label: 'Spirit' };
     const meta = document.createElement('div');
     meta.innerHTML =
       '<div class="k-name">A wild <b>' + escapeHtml(k.name) + '</b> appeared!</div>' +
       '<div class="k-title">' + escapeHtml(k.title) + '</div>' +
-      '<div class="k-home ' + k.home + '">' +
-      (k.home === 'india' ? '🇮🇳 Bharat spirit' : '🇯🇵 Nihon spirit') +
+      '<div class="k-home ' + k.home + '">' + cm.flag + ' ' + escapeHtml(cm.label) +
       '</div>';
     head.appendChild(meta);
     panel.appendChild(head);
@@ -680,12 +745,13 @@
 
   function showVictory() {
     openDialogue([
-      '🌏 You have befriended all twelve Kotomon!',
-      'From Garuda to Karura, from Saraswati to Benzaiten, from stupa to pagoda — you have ' +
-      'traced every thread joining India and Japan.',
-      'Master Bodhi smiles: "You see it now. Two lanterns, one flame. You are a true ' +
-      'Culture Bridge Master!"',
-      'Keep exploring, or press [C] to admire your Culturedex. Well done, friend / dost / tomodachi!'
+      '🌏 You have befriended all ' + KOTOMON.length + ' Kotomon across four cultures!',
+      'From Garuda to the Thunderbird, from the Ryu to Nessie — you have traced the threads ' +
+      'that join India, Japan, the USA and Britain.',
+      'Master Bodhi smiles: "You could now hold your own in a Tokyo boardroom, a London pub, ' +
+      'a Delhi market and a New York pitch. You are a true Culture Bridge Master!"',
+      'Keep exploring, or press [C] for your Culturedex, [B] for the Business Guide. ' +
+      'Well done — dost / tomodachi / mate / buddy!'
     ], 'Victory');
   }
 
@@ -709,8 +775,8 @@
         (got ? '<div class="dex-title">' + escapeHtml(k.title) + '</div>' +
           '<div class="dex-lore">' + escapeHtml(k.lore) + '</div>' +
           '<div class="dex-bridge">' + escapeHtml(k.bridge) + '</div>'
-          : '<div class="dex-lore muted">Find this spirit in the ' +
-            (k.home === 'india' ? 'spice gardens of Bharat.' : 'bamboo groves of Nihon.') + '</div>') +
+          : '<div class="dex-lore muted">Find this spirit in ' +
+            escapeHtml((CULTURE_META[k.home] || {}).where || 'the tall grass') + '.</div>') +
         '</div>';
     });
     html += '</div><div class="menu-foot">Press [C] or [Esc] to close</div></div>';
@@ -722,22 +788,45 @@
   function openPhrasebook() {
     state.mode = 'menu';
     const overlay = document.getElementById('menu');
-    let rows = PHRASEBOOK.map(p =>
+    const rows = PHRASEBOOK.map(p =>
       '<tr><td class="meaning">' + escapeHtml(p.meaning) + '</td>' +
-      '<td class="in"><span class="rom">' + escapeHtml(p.hindi) + '</span>' +
-      '<span class="scr">' + escapeHtml(p.hindiScript) + '</span></td>' +
-      '<td class="jp"><span class="rom">' + escapeHtml(p.japanese) + '</span>' +
-      '<span class="scr">' + escapeHtml(p.japaneseScript) + '</span></td></tr>'
+      '<td class="in">' + escapeHtml(p.india) + '</td>' +
+      '<td class="jp">' + escapeHtml(p.japan) + '</td>' +
+      '<td class="us">' + escapeHtml(p.usa) + '</td>' +
+      '<td class="gb">' + escapeHtml(p.uk) + '</td></tr>'
     ).join('');
     overlay.innerHTML =
       '<div class="menu-panel"><div class="menu-head">' +
       '<h2>🗣️ Phrasebook</h2>' +
-      '<span class="count">Hindi ↔ Japanese</span>' +
+      '<span class="count">everyday &amp; business</span>' +
       '<button class="close" data-close="1">✕</button></div>' +
-      '<table class="phrase-table"><thead><tr><th>Meaning</th>' +
-      '<th>🇮🇳 Hindi</th><th>🇯🇵 Japanese</th></tr></thead>' +
-      '<tbody>' + rows + '</tbody></table>' +
+      '<div class="table-scroll"><table class="phrase-table"><thead><tr>' +
+      '<th>Meaning</th><th>🇮🇳 India</th><th>🇯🇵 Japan</th>' +
+      '<th>🇺🇸 USA</th><th>🇬🇧 UK</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table></div>' +
       '<div class="menu-foot">Press [P] or [Esc] to close</div></div>';
+    overlay.classList.add('show');
+    overlay.querySelector('[data-close]').onclick = closeMenu;
+  }
+
+  function openBusinessGuide() {
+    state.mode = 'menu';
+    const overlay = document.getElementById('menu');
+    const cards = BUSINESS_GUIDE.map(gd =>
+      '<div class="biz-card ' + gd.culture + '">' +
+      '<div class="biz-head">' + gd.flag + ' ' + escapeHtml(gd.name) + '</div>' +
+      gd.tips.map(t =>
+        '<div class="biz-tip"><span class="biz-label">' + escapeHtml(t.label) + '</span>' +
+        escapeHtml(t.text) + '</div>').join('') +
+      '</div>'
+    ).join('');
+    overlay.innerHTML =
+      '<div class="menu-panel"><div class="menu-head">' +
+      '<h2>💼 Business Guide</h2>' +
+      '<span class="count">meet, greet &amp; negotiate</span>' +
+      '<button class="close" data-close="1">✕</button></div>' +
+      '<div class="biz-grid">' + cards + '</div>' +
+      '<div class="menu-foot">Practical etiquette for deals &amp; daily life · Press [B] or [Esc] to close</div></div>';
     overlay.classList.add('show');
     overlay.querySelector('[data-close]').onclick = closeMenu;
   }
@@ -756,7 +845,7 @@
       state.befriended.size + '/' + KOTOMON.length;
   }
 
-  const SAVE_KEY = 'culture-bridge-save-v1';
+  const SAVE_KEY = 'culture-bridge-save-v2';
   function save() {
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify({
@@ -804,6 +893,7 @@
     if (state.mode === 'play') {
       if (k === 'c' || k === 'C') { e.preventDefault(); openDex(); return; }
       if (k === 'p' || k === 'P') { e.preventDefault(); openPhrasebook(); return; }
+      if (k === 'b' || k === 'B') { e.preventDefault(); openBusinessGuide(); return; }
       if (k === ' ' || k === 'Enter') { e.preventDefault(); interact(); return; }
       // Add to the held set (for continuous walking) and also attempt an
       // immediate step, so a single quick tap always moves exactly one tile.
@@ -837,7 +927,8 @@
       return;
     }
     if (state.mode === 'menu') {
-      if (k === 'Escape' || k === 'c' || k === 'C' || k === 'p' || k === 'P') {
+      if (k === 'Escape' || k === 'c' || k === 'C' || k === 'p' || k === 'P'
+          || k === 'b' || k === 'B') {
         e.preventDefault(); closeMenu();
       }
       return;
@@ -885,6 +976,10 @@
     if (phr) phr.addEventListener('click', () => {
       if (state.mode === 'play') openPhrasebook(); else closeMenu();
     });
+    const biz = document.getElementById('btn-biz');
+    if (biz) biz.addEventListener('click', () => {
+      if (state.mode === 'play') openBusinessGuide(); else closeMenu();
+    });
   }
 
   /* ------------------------------------------------------------------ *
@@ -917,8 +1012,8 @@
   function start() {
     buildWorld();
     state.player = {
-      x: 19, y: 16, dir: 'right', moving: false,
-      fromX: 19, fromY: 16, moveStart: 0
+      x: 23, y: 20, dir: 'down', moving: false,
+      fromX: 23, fromY: 20, moveStart: 0
     };
     load();
     initCanvas();
@@ -927,7 +1022,8 @@
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     // Opening tip
-    showToast('Walk into the tall grass to meet a Kotomon!  [C] Culturedex   [P] Phrasebook', 5000);
+    showToast('Four roads, four cultures. Walk into the tall grass to meet a Kotomon!  ' +
+              '[C] Dex  [P] Phrases  [B] Business', 5200);
     requestAnimationFrame(loop);
   }
 

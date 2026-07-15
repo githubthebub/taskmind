@@ -234,6 +234,8 @@ html, body {
 }
 .k-home.india { background: #ffe6cc; color: var(--india-deep); }
 .k-home.japan { background: #fdd; color: var(--japan); }
+.k-home.usa   { background: #d6e4ff; color: #1f3a93; }
+.k-home.uk    { background: #dfe3ea; color: #2c3e50; }
 
 .quiz-q {
   font-size: 1rem;
@@ -359,6 +361,8 @@ html, body {
 }
 .dex-card.india { border-top: 4px solid var(--india); }
 .dex-card.japan { border-top: 4px solid var(--japan); }
+.dex-card.usa   { border-top: 4px solid #2e5cff; }
+.dex-card.uk    { border-top: 4px solid #34495e; }
 .dex-card.unknown { opacity: 0.7; background: #f4ece0; }
 .dex-emoji { font-size: 2rem; line-height: 1.2; }
 .dex-name { font-weight: 800; font-size: 0.95rem; }
@@ -372,23 +376,58 @@ html, body {
   background: #eaf4fb; border-radius: 6px; padding: 6px;
 }
 
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .phrase-table {
   width: 100%;
+  min-width: 560px;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: 0.86rem;
 }
 .phrase-table th {
   text-align: left;
-  padding: 8px 6px;
+  padding: 8px 8px;
   border-bottom: 2px solid var(--ink);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
-.phrase-table td { padding: 8px 6px; border-bottom: 1px solid #e6d8bd; vertical-align: top; }
+.phrase-table td { padding: 8px 8px; border-bottom: 1px solid #e6d8bd; vertical-align: top; line-height: 1.35; }
 .phrase-table .meaning { font-weight: 700; color: #4a3520; }
-.phrase-table .rom { display: block; font-weight: 700; }
-.phrase-table .scr { display: block; font-size: 0.9rem; color: #8a6b45; }
-.phrase-table .in .rom { color: var(--india-deep); }
-.phrase-table .jp .rom { color: var(--japan); }
+.phrase-table .in { color: var(--india-deep); font-weight: 600; }
+.phrase-table .jp { color: var(--japan); font-weight: 600; }
+.phrase-table .us { color: #1f3a93; font-weight: 600; }
+.phrase-table .gb { color: #2c3e50; font-weight: 600; }
+
+/* ---- Business Guide ---- */
+.biz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+.biz-card {
+  border: 2px solid #d8c4a0;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+}
+.biz-card.india { border-top: 4px solid var(--india); }
+.biz-card.japan { border-top: 4px solid var(--japan); }
+.biz-card.usa   { border-top: 4px solid #2e5cff; }
+.biz-card.uk    { border-top: 4px solid #34495e; }
+.biz-head { font-weight: 800; font-size: 1.05rem; margin-bottom: 8px; }
+.biz-tip { font-size: 0.82rem; line-height: 1.45; color: #4a3520; margin-bottom: 7px; }
+.biz-label {
+  display: inline-block;
+  font-weight: 800;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--india-deep);
+  margin-right: 6px;
+}
+.biz-card.japan .biz-label { color: var(--japan); }
+.biz-card.usa .biz-label { color: #1f3a93; }
+.biz-card.uk .biz-label { color: #2c3e50; }
+
 .menu-foot { text-align: center; font-size: 0.74rem; color: #a07b4d; margin-top: 12px; }
 
 /* ------------------------------------------------------------------ *
