@@ -4241,7 +4241,20 @@ const FLY_POINTS = [
   { name:'MT. EMBER',      map:'ember',     x:12, y:17, dir:1 },
   { name:"ROUTE 25 (BILL)", map:'route25',  x:8,  y:16, dir:1 },
 ];
-function canFly(){ return !!(Game.flags.freeRoam || Game.flags.deliveredRuby); }
+function flyAllUnlocked(){ return !!(Game.flags.freeRoam || Game.flags.masterMode); }
+function flyVisitedCount(){ return FLY_POINTS.filter(p=>Game.flags['visited_'+p.map]).length; }
+// Fly is available in the special modes, post-Ruby, once you own any HM,
+// or once you've simply visited a couple of towns on foot.
+function canFly(){
+  if(flyAllUnlocked() || Game.flags.deliveredRuby) return true;
+  if(Game.flags.hm_surf || Game.flags.hm_cut || Game.flags.hm_strength) return true;
+  return flyVisitedCount() >= 2;
+}
+function flyDestinations(){
+  if(flyAllUnlocked()) return FLY_POINTS.slice();
+  const seen = FLY_POINTS.filter(p=>Game.flags['visited_'+p.map]);
+  return seen.length ? seen : FLY_POINTS.slice(0,1);
+}
 
 // ---- Master Mode: spawn wild POKéMON native to your current location ----
 const SPAWN_LOCKED = new Set(['blastoise','squirtle','wartortle']); // water starter stays locked
@@ -4285,9 +4298,10 @@ async function spawnMenu(){
 }
 
 async function flyMenu(){
-  const sel = await Menu.open(FLY_POINTS.map(p=>p.name), {x:VW-224, y:8, w:216});
+  const dests = flyDestinations();
+  const sel = await Menu.open(dests.map(p=>p.name), {x:VW-224, y:8, w:216});
   if(sel<0) return;
-  const p = FLY_POINTS[sel];
+  const p = dests[sel];
   SND.sfx('swoosh');
   await UI.fadeOut(420);
   loadMap(p.map, p.x, p.y, p.dir);
@@ -4328,6 +4342,8 @@ function loadMap(id, x, y, dir){
   Game.player.moving=false; Game.player.prog=0; Game.player.ox=0; Game.player.oy=0;
   // auto-surf if arriving on water; otherwise dismount
   Game.surfing = (tileAt(m, x, y) === 'w');
+  // remember visited Fly destinations
+  if(FLY_POINTS.some(p=>p.map===id)) Game.flags['visited_'+id] = true;
   Game.npcs = (m.npcs||[]).map(def=>{
     const rt = Object.assign({}, def);
     if(def.posByFlag && Game.flags[def.posByFlag.flag]){

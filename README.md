@@ -22,6 +22,8 @@ A pre-built single-file version can be produced with `./build.sh` → `dist/poke
 
 On-screen touch controls appear on mobile.
 
+**Travel & field moves.** **Surf**, **Cut** and **Strength** are HMs you pick up from NPCs in Kanto (a Vermilion sailor gives Cut, a Cerulean hiker gives Strength, Bill gives Surf) — face the relevant obstacle/water and press A to use them. **Fly** (START → FLY) becomes available in a normal game once you own any HM or have visited a couple of towns, and it lists the towns you've actually been to. Free Roam and Master modes hand you every HM and all Fly destinations from the start.
+
 ## 🗺️ The quest
 
 **Sevii Islands (start)**
