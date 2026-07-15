@@ -4242,6 +4242,48 @@ const FLY_POINTS = [
   { name:"ROUTE 25 (BILL)", map:'route25',  x:8,  y:16, dir:1 },
 ];
 function canFly(){ return !!(Game.flags.freeRoam || Game.flags.deliveredRuby); }
+
+// ---- Master Mode: spawn wild POKéMON native to your current location ----
+const SPAWN_LOCKED = new Set(['blastoise','squirtle','wartortle']); // water starter stays locked
+const DEFAULT_SPAWN = ['pidgey','rattata','meowth','spearow','pikachu','clefairy'];
+function locationSpawnPool(){
+  const m = Game.map, pool = new Map();
+  const add = list=>{ for(const [sp,lo,hi] of list){
+    if(SPAWN_LOCKED.has(sp)) continue;
+    const e = pool.get(sp);
+    if(e){ e[0]=Math.min(e[0],lo); e[1]=Math.max(e[1],hi); } else pool.set(sp,[lo,hi]);
+  } };
+  if(m.encounters) add(m.encounters.list);
+  if(m.waterEncounters) add(m.waterEncounters.list);
+  if(m.floorEncounters) add(m.floorEncounters.list);
+  return pool;
+}
+async function spawnMenu(){
+  Game.busy = true;
+  try{
+    while(true){
+      let entries = [...locationSpawnPool().entries()];
+      let areaLabel = Game.map.name;
+      if(entries.length===0){ entries = DEFAULT_SPAWN.map(sp=>[sp,[12,22]]); areaLabel = Game.map.name+' strays'; }
+      const items = ['- WATER STARTER: LOCKED -', ...entries.map(([sp,r])=>SPECIES[sp].name+'   Lv'+r[0]+'-'+r[1])];
+      const sel = await Menu.open(items, {x:8, y:8, w:VW-16});
+      if(sel<0) return;
+      if(sel===0){ await Dlg.say('In MASTER MODE the WATER STARTER stays locked. Command a different POKéMON!'); continue; }
+      const [sp,[lo,hi]] = entries[sel-1];
+      const lv = await Menu.open(['AREA (Lv '+lo+'-'+hi+')','LV 25','LV 50'], {x:VW-190, y:8, w:182});
+      if(lv<0) continue;
+      const level = lv===1 ? 25 : lv===2 ? 50 : lo + Math.floor(Math.random()*(hi-lo+1));
+      SND.sfx('cry');
+      await Dlg.say('MASTER, you summon '+SPECIES[sp].name+' from '+areaLabel+'!');
+      Game.busy = false;
+      const res = await Battle.startWild(makeMon(sp, level), {});
+      Game.busy = true;
+      if(res==='loss'){ Game.busy=false; await blackout(); Game.busy=true; }
+      return;
+    }
+  } finally { Game.busy = false; }
+}
+
 async function flyMenu(){
   const sel = await Menu.open(FLY_POINTS.map(p=>p.name), {x:VW-224, y:8, w:216});
   if(sel<0) return;
@@ -4751,6 +4793,7 @@ async function openStartMenu(){
   try{
     while(true){
       const items = ['POKéMON','BAG'];
+      if(Game.flags.masterMode) items.push('SPAWN');
       if(canFly()) items.push('FLY');
       items.push('SAVE');
       if(Game.flags.freeRoam) items.push('ENCOUNTERS: '+(Game.noEncounters?'OFF':'ON'));
@@ -4761,6 +4804,7 @@ async function openStartMenu(){
       const label = items[idx];
       if(label==='POKéMON'){ await partyScreen('world'); }
       else if(label==='BAG'){ await bagScreen('world'); }
+      else if(label==='SPAWN'){ await spawnMenu(); break; }
       else if(label==='FLY'){ await flyMenu(); break; }
       else if(label==='SAVE'){
         const slot = await slotScreen('save');
@@ -5917,8 +5961,9 @@ async function titleScreen(){
   SND.sfx('confirm');
   Title.showMenu=true;
   while(true){
-    const opts = hasSave() ? ['CONTINUE','NEW GAME','FREE ROAM'] : ['NEW GAME','FREE ROAM'];
-    const choice = await Menu.open(opts, {x:VW/2-90, y:146, w:180, noCancel:true});
+    const base = hasSave() ? ['CONTINUE','NEW GAME'] : ['NEW GAME'];
+    const opts = [...base, 'FREE ROAM', 'MASTER MODE'];
+    const choice = await Menu.open(opts, {x:VW/2-96, y:140, w:192, noCancel:true});
     const pick = opts[choice];
     if(pick==='CONTINUE'){
       const slot = await slotScreen('load');
@@ -5932,22 +5977,24 @@ async function titleScreen(){
       continue;
     }
     await UI.fadeOut(500);
-    await newGame(pick==='FREE ROAM');
+    await newGame(pick==='FREE ROAM' ? 'free' : pick==='MASTER MODE' ? 'master' : null);
     return;
   }
 }
 
-async function newGame(freeRoam){
+async function newGame(mode){
   Game.flags={}; Game.bag=defaultBag(); Game.party=defaultParty(); Game.steps=0;
   Game.playFrames=0; Game.saveSlot=null;
   Game.surfing=false; Game.strengthActive=false; Game.noEncounters=false;
 
-  if(freeRoam){
+  if(mode==='free' || mode==='master'){
     Game.flags = {
       freeRoam:true, introDone:true, metCelio:true, deliveredRuby:true,
       hm_surf:true, hm_cut:true, hm_strength:true,
       badge_thunderbadge:true, badge_cascadebadge:true,
+      badge_boulderbadge:true, badge_rainbowbadge:true, badge_marshbadge:true,
       beat_grunt_kai:true, beat_grunt_rico:true, grannyBalls:true,
+      masterMode: mode==='master',
     };
     Game.bag = { hyperpotion:20, superpotion:10, fullheal:20, revive:10, ultraball:50,
       hm_surf:1, hm_cut:1, hm_strength:1, thunderbadge:1, cascadebadge:1 };
@@ -5957,9 +6004,16 @@ async function newGame(freeRoam){
     Game.busy = true;
     try{
       await waitMs(250);
-      await Dlg.say('◆ EVERYTHING-ALLOWED MODE ◆');
-      await Dlg.say('All HMs, both GYM BADGES and a stuffed BAG are yours. Roam wherever you like!');
-      await Dlg.say('Open the START menu → FLY to teleport between towns any time. Toggle ENCOUNTERS there too. Have fun!');
+      if(mode==='master'){
+        await Dlg.say('◆ MASTER MODE ◆');
+        await Dlg.say('Everything is unlocked — and you command the wild itself.');
+        await Dlg.say('Open the START menu → SPAWN to summon a POKéMON native to wherever you stand, at the level you choose.');
+        await Dlg.say('One law binds even a MASTER: the WATER STARTER stays LOCKED. All else is yours. FLY and roam freely!');
+      } else {
+        await Dlg.say('◆ EVERYTHING-ALLOWED MODE ◆');
+        await Dlg.say('All HMs, all five GYM BADGES and a stuffed BAG are yours. Roam wherever you like!');
+        await Dlg.say('Open the START menu → FLY to teleport between towns any time. Toggle ENCOUNTERS there too. Have fun!');
+      }
     } finally { Game.busy = false; }
     return;
   }
@@ -6188,7 +6242,7 @@ window.addEventListener('load', async ()=>{
   ]);}catch(e){}
 
   const q = new URLSearchParams(location.search);
-  window.__game = { Game, Battle, SPR, MAPS, loadMap, makeMon, Input, PartyUI, BagUI, Dlg, Menu, B, saveGame, loadGame, slotInfo, SlotUI, FLY_POINTS, newGame };
+  window.__game = { Game, Battle, SPR, MAPS, loadMap, makeMon, Input, PartyUI, BagUI, Dlg, Menu, B, saveGame, loadGame, slotInfo, SlotUI, FLY_POINTS, newGame, locationSpawnPool, spawnMenu };
   if(q.get('debug')==='sprites'){
     requestAnimationFrame(function ds(){ requestAnimationFrame(ds); frameCount++; Game.time++; tickWaiters(); debugSpriteSheet(); });
     return;

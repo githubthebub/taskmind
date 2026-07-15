@@ -62,8 +62,9 @@ async function titleScreen(){
   SND.sfx('confirm');
   Title.showMenu=true;
   while(true){
-    const opts = hasSave() ? ['CONTINUE','NEW GAME','FREE ROAM'] : ['NEW GAME','FREE ROAM'];
-    const choice = await Menu.open(opts, {x:VW/2-90, y:146, w:180, noCancel:true});
+    const base = hasSave() ? ['CONTINUE','NEW GAME'] : ['NEW GAME'];
+    const opts = [...base, 'FREE ROAM', 'MASTER MODE'];
+    const choice = await Menu.open(opts, {x:VW/2-96, y:140, w:192, noCancel:true});
     const pick = opts[choice];
     if(pick==='CONTINUE'){
       const slot = await slotScreen('load');
@@ -77,22 +78,24 @@ async function titleScreen(){
       continue;
     }
     await UI.fadeOut(500);
-    await newGame(pick==='FREE ROAM');
+    await newGame(pick==='FREE ROAM' ? 'free' : pick==='MASTER MODE' ? 'master' : null);
     return;
   }
 }
 
-async function newGame(freeRoam){
+async function newGame(mode){
   Game.flags={}; Game.bag=defaultBag(); Game.party=defaultParty(); Game.steps=0;
   Game.playFrames=0; Game.saveSlot=null;
   Game.surfing=false; Game.strengthActive=false; Game.noEncounters=false;
 
-  if(freeRoam){
+  if(mode==='free' || mode==='master'){
     Game.flags = {
       freeRoam:true, introDone:true, metCelio:true, deliveredRuby:true,
       hm_surf:true, hm_cut:true, hm_strength:true,
       badge_thunderbadge:true, badge_cascadebadge:true,
+      badge_boulderbadge:true, badge_rainbowbadge:true, badge_marshbadge:true,
       beat_grunt_kai:true, beat_grunt_rico:true, grannyBalls:true,
+      masterMode: mode==='master',
     };
     Game.bag = { hyperpotion:20, superpotion:10, fullheal:20, revive:10, ultraball:50,
       hm_surf:1, hm_cut:1, hm_strength:1, thunderbadge:1, cascadebadge:1 };
@@ -102,9 +105,16 @@ async function newGame(freeRoam){
     Game.busy = true;
     try{
       await waitMs(250);
-      await Dlg.say('◆ EVERYTHING-ALLOWED MODE ◆');
-      await Dlg.say('All HMs, both GYM BADGES and a stuffed BAG are yours. Roam wherever you like!');
-      await Dlg.say('Open the START menu → FLY to teleport between towns any time. Toggle ENCOUNTERS there too. Have fun!');
+      if(mode==='master'){
+        await Dlg.say('◆ MASTER MODE ◆');
+        await Dlg.say('Everything is unlocked — and you command the wild itself.');
+        await Dlg.say('Open the START menu → SPAWN to summon a POKéMON native to wherever you stand, at the level you choose.');
+        await Dlg.say('One law binds even a MASTER: the WATER STARTER stays LOCKED. All else is yours. FLY and roam freely!');
+      } else {
+        await Dlg.say('◆ EVERYTHING-ALLOWED MODE ◆');
+        await Dlg.say('All HMs, all five GYM BADGES and a stuffed BAG are yours. Roam wherever you like!');
+        await Dlg.say('Open the START menu → FLY to teleport between towns any time. Toggle ENCOUNTERS there too. Have fun!');
+      }
     } finally { Game.busy = false; }
     return;
   }
@@ -333,7 +343,7 @@ window.addEventListener('load', async ()=>{
   ]);}catch(e){}
 
   const q = new URLSearchParams(location.search);
-  window.__game = { Game, Battle, SPR, MAPS, loadMap, makeMon, Input, PartyUI, BagUI, Dlg, Menu, B, saveGame, loadGame, slotInfo, SlotUI, FLY_POINTS, newGame };
+  window.__game = { Game, Battle, SPR, MAPS, loadMap, makeMon, Input, PartyUI, BagUI, Dlg, Menu, B, saveGame, loadGame, slotInfo, SlotUI, FLY_POINTS, newGame, locationSpawnPool, spawnMenu };
   if(q.get('debug')==='sprites'){
     requestAnimationFrame(function ds(){ requestAnimationFrame(ds); frameCount++; Game.time++; tickWaiters(); debugSpriteSheet(); });
     return;

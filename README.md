@@ -40,11 +40,13 @@ On-screen touch controls appear on mobile.
 
 Two gym badges (Thunder, Cascade), 18 new Kanto Pokémon to catch, and every HM put to use.
 
-## 🕹️ Everything-Allowed (Free Roam) mode
+## 🕹️ Extra modes (title screen)
 
-Pick **FREE ROAM** on the title screen to start with **all HMs, both gym badges, and a fully stocked bag** — no gates, no story required. From the START menu:
-- **FLY** — teleport instantly between every town and route (Pallet, Viridian, One Island, Kindle Road, Mt. Ember, Vermilion, Route 5, Cerulean, Route 25). Go wherever you want, whenever you want.
+**FREE ROAM** — start with **all HMs, all five gym badges, and a fully stocked bag**; no gates, no story required. From the START menu:
+- **FLY** — teleport instantly between every town and route. Go wherever you want, whenever you want.
 - **ENCOUNTERS: ON/OFF** — switch off wild battles to explore in peace, or back on to hunt.
+
+**MASTER MODE** — everything Free Roam has, plus you **command the wild**. A **SPAWN** entry in the START menu lists the Pokémon native to wherever you're standing (built from that area's land/water/cave tables), and lets you summon one at the level you pick — a wild battle you can fight or catch. One rule: the **water starter stays locked** and can never be spawned.
 
 Kanto is now walkable end to end:
 **Pallet Town** (Prof. Oak's Lab) ↔ Route 1 ↔ **Viridian City** ↔ Route 2 ↔ **Viridian Forest** ↔ **Pewter City** (Gym: **Brock**) ↔ Route 3 ↔ **Mt. Moon** ↔ Route 4 ↔ **Cerulean City** (Gym: **Misty**) — plus the central hub off Vermilion: **Vermilion** (Gym: **Lt. Surge**) ↔ Route 6 ↔ **Saffron City** (Gym: **Sabrina**) ↔ Route 7 ↔ **Celadon City** (Gym: **Erika**). Nine towns, **five gyms**, all joined to the Sevii ferry. Stroll it or Fly.
