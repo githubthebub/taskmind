@@ -185,6 +185,22 @@ const SPECIES = {
     learn:[[1,'watergun'],[1,'swift'],[1,'bubblebeam'],[1,'psybeam'],[1,'surf']] },
   onix:{ name:'ONIX', types:['rock','ground'], base:[35,45,160,30,45,70], exp:77, catch:180,
     learn:[[1,'tackle'],[1,'rockthrow'],[15,'rockslide'],[24,'magnitude'],[33,'earthquake']] },
+
+  // ---- Route 2 / Viridian Forest / Mt. Moon ----
+  caterpie:{ name:'CATERPIE', types:['bug'], base:[45,30,35,20,20,45], exp:39, catch:255,
+    learn:[[1,'tackle'],[1,'stringshot']] },
+  metapod:{ name:'METAPOD', types:['bug'], base:[50,20,55,25,25,30], exp:72, catch:120,
+    learn:[[1,'tackle']] },
+  weedle:{ name:'WEEDLE', types:['bug','poison'], base:[40,35,30,20,20,50], exp:39, catch:255,
+    learn:[[1,'poisonsting'],[1,'stringshot']] },
+  kakuna:{ name:'KAKUNA', types:['bug','poison'], base:[45,25,50,25,25,35], exp:72, catch:120,
+    learn:[[1,'poisonsting']] },
+  zubat:{ name:'ZUBAT', types:['poison','flying'], base:[40,45,35,30,40,55], exp:49, catch:255,
+    learn:[[1,'bite'],[1,'poisonsting'],[14,'wingattack'],[24,'aerialace']] },
+  paras:{ name:'PARAS', types:['bug','grass'], base:[35,70,55,45,55,25], exp:57, catch:190,
+    learn:[[1,'scratch'],[1,'stringshot'],[13,'absorb'],[22,'poisonpowder'],[30,'slash']] },
+  clefairy:{ name:'CLEFAIRY', types:['normal'], base:[70,45,48,60,65,35], exp:68, catch:150,
+    learn:[[1,'tackle'],[1,'growl'],[13,'headbutt'],[23,'bodyslam'],[30,'psybeam']] },
 };
 
 // ---- Status conditions
@@ -209,6 +225,7 @@ const ITEMS = {
   hm_strength: { name:'HM — STRENGTH', kind:'key', desc:'Push heavy boulders out of the way. Activate, then walk into them.' },
   thunderbadge:{ name:'THUNDER BADGE', kind:'key', desc:'Proof of victory over VERMILION\'s LT. SURGE.' },
   cascadebadge:{ name:'CASCADE BADGE', kind:'key', desc:'Proof of victory over CERULEAN\'s MISTY.' },
+  boulderbadge:{ name:'BOULDER BADGE', kind:'key', desc:'Proof of victory over PEWTER\'s BROCK.' },
 };
 
 // ---- Trainers
@@ -285,6 +302,45 @@ const TRAINERS = {
     intro:'I\'m MISTY, the CERULEAN GYM LEADER! My policy is an all-out offensive with WATER POKéMON! Ready? You\'d better be!',
     lose:'...Wow. You really are as good as they say. Okay — you win.',
     after:'The CASCADE BADGE is yours. It makes even traded POKéMON obey you. And... good luck out there, seriously.' },
+
+  // ---- Viridian Forest / Route 3 / Mt. Moon ----
+  bugcatcher_sam:{ cls:'BUG CATCHER', name:'SAM', sprite:'bugcatcher', party:[['caterpie',9],['weedle',9],['metapod',10]],
+    intro:'Hey! You! You\'re walking in the tall grass — that means you want a BUG battle, right?!',
+    lose:'Aww, my bugs...',
+    after:'VIRIDIAN FOREST is a natural maze. Follow the light through the trees and you\'ll reach PEWTER.' },
+  bugcatcher_kip:{ cls:'BUG CATCHER', name:'KIP', sprite:'bugcatcher', party:[['weedle',10],['kakuna',11]],
+    intro:'I caught all these in this very forest! Bet I can beat you with them, too!',
+    lose:'Back to the net for me...',
+    after:'Rumor is a PIKACHU lives deep in these woods. Super rare!' },
+  lass_forest:{ cls:'LASS', name:'ROBIN', sprite:'lass', party:[['oddish',11],['paras',12]],
+    intro:'The forest is so pretty in the dappled light. But you still have to battle me!',
+    lose:'Meanie!',
+    after:'PEWTER CITY is just north of the forest. It\'s grey as stone up there.' },
+  camper_flint:{ cls:'CAMPER', name:'FLINT', sprite:'camper', party:[['spearow',14],['sandshrew',14],['mankey',15]],
+    intro:'ROUTE 3 is my training ground! You have to be tough to reach MT. MOON!',
+    lose:'Gravel in my boots!',
+    after:'MT. MOON is crawling with ZUBAT. And, uh... TEAM ROCKET, lately. Watch yourself.' },
+  hiker_marcus:{ cls:'HIKER', name:'MARCUS', sprite:'hiker', party:[['geodude',15],['geodude',15],['onix',16]],
+    intro:'I climb these ridges every morning! Think you can keep up, flatlander?',
+    lose:'Off my mountain, ya beat me fair!',
+    after:'My ONIX and I say hello to BROCK every week. He\'s the real deal.' },
+  supernerd_miles:{ cls:'SUPER NERD', name:'MILES', sprite:'youngster', party:[['zubat',16],['paras',16],['clefairy',17]],
+    intro:'I\'m mapping every tunnel in MT. MOON for science! ...But first, a battle. For science!',
+    lose:'My data! My beautiful data!',
+    after:'CLEFAIRY gather here under the moon. Some say a strange STONE draws them. Spooky, huh?' },
+  rocket_moon:{ cls:'TEAM ROCKET GRUNT', name:'', sprite:'grunt', party:[['zubat',16],['ekans',16],['sandshrew',17]],
+    intro:'This cave, these fossils, that stone — all belong to TEAM ROCKET now! Scram, kid!',
+    lose:'Ngh! The BOSS won\'t hear about this. Got it?!',
+    after:'Fine, take the east tunnel. It spits out on ROUTE 4, right by CERULEAN. Good riddance.' },
+  gym_camper:{ cls:'CAMPER', name:'JETT', sprite:'camper', party:[['geodude',12],['sandshrew',12]],
+    intro:'BROCK\'s the toughest LEADER in the west! But you gotta rock past me first!',
+    lose:'Crumbled!',
+    after:'BROCK\'s ONIX has defense like a fortress. Hit it with GRASS or WATER — hard.' },
+  brock:{ cls:'LEADER', name:'BROCK', sprite:'brock', gym:true, badge:'boulderbadge',
+    party:[['geodude',12],['geodude',13],['onix',16]],
+    intro:'I\'m BROCK! I\'m PEWTER\'s GYM LEADER! My rock-hard willpower is evident even in my POKéMON! Show me you\'ve got what it takes!',
+    lose:'...Incredible. My rock-solid defense, shattered. You\'ve earned this fair and square.',
+    after:'Take the BOULDER BADGE. Now the road east — ROUTE 3, MT. MOON, all the way to CERULEAN — is yours to walk. Go show the world!' },
 };
 
 // ---- Mon factory

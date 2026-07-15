@@ -77,13 +77,13 @@ const Game = {
 const FLY_POINTS = [
   { name:'PALLET TOWN',    map:'pallet',    x:9,  y:10, dir:1 },
   { name:'VIRIDIAN CITY',  map:'viridian',  x:10, y:15, dir:1 },
+  { name:'PEWTER CITY',    map:'pewter',    x:10, y:14, dir:1 },
+  { name:'CERULEAN CITY',  map:'cerulean',  x:11, y:14, dir:1 },
+  { name:'VERMILION CITY', map:'vermilion', x:11, y:12, dir:1 },
   { name:'ONE ISLAND',     map:'town',      x:14, y:10, dir:0 },
   { name:'KINDLE ROAD',    map:'kindle',    x:9,  y:38, dir:1 },
   { name:'MT. EMBER',      map:'ember',     x:12, y:17, dir:1 },
-  { name:'VERMILION CITY', map:'vermilion', x:11, y:12, dir:1 },
-  { name:'ROUTE 5',        map:'route5',    x:9,  y:28, dir:1 },
-  { name:'CERULEAN CITY',  map:'cerulean',  x:11, y:14, dir:1 },
-  { name:"ROUTE 25 (BILL)",map:'route25',   x:8,  y:16, dir:1 },
+  { name:"ROUTE 25 (BILL)", map:'route25',  x:8,  y:16, dir:1 },
 ];
 function canFly(){ return !!(Game.flags.freeRoam || Game.flags.deliveredRuby); }
 async function flyMenu(){
@@ -449,9 +449,14 @@ function onStepFinish(){
   // warp?
   const w = warpAt(P.x,P.y);
   if(w){ doWarp(w); return; }
-  // land encounter?
+  // land encounter (tall grass)?
   if(ENCOUNTER_TILES.has(t) && Game.map.encounters){
     rollEncounter(Game.map.encounters);
+    return;
+  }
+  // cave-floor encounter (every step on the cave ground)
+  if(Game.map.floorEncounters && t===Game.map.ground){
+    rollEncounter(Game.map.floorEncounters);
     return;
   }
   // water encounter while surfing

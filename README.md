@@ -46,13 +46,16 @@ Pick **FREE ROAM** on the title screen to start with **all HMs, both gym badges,
 - **FLY** — teleport instantly between every town and route (Pallet, Viridian, One Island, Kindle Road, Mt. Ember, Vermilion, Route 5, Cerulean, Route 25). Go wherever you want, whenever you want.
 - **ENCOUNTERS: ON/OFF** — switch off wild battles to explore in peace, or back on to hunt.
 
-The western towns — **Pallet Town** (Prof. Oak's Lab), **Route 1**, and **Viridian City** — are all Fly destinations and fully walkable among themselves.
+The whole western half of Kanto is now walkable end to end:
+**Pallet Town** (Prof. Oak's Lab) ↔ Route 1 ↔ **Viridian City** ↔ Route 2 ↔ **Viridian Forest** ↔ **Pewter City** (Gym: **Brock**) ↔ Route 3 ↔ **Mt. Moon** ↔ Route 4 ↔ **Cerulean City** — which joins the eastern arc (Vermilion, Nugget Bridge, Bill's cottage) and the Sevii ferry. You can stroll from Pallet all the way to Vermilion, or Fly.
 
 ## ⚙️ Features
 
-- Two connected regions — the **Sevii Islands** and a slice of the **Kanto mainland** (Vermilion → Cerulean), linked by the Seagallop ferry, plus a walkable western cluster (Pallet → Viridian)
+- Two connected regions — the **Sevii Islands** and a large, walkable slice of **Kanto** (Pallet Town all the way to Vermilion, via Viridian Forest, Pewter, Mt. Moon and Cerulean), linked by the Seagallop ferry
 - **HM field mechanics**: **Surf** (ride across water, with water encounters + a rideable mount sprite), **Cut** (chop small trees), **Strength** (push boulders) — each gates real content
-- **Gyms & badges**: Lt. Surge (Vermilion) and Misty (Cerulean), each with junior trainers and a leader
+- **3 gyms & badges**: Brock (Pewter/Rock), Lt. Surge (Vermilion/Electric) and Misty (Cerulean/Water), each with junior trainers and a leader
+- **Cave + forest zones**: Viridian Forest (bug maze) and Mt. Moon (tunnels with on-floor encounters + a Team Rocket ambush)
+- **40+ Pokémon** including the Kanto starters' racks in Oak's Lab, Viridian Forest bugs (Caterpie/Weedle/Metapod/Kakuna), and Mt. Moon's Zubat/Paras/Clefairy
 - Grid-based overworld with warps, NPCs (wandering, flag-driven), signs, interiors
 - Full turn-based battle engine: gen-3 type chart, physical/special split by type, STAB, crits, accuracy, priority, stat stages, multi-hit, flinch, recoil, and status (PSN/BRN/PAR/SLP)
 - Trainer battles (multi-Pokémon), wild encounters, a legendary static encounter

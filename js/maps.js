@@ -541,6 +541,7 @@ cerulean:{
     for(let j=0;j<32;j++){ g[j][0]='T'; g[j][23]='T'; }
     g[30][11]='p'; g[31][11]='p'; g[30][12]='p'; g[31][12]='p';   // south → route5
     g[0][11]='p'; g[1][11]='p'; g[0][12]='p'; g[1][12]='p';       // north → route24 (Nugget Bridge)
+    g[26][0]='p';                                                  // west → route4
     // river across the city (surf-optional), with a land bridge
     rectg(g,0,20,24,3,'w'); rectg(g,10,20,3,3,'p');               // bridge crossing
     // buildings
@@ -551,6 +552,7 @@ cerulean:{
     // paths
     rectg(g,11,2,2,28,'p');
     rectg(g,5,10,13,1,'p'); rectg(g,4,17,16,1,'p');
+    rectg(g,1,26,11,1,'p');                                        // west path to route4
     // strength boulder blocking optional item east
     g[25][20]='O'; g[25][21]='B';
     return g;
@@ -559,6 +561,7 @@ cerulean:{
   warps:[
     {x:11,y:31,to:'route5',tx:9,ty:1,dir:1},{x:12,y:31,to:'route5',tx:10,ty:1,dir:1},
     {x:11,y:0,to:'route24',tx:9,ty:22,dir:1},{x:12,y:0,to:'route24',tx:10,ty:22,dir:1},
+    {x:0,y:26,to:'route4',tx:18,ty:6,dir:2},
     {x:5,y:9,to:'cerulean_pc',tx:7,ty:8,dir:1},{x:6,y:9,to:'cerulean_pc',tx:7,ty:8,dir:1},
     {x:17,y:9,to:'cerulean_gym',tx:8,ty:14,dir:1},{x:18,y:9,to:'cerulean_gym',tx:9,ty:14,dir:1},
   ],
@@ -862,6 +865,7 @@ viridian:{
     rectg(g,0,0,22,2,'T'); rectg(g,0,18,22,2,'T');
     for(let j=0;j<20;j++){ g[j][0]='T'; g[j][21]='T'; }
     g[18][10]='p'; g[19][10]='p'; g[18][11]='p'; g[19][11]='p';   // south → route1
+    g[0][10]='p'; g[1][10]='p'; g[0][11]='p'; g[1][11]='p';       // north → route2
     // buildings
     rectg(g,3,4,6,5,'B'); g[8][5]='D'; g[8][6]='D';               // POKéCENTER
     rectg(g,14,4,6,5,'B');                                         // GYM (locked — decor)
@@ -869,12 +873,13 @@ viridian:{
     // pond (surf-optional) NE
     rectg(g,16,10,5,3,'w');
     // paths
-    rectg(g,10,2,2,16,'p'); rectg(g,5,9,13,1,'p'); rectg(g,4,15,15,1,'p');
+    rectg(g,10,0,2,18,'p'); rectg(g,5,9,13,1,'p'); rectg(g,4,15,15,1,'p');
     return g;
   },
   stamps:[['pokecenter',3,4],['gym',14,4],['house',3,12],['house',14,12]],
   warps:[
     {x:10,y:19,to:'route1',tx:6,ty:1,dir:1},{x:11,y:19,to:'route1',tx:7,ty:1,dir:1},
+    {x:10,y:0,to:'route2',tx:8,ty:26,dir:1},{x:11,y:0,to:'route2',tx:9,ty:26,dir:1},
     {x:5,y:8,to:'viridian_pc',tx:7,ty:8,dir:1},{x:6,y:8,to:'viridian_pc',tx:7,ty:8,dir:1},
   ],
   npcs:[
@@ -886,14 +891,14 @@ viridian:{
     { id:'v2_old', sprite:'oldman', x:8, y:16, dir:0, wander:true,
       script:()=>[
         "VIRIDIAN CITY — 'The Eternally Green Paradise.' Prettiest town in KANTO, if you ask me.",
-        "North lies ROUTE 2 and the great VIRIDIAN FOREST... but that's a tale for a future adventure.",
+        "Head north through ROUTE 2 and VIRIDIAN FOREST to reach PEWTER CITY. Mind the BUG POKéMON in the trees!",
       ]},
     { id:'v2_sign', sprite:'sign', x:9, y:9, dir:0,
       script:()=>[ "VIRIDIAN CITY\n\"The Eternally Green Paradise\"\nSouth: ROUTE 1 → PALLET TOWN" ]},
     { id:'v2_signgym', sprite:'sign', x:20, y:9, dir:0,
       script:()=>[ "VIRIDIAN GYM\nLEADER: ???\n\"...Currently closed.\"" ]},
-    { id:'v2_north', sprite:'sign', x:11, y:2, dir:0,
-      script:()=>[ "ROUTE 2 ahead — closed for now.\nThe road west grows, one adventure at a time." ]},
+    { id:'v2_north', sprite:'sign', x:13, y:3, dir:0,
+      script:()=>[ "North: ROUTE 2\n→ VIRIDIAN FOREST → PEWTER CITY\n(and onward, all the way to CERULEAN!)" ]},
   ],
 },
 
@@ -904,6 +909,234 @@ viridian_pc:{
   warps:[ {x:7,y:9,to:'viridian',tx:5,ty:9,dir:0} ],
   npcs:[ kantoNurse(), { id:'vpc2_t', sprite:'gymguide', x:11, y:5, dir:2,
     script:()=>[ "Rumour says the SEVII ISLANDS' network reaches all the way here now. Small world — literally!" ]} ],
+},
+
+// ============================================================
+//  WESTERN CHAIN: Viridian → Forest → Pewter → Rt3 → Mt Moon → Rt4 → Cerulean
+// ============================================================
+route2:{
+  name:'ROUTE 2', music:'route', outdoor:true, ground:'.', void:'T',
+  build(){
+    const g = grid(18,28,'.');
+    scatter(g,',','.',161,0.08);
+    for(let j=0;j<28;j++){ g[j][0]='T'; g[j][17]='T'; }
+    rectg(g,0,0,18,2,'T'); rectg(g,0,26,18,2,'T');
+    g[0][8]='p'; g[1][8]='p'; g[0][9]='p'; g[1][9]='p';       // north → forest
+    g[26][8]='p'; g[27][8]='p'; g[26][9]='p'; g[27][9]='p';   // south → viridian
+    rectg(g,8,0,2,28,'p');
+    rectg(g,3,8,5,3,'G'); rectg(g,10,17,5,3,'G');
+    g[12][4]='X';                                             // optional CUT tree
+    g[6][13]='T';                                             // a stray tree
+    return g;
+  },
+  warps:[
+    {x:8,y:0,to:'viridian_forest',tx:9,ty:22,dir:1},{x:9,y:0,to:'viridian_forest',tx:10,ty:22,dir:1},
+    {x:8,y:27,to:'viridian',tx:10,ty:1,dir:0},{x:9,y:27,to:'viridian',tx:11,ty:1,dir:0},
+  ],
+  encounters:{ rate:0.15, list:[ ['pidgey',3,6,35],['rattata',3,6,30],['caterpie',3,5,18],['weedle',3,5,17] ]},
+  npcs:[
+    { id:'r2_sign', sprite:'sign', x:7, y:23, dir:0,
+      script:()=>[ "ROUTE 2\nSouth: VIRIDIAN CITY\nNorth: VIRIDIAN FOREST" ]},
+    { id:'r2_boy', sprite:'youngster', x:11, y:12, dir:2,
+      script:()=>[ "The FOREST is dark and buggy, but push straight through and PEWTER's on the other side." ]},
+  ],
+},
+
+viridian_forest:{
+  name:'VIRIDIAN FOREST', music:'route', outdoor:true, ground:'.', void:'T',
+  build(){
+    const g = grid(20,24,'.');
+    scatter(g,',','.',171,0.05);
+    rectg(g,0,0,20,2,'T'); rectg(g,0,22,20,2,'T');
+    for(let j=0;j<24;j++){ g[j][0]='T'; g[j][19]='T'; }
+    g[0][9]='p'; g[1][9]='p'; g[0][10]='p'; g[1][10]='p';     // north → pewter
+    g[22][9]='p'; g[23][9]='p'; g[22][10]='p'; g[23][10]='p'; // south → route2
+    // main clear path (never blocked)
+    rectg(g,9,2,2,20,'p');
+    rectg(g,3,10,8,1,'p'); rectg(g,3,10,1,7,'p');
+    rectg(g,11,14,6,1,'p'); rectg(g,16,7,1,8,'p'); rectg(g,11,7,6,1,'p');
+    // scattered tree clumps (off the central path)
+    for(const [tx,ty] of [[5,5],[6,6],[13,4],[14,5],[6,14],[7,15],[13,17],[14,18],[4,19],[16,20]]) g[ty][tx]='T';
+    // bug grass in the clearings
+    rectg(g,3,4,5,4,'G'); rectg(g,13,8,4,4,'G'); rectg(g,4,16,4,3,'G'); rectg(g,12,18,5,3,'G');
+    return g;
+  },
+  warps:[
+    {x:9,y:0,to:'pewter',tx:10,ty:17,dir:1},{x:10,y:0,to:'pewter',tx:11,ty:17,dir:1},
+    {x:9,y:23,to:'route2',tx:8,ty:1,dir:0},{x:10,y:23,to:'route2',tx:9,ty:1,dir:0},
+  ],
+  encounters:{ rate:0.20, list:[
+    ['caterpie',3,5,32],['weedle',3,5,32],['metapod',4,6,12],['kakuna',4,6,12],['pidgey',3,5,10],['pikachu',5,6,2] ]},
+  npcs:[
+    { id:'vf_bug1', sprite:'bugcatcher', x:7, y:12, dir:3, script:trainerScript('bugcatcher_sam') },
+    { id:'vf_bug2', sprite:'bugcatcher', x:16, y:11, dir:2, script:trainerScript('bugcatcher_kip') },
+    { id:'vf_lass', sprite:'lass', x:12, y:19, dir:1, script:trainerScript('lass_forest') },
+    { id:'vf_sign', sprite:'sign', x:8, y:20, dir:0,
+      script:()=>[ "VIRIDIAN FOREST\n\"Nature's own maze.\"\nDeep in the trees, rare POKéMON hide." ]},
+  ],
+},
+
+pewter:{
+  name:'PEWTER CITY', music:'town', outdoor:true, ground:'.', door:'p', void:'T',
+  build(){
+    const g = grid(22,20,'.');
+    scatter(g,',','.',181,0.08);
+    rectg(g,0,0,22,2,'T'); rectg(g,0,18,22,2,'T');
+    for(let j=0;j<20;j++){ g[j][0]='T'; g[j][21]='T'; }
+    g[18][10]='p'; g[19][10]='p'; g[18][11]='p'; g[19][11]='p';   // south → forest
+    g[9][21]='p'; g[10][21]='p';                                   // east → route3
+    // buildings
+    rectg(g,3,4,6,5,'B'); g[8][5]='D'; g[8][6]='D';               // POKéCENTER
+    rectg(g,13,4,6,5,'B'); g[8][15]='D'; g[8][16]='D';            // GYM (Brock)
+    rectg(g,3,12,5,3,'B');                                         // museum (decor)
+    rectg(g,14,12,5,3,'B');                                        // house (decor)
+    // paths
+    rectg(g,10,2,2,16,'p'); rectg(g,5,9,17,1,'p'); rectg(g,4,15,15,1,'p');
+    return g;
+  },
+  stamps:[['pokecenter',3,4],['gym',13,4],['house',3,12],['house',14,12]],
+  warps:[
+    {x:10,y:19,to:'viridian_forest',tx:9,ty:1,dir:1},{x:11,y:19,to:'viridian_forest',tx:10,ty:1,dir:1},
+    {x:21,y:9,to:'route3',tx:1,ty:6,dir:3},{x:21,y:10,to:'route3',tx:1,ty:7,dir:3},
+    {x:5,y:8,to:'pewter_pc',tx:7,ty:8,dir:1},{x:6,y:8,to:'pewter_pc',tx:7,ty:8,dir:1},
+    {x:15,y:8,to:'pewter_gym',tx:8,ty:14,dir:1},{x:16,y:8,to:'pewter_gym',tx:9,ty:14,dir:1},
+  ],
+  npcs:[
+    { id:'pw_guide', sprite:'gymguide', x:14, y:9, dir:0,
+      script:(f)=> f.beat_brock ? [ "You toppled BROCK's rock-hard defense?! Legendary. The road east is wide open now!" ]
+        : [ "This is BROCK's GYM! He uses ROCK POKéMON — super tough defense.",
+            "ROCK types crumble against WATER and GRASS. Your BLASTOISE or GENGAR would do nicely!" ]},
+    { id:'pw_museum', sprite:'oldman', x:5, y:16, dir:0,
+      script:()=>[ "The PEWTER MUSEUM has moon rocks from MT. MOON, just east of here. Space is amazing!" ]},
+    { id:'pw_girl', sprite:'girl', x:12, y:6, dir:0, wander:true,
+      script:()=>[ "PEWTER CITY — 'A Stone Grey City.' Everything here is carved from the mountain rock." ]},
+    { id:'pw_sign', sprite:'sign', x:9, y:9, dir:0,
+      script:()=>[ "PEWTER CITY\n\"A Stone Grey City\"\nEast: ROUTE 3 → MT. MOON → CERULEAN" ]},
+    { id:'pw_gymsign', sprite:'sign', x:18, y:9, dir:0,
+      script:()=>[ "PEWTER GYM\nLEADER: BROCK\n\"The Rock-Solid POKéMON Trainer!\"" ]},
+  ],
+},
+
+pewter_pc:{
+  name:'POKéMON CENTER', music:'center', outdoor:false, ground:'F', void:'W',
+  build(){ return kantoPC(); },
+  stamps:[['machine',11,1],['plant',1,2],['plant',1,7]],
+  warps:[ {x:7,y:9,to:'pewter',tx:5,ty:9,dir:0} ],
+  npcs:[ kantoNurse(), { id:'ppc_t', sprite:'hiker', x:3, y:5, dir:3,
+    script:()=>[ "Off to MT. MOON? Heal up first. Those tunnels go on forever." ]} ],
+},
+
+pewter_gym:{
+  name:'PEWTER GYM', music:'route', outdoor:false, ground:'A', void:'Z',
+  build(){
+    const g = grid(18,16,'A');
+    rectg(g,0,0,18,2,'Z'); for(let j=0;j<16;j++){ g[j][0]='Z'; g[j][17]='Z'; }
+    rectg(g,0,15,18,1,'Z'); g[15][8]='k'; g[15][9]='k';
+    rectg(g,8,2,2,13,'A');                    // central battlefield strip
+    g[5][4]='r'; g[5][13]='r'; g[10][4]='r'; g[10][13]='r';   // boulders
+    return g;
+  },
+  warps:[ {x:8,y:15,to:'pewter',tx:15,ty:9,dir:0},{x:9,y:15,to:'pewter',tx:16,ty:9,dir:0} ],
+  npcs:[
+    { id:'pg_jr', sprite:'camper', x:9, y:10, dir:1, script:trainerScript('gym_camper') },
+    { id:'brock', sprite:'brock', x:9, y:4, dir:0,
+      script:(f)=> f.beat_brock ? [
+        "BROCK: A rock is patient. It waits, it endures. You reminded me of that today. Safe travels, trainer.",
+      ] : [ TRAINERS.brock.intro, {trainer:'brock'}, TRAINERS.brock.after ] },
+    { id:'pg_sign', sprite:'sign', x:6, y:13, dir:0,
+      script:()=>[ "PEWTER GYM — the immovable object. BROCK waits at the far end." ]},
+  ],
+},
+
+route3:{
+  name:'ROUTE 3', music:'route', outdoor:true, ground:'.', void:'T',
+  build(){
+    const g = grid(24,14,'.');
+    scatter(g,',','.',191,0.08);
+    rectg(g,0,0,24,2,'T'); rectg(g,0,12,24,2,'T');
+    for(let j=0;j<14;j++){ g[j][0]='T'; g[j][23]='T'; }
+    g[6][0]='p'; g[7][0]='p';                                 // west → pewter
+    g[6][23]='p'; g[7][23]='p';                               // east → mt_moon
+    rectg(g,1,6,22,2,'p');
+    rectg(g,4,3,5,3,'G'); rectg(g,14,8,6,3,'G');
+    g[9][11]='r';                                             // a boulder off-path
+    return g;
+  },
+  warps:[
+    {x:0,y:6,to:'pewter',tx:20,ty:9,dir:2},{x:0,y:7,to:'pewter',tx:20,ty:10,dir:2},
+    {x:23,y:6,to:'mt_moon',tx:1,ty:9,dir:3},{x:23,y:7,to:'mt_moon',tx:1,ty:10,dir:3},
+  ],
+  encounters:{ rate:0.16, list:[
+    ['spearow',10,12,30],['sandshrew',10,12,25],['mankey',11,13,20],['pidgey',10,12,15],['rattata',10,12,10] ]},
+  npcs:[
+    { id:'r3_camp', sprite:'camper', x:9, y:5, dir:0, script:trainerScript('camper_flint') },
+    { id:'r3_hiker', sprite:'hiker', x:16, y:8, dir:2, script:trainerScript('hiker_marcus') },
+    { id:'r3_sign', sprite:'sign', x:3, y:9, dir:0,
+      script:()=>[ "ROUTE 3\nWest: PEWTER CITY\nEast: MT. MOON" ]},
+  ],
+},
+
+mt_moon:{
+  name:'MT. MOON', music:'cave', outdoor:false, ground:'c', void:'C',
+  build(){
+    const g = grid(22,18,'c');
+    scatter(g,'C','c',201,0.05);
+    rectg(g,0,0,22,2,'C'); rectg(g,0,16,22,2,'C');
+    for(let j=0;j<18;j++){ g[j][0]='C'; g[j][21]='C'; }
+    g[9][0]='c'; g[10][0]='c';                                // west → route3
+    g[8][21]='c'; g[9][21]='c';                               // east → route4
+    // rocky pillars / walls carving tunnels (keep a clear route)
+    for(const [rx,ry,rw,rh] of [[4,3,2,4],[8,6,2,5],[13,3,2,4],[16,8,2,5],[6,12,3,2],[12,12,4,2]]) rectg(g,rx,ry,rw,rh,'C');
+    // clear the main corridor
+    rectg(g,1,9,20,2,'c');
+    rectg(g,10,2,2,7,'c'); rectg(g,10,11,2,5,'c');
+    // boulders
+    g[5][7]='r'; g[12][15]='r'; g[3][18]='r';
+    return g;
+  },
+  warps:[
+    {x:0,y:9,to:'route3',tx:22,ty:6,dir:2},{x:0,y:10,to:'route3',tx:22,ty:7,dir:2},
+    {x:21,y:8,to:'route4',tx:1,ty:5,dir:3},{x:21,y:9,to:'route4',tx:1,ty:6,dir:3},
+  ],
+  floorEncounters:{ rate:0.16, list:[
+    ['zubat',7,10,40],['geodude',7,10,30],['paras',8,10,15],['clefairy',8,10,8],['sandshrew',7,9,7] ]},
+  npcs:[
+    { id:'mm_nerd', sprite:'youngster', x:7, y:9, dir:3, script:trainerScript('supernerd_miles') },
+    { id:'mm_rocket', sprite:'grunt', x:15, y:9, dir:2,
+      posByFlag:{ flag:'beat_rocket_moon', x:15, y:12, dir:0 },
+      script:(f)=> f.beat_rocket_moon ? [ TRAINERS.rocket_moon.after ]
+        : [ TRAINERS.rocket_moon.intro, {trainer:'rocket_moon'}, TRAINERS.rocket_moon.after,
+            {moveNpc:{id:'mm_rocket', x:15, y:12, dir:0}} ] },
+    { id:'mm_sign', sprite:null, x:2, y:9, dir:0,
+      script:()=>[ "MT. MOON\nThe east tunnel leads to ROUTE 4 and CERULEAN CITY.\nMind the ZUBAT!" ]},
+  ],
+},
+
+route4:{
+  name:'ROUTE 4', music:'route', outdoor:true, ground:'.', void:'T',
+  build(){
+    const g = grid(22,12,'.');
+    scatter(g,',','.',211,0.08);
+    rectg(g,0,0,22,2,'M'); rectg(g,0,10,22,2,'T');            // cliff to north, trees south
+    for(let j=0;j<12;j++){ g[j][0]='T'; g[j][21]='T'; }
+    g[5][0]='p'; g[6][0]='p';                                 // west → mt_moon
+    g[5][21]='p'; g[6][21]='p';                               // east → cerulean
+    rectg(g,1,5,20,2,'p');
+    rectg(g,3,3,5,2,'G'); rectg(g,13,7,5,2,'G');
+    g[4][10]='r';
+    return g;
+  },
+  warps:[
+    {x:0,y:5,to:'mt_moon',tx:20,ty:8,dir:2},{x:0,y:6,to:'mt_moon',tx:20,ty:9,dir:2},
+    {x:21,y:5,to:'cerulean',tx:1,ty:26,dir:3},{x:21,y:6,to:'cerulean',tx:1,ty:26,dir:3},
+  ],
+  encounters:{ rate:0.14, list:[ ['spearow',10,12,35],['rattata',10,12,30],['sandshrew',10,12,20],['mankey',11,13,15] ]},
+  npcs:[
+    { id:'r4_sign', sprite:'sign', x:3, y:7, dir:0,
+      script:()=>[ "ROUTE 4\nWest: MT. MOON\nEast: CERULEAN CITY" ]},
+    { id:'r4_hiker', sprite:'hiker', x:12, y:5, dir:0,
+      script:()=>[ "Made it through MT. MOON? Then you've earned the CERULEAN breeze. It's just east." ]},
+  ],
 },
 };
 
