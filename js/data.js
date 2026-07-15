@@ -431,3 +431,74 @@ const NPCS = [
     'Befriend a Kindred in all four countries and you\'ll be at home anywhere on Earth.'
   ] }
 ];
+
+/* ----------------------------------------------------------------------------
+ * STORY — "The Four Lanterns"
+ * The quest frame that turns the game into an adventure. Culture is the magic
+ * you use to fight the Grey Static and relight the world.
+ * -------------------------------------------------------------------------- */
+const STORY_INTRO = [
+  'Long ago, the WORLD BRIDGE joined every land, lit by four great LANTERNS of Understanding. 🏮',
+  'Then a cold GREY STATIC crept in — the chill of people no longer understanding one another. ' +
+  'The Lanterns dimmed. The Bridge cracked.',
+  'Now clouds of MUDDLES — little grey knots of misunderstanding — drift across the four lands, ' +
+  'blocking the way.',
+  'You are the new BRIDGEKEEPER. Travel to India, Japan, London and the USA. Win the people\'s ' +
+  'hearts, befriend the KINDREDS, and let your new friends help you clear the Muddles.',
+  'Relight all four Lanterns and reunite the world. Remember, Bridgekeeper: to truly understand ' +
+  'someone is the greatest magic there is. Your journey begins at the Crossroads — go!'
+];
+
+// How to relight each country's Lantern: befriend a local ally, then dispel its Muddles.
+// When the last Muddle clears, that country's Guardian appears with these words.
+const GUARDIANS = {
+  india: { kindred: 'garuda', name: 'Garuda', flag: '🇮🇳',
+    lines: [
+      'The great eagle Garuda descends in a blaze of gold. 🦅',
+      '"You shared chai before contracts, greeted your elders with Namaste, and treated our home ' +
+      'as sacred. You SEE us, Bridgekeeper."',
+      'Garuda beats its wings — and the Lantern of India blazes back to life! 🏮✨'
+    ] },
+  japan: { kindred: 'ryu', name: 'Ryu', flag: '🇯🇵',
+    lines: [
+      'The water-dragon Ryu coils up from the koi pond. 🐉',
+      '"You bowed, you listened for what was unspoken, you honoured the quiet. Harmony returns ' +
+      'where you walk."',
+      'Ryu breathes a shimmering mist — and the Lantern of Japan glows anew! 🏮✨'
+    ] },
+  uk: { kindred: 'welshdragon', name: 'The Red Dragon', flag: '🇬🇧',
+    lines: [
+      'The Red Dragon of Wales unfurls above Big Ben. 🐲',
+      '"You queued without complaint, read our understatement, and bought your round like a proper ' +
+      'mate. Well done — and I do mean well done."',
+      'The dragon roars a warm flame — and the Lantern of London flares bright! 🏮✨'
+    ] },
+  usa: { kindred: 'thunderbird', name: 'The Thunderbird', flag: '🇺🇸',
+    lines: [
+      'The mighty Thunderbird splits the sky with lightning. 🌩️',
+      '"You looked folks in the eye, said what you meant, and tipped from the heart. That\'s the ' +
+      'spirit, Bridgekeeper!"',
+      'Thunder rolls and the Lantern of the USA burns bright! 🏮✨'
+    ] }
+};
+
+// Framing text for clearing a Muddle (the actual challenge reuses a SCENE).
+const MUDDLE = {
+  need_ally: 'A grey MUDDLE churns before you. You sense you can\'t face it alone — befriend a local ' +
+             'Kindred here first, then come back!',
+  intro: 'A MUDDLE of misunderstanding blocks the way! Your Kindred glows at your side. Show the ' +
+         'local way to melt it into understanding:',
+  win: 'Your Kindred flares bright — the Muddle dissolves into warm, clear light! ✨',
+  lose: 'The Muddle grumbles and thickens. That approach didn\'t land — try another way.'
+};
+
+const STORY_END = [
+  '🌉 The fourth Lantern blazes — and far off, the WORLD BRIDGE knits itself whole with a sound ' +
+  'like a thousand people all saying "ah, I understand!"',
+  'From every land the Kindreds rise together: Garuda and the Thunderbird, Ryu and Nessie, the ' +
+  'foxes and the pixies, all dancing over a Bridge of light.',
+  'Senzo bows deeply: "You didn\'t conquer the Grey Static — you out-understood it. That is the ' +
+  'only way it is ever beaten."',
+  'The world is reconnected, Bridgekeeper. Namaste 🙏 · Konnichiwa 🙇 · Howdy 🤝 · Alright, mate? 🍻 ' +
+  '— you are at home everywhere now. THE END. 🌏'
+];

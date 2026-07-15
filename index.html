@@ -14,14 +14,15 @@
     <!-- ============ TITLE SCREEN ============ -->
     <section id="title" class="screen show">
       <div class="title-inner">
-        <div class="title-emoji">🇮🇳 🇯🇵 🌉 🇺🇸 🇬🇧</div>
+        <div class="title-emoji">🏮 🌉 🏮</div>
         <h1>CULTURE&nbsp;BRIDGE</h1>
-        <p class="tagline">A world-travel adventure across <b>India</b>, <b>Japan</b>, the <b>USA</b> &amp; <b>London</b></p>
+        <p class="tagline"><b>The Four Lanterns</b> — a quest across India, Japan, London &amp; the USA</p>
         <p class="blurb">
-          Wander four countries, meet the locals, and <b>choose how to act</b> — bow, shake hands,
-          tip, queue, buy a round. They react like real people, so you pick up the dos and don'ts by
-          <b>playing</b>, not studying. Behave well and folklore <b>Kindreds</b> befriend you. Ride
-          your bike, collect passport stamps, and become a Culture Bridge Master!
+          A cold <b>Grey Static</b> has dimmed the four Lanterns that lit the World Bridge, and clouds
+          of <b>Muddles</b> (misunderstanding) block the lands. As the new <b>Bridgekeeper</b>, travel
+          the four countries, win people over to befriend folklore <b>Kindreds</b>, use your new
+          friends to <b>dispel the Muddles</b>, and relight all four Lanterns to reunite the world.
+          You learn each culture by <b>playing</b> — and understanding is your greatest magic.
         </p>
         <button id="startBtn" class="big-btn">▶ Start Journey</button>
         <button id="resetBtn" class="text-btn">Reset saved progress</button>
@@ -41,10 +42,13 @@
       <header id="hud">
         <div class="hud-title">🌏 Culture Bridge</div>
         <div class="hud-stats">
-          <span class="stat">☮️ Harmony <b id="hud-harmony">0</b></span>
+          <span class="stat">🏮 Lanterns <b id="hud-lanterns">0/4</b></span>
           <span class="stat">🧑‍🤝‍🧑 Friends <b id="hud-caught">0/24</b></span>
+          <span class="stat">☮️ Harmony <b id="hud-harmony">0</b></span>
         </div>
       </header>
+
+      <div id="objective">🎯 Your quest awaits…</div>
 
       <div id="stage">
         <canvas id="game" aria-label="Game world"></canvas>

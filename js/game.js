@@ -60,7 +60,13 @@
     journalKeys: new Set(),
     currentRegion: 'hub',
     activeScene: null, activeKindred: null, sceneAnswered: false,
+    sceneKind: 'recruit', activeMuddle: null,
     menuView: 'main',
+    // --- quest / story ---
+    lanterns: new Set(),          // countries whose Lantern is relit
+    muddles: [],                  // {x,y,culture,alive}
+    introSeen: false,
+    objective: '',
     toast: null, toastUntil: 0,
     won: false
   };
@@ -143,14 +149,28 @@
     });
 
     state.map = m; state.signs = signs; state.npcs = npcs;
-  }
 
+    // Muddles — grey obstacles of misunderstanding, 3 per country. Clear all
+    // three (with a Kindred ally) to relight that country's Lantern.
+    const mud = [
+      ['india', 8, 18], ['india', 12, 25], ['india', 4, 24],
+      ['japan', 31, 25], ['japan', 37, 19], ['japan', 41, 25],
+      ['uk', 20, 8], ['uk', 26, 6], ['uk', 21, 14],
+      ['usa', 20, 30], ['usa', 27, 33], ['usa', 22, 38]
+    ];
+    state.muddles = mud.map(([culture, x, y]) => ({ culture, x, y, alive: true }));
+  }
+  // The Lantern site of each country (its landmark), for the glow when relit.
+  const LANTERN_AT = { india: [4, 19], japan: [43, 19], uk: [20, 3], usa: [26, 38] };
+
+  function muddleAt(x, y) { return state.muddles.find(mu => mu.alive && mu.x === x && mu.y === y); }
   function tileAt(x, y) {
     if (x < 0 || x >= MAP_W || y < 0 || y >= MAP_H) return T.TREE;
     return state.map[y][x];
   }
   function isSolid(x, y) {
     if (SOLID.has(tileAt(x, y))) return true;
+    if (muddleAt(x, y)) return true;
     return state.npcs.some(n => n.x === x && n.y === y);
   }
 
@@ -341,6 +361,23 @@
       if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) continue;
       drawTile(state.map[ty][tx], vx * TILE - offX, vy * TILE - offY, tx, ty);
     }
+    // Lantern glows at relit landmarks
+    state.lanterns.forEach(c => {
+      const L = LANTERN_AT[c]; if (!L) return;
+      const sx = (L[0] - camX) * TILE + TILE / 2, sy = (L[1] - camY) * TILE + TILE / 2;
+      const pulse = 12 + 3 * Math.sin(performance.now() / 300);
+      const grd = ctx.createRadialGradient(sx, sy, 2, sx, sy, pulse + 14);
+      grd.addColorStop(0, 'rgba(255,224,130,0.85)'); grd.addColorStop(1, 'rgba(255,224,130,0)');
+      ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(sx, sy, pulse + 14, 0, Math.PI * 2); ctx.fill();
+      ctx.font = '18px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('🏮', sx, sy - 20);
+    });
+    // Muddles
+    state.muddles.forEach(mu => {
+      if (!mu.alive) return;
+      const sx = (mu.x - camX) * TILE, sy = (mu.y - camY) * TILE;
+      if (sx > -TILE && sx < canvas.width && sy > -TILE && sy < canvas.height) drawMuddle(sx, sy);
+    });
     state.npcs.forEach(n => {
       const sx = (n.x - camX) * TILE, sy = (n.y - camY) * TILE;
       if (sx > -TILE && sx < canvas.width && sy > -TILE && sy < canvas.height) drawNPC(n, sx, sy);
@@ -355,6 +392,24 @@
   }
   function showToast(msg, ms) { state.toast = msg; state.toastUntil = performance.now() + (ms || 2600); }
 
+  function drawMuddle(sx, sy) {
+    const t = performance.now() / 260;
+    const cx = sx + TILE / 2, cy = sy + TILE / 2 + Math.sin(t) * 1.5;
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.beginPath(); ctx.ellipse(cx, sy + TILE - 4, 9, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#7f8c8d';
+    ctx.beginPath();
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
+      const r = 10 + Math.sin(a * 3 + t) * 2.2;
+      const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r * 0.9;
+      a === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#4d5656'; circle(cx - 3, cy - 1, 1.6, '#2c3e50'); circle(cx + 3, cy - 1, 1.6, '#2c3e50');
+    ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ecf0f1'; ctx.fillText('❓', cx, cy + 4);
+  }
+
   /* ------------------------------ movement -------------------------------- */
   function moveDur() { return state.biking ? BIKE_MS : WALK_MS; }
 
@@ -365,6 +420,8 @@
     let nx = p.x, ny = p.y;
     if (dir === 'up') ny--; else if (dir === 'down') ny++;
     else if (dir === 'left') nx--; else nx++;
+    const mu = muddleAt(nx, ny);
+    if (mu) { startDispel(mu); return; }        // bump a Muddle to face it
     if (isSolid(nx, ny)) return;
     p.fromX = p.x; p.fromY = p.y; p.x = nx; p.y = ny;
     p.moving = true; p.moveStart = performance.now(); p.moveDur = moveDur();
@@ -382,6 +439,7 @@
         showToast('🛂 Passport stamped: ' + CULTURE_META[region].flag + ' ' + CULTURE_META[region].name + '!', 2800);
         save();
       }
+      updateObjective();
     }
     const culture = GRASS_CULTURE[tileAt(p.x, p.y)];
     if (culture && Math.random() < ENCOUNTER_CHANCE) startScene(culture);
@@ -405,6 +463,8 @@
   }
   function interact() {
     const f = facingTile();
+    const mu = muddleAt(f.x, f.y);
+    if (mu) { startDispel(mu); return; }
     const key = state.signs[f.x + ',' + f.y];
     if (key && SIGN_TEXTS[key]) { openDialogue([SIGN_TEXTS[key]], null); return; }
     const npc = state.npcs.find(n => n.x === f.x && n.y === f.y);
@@ -424,7 +484,11 @@
   }
   function advanceDialogue() {
     dlgIdx++;
-    if (dlgIdx >= dlgLines.length) { document.getElementById('dialogue').classList.remove('show'); state.mode = 'play'; }
+    if (dlgIdx >= dlgLines.length) {
+      document.getElementById('dialogue').classList.remove('show'); state.mode = 'play';
+      if (state._pendingEnding) { state._pendingEnding = false; setTimeout(showEnding, 500); }
+      updateObjective();
+    }
     else renderDialogue();
   }
 
@@ -449,10 +513,29 @@
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
+  function allyOf(culture) {
+    const id = KINDREDS.find(k => k.home === culture && state.befriended.has(k.id));
+    return id || null;
+  }
+
   function startScene(culture) {
     state.mode = 'scene';
+    state.sceneKind = 'recruit';
+    state.activeMuddle = null;
     state.activeKindred = pickKindred(culture);
     state.activeScene = pickScene(culture);
+    state.sceneAnswered = false;
+    renderScene();
+  }
+
+  function startDispel(mu) {
+    const ally = allyOf(mu.culture);
+    if (!ally) { openDialogue([MUDDLE.need_ally], null); return; }
+    state.mode = 'scene';
+    state.sceneKind = 'dispel';
+    state.activeMuddle = mu;
+    state.activeKindred = ally;         // your friend stands with you
+    state.activeScene = pickScene(mu.culture);
     state.sceneAnswered = false;
     renderScene();
   }
@@ -460,6 +543,7 @@
   function renderScene() {
     const k = state.activeKindred, sc = state.activeScene;
     const cm = CULTURE_META[k.home];
+    const dispel = state.sceneKind === 'dispel';
     const overlay = document.getElementById('quiz');
     overlay.innerHTML = '';
     const panel = document.createElement('div'); panel.className = 'quiz-panel';
@@ -467,13 +551,19 @@
     const head = document.createElement('div'); head.className = 'quiz-creature';
     const sprite = kindredSprite(k, 92); sprite.className = 'sprite'; head.appendChild(sprite);
     const meta = document.createElement('div');
-    meta.innerHTML = '<div class="k-name">A curious <b>' + escapeHtml(k.name) + '</b> is watching…</div>' +
-      '<div class="k-title">' + cm.flag + ' ' + escapeHtml(cm.name) + ' · ' + escapeHtml(k.title) + '</div>' +
-      '<div class="k-home ' + k.home + '">Behave well and it may befriend you!</div>';
+    if (dispel) {
+      meta.innerHTML = '<div class="k-name">❓ A <b>Muddle</b> blocks the way!</div>' +
+        '<div class="k-title">' + cm.flag + ' ' + escapeHtml(cm.name) + ' · your friend ' + escapeHtml(k.name) + ' stands with you</div>' +
+        '<div class="k-home ' + k.home + '">Melt it with the local way!</div>';
+    } else {
+      meta.innerHTML = '<div class="k-name">A curious <b>' + escapeHtml(k.name) + '</b> is watching…</div>' +
+        '<div class="k-title">' + cm.flag + ' ' + escapeHtml(cm.name) + ' · ' + escapeHtml(k.title) + '</div>' +
+        '<div class="k-home ' + k.home + '">Behave well and it may befriend you!</div>';
+    }
     head.appendChild(meta); panel.appendChild(head);
 
     const setup = document.createElement('div'); setup.className = 'scene-setup';
-    setup.textContent = sc.setup; panel.appendChild(setup);
+    setup.textContent = dispel ? MUDDLE.intro + ' — ' + sc.setup : sc.setup; panel.appendChild(setup);
     const prompt = document.createElement('div'); prompt.className = 'quiz-q';
     prompt.innerHTML = '<span class="topic">' + cm.flag + ' What do you do?</span>' + escapeHtml(sc.prompt);
     panel.appendChild(prompt);
@@ -505,15 +595,17 @@
   function chooseAction(a, btn, list) {
     if (state.sceneAnswered) return;
     state.sceneAnswered = true;
-    const k = state.activeKindred, sc = state.activeScene;
+    const k = state.activeKindred;
+    const dispel = state.sceneKind === 'dispel';
     Array.from(list.children).forEach(b => { b.disabled = true; });
     btn.classList.add(a.good ? 'right' : 'wrong');
 
-    let newFriend = false;
+    let newFriend = false, clearedMuddle = false;
     if (a.good) {
       state.harmony += 10;
       state.rapport[k.home] = Math.min(100, state.rapport[k.home] + 12);
-      if (!state.befriended.has(k.id)) { state.befriended.add(k.id); newFriend = true; state.harmony += 5; }
+      if (dispel && state.activeMuddle) { state.activeMuddle.alive = false; clearedMuddle = true; state.harmony += 5; }
+      else if (!dispel && !state.befriended.has(k.id)) { state.befriended.add(k.id); newFriend = true; state.harmony += 5; }
     } else {
       state.harmony += 2;
       state.rapport[k.home] = Math.min(100, state.rapport[k.home] + 3);
@@ -521,39 +613,71 @@
     logTip(k.home, a.tip);
     save();
 
+    let head;
+    if (dispel) {
+      head = a.good ? '✨ ' + k.name + ' flares bright — the Muddle dissolves!' : '😵 ' + MUDDLE.lose;
+    } else {
+      head = a.good
+        ? (newFriend ? '🎉 ' + k.name + ' is charmed and befriends you!' : '✅ Nicely handled! ' + k.name + ' nods along.')
+        : '😅 A little awkward… ' + k.name + ' watches you learn.';
+    }
     const result = document.createElement('div');
     result.className = 'quiz-result ' + (a.good ? 'ok' : 'no');
-    let head = a.good
-      ? (newFriend ? '🎉 ' + k.name + ' is charmed and befriends you!' : '✅ Nicely handled! ' + k.name + ' nods along.')
-      : '😅 A little awkward… ' + k.name + ' watches you learn.';
     result.innerHTML =
       '<div class="r-head">' + escapeHtml(head) + '</div>' +
       '<div class="r-explain">' + escapeHtml(a.reaction) + '</div>' +
       '<div class="r-bridge"><b>📖 Journal:</b> ' + escapeHtml(a.tip) + '</div>' +
-      '<div class="r-points">+' + (a.good ? (newFriend ? 15 : 10) : 2) + ' Harmony</div>' +
+      '<div class="r-points">+' + (a.good ? (newFriend || clearedMuddle ? 15 : 10) : 2) + ' Harmony</div>' +
       '<button class="continue" id="continueBtn">Continue ▶</button>';
     document.querySelector('.quiz-panel').appendChild(result);
     result.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    state._clearedMuddleCulture = clearedMuddle ? k.home : null;
     document.getElementById('continueBtn').onclick = closeScene;
   }
 
   function closeScene() {
     document.getElementById('quiz').classList.remove('show');
     state.mode = 'play'; updateHud();
-    if (!state.won && state.befriended.size === KINDREDS.length) {
-      state.won = true; save(); setTimeout(showVictory, 350);
+    const cleared = state._clearedMuddleCulture; state._clearedMuddleCulture = null;
+    // Relight a Lantern once its country's Muddles are all cleared.
+    if (cleared && !state.lanterns.has(cleared) && muddlesLeft(cleared) === 0) {
+      lightLantern(cleared); return;
     }
+    updateObjective(); save();
   }
-  function showVictory() {
-    openDialogue([
-      '🌏 You have befriended all ' + KINDREDS.length + ' Kindreds across four cultures!',
-      'You bowed in Tokyo, queued in London, shared chai in Delhi and tipped well in New York — ' +
-      'and the locals loved you for it.',
-      'Senzo beams: "You could stroll into any country on Earth and feel at home. You are a true ' +
-      'Culture Bridge Master!"',
-      'Keep exploring, or open the Menu (F) to admire your Friends, Passport and Journal.'
-    ], 'You did it!');
+
+  function muddlesLeft(culture) { return state.muddles.filter(mu => mu.alive && mu.culture === culture).length; }
+
+  function lightLantern(culture) {
+    state.lanterns.add(culture);
+    save(); updateHud();
+    const g = GUARDIANS[culture];
+    const lines = g.lines.concat(['🏮 ' + state.lanterns.size + ' of 4 Lanterns are lit. ' +
+      (state.lanterns.size < 4 ? 'The Bridge grows brighter — on to the next land!' : '')]);
+    openDialogue(lines, g.flag + ' ' + g.name + ', Guardian of ' + CULTURE_META[culture].name);
+    if (state.lanterns.size === 4 && !state.won) { state.won = true; save(); state._pendingEnding = true; }
+    updateObjective();
   }
+
+  function updateObjective() {
+    const el = document.getElementById('objective'); if (!el) return;
+    let text;
+    if (state.lanterns.size === 4) text = '🌉 All four Lanterns are lit — the World Bridge is whole! Explore freely.';
+    else {
+      const r = state.currentRegion;
+      if (COUNTRIES.indexOf(r) >= 0 && !state.lanterns.has(r)) {
+        const left = muddlesLeft(r), ally = allyOf(r);
+        if (!ally) text = '🎯 ' + CULTURE_META[r].flag + ' Befriend a local Kindred (walk into the tall grass) to gain an ally.';
+        else if (left > 0) text = '🎯 ' + CULTURE_META[r].flag + ' Dispel ' + left + ' Muddle' + (left > 1 ? 's' : '') + ' to relight the Lantern of ' + CULTURE_META[r].name + '.';
+        else text = '🎯 ' + CULTURE_META[r].flag + ' The Lantern of ' + CULTURE_META[r].name + ' is ready to light!';
+      } else {
+        text = '🎯 Pick a road and relight a country\'s Lantern.  🏮 ' + state.lanterns.size + '/4 lit';
+      }
+    }
+    el.textContent = text;
+  }
+
+  function showEnding() { openDialogue(STORY_END, '🌏 The World Bridge'); }
 
   /* --------------------------------- menu --------------------------------- */
   function openMenu() { state.mode = 'menu'; state.menuView = 'main'; renderMenu(); }
@@ -613,15 +737,18 @@
   function menuPassport() {
     let rows = COUNTRIES.map(c => {
       const cm = CULTURE_META[c], visited = state.passport.has(c), r = state.rapport[c];
+      const lit = state.lanterns.has(c), left = muddlesLeft(c);
+      const quest = lit ? '🏮 Lantern lit!' : (left + ' Muddle' + (left === 1 ? '' : 's') + ' left');
       return '<div class="pp-row">' +
         '<div class="pp-flag ' + (visited ? '' : 'faded') + '">' + cm.flag + '</div>' +
-        '<div class="pp-info"><b>' + escapeHtml(cm.name) + '</b>' +
+        '<div class="pp-info"><b>' + escapeHtml(cm.name) + '</b> ' +
+        '<span class="pp-quest ' + (lit ? 'lit' : '') + '">' + quest + '</span>' +
         '<span class="pp-stamp">' + (visited ? '✔ visited' : 'not yet visited') + '</span>' +
         '<div class="pp-bar"><i style="width:' + r + '%"></i></div>' +
         '<span class="pp-rap">Rapport ' + r + '%</span></div></div>';
     }).join('');
-    return menuHead('🛂 Passport', state.passport.size + ' / 4') + '<div class="pp-list">' + rows +
-      '</div><div class="menu-foot">Walk into a country to stamp it. Treat locals well to raise your rapport.</div>';
+    return menuHead('🛂 Passport', '🏮 ' + state.lanterns.size + '/4') + '<div class="pp-list">' + rows +
+      '</div><div class="menu-foot">Befriend a Kindred, then dispel a country\'s Muddles to relight its Lantern.</div>';
   }
   function menuJournal() {
     if (!state.journal.length) {
@@ -661,14 +788,17 @@
   function updateHud() {
     document.getElementById('hud-harmony').textContent = state.harmony;
     document.getElementById('hud-caught').textContent = state.befriended.size + '/' + KINDREDS.length;
+    const lan = document.getElementById('hud-lanterns'); if (lan) lan.textContent = state.lanterns.size + '/4';
   }
-  const SAVE_KEY = 'culture-bridge-save-v3';
+  const SAVE_KEY = 'culture-bridge-save-v4';
   function save() {
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify({
         befriended: Array.from(state.befriended), harmony: state.harmony,
         passport: Array.from(state.passport), rapport: state.rapport,
-        journal: state.journal, won: state.won
+        journal: state.journal, won: state.won,
+        lanterns: Array.from(state.lanterns), introSeen: state.introSeen,
+        dispelled: state.muddles.filter(mu => !mu.alive).map(mu => mu.x + ',' + mu.y)
       }));
     } catch (e) {}
   }
@@ -680,6 +810,10 @@
       (d.passport || []).forEach(c => state.passport.add(c));
       if (d.rapport) Object.assign(state.rapport, d.rapport);
       (d.journal || []).forEach(e => { state.journal.push(e); state.journalKeys.add(e.tip); });
+      (d.lanterns || []).forEach(c => state.lanterns.add(c));
+      state.introSeen = !!d.introSeen;
+      const dispelled = new Set(d.dispelled || []);
+      state.muddles.forEach(mu => { if (dispelled.has(mu.x + ',' + mu.y)) mu.alive = false; });
     } catch (e) {}
   }
 
@@ -785,10 +919,15 @@
     buildWorld();
     state.player = { x: 23, y: 20, dir: 'down', moving: false, fromX: 23, fromY: 20, moveStart: 0, moveDur: WALK_MS };
     state.currentRegion = regionAt(23, 20);
-    load(); initCanvas(); updateHud(); wireTouch();
+    load(); initCanvas(); updateHud(); wireTouch(); updateObjective();
     window.addEventListener('keydown', onKeyDown); window.addEventListener('keyup', onKeyUp);
-    showToast('Explore four countries! Meet locals, act well, befriend Kindreds. F = menu · S = bike', 5600);
     requestAnimationFrame(loop);
+    if (!state.introSeen) {
+      state.introSeen = true; save();
+      openDialogue(STORY_INTRO, '📜 The Legend of the Four Lanterns');
+    } else {
+      showToast('Welcome back, Bridgekeeper! 🏮 ' + state.lanterns.size + '/4 Lanterns lit. Press F for the menu.', 4200);
+    }
   }
 
   window.CultureBridge = {
@@ -798,7 +937,9 @@
       state.befriended.clear(); state.harmony = 0; state.won = false;
       state.passport.clear(); state.rapport = { india: 0, japan: 0, uk: 0, usa: 0 };
       state.journal = []; state.journalKeys.clear();
-      updateHud(); showToast('Progress reset. A fresh journey begins!');
+      state.lanterns.clear(); state.introSeen = false;
+      state.muddles.forEach(mu => { mu.alive = true; });
+      updateHud(); updateObjective(); showToast('Progress reset. A fresh legend begins!');
     }
   };
 })();

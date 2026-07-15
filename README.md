@@ -1,15 +1,21 @@
-# 🌏 Culture Bridge — a world-travel adventure
+# 🏮 Culture Bridge — The Four Lanterns
 
-A top-down travel game across four cultures — **India**, **Japan**, the **USA**
-and the **UK (London)**. You don't get quizzed; you **play**. Wander each
-country, meet the locals, and **choose how to act** — bow or shake hands, tip or
-don't, queue or push in, buy a round or just your own. The locals react like
-real people would, so you pick up the **dos and don'ts by consequence**. Behave
-well and folklore companions called **Kindreds** befriend you.
+A story-driven, top-down adventure across four cultures — **India**, **Japan**,
+the **USA** and the **UK (London)**.
 
-The cultural learning is a **by-product of playing**: every interaction quietly
-notes what you learned in your **Journal**, stamps your **Passport**, and raises
-your **rapport** with that country.
+**The quest:** a cold **Grey Static** — the chill of people no longer
+understanding each other — has dimmed the four **Lanterns** that lit the World
+Bridge, and clouds of **Muddles** (misunderstanding) now block the lands. As the
+new **Bridgekeeper**, you must travel the four countries, win people over to
+befriend folklore companions called **Kindreds**, use your new friends to
+**dispel the Muddles**, relight all four **Lanterns**, and reunite the world.
+
+You don't get quizzed; you **play**. You meet locals and **choose how to act** —
+bow or shake hands, tip or don't, queue or push in. They react like real people,
+so you learn the **dos and don'ts by consequence**, and understanding becomes
+the magic you use to beat the Static. Every interaction quietly notes what you
+learned in your **Journal**, stamps your **Passport**, and raises your
+**rapport**.
 
 > The collectible "Kindreds" are original folklore companions — nothing to do
 > with any other game's "Pals" or "-mon".
@@ -55,26 +61,30 @@ python3 -m http.server 8000
 On phones and tablets an on-screen D-pad plus **Talk**, **Menu** and **🚲**
 buttons appear automatically.
 
-## 🎯 How it plays
+## 🎯 The quest loop
 
 Four roads lead out from a central crossroads — **India (west)**, **Japan
 (east)**, **London (north)** and the **USA (south)**. Gateway flags and passport
-stamps make it obvious where you're going.
+stamps make it obvious where you're going. To relight a country's **Lantern**:
 
-1. **Explore** a country (bike the cycle paths to go faster) and wander into the
-   tall grass or up to a local.
-2. A **situation** plays out — a Tokyo shopkeeper bows, a New York colleague puts
-   out their hand, a London bus queue forms. You **choose how to act**.
-3. The local **reacts** the way a real person would. Bow back in Japan and you
-   make a friend; hug a stranger and they recoil (gently and a bit
-   comically — nothing is punished harshly). A watching **Kindred** is charmed by
-   good manners and befriends you.
-4. Whatever you chose, the custom is noted in your **Journal**, your **rapport**
-   with that country rises, and your **Passport** fills up. Befriend all 24
-   Kindreds to become a **Culture Bridge Master**.
+1. **Explore** the country (bike the cycle paths to go faster). Your current
+   objective is always shown in the banner under the HUD.
+2. **Befriend a Kindred.** Wander the tall grass and a curious folklore companion
+   appears in a **situation** — a Tokyo shopkeeper bows, a New York colleague
+   puts out their hand, a London bus queue forms. **Choose how to act.** Good
+   manners charm the Kindred and it joins you; a faux pas gets a gentle, funny
+   reaction (nothing is punished harshly). You need at least one local friend to
+   fight the Static.
+3. **Dispel the Muddles.** Grey **Muddles** of misunderstanding block each land.
+   Walk into one and — with your Kindred glowing at your side — show the local
+   way to melt it into understanding. Clear all three in a country…
+4. **…and its Guardian appears** (Garuda, Ryu, the Red Dragon, the Thunderbird)
+   to **relight the Lantern**. 🏮
+5. Relight **all four Lanterns** and the World Bridge knits itself whole — you win.
 
-Because you learn by *doing and seeing the reaction*, the etiquette sticks the
-way it does when you actually travel.
+Whatever you choose, the custom is noted in your **Journal**, your **rapport**
+rises, and your **Passport** fills. Because you learn by *doing and seeing the
+reaction*, the etiquette sticks the way it does when you actually travel.
 
 ### What you pick up along the way
 
