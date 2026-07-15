@@ -395,6 +395,8 @@ vermilion:{
     rectg(g,0,0,24,2,'T');
     for(let j=0;j<18;j++){ g[j][0]='T'; g[j][23]='T'; }
     g[0][11]='p'; g[1][11]='p'; g[0][12]='p'; g[1][12]='p';   // north gap → route5
+    g[9][0]='p';                                              // west gap → route6 (Saffron)
+    rectg(g,1,9,10,1,'p');                                    // west path
     // south sea + pier (ferry)
     rectg(g,0,18,24,4,'w');
     rectg(g,10,17,2,2,'P'); g[16][10]='P'; g[16][11]='P';
@@ -417,6 +419,7 @@ vermilion:{
   stamps:[['pokecenter',3,4],['gym',15,4],['house',3,12],['house',16,12],['boat',10,18]],
   warps:[
     {x:11,y:0,to:'route5',tx:9,ty:32,dir:1},{x:12,y:0,to:'route5',tx:10,ty:32,dir:1},
+    {x:0,y:9,to:'route6',tx:20,ty:6,dir:2},
     {x:5,y:8,to:'vermilion_pc',tx:7,ty:8,dir:1},{x:6,y:8,to:'vermilion_pc',tx:7,ty:8,dir:1},
     {x:17,y:8,to:'vermilion_gym',tx:8,ty:14,dir:1},{x:18,y:8,to:'vermilion_gym',tx:9,ty:14,dir:1},
   ],
@@ -1136,6 +1139,213 @@ route4:{
       script:()=>[ "ROUTE 4\nWest: MT. MOON\nEast: CERULEAN CITY" ]},
     { id:'r4_hiker', sprite:'hiker', x:12, y:5, dir:0,
       script:()=>[ "Made it through MT. MOON? Then you've earned the CERULEAN breeze. It's just east." ]},
+  ],
+},
+
+// ============================================================
+//  CENTRAL KANTO: Vermilion → Route 6 → Saffron → Route 7 → Celadon
+// ============================================================
+route6:{
+  name:'ROUTE 6', music:'route', outdoor:true, ground:'.', void:'T',
+  build(){
+    const g = grid(22,12,'.');
+    scatter(g,',','.',221,0.08);
+    rectg(g,0,0,22,2,'T'); rectg(g,0,10,22,2,'T');
+    for(let j=0;j<12;j++){ g[j][0]='T'; g[j][21]='T'; }
+    g[5][21]='p'; g[6][21]='p';                              // east → vermilion
+    g[5][0]='p'; g[6][0]='p';                                // west → saffron
+    rectg(g,1,5,20,2,'p');
+    rectg(g,3,3,5,2,'G'); rectg(g,13,7,5,2,'G');
+    g[8][11]='T';
+    return g;
+  },
+  warps:[
+    {x:21,y:5,to:'vermilion',tx:1,ty:9,dir:2},{x:21,y:6,to:'vermilion',tx:1,ty:9,dir:2},
+    {x:0,y:5,to:'saffron',tx:19,ty:12,dir:2},{x:0,y:6,to:'saffron',tx:19,ty:13,dir:2},
+  ],
+  encounters:{ rate:0.15, list:[ ['pidgey',18,21,30],['meowth',18,21,25],['ekans',19,22,18],['mankey',19,22,15],['growlithe',20,23,12] ]},
+  npcs:[
+    { id:'r6_bird', sprite:'youngster', x:10, y:4, dir:0, script:trainerScript('bird_keeper') },
+    { id:'r6_gambler', sprite:'gymguide', x:15, y:8, dir:2, script:trainerScript('gambler_rich') },
+    { id:'r6_sign', sprite:'sign', x:3, y:7, dir:0,
+      script:()=>[ "ROUTE 6\nEast: VERMILION CITY\nWest: SAFFRON CITY" ]},
+  ],
+},
+
+saffron:{
+  name:'SAFFRON CITY', music:'town', outdoor:true, ground:'.', door:'p', void:'T',
+  build(){
+    const g = grid(24,22,'.');
+    scatter(g,',','.',231,0.07);
+    rectg(g,0,0,24,2,'T'); rectg(g,0,20,24,2,'T');
+    for(let j=0;j<22;j++){ g[j][0]='T'; g[j][23]='T'; }
+    g[12][23]='p'; g[13][23]='p';                            // east → route6
+    g[12][0]='p'; g[13][0]='p';                              // west → route7
+    // Silph Co. (big central tower — decor)
+    rectg(g,9,3,6,6,'B');
+    // Sabrina gym
+    rectg(g,17,4,5,5,'B'); g[8][18]='D'; g[8][19]='D';
+    // Pokémon Center
+    rectg(g,2,4,6,5,'B'); g[8][4]='D'; g[8][5]='D';
+    // houses
+    rectg(g,3,14,5,3,'B'); rectg(g,16,14,5,3,'B');
+    // paths
+    rectg(g,1,12,22,2,'p'); rectg(g,11,2,2,18,'p'); rectg(g,4,9,16,1,'p'); rectg(g,18,9,1,1,'p');
+    return g;
+  },
+  stamps:[['pokecenter',2,4],['gym',17,4],['lab',9,3],['house',3,14],['house',16,14]],
+  warps:[
+    {x:23,y:12,to:'route6',tx:1,ty:5,dir:2},{x:23,y:13,to:'route6',tx:1,ty:6,dir:2},
+    {x:0,y:12,to:'route7',tx:20,ty:6,dir:2},{x:0,y:13,to:'route7',tx:20,ty:7,dir:2},
+    {x:4,y:8,to:'saffron_pc',tx:7,ty:8,dir:1},{x:5,y:8,to:'saffron_pc',tx:7,ty:8,dir:1},
+    {x:18,y:8,to:'saffron_gym',tx:8,ty:14,dir:1},{x:19,y:8,to:'saffron_gym',tx:9,ty:14,dir:1},
+  ],
+  npcs:[
+    { id:'sf_guide', sprite:'gymguide', x:18, y:9, dir:0,
+      script:(f)=> f.beat_sabrina ? [ "You beat SABRINA?! I felt a chill when you walked in. You're not normal, are you?" ]
+        : [ "SAFFRON GYM's LEADER is SABRINA — a PSYCHIC prodigy. Her POKéMON read your every move.",
+            "DARK, GHOST and BUG POKéMON unsettle PSYCHICS. Your GENGAR would give her pause!" ]},
+    { id:'sf_silph', sprite:'boy', x:12, y:10, dir:0, wander:true,
+      script:()=>[ "That's SILPH CO. HQ — they make the POKé BALLs and the SILPH SCOPE. Cutting-edge stuff!" ]},
+    { id:'sf_old', sprite:'oldman', x:6, y:16, dir:0,
+      script:()=>[ "SAFFRON is the great crossroads of KANTO. Roads run to every corner from here." ]},
+    { id:'sf_sign', sprite:'sign', x:10, y:12, dir:0,
+      script:()=>[ "SAFFRON CITY\n\"Shining, Golden Land of Commerce\"\nWest: ROUTE 7 → CELADON  East: ROUTE 6" ]},
+    { id:'sf_gymsign', sprite:'sign', x:20, y:9, dir:0,
+      script:()=>[ "SAFFRON GYM\nLEADER: SABRINA\n\"The Master of PSYCHIC POKéMON!\"" ]},
+  ],
+},
+
+saffron_pc:{
+  name:'POKéMON CENTER', music:'center', outdoor:false, ground:'F', void:'W',
+  build(){ return kantoPC(); },
+  stamps:[['machine',11,1],['plant',1,2],['plant',1,7]],
+  warps:[ {x:7,y:9,to:'saffron',tx:4,ty:9,dir:0} ],
+  npcs:[ kantoNurse(), { id:'sfpc_t', sprite:'youngster', x:3, y:5, dir:3,
+    script:()=>[ "They say SABRINA once bent a steel spoon just by frowning at it. ...I believe it." ]} ],
+},
+
+saffron_gym:{
+  name:'SAFFRON GYM', music:'route', outdoor:false, ground:'F', void:'Z',
+  build(){
+    const g = grid(18,16,'F');
+    rectg(g,0,0,18,2,'Z'); for(let j=0;j<16;j++){ g[j][0]='Z'; g[j][17]='Z'; }
+    rectg(g,0,15,18,1,'Z'); g[15][8]='k'; g[15][9]='k';
+    // psychic 'pad' decorations (boulders repurposed as glyph stones)
+    g[4][4]='O'; g[4][13]='O'; g[10][4]='O'; g[10][13]='O';
+    return g;
+  },
+  warps:[ {x:8,y:15,to:'saffron',tx:18,ty:9,dir:0},{x:9,y:15,to:'saffron',tx:19,ty:9,dir:0} ],
+  npcs:[
+    { id:'sg_jr', sprite:'youngster', x:9, y:10, dir:1, script:trainerScript('gym_psychic') },
+    { id:'sabrina', sprite:'sabrina', x:9, y:4, dir:0,
+      script:(f)=> f.beat_sabrina ? [
+        "SABRINA: The future feels... open now. Unwritten. I have you to thank for that. Go well.",
+      ] : [ TRAINERS.sabrina.intro, {trainer:'sabrina'}, TRAINERS.sabrina.after ] },
+    { id:'sg_sign', sprite:'sign', x:6, y:12, dir:0,
+      script:()=>[ "SAFFRON GYM — the air hums with unseen force. SABRINA waits, unmoving, at the center." ]},
+  ],
+},
+
+route7:{
+  name:'ROUTE 7', music:'route', outdoor:true, ground:'.', void:'T',
+  build(){
+    const g = grid(22,12,'.');
+    scatter(g,',','.',241,0.08);
+    rectg(g,0,0,22,2,'T'); rectg(g,0,10,22,2,'T');
+    for(let j=0;j<12;j++){ g[j][0]='T'; g[j][21]='T'; }
+    g[6][21]='p'; g[7][21]='p';                              // east → saffron
+    g[6][0]='p'; g[7][0]='p';                                // west → celadon
+    rectg(g,1,6,20,2,'p');
+    rectg(g,3,3,5,2,'G'); rectg(g,13,8,5,2,'G');
+    rectg(g,9,3,3,3,'f');                                    // flower bed
+    return g;
+  },
+  warps:[
+    {x:21,y:6,to:'saffron',tx:1,ty:12,dir:2},{x:21,y:7,to:'saffron',tx:1,ty:13,dir:2},
+    {x:0,y:6,to:'celadon',tx:20,ty:10,dir:2},{x:0,y:7,to:'celadon',tx:20,ty:11,dir:2},
+  ],
+  encounters:{ rate:0.15, list:[ ['oddish',18,21,30],['bellsprout',18,21,25],['meowth',18,21,18],['pidgey',18,21,15],['gloom',20,23,7],['mankey',19,22,5] ]},
+  npcs:[
+    { id:'r7_lass', sprite:'lass', x:10, y:5, dir:0, script:trainerScript('lass_petal') },
+    { id:'r7_beauty', sprite:'misty', x:15, y:9, dir:2, script:trainerScript('beauty_grace') },
+    { id:'r7_sign', sprite:'sign', x:3, y:8, dir:0,
+      script:()=>[ "ROUTE 7\nEast: SAFFRON CITY\nWest: CELADON CITY" ]},
+  ],
+},
+
+celadon:{
+  name:'CELADON CITY', music:'town', outdoor:true, ground:'.', door:'p', void:'T',
+  build(){
+    const g = grid(24,20,'.');
+    scatter(g,',','.',251,0.07);
+    rectg(g,0,0,24,2,'T'); rectg(g,0,18,24,2,'T');
+    for(let j=0;j<20;j++){ g[j][0]='T'; g[j][23]='T'; }
+    g[10][23]='p'; g[11][23]='p';                            // east → route7
+    // Celadon Dept. Store (big — decor)
+    rectg(g,3,3,7,6,'B');
+    // Erika's gym (greenhouse)
+    rectg(g,16,4,5,5,'B'); g[8][17]='D'; g[8][18]='D';
+    // Pokémon Center + Game Corner (decor)
+    rectg(g,3,12,5,3,'B'); g[11][4]='D'; g[11][5]='D';
+    rectg(g,15,12,6,3,'B');
+    // flower beds (Celadon is the garden city)
+    rectg(g,11,10,4,3,'f'); rectg(g,12,3,3,2,'f');
+    // paths
+    rectg(g,10,2,2,16,'p'); rectg(g,4,10,17,1,'p'); rectg(g,4,14,15,1,'p');
+    return g;
+  },
+  stamps:[['mart',3,3],['gym',16,4],['pokecenter',3,11],['house',15,12]],
+  warps:[
+    {x:23,y:10,to:'route7',tx:1,ty:6,dir:2},{x:23,y:11,to:'route7',tx:1,ty:7,dir:2},
+    {x:4,y:11,to:'celadon_pc',tx:7,ty:8,dir:1},{x:5,y:11,to:'celadon_pc',tx:7,ty:8,dir:1},
+    {x:17,y:8,to:'celadon_gym',tx:8,ty:14,dir:1},{x:18,y:8,to:'celadon_gym',tx:9,ty:14,dir:1},
+  ],
+  npcs:[
+    { id:'cd_guide', sprite:'gymguide', x:18, y:9, dir:0,
+      script:(f)=> f.beat_erika ? [ "You bested ERIKA's garden?! And you still smell of roses. Impressive on both counts." ]
+        : [ "CELADON GYM's LEADER is ERIKA — a master of GRASS POKéMON. Her gym's a real greenhouse!",
+            "FIRE, FLYING, ICE and PSYCHIC types cut through GRASS. PIDGEOT or MOLTRES would wilt her lineup!" ]},
+    { id:'cd_store', sprite:'girl', x:8, y:10, dir:0, wander:true,
+      script:()=>[ "The CELADON DEPT. STORE is the biggest in KANTO — five whole floors of everything!" ]},
+    { id:'cd_gambler', sprite:'oldman', x:16, y:15, dir:0,
+      script:()=>[ "The GAME CORNER's slots ate my savings. But between us... I heard TEAM ROCKET runs the place." ]},
+    { id:'cd_sign', sprite:'sign', x:9, y:10, dir:0,
+      script:()=>[ "CELADON CITY\n\"The City of Rainbow Dreams\"\nEast: ROUTE 7 → SAFFRON" ]},
+    { id:'cd_gymsign', sprite:'sign', x:19, y:9, dir:0,
+      script:()=>[ "CELADON GYM\nLEADER: ERIKA\n\"Nature-Loving Princess of GRASS!\"" ]},
+  ],
+},
+
+celadon_pc:{
+  name:'POKéMON CENTER', music:'center', outdoor:false, ground:'F', void:'W',
+  build(){ return kantoPC(); },
+  stamps:[['machine',11,1],['plant',1,2],['plant',1,7]],
+  warps:[ {x:7,y:9,to:'celadon',tx:4,ty:12,dir:0} ],
+  npcs:[ kantoNurse(), { id:'cdpc_t', sprite:'girl', x:11, y:5, dir:2,
+    script:()=>[ "CELADON's flowers bloom year round. ERIKA says a calm heart makes strong GRASS POKéMON." ]} ],
+},
+
+celadon_gym:{
+  name:'CELADON GYM', music:'route', outdoor:false, ground:'F', void:'Z',
+  build(){
+    const g = grid(18,16,'F');
+    rectg(g,0,0,18,2,'Z'); for(let j=0;j<16;j++){ g[j][0]='Z'; g[j][17]='Z'; }
+    rectg(g,0,15,18,1,'Z'); g[15][8]='k'; g[15][9]='k';
+    // greenhouse flower beds & potted trees
+    rectg(g,2,4,4,3,'f'); rectg(g,12,4,4,3,'f'); rectg(g,2,9,4,3,'f'); rectg(g,12,9,4,3,'f');
+    g[3][3]='T'; g[3][14]='T'; g[11][3]='T'; g[11][14]='T';
+    return g;
+  },
+  warps:[ {x:8,y:15,to:'celadon',tx:17,ty:9,dir:0},{x:9,y:15,to:'celadon',tx:18,ty:9,dir:0} ],
+  npcs:[
+    { id:'cg_jr', sprite:'misty', x:9, y:10, dir:1, script:trainerScript('gym_beauty') },
+    { id:'erika', sprite:'erika', x:9, y:4, dir:0,
+      script:(f)=> f.beat_erika ? [
+        "ERIKA: The garden is peaceful today. Come admire the blooms any time, champion.",
+      ] : [ TRAINERS.erika.intro, {trainer:'erika'}, TRAINERS.erika.after ] },
+    { id:'cg_sign', sprite:'sign', x:6, y:13, dir:0,
+      script:()=>[ "CELADON GYM — a greenhouse in bloom. ERIKA rests among the flowers ahead." ]},
   ],
 },
 };

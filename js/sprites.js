@@ -1032,6 +1032,139 @@ clefairy(c){
   CIR(c,15,19,1.6,'#f89ab0',0); CIR(c,33,19,1.6,'#f89ab0',0);
   c.beginPath(); c.moveTo(22,21); c.quadraticCurveTo(24,23,26,21); c.lineWidth=1.1; c.strokeStyle=OUTC; c.stroke();
 },
+
+kadabra(c){
+  // tail
+  c.beginPath(); c.moveTo(30,36); c.quadraticCurveTo(42,34,40,24);
+  c.lineWidth=3.2; c.strokeStyle=OUTC; c.stroke();
+  c.beginPath(); c.moveTo(30,36); c.quadraticCurveTo(42,34,40,24);
+  c.lineWidth=2; c.strokeStyle='#a06838'; c.stroke();
+  // legs / body
+  E(c,24,32,9,9,'#e8c048',1.4);
+  // brown chest armor
+  PG(c,[[17,28],[31,28],[29,40],[19,40]],'#9a6838',1.3);
+  LN(c,24,29,24,39,1,'#7a5028');
+  E(c,15,40,3.5,3,'#e8c048',1.2); E(c,33,40,3.5,3,'#e8c048',1.2);
+  // arm holding spoon
+  LN(c,32,28,38,20,3.4,OUTC); LN(c,32,28,38,20,2,'#e8c048');
+  E(c,39,17,2,4,'#d0d4dc',1.1,0.5);                        // spoon
+  // head (fox-like)
+  CIR(c,22,15,7,'#e8c048',1.4);
+  PG(c,[[17,10],[13,2],[20,9]],'#e8c048',1.2);             // ears
+  PG(c,[[26,10],[30,2],[24,9]],'#e8c048',1.2);
+  PG(c,[[14,17],[8,17],[15,20]],'#c8a038',1.1);            // snout
+  // star on forehead
+  PG(c,[[22,7],[23,10],[26,10],[23.5,12],[24.5,15],[22,13],[19.5,15],[20.5,12],[18,10],[21,10]],'#e05038',0.8);
+  EYE(c,20,15,1.8,2,'#a02828');
+  LN(c,17,19,20,20,1,'#9a6838'); LN(c,18,21,21,21,1,'#9a6838'); // mustache
+},
+alakazam(c){
+  E(c,24,32,10,9,'#e8c048',1.4);                           // body
+  PG(c,[[16,28],[32,28],[30,41],[18,41]],'#9a6838',1.3);   // chest armor
+  // shoulder pads
+  E(c,14,27,4,3,'#9a6838',1.2); E(c,34,27,4,3,'#9a6838',1.2);
+  E(c,15,41,3.6,3,'#e8c048',1.2); E(c,33,41,3.6,3,'#e8c048',1.2);
+  // two arms with spoons
+  LN(c,15,28,9,20,3.4,OUTC); LN(c,15,28,9,20,2,'#e8c048'); E(c,8,17,2,4,'#d0d4dc',1.1,-0.5);
+  LN(c,33,28,39,20,3.4,OUTC); LN(c,33,28,39,20,2,'#e8c048'); E(c,40,17,2,4,'#d0d4dc',1.1,0.5);
+  // head
+  CIR(c,24,15,7.5,'#e8c048',1.4);
+  PG(c,[[18,9],[14,0],[22,8]],'#e8c048',1.2);
+  PG(c,[[30,9],[34,0],[26,8]],'#e8c048',1.2);
+  PG(c,[[24,7],[25,10],[28,10],[25.5,12],[26.5,16],[24,14],[21.5,16],[22.5,12],[20,10],[23,10]],'#e05038',0.8);
+  EYE(c,20,15,1.6,1.9,'#a02828'); EYE(c,28,15,1.6,1.9,'#a02828');
+  // big mustache
+  c.beginPath(); c.moveTo(20,18); c.quadraticCurveTo(14,17,12,21); c.lineWidth=1.4; c.strokeStyle='#9a6838'; c.stroke();
+  c.beginPath(); c.moveTo(28,18); c.quadraticCurveTo(34,17,36,21); c.lineWidth=1.4; c.strokeStyle='#9a6838'; c.stroke();
+},
+mrmime(c){
+  // legs
+  LN(c,20,40,19,46,3,'#f0e0e0'); LN(c,28,40,29,46,3,'#f0e0e0');
+  E(c,18,46,3,2,'#e05038',1); E(c,30,46,3,2,'#e05038',1);
+  // white body
+  E(c,24,32,10,10,'#f0e8ec',1.4);
+  // pink circle 'buttons'
+  CIR(c,20,32,2.4,'#e06888',1); CIR(c,28,32,2.4,'#e06888',1);
+  // white-gloved hands
+  CIR(c,11,30,3.4,'#f8f8f8',1.3); CIR(c,37,30,3.4,'#f8f8f8',1.3);
+  LN(c,15,30,11,30,3,'#e8b0c0'); LN(c,33,30,37,30,3,'#e8b0c0');
+  // head pink
+  CIR(c,24,15,8,'#f0c0cc',1.4);
+  // curly points on head
+  CIR(c,16,9,2.6,'#e05038',1.1); CIR(c,32,9,2.6,'#e05038',1.1);
+  LN(c,18,12,17,10,2,'#e05038'); LN(c,30,12,31,10,2,'#e05038');
+  // big red cheeks
+  CIR(c,17,17,2.6,'#e04858',0); CIR(c,31,17,2.6,'#e04858',0);
+  EYE(c,20,14,2,2.4,'#2e2440'); EYE(c,28,14,2,2.4,'#2e2440');
+  c.beginPath(); c.moveTo(22,19); c.quadraticCurveTo(24,21,26,19); c.lineWidth=1.1; c.strokeStyle=OUTC; c.stroke();
+},
+tangela(c){
+  // mass of blue vines
+  CIR(c,24,28,14,'#4878c0',1.4);
+  for(let i=0;i<40;i++){
+    const a=(i*97)%628/100, r=6+((i*53)%80)/10;
+    const x0=24+Math.cos(a)*r, y0=28+Math.sin(a)*r;
+    LN(c,x0,y0,x0+Math.cos(a)*4,y0+Math.sin(a)*4,1.4,'#5a88d0');
+  }
+  E(c,24,28,12,11,'#5888d8',0);
+  // squiggly overlay
+  for(let i=0;i<8;i++){ const bx=12+i*3;
+    c.beginPath(); c.moveTo(bx,20); c.quadraticCurveTo(bx+2,28,bx,36);
+    c.lineWidth=1.2; c.strokeStyle='#3f6ab0'; c.stroke(); }
+  // red feet
+  E(c,17,41,3.5,3,'#e05038',1.2); E(c,31,41,3.5,3,'#e05038',1.2);
+  // googly eyes peeking through
+  EYE(c,20,27,3,3.4,'#f8f8f0'); CIR(c,20,27,1.4,'#2e2440',0);
+  EYE(c,28,27,3,3.4,'#f8f8f0'); CIR(c,28,27,1.4,'#2e2440',0);
+},
+gloom(c){
+  // body
+  E(c,24,33,10,8,'#5a80c0',1.4);
+  E(c,22,34,5.5,4,'#7a9cd8',0);
+  LN(c,19,40,18,45,2.2,'#5a80c0'); LN(c,29,40,30,45,2.2,'#5a80c0');
+  // drooping leaves
+  PG(c,[[15,32],[6,34],[15,37]],'#48a048',1.2); PG(c,[[33,32],[42,34],[33,37]],'#48a048',1.2);
+  // drooping red flower on head
+  E(c,24,20,9,5,'#d83848',1.3);
+  PG(c,[[16,20],[13,26],[19,23]],'#c02838',1.1); PG(c,[[32,20],[35,26],[29,23]],'#c02838',1.1);
+  E(c,24,18,5,3,'#f0e058',0);                              // pollen center
+  // drool
+  LN(c,20,30,20,34,1.4,'#c8b048'); LN(c,28,30,28,33,1.4,'#c8b048');
+  EYE(c,20,32,2.2,1.8,'#2e2440'); EYE(c,28,32,2.2,1.8,'#2e2440');
+},
+vileplume(c){
+  // body
+  E(c,24,35,9,6,'#5a80c0',1.4);
+  LN(c,20,40,19,45,2.2,'#5a80c0'); LN(c,28,40,29,45,2.2,'#5a80c0');
+  PG(c,[[16,35],[8,37],[16,39]],'#48a048',1.2); PG(c,[[32,35],[40,37],[32,39]],'#48a048',1.2);
+  // huge rafflesia flower (red with white spots)
+  E(c,24,20,15,10,'#d02838',1.5);
+  for(const [sx,sy] of [[14,18],[20,15],[28,15],[34,19],[18,24],[30,24],[24,13]]) CIR(c,sx,sy,2,'#f8f0f0',0);
+  E(c,24,20,6,4,'#f0d848',0);                              // yellow center
+  // petal separations
+  for(let i=0;i<6;i++){ const a=i*Math.PI/3; LN(c,24,20,24+Math.cos(a)*14,20+Math.sin(a)*9,1,'#a82030'); }
+  EYE(c,21,32,2,1.8,'#2e2440'); EYE(c,27,32,2,1.8,'#2e2440');
+},
+victreebel(c){
+  // yellow pitcher body
+  c.beginPath(); c.moveTo(24,44); c.quadraticCurveTo(12,36,14,20);
+  c.quadraticCurveTo(16,10,24,10); c.quadraticCurveTo(32,10,34,20);
+  c.quadraticCurveTo(36,36,24,44); c.closePath();
+  c.fillStyle='#e8c848'; c.fill(); c.lineWidth=1.5; c.strokeStyle=OUTC; c.stroke();
+  E(c,24,26,7,10,'#f0dc80',0);
+  // big lid/mouth open at top
+  c.beginPath(); c.moveTo(15,14); c.quadraticCurveTo(24,2,33,14); c.quadraticCurveTo(24,18,15,14); c.closePath();
+  c.fillStyle='#8a3838'; c.fill(); c.lineWidth=1.3; c.strokeStyle=OUTC; c.stroke();
+  // teeth
+  for(let i=0;i<5;i++){ const tx=17+i*3.5; PG(c,[[tx,13],[tx+1.5,10],[tx+3,13]],'#f8f8f0',0.7); }
+  // curly vine on top
+  c.beginPath(); c.moveTo(26,6); c.quadraticCurveTo(34,2,30,10); c.lineWidth=2; c.strokeStyle='#5a9c40'; c.lineCap='round'; c.stroke();
+  // leaf arm
+  PG(c,[[14,26],[4,22],[6,30],[14,30]],'#5aa040',1.2);
+  // face on body
+  EYE(c,20,30,2.2,2.6,'#2e2440'); EYE(c,28,30,2.2,2.6,'#2e2440');
+  LN(c,21,35,27,35,1.2);
+},
 };
 
 SPR.mon = function(id, side){
@@ -1168,6 +1301,36 @@ const TRAINER_ART = {
     // vest opening
     LN(c,24,24,24,38,1.4,'#2e5230');
   },
+  sabrina(c){
+    drawTrainerBase(c,{skin:'#f0d0b0',shirt:'#e04858',pants:'#c03848'});
+    // long dark hair framing
+    E(c,24,15,10,10,'#3a3450',1.2);
+    LN(c,15,16,13,34,4.5,'#3a3450'); LN(c,33,16,35,34,4.5,'#3a3450');
+    CIR(c,24,15,7.6,'#f0d0b0',1.4);
+    E(c,24,9,8,3.5,'#3a3450',0);                 // fringe
+    CIR(c,21,15,1.1,'#2e2440',0); CIR(c,27,15,1.1,'#2e2440',0);
+    // red dress
+    PG(c,[[15,24],[33,24],[35,44],[13,44]],'#e04858',1.3);
+    // floating spoon (psychic)
+    E(c,40,20,1.6,3.5,'#d0d4dc',1,0.4);
+    ARC(c,40,20,5,0,Math.PI*2,0.8,'rgba(200,140,240,0.6)');
+  },
+  erika(c){
+    // kimono figure
+    E(c,24,15,10,10,'#2a2438',1.2);              // black hair bun
+    CIR(c,18,10,3,'#2a2438',1); CIR(c,30,10,3,'#2a2438',1);
+    drawTrainerBase(c,{skin:'#f8d8b8',shirt:'#f0d048',pants:'#c8a038'});
+    CIR(c,24,15,7.6,'#f8d8b8',1.4);
+    E(c,24,9,8,3.5,'#2a2438',0);
+    // gentle closed eyes
+    LN(c,20,15,23,15,1.4); LN(c,25,15,28,15,1.4);
+    // yellow kimono with green sash
+    PG(c,[[15,24],[33,24],[35,44],[13,44]],'#f0d048',1.3);
+    LN(c,14,32,34,32,3,'#5aa040');               // obi sash
+    PG(c,[[22,24],[24,32],[26,24]],'#e8804a',0);  // collar
+    // a lotus flower in hair
+    CIR(c,32,9,2,'#e05878',0.8);
+  },
   misty(c){
     drawTrainerBase(c,{skin:'#f8d0b0',shirt:'#f0d048',pants:'#f0d048'});
     // red suspenders
@@ -1220,6 +1383,8 @@ const CHAR_PALS = {
   oak:{ skin:'#f0c8a0', hair:'#d0d0d0', shirt:'#f0f0f0', pants:'#8a7858' },
   guard:{ skin:'#e8c0a0', hair:'#3a3048', shirt:'#3a5a8a', pants:'#2a3a5a', hat:'#3a5a8a', hatFront:'#c8b048' },
   brock:{ skin:'#c89060', hair:'#5a3c20', shirt:'#48804a', pants:'#6a5238' },
+  sabrina:{ skin:'#f0d0b0', hair:'#3a3450', shirt:'#e04858', pants:'#c03848' },
+  erika:{ skin:'#f8d8b8', hair:'#2a2438', shirt:'#f0d048', pants:'#c8a038', skirt:true },
 };
 
 function drawHumanOW(x, pal, dir, frame){

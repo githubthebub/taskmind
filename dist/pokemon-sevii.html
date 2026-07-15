@@ -1297,6 +1297,139 @@ clefairy(c){
   CIR(c,15,19,1.6,'#f89ab0',0); CIR(c,33,19,1.6,'#f89ab0',0);
   c.beginPath(); c.moveTo(22,21); c.quadraticCurveTo(24,23,26,21); c.lineWidth=1.1; c.strokeStyle=OUTC; c.stroke();
 },
+
+kadabra(c){
+  // tail
+  c.beginPath(); c.moveTo(30,36); c.quadraticCurveTo(42,34,40,24);
+  c.lineWidth=3.2; c.strokeStyle=OUTC; c.stroke();
+  c.beginPath(); c.moveTo(30,36); c.quadraticCurveTo(42,34,40,24);
+  c.lineWidth=2; c.strokeStyle='#a06838'; c.stroke();
+  // legs / body
+  E(c,24,32,9,9,'#e8c048',1.4);
+  // brown chest armor
+  PG(c,[[17,28],[31,28],[29,40],[19,40]],'#9a6838',1.3);
+  LN(c,24,29,24,39,1,'#7a5028');
+  E(c,15,40,3.5,3,'#e8c048',1.2); E(c,33,40,3.5,3,'#e8c048',1.2);
+  // arm holding spoon
+  LN(c,32,28,38,20,3.4,OUTC); LN(c,32,28,38,20,2,'#e8c048');
+  E(c,39,17,2,4,'#d0d4dc',1.1,0.5);                        // spoon
+  // head (fox-like)
+  CIR(c,22,15,7,'#e8c048',1.4);
+  PG(c,[[17,10],[13,2],[20,9]],'#e8c048',1.2);             // ears
+  PG(c,[[26,10],[30,2],[24,9]],'#e8c048',1.2);
+  PG(c,[[14,17],[8,17],[15,20]],'#c8a038',1.1);            // snout
+  // star on forehead
+  PG(c,[[22,7],[23,10],[26,10],[23.5,12],[24.5,15],[22,13],[19.5,15],[20.5,12],[18,10],[21,10]],'#e05038',0.8);
+  EYE(c,20,15,1.8,2,'#a02828');
+  LN(c,17,19,20,20,1,'#9a6838'); LN(c,18,21,21,21,1,'#9a6838'); // mustache
+},
+alakazam(c){
+  E(c,24,32,10,9,'#e8c048',1.4);                           // body
+  PG(c,[[16,28],[32,28],[30,41],[18,41]],'#9a6838',1.3);   // chest armor
+  // shoulder pads
+  E(c,14,27,4,3,'#9a6838',1.2); E(c,34,27,4,3,'#9a6838',1.2);
+  E(c,15,41,3.6,3,'#e8c048',1.2); E(c,33,41,3.6,3,'#e8c048',1.2);
+  // two arms with spoons
+  LN(c,15,28,9,20,3.4,OUTC); LN(c,15,28,9,20,2,'#e8c048'); E(c,8,17,2,4,'#d0d4dc',1.1,-0.5);
+  LN(c,33,28,39,20,3.4,OUTC); LN(c,33,28,39,20,2,'#e8c048'); E(c,40,17,2,4,'#d0d4dc',1.1,0.5);
+  // head
+  CIR(c,24,15,7.5,'#e8c048',1.4);
+  PG(c,[[18,9],[14,0],[22,8]],'#e8c048',1.2);
+  PG(c,[[30,9],[34,0],[26,8]],'#e8c048',1.2);
+  PG(c,[[24,7],[25,10],[28,10],[25.5,12],[26.5,16],[24,14],[21.5,16],[22.5,12],[20,10],[23,10]],'#e05038',0.8);
+  EYE(c,20,15,1.6,1.9,'#a02828'); EYE(c,28,15,1.6,1.9,'#a02828');
+  // big mustache
+  c.beginPath(); c.moveTo(20,18); c.quadraticCurveTo(14,17,12,21); c.lineWidth=1.4; c.strokeStyle='#9a6838'; c.stroke();
+  c.beginPath(); c.moveTo(28,18); c.quadraticCurveTo(34,17,36,21); c.lineWidth=1.4; c.strokeStyle='#9a6838'; c.stroke();
+},
+mrmime(c){
+  // legs
+  LN(c,20,40,19,46,3,'#f0e0e0'); LN(c,28,40,29,46,3,'#f0e0e0');
+  E(c,18,46,3,2,'#e05038',1); E(c,30,46,3,2,'#e05038',1);
+  // white body
+  E(c,24,32,10,10,'#f0e8ec',1.4);
+  // pink circle 'buttons'
+  CIR(c,20,32,2.4,'#e06888',1); CIR(c,28,32,2.4,'#e06888',1);
+  // white-gloved hands
+  CIR(c,11,30,3.4,'#f8f8f8',1.3); CIR(c,37,30,3.4,'#f8f8f8',1.3);
+  LN(c,15,30,11,30,3,'#e8b0c0'); LN(c,33,30,37,30,3,'#e8b0c0');
+  // head pink
+  CIR(c,24,15,8,'#f0c0cc',1.4);
+  // curly points on head
+  CIR(c,16,9,2.6,'#e05038',1.1); CIR(c,32,9,2.6,'#e05038',1.1);
+  LN(c,18,12,17,10,2,'#e05038'); LN(c,30,12,31,10,2,'#e05038');
+  // big red cheeks
+  CIR(c,17,17,2.6,'#e04858',0); CIR(c,31,17,2.6,'#e04858',0);
+  EYE(c,20,14,2,2.4,'#2e2440'); EYE(c,28,14,2,2.4,'#2e2440');
+  c.beginPath(); c.moveTo(22,19); c.quadraticCurveTo(24,21,26,19); c.lineWidth=1.1; c.strokeStyle=OUTC; c.stroke();
+},
+tangela(c){
+  // mass of blue vines
+  CIR(c,24,28,14,'#4878c0',1.4);
+  for(let i=0;i<40;i++){
+    const a=(i*97)%628/100, r=6+((i*53)%80)/10;
+    const x0=24+Math.cos(a)*r, y0=28+Math.sin(a)*r;
+    LN(c,x0,y0,x0+Math.cos(a)*4,y0+Math.sin(a)*4,1.4,'#5a88d0');
+  }
+  E(c,24,28,12,11,'#5888d8',0);
+  // squiggly overlay
+  for(let i=0;i<8;i++){ const bx=12+i*3;
+    c.beginPath(); c.moveTo(bx,20); c.quadraticCurveTo(bx+2,28,bx,36);
+    c.lineWidth=1.2; c.strokeStyle='#3f6ab0'; c.stroke(); }
+  // red feet
+  E(c,17,41,3.5,3,'#e05038',1.2); E(c,31,41,3.5,3,'#e05038',1.2);
+  // googly eyes peeking through
+  EYE(c,20,27,3,3.4,'#f8f8f0'); CIR(c,20,27,1.4,'#2e2440',0);
+  EYE(c,28,27,3,3.4,'#f8f8f0'); CIR(c,28,27,1.4,'#2e2440',0);
+},
+gloom(c){
+  // body
+  E(c,24,33,10,8,'#5a80c0',1.4);
+  E(c,22,34,5.5,4,'#7a9cd8',0);
+  LN(c,19,40,18,45,2.2,'#5a80c0'); LN(c,29,40,30,45,2.2,'#5a80c0');
+  // drooping leaves
+  PG(c,[[15,32],[6,34],[15,37]],'#48a048',1.2); PG(c,[[33,32],[42,34],[33,37]],'#48a048',1.2);
+  // drooping red flower on head
+  E(c,24,20,9,5,'#d83848',1.3);
+  PG(c,[[16,20],[13,26],[19,23]],'#c02838',1.1); PG(c,[[32,20],[35,26],[29,23]],'#c02838',1.1);
+  E(c,24,18,5,3,'#f0e058',0);                              // pollen center
+  // drool
+  LN(c,20,30,20,34,1.4,'#c8b048'); LN(c,28,30,28,33,1.4,'#c8b048');
+  EYE(c,20,32,2.2,1.8,'#2e2440'); EYE(c,28,32,2.2,1.8,'#2e2440');
+},
+vileplume(c){
+  // body
+  E(c,24,35,9,6,'#5a80c0',1.4);
+  LN(c,20,40,19,45,2.2,'#5a80c0'); LN(c,28,40,29,45,2.2,'#5a80c0');
+  PG(c,[[16,35],[8,37],[16,39]],'#48a048',1.2); PG(c,[[32,35],[40,37],[32,39]],'#48a048',1.2);
+  // huge rafflesia flower (red with white spots)
+  E(c,24,20,15,10,'#d02838',1.5);
+  for(const [sx,sy] of [[14,18],[20,15],[28,15],[34,19],[18,24],[30,24],[24,13]]) CIR(c,sx,sy,2,'#f8f0f0',0);
+  E(c,24,20,6,4,'#f0d848',0);                              // yellow center
+  // petal separations
+  for(let i=0;i<6;i++){ const a=i*Math.PI/3; LN(c,24,20,24+Math.cos(a)*14,20+Math.sin(a)*9,1,'#a82030'); }
+  EYE(c,21,32,2,1.8,'#2e2440'); EYE(c,27,32,2,1.8,'#2e2440');
+},
+victreebel(c){
+  // yellow pitcher body
+  c.beginPath(); c.moveTo(24,44); c.quadraticCurveTo(12,36,14,20);
+  c.quadraticCurveTo(16,10,24,10); c.quadraticCurveTo(32,10,34,20);
+  c.quadraticCurveTo(36,36,24,44); c.closePath();
+  c.fillStyle='#e8c848'; c.fill(); c.lineWidth=1.5; c.strokeStyle=OUTC; c.stroke();
+  E(c,24,26,7,10,'#f0dc80',0);
+  // big lid/mouth open at top
+  c.beginPath(); c.moveTo(15,14); c.quadraticCurveTo(24,2,33,14); c.quadraticCurveTo(24,18,15,14); c.closePath();
+  c.fillStyle='#8a3838'; c.fill(); c.lineWidth=1.3; c.strokeStyle=OUTC; c.stroke();
+  // teeth
+  for(let i=0;i<5;i++){ const tx=17+i*3.5; PG(c,[[tx,13],[tx+1.5,10],[tx+3,13]],'#f8f8f0',0.7); }
+  // curly vine on top
+  c.beginPath(); c.moveTo(26,6); c.quadraticCurveTo(34,2,30,10); c.lineWidth=2; c.strokeStyle='#5a9c40'; c.lineCap='round'; c.stroke();
+  // leaf arm
+  PG(c,[[14,26],[4,22],[6,30],[14,30]],'#5aa040',1.2);
+  // face on body
+  EYE(c,20,30,2.2,2.6,'#2e2440'); EYE(c,28,30,2.2,2.6,'#2e2440');
+  LN(c,21,35,27,35,1.2);
+},
 };
 
 SPR.mon = function(id, side){
@@ -1433,6 +1566,36 @@ const TRAINER_ART = {
     // vest opening
     LN(c,24,24,24,38,1.4,'#2e5230');
   },
+  sabrina(c){
+    drawTrainerBase(c,{skin:'#f0d0b0',shirt:'#e04858',pants:'#c03848'});
+    // long dark hair framing
+    E(c,24,15,10,10,'#3a3450',1.2);
+    LN(c,15,16,13,34,4.5,'#3a3450'); LN(c,33,16,35,34,4.5,'#3a3450');
+    CIR(c,24,15,7.6,'#f0d0b0',1.4);
+    E(c,24,9,8,3.5,'#3a3450',0);                 // fringe
+    CIR(c,21,15,1.1,'#2e2440',0); CIR(c,27,15,1.1,'#2e2440',0);
+    // red dress
+    PG(c,[[15,24],[33,24],[35,44],[13,44]],'#e04858',1.3);
+    // floating spoon (psychic)
+    E(c,40,20,1.6,3.5,'#d0d4dc',1,0.4);
+    ARC(c,40,20,5,0,Math.PI*2,0.8,'rgba(200,140,240,0.6)');
+  },
+  erika(c){
+    // kimono figure
+    E(c,24,15,10,10,'#2a2438',1.2);              // black hair bun
+    CIR(c,18,10,3,'#2a2438',1); CIR(c,30,10,3,'#2a2438',1);
+    drawTrainerBase(c,{skin:'#f8d8b8',shirt:'#f0d048',pants:'#c8a038'});
+    CIR(c,24,15,7.6,'#f8d8b8',1.4);
+    E(c,24,9,8,3.5,'#2a2438',0);
+    // gentle closed eyes
+    LN(c,20,15,23,15,1.4); LN(c,25,15,28,15,1.4);
+    // yellow kimono with green sash
+    PG(c,[[15,24],[33,24],[35,44],[13,44]],'#f0d048',1.3);
+    LN(c,14,32,34,32,3,'#5aa040');               // obi sash
+    PG(c,[[22,24],[24,32],[26,24]],'#e8804a',0);  // collar
+    // a lotus flower in hair
+    CIR(c,32,9,2,'#e05878',0.8);
+  },
   misty(c){
     drawTrainerBase(c,{skin:'#f8d0b0',shirt:'#f0d048',pants:'#f0d048'});
     // red suspenders
@@ -1485,6 +1648,8 @@ const CHAR_PALS = {
   oak:{ skin:'#f0c8a0', hair:'#d0d0d0', shirt:'#f0f0f0', pants:'#8a7858' },
   guard:{ skin:'#e8c0a0', hair:'#3a3048', shirt:'#3a5a8a', pants:'#2a3a5a', hat:'#3a5a8a', hatFront:'#c8b048' },
   brock:{ skin:'#c89060', hair:'#5a3c20', shirt:'#48804a', pants:'#6a5238' },
+  sabrina:{ skin:'#f0d0b0', hair:'#3a3450', shirt:'#e04858', pants:'#c03848' },
+  erika:{ skin:'#f8d8b8', hair:'#2a2438', shirt:'#f0d048', pants:'#c8a038', skirt:true },
 };
 
 function drawHumanOW(x, pal, dir, frame){
@@ -2030,6 +2195,11 @@ const MOVES = {
   metalclaw:   { name:'Metal Claw',   type:'steel',   pow:50,  acc:95,  pp:35 },
   megadrain:   { name:'Mega Drain',   type:'grass',   pow:40,  acc:100, pp:15 },
   stringshot:  { name:'String Shot',  type:'bug',     pow:0,   acc:95,  pp:40, fx:{stage:{stat:'spe',delta:-1,target:'foe'}} },
+  psychic:     { name:'Psychic',      type:'psychic', pow:90,  acc:100, pp:10 },
+  razorleaf:   { name:'Razor Leaf',   type:'grass',   pow:55,  acc:95,  pp:25, fx:{highcrit:true} },
+  petaldance:  { name:'Petal Dance',  type:'grass',   pow:70,  acc:100, pp:10 },
+  doubleslap:  { name:'DoubleSlap',   type:'normal',  pow:15,  acc:85,  pp:10, fx:{multihit:true} },
+  metronome:   { name:'Metronome',    type:'normal',  pow:60,  acc:999, pp:10, fx:{neverMiss:true} },
 };
 
 // ---- Species
@@ -2125,6 +2295,22 @@ const SPECIES = {
     learn:[[1,'scratch'],[1,'stringshot'],[13,'absorb'],[22,'poisonpowder'],[30,'slash']] },
   clefairy:{ name:'CLEFAIRY', types:['normal'], base:[70,45,48,60,65,35], exp:68, catch:150,
     learn:[[1,'tackle'],[1,'growl'],[13,'headbutt'],[23,'bodyslam'],[30,'psybeam']] },
+
+  // ---- Saffron (Psychic) & Celadon (Grass) ----
+  kadabra:{ name:'KADABRA', types:['psychic'], base:[40,35,30,120,70,105], exp:145, catch:100,
+    learn:[[1,'confusion'],[1,'psybeam'],[16,'psychic'],[20,'hypnosis']] },
+  alakazam:{ name:'ALAKAZAM', types:['psychic'], base:[55,50,45,135,95,120], exp:186, catch:50,
+    learn:[[1,'confusion'],[1,'psybeam'],[1,'hypnosis'],[1,'psychic']] },
+  mrmime:{ name:'MR. MIME', types:['psychic'], base:[40,45,65,100,120,90], exp:136, catch:45,
+    learn:[[1,'confusion'],[1,'doubleslap'],[15,'psybeam'],[27,'psychic']] },
+  tangela:{ name:'TANGELA', types:['grass'], base:[65,55,115,100,40,60], exp:87, catch:45,
+    learn:[[1,'vinewhip'],[1,'absorb'],[15,'megadrain'],[25,'razorleaf']] },
+  vileplume:{ name:'VILEPLUME', types:['grass','poison'], base:[75,80,85,110,90,50], exp:184, catch:45,
+    learn:[[1,'absorb'],[1,'poisonpowder'],[1,'megadrain'],[1,'razorleaf'],[1,'sludgebomb']] },
+  victreebel:{ name:'VICTREEBEL', types:['grass','poison'], base:[80,105,65,100,70,70], exp:191, catch:45,
+    learn:[[1,'vinewhip'],[1,'razorleaf'],[1,'megadrain'],[1,'poisonpowder'],[1,'sludgebomb']] },
+  gloom:{ name:'GLOOM', types:['grass','poison'], base:[60,65,70,85,75,40], exp:138, catch:120,
+    learn:[[1,'absorb'],[1,'poisonpowder'],[15,'megadrain'],[28,'razorleaf']] },
 };
 
 // ---- Status conditions
@@ -2150,6 +2336,8 @@ const ITEMS = {
   thunderbadge:{ name:'THUNDER BADGE', kind:'key', desc:'Proof of victory over VERMILION\'s LT. SURGE.' },
   cascadebadge:{ name:'CASCADE BADGE', kind:'key', desc:'Proof of victory over CERULEAN\'s MISTY.' },
   boulderbadge:{ name:'BOULDER BADGE', kind:'key', desc:'Proof of victory over PEWTER\'s BROCK.' },
+  rainbowbadge:{ name:'RAINBOW BADGE', kind:'key', desc:'Proof of victory over CELADON\'s ERIKA.' },
+  marshbadge:{  name:'MARSH BADGE',   kind:'key', desc:'Proof of victory over SAFFRON\'s SABRINA.' },
 };
 
 // ---- Trainers
@@ -2265,6 +2453,46 @@ const TRAINERS = {
     intro:'I\'m BROCK! I\'m PEWTER\'s GYM LEADER! My rock-hard willpower is evident even in my POKéMON! Show me you\'ve got what it takes!',
     lose:'...Incredible. My rock-solid defense, shattered. You\'ve earned this fair and square.',
     after:'Take the BOULDER BADGE. Now the road east — ROUTE 3, MT. MOON, all the way to CERULEAN — is yours to walk. Go show the world!' },
+
+  // ---- Route 6 / Route 7 / Saffron & Celadon gyms ----
+  bird_keeper:{ cls:'BIRD KEEPER', name:'DALE', sprite:'youngster', party:[['pidgey',22],['spearow',23],['fearow',24]],
+    intro:'My birds rule the skies over ROUTE 6! Let\'s see your POKéMON fly!',
+    lose:'Grounded...!',
+    after:'SAFFRON CITY is the crossroads of KANTO. Every road meets there.' },
+  gambler_rich:{ cls:'GAMBLER', name:'RICH', sprite:'gymguide', party:[['growlithe',23],['ponyta',24]],
+    intro:'I\'ll bet my whole wallet my POKéMON beat yours! ...I probably shouldn\'t bet my whole wallet.',
+    lose:'Aw, I never win!',
+    after:'CELADON has a GAME CORNER, y\'know. That\'s where I lost the OTHER wallet.' },
+  lass_petal:{ cls:'LASS', name:'DAISY', sprite:'lass', party:[['oddish',24],['gloom',25]],
+    intro:'The flowers of ROUTE 7 are the prettiest in KANTO! My POKéMON are just as lovely — and tough!',
+    lose:'Oh, petals!',
+    after:'ERIKA\'s CELADON GYM is a real greenhouse. Mind the perfume!' },
+  beauty_grace:{ cls:'BEAUTY', name:'GRACE', sprite:'misty', party:[['bellsprout',25],['tangela',26]],
+    intro:'A trainer should be graceful in victory AND defeat. Shall we find out which you\'ll be?',
+    lose:'Gracious! You win.',
+    after:'ERIKA only battles those who appreciate GRASS POKéMON. You seem the type.' },
+  psychic_liam:{ cls:'PSYCHIC', name:'LIAM', sprite:'youngster', party:[['drowzee',26],['kadabra',27]],
+    intro:'I foresaw your arrival... and your defeat! The mind is the strongest muscle!',
+    lose:'My prediction... was wrong?!',
+    after:'SABRINA\'s power is on another level entirely. Steady your mind before you face her.' },
+  gym_beauty:{ cls:'BEAUTY', name:'IVY', sprite:'misty', party:[['gloom',28],['victreebel',29]],
+    intro:'Welcome to CELADON\'s garden gym! You\'ll have to get through me before you meet ERIKA.',
+    lose:'Wilted so soon...',
+    after:'ERIKA may look like she\'s napping. Do NOT let that fool you.' },
+  erika:{ cls:'LEADER', name:'ERIKA', sprite:'erika', gym:true, badge:'rainbowbadge',
+    party:[['bellsprout',29],['tangela',30],['victreebel',30],['vileplume',32]],
+    intro:'Oh...! Welcome. I am ERIKA, of CELADON GYM. I teach the art of flowers... and of battle. I shall not lose!',
+    lose:'Oh! I concede — I must concede. You are as splendid as a garden in full bloom.',
+    after:'This RAINBOW BADGE is yours. And a whiff of perfume, perhaps? Ehehe. Travel safely.' },
+  gym_psychic:{ cls:'PSYCHIC', name:'RENA', sprite:'youngster', party:[['kadabra',30],['mrmime',31]],
+    intro:'SABRINA can bend spoons with her mind. I can only bend POKéMON to my will — but that\'s enough for YOU!',
+    lose:'My focus... shattered!',
+    after:'SABRINA is waiting at the heart of the maze. Her eyes... they see everything.' },
+  sabrina:{ cls:'LEADER', name:'SABRINA', sprite:'sabrina', gym:true, badge:'marshbadge',
+    party:[['drowzee',32],['kadabra',34],['mrmime',35],['alakazam',38]],
+    intro:'I am SABRINA. I knew you would come — I saw it. I have honed my PSYCHIC power until it frightens even me. Now: prove my vision wrong, if you can.',
+    lose:'...I did not foresee this. You have shattered a future I was certain of. How... wonderful.',
+    after:'The MARSH BADGE is yours. My power feels lighter, sharing this world with a mind like yours. Go — the crossroads are open to you.' },
 };
 
 // ---- Mon factory
@@ -2695,6 +2923,8 @@ vermilion:{
     rectg(g,0,0,24,2,'T');
     for(let j=0;j<18;j++){ g[j][0]='T'; g[j][23]='T'; }
     g[0][11]='p'; g[1][11]='p'; g[0][12]='p'; g[1][12]='p';   // north gap → route5
+    g[9][0]='p';                                              // west gap → route6 (Saffron)
+    rectg(g,1,9,10,1,'p');                                    // west path
     // south sea + pier (ferry)
     rectg(g,0,18,24,4,'w');
     rectg(g,10,17,2,2,'P'); g[16][10]='P'; g[16][11]='P';
@@ -2717,6 +2947,7 @@ vermilion:{
   stamps:[['pokecenter',3,4],['gym',15,4],['house',3,12],['house',16,12],['boat',10,18]],
   warps:[
     {x:11,y:0,to:'route5',tx:9,ty:32,dir:1},{x:12,y:0,to:'route5',tx:10,ty:32,dir:1},
+    {x:0,y:9,to:'route6',tx:20,ty:6,dir:2},
     {x:5,y:8,to:'vermilion_pc',tx:7,ty:8,dir:1},{x:6,y:8,to:'vermilion_pc',tx:7,ty:8,dir:1},
     {x:17,y:8,to:'vermilion_gym',tx:8,ty:14,dir:1},{x:18,y:8,to:'vermilion_gym',tx:9,ty:14,dir:1},
   ],
@@ -3438,6 +3669,213 @@ route4:{
       script:()=>[ "Made it through MT. MOON? Then you've earned the CERULEAN breeze. It's just east." ]},
   ],
 },
+
+// ============================================================
+//  CENTRAL KANTO: Vermilion → Route 6 → Saffron → Route 7 → Celadon
+// ============================================================
+route6:{
+  name:'ROUTE 6', music:'route', outdoor:true, ground:'.', void:'T',
+  build(){
+    const g = grid(22,12,'.');
+    scatter(g,',','.',221,0.08);
+    rectg(g,0,0,22,2,'T'); rectg(g,0,10,22,2,'T');
+    for(let j=0;j<12;j++){ g[j][0]='T'; g[j][21]='T'; }
+    g[5][21]='p'; g[6][21]='p';                              // east → vermilion
+    g[5][0]='p'; g[6][0]='p';                                // west → saffron
+    rectg(g,1,5,20,2,'p');
+    rectg(g,3,3,5,2,'G'); rectg(g,13,7,5,2,'G');
+    g[8][11]='T';
+    return g;
+  },
+  warps:[
+    {x:21,y:5,to:'vermilion',tx:1,ty:9,dir:2},{x:21,y:6,to:'vermilion',tx:1,ty:9,dir:2},
+    {x:0,y:5,to:'saffron',tx:19,ty:12,dir:2},{x:0,y:6,to:'saffron',tx:19,ty:13,dir:2},
+  ],
+  encounters:{ rate:0.15, list:[ ['pidgey',18,21,30],['meowth',18,21,25],['ekans',19,22,18],['mankey',19,22,15],['growlithe',20,23,12] ]},
+  npcs:[
+    { id:'r6_bird', sprite:'youngster', x:10, y:4, dir:0, script:trainerScript('bird_keeper') },
+    { id:'r6_gambler', sprite:'gymguide', x:15, y:8, dir:2, script:trainerScript('gambler_rich') },
+    { id:'r6_sign', sprite:'sign', x:3, y:7, dir:0,
+      script:()=>[ "ROUTE 6\nEast: VERMILION CITY\nWest: SAFFRON CITY" ]},
+  ],
+},
+
+saffron:{
+  name:'SAFFRON CITY', music:'town', outdoor:true, ground:'.', door:'p', void:'T',
+  build(){
+    const g = grid(24,22,'.');
+    scatter(g,',','.',231,0.07);
+    rectg(g,0,0,24,2,'T'); rectg(g,0,20,24,2,'T');
+    for(let j=0;j<22;j++){ g[j][0]='T'; g[j][23]='T'; }
+    g[12][23]='p'; g[13][23]='p';                            // east → route6
+    g[12][0]='p'; g[13][0]='p';                              // west → route7
+    // Silph Co. (big central tower — decor)
+    rectg(g,9,3,6,6,'B');
+    // Sabrina gym
+    rectg(g,17,4,5,5,'B'); g[8][18]='D'; g[8][19]='D';
+    // Pokémon Center
+    rectg(g,2,4,6,5,'B'); g[8][4]='D'; g[8][5]='D';
+    // houses
+    rectg(g,3,14,5,3,'B'); rectg(g,16,14,5,3,'B');
+    // paths
+    rectg(g,1,12,22,2,'p'); rectg(g,11,2,2,18,'p'); rectg(g,4,9,16,1,'p'); rectg(g,18,9,1,1,'p');
+    return g;
+  },
+  stamps:[['pokecenter',2,4],['gym',17,4],['lab',9,3],['house',3,14],['house',16,14]],
+  warps:[
+    {x:23,y:12,to:'route6',tx:1,ty:5,dir:2},{x:23,y:13,to:'route6',tx:1,ty:6,dir:2},
+    {x:0,y:12,to:'route7',tx:20,ty:6,dir:2},{x:0,y:13,to:'route7',tx:20,ty:7,dir:2},
+    {x:4,y:8,to:'saffron_pc',tx:7,ty:8,dir:1},{x:5,y:8,to:'saffron_pc',tx:7,ty:8,dir:1},
+    {x:18,y:8,to:'saffron_gym',tx:8,ty:14,dir:1},{x:19,y:8,to:'saffron_gym',tx:9,ty:14,dir:1},
+  ],
+  npcs:[
+    { id:'sf_guide', sprite:'gymguide', x:18, y:9, dir:0,
+      script:(f)=> f.beat_sabrina ? [ "You beat SABRINA?! I felt a chill when you walked in. You're not normal, are you?" ]
+        : [ "SAFFRON GYM's LEADER is SABRINA — a PSYCHIC prodigy. Her POKéMON read your every move.",
+            "DARK, GHOST and BUG POKéMON unsettle PSYCHICS. Your GENGAR would give her pause!" ]},
+    { id:'sf_silph', sprite:'boy', x:12, y:10, dir:0, wander:true,
+      script:()=>[ "That's SILPH CO. HQ — they make the POKé BALLs and the SILPH SCOPE. Cutting-edge stuff!" ]},
+    { id:'sf_old', sprite:'oldman', x:6, y:16, dir:0,
+      script:()=>[ "SAFFRON is the great crossroads of KANTO. Roads run to every corner from here." ]},
+    { id:'sf_sign', sprite:'sign', x:10, y:12, dir:0,
+      script:()=>[ "SAFFRON CITY\n\"Shining, Golden Land of Commerce\"\nWest: ROUTE 7 → CELADON  East: ROUTE 6" ]},
+    { id:'sf_gymsign', sprite:'sign', x:20, y:9, dir:0,
+      script:()=>[ "SAFFRON GYM\nLEADER: SABRINA\n\"The Master of PSYCHIC POKéMON!\"" ]},
+  ],
+},
+
+saffron_pc:{
+  name:'POKéMON CENTER', music:'center', outdoor:false, ground:'F', void:'W',
+  build(){ return kantoPC(); },
+  stamps:[['machine',11,1],['plant',1,2],['plant',1,7]],
+  warps:[ {x:7,y:9,to:'saffron',tx:4,ty:9,dir:0} ],
+  npcs:[ kantoNurse(), { id:'sfpc_t', sprite:'youngster', x:3, y:5, dir:3,
+    script:()=>[ "They say SABRINA once bent a steel spoon just by frowning at it. ...I believe it." ]} ],
+},
+
+saffron_gym:{
+  name:'SAFFRON GYM', music:'route', outdoor:false, ground:'F', void:'Z',
+  build(){
+    const g = grid(18,16,'F');
+    rectg(g,0,0,18,2,'Z'); for(let j=0;j<16;j++){ g[j][0]='Z'; g[j][17]='Z'; }
+    rectg(g,0,15,18,1,'Z'); g[15][8]='k'; g[15][9]='k';
+    // psychic 'pad' decorations (boulders repurposed as glyph stones)
+    g[4][4]='O'; g[4][13]='O'; g[10][4]='O'; g[10][13]='O';
+    return g;
+  },
+  warps:[ {x:8,y:15,to:'saffron',tx:18,ty:9,dir:0},{x:9,y:15,to:'saffron',tx:19,ty:9,dir:0} ],
+  npcs:[
+    { id:'sg_jr', sprite:'youngster', x:9, y:10, dir:1, script:trainerScript('gym_psychic') },
+    { id:'sabrina', sprite:'sabrina', x:9, y:4, dir:0,
+      script:(f)=> f.beat_sabrina ? [
+        "SABRINA: The future feels... open now. Unwritten. I have you to thank for that. Go well.",
+      ] : [ TRAINERS.sabrina.intro, {trainer:'sabrina'}, TRAINERS.sabrina.after ] },
+    { id:'sg_sign', sprite:'sign', x:6, y:12, dir:0,
+      script:()=>[ "SAFFRON GYM — the air hums with unseen force. SABRINA waits, unmoving, at the center." ]},
+  ],
+},
+
+route7:{
+  name:'ROUTE 7', music:'route', outdoor:true, ground:'.', void:'T',
+  build(){
+    const g = grid(22,12,'.');
+    scatter(g,',','.',241,0.08);
+    rectg(g,0,0,22,2,'T'); rectg(g,0,10,22,2,'T');
+    for(let j=0;j<12;j++){ g[j][0]='T'; g[j][21]='T'; }
+    g[6][21]='p'; g[7][21]='p';                              // east → saffron
+    g[6][0]='p'; g[7][0]='p';                                // west → celadon
+    rectg(g,1,6,20,2,'p');
+    rectg(g,3,3,5,2,'G'); rectg(g,13,8,5,2,'G');
+    rectg(g,9,3,3,3,'f');                                    // flower bed
+    return g;
+  },
+  warps:[
+    {x:21,y:6,to:'saffron',tx:1,ty:12,dir:2},{x:21,y:7,to:'saffron',tx:1,ty:13,dir:2},
+    {x:0,y:6,to:'celadon',tx:20,ty:10,dir:2},{x:0,y:7,to:'celadon',tx:20,ty:11,dir:2},
+  ],
+  encounters:{ rate:0.15, list:[ ['oddish',18,21,30],['bellsprout',18,21,25],['meowth',18,21,18],['pidgey',18,21,15],['gloom',20,23,7],['mankey',19,22,5] ]},
+  npcs:[
+    { id:'r7_lass', sprite:'lass', x:10, y:5, dir:0, script:trainerScript('lass_petal') },
+    { id:'r7_beauty', sprite:'misty', x:15, y:9, dir:2, script:trainerScript('beauty_grace') },
+    { id:'r7_sign', sprite:'sign', x:3, y:8, dir:0,
+      script:()=>[ "ROUTE 7\nEast: SAFFRON CITY\nWest: CELADON CITY" ]},
+  ],
+},
+
+celadon:{
+  name:'CELADON CITY', music:'town', outdoor:true, ground:'.', door:'p', void:'T',
+  build(){
+    const g = grid(24,20,'.');
+    scatter(g,',','.',251,0.07);
+    rectg(g,0,0,24,2,'T'); rectg(g,0,18,24,2,'T');
+    for(let j=0;j<20;j++){ g[j][0]='T'; g[j][23]='T'; }
+    g[10][23]='p'; g[11][23]='p';                            // east → route7
+    // Celadon Dept. Store (big — decor)
+    rectg(g,3,3,7,6,'B');
+    // Erika's gym (greenhouse)
+    rectg(g,16,4,5,5,'B'); g[8][17]='D'; g[8][18]='D';
+    // Pokémon Center + Game Corner (decor)
+    rectg(g,3,12,5,3,'B'); g[11][4]='D'; g[11][5]='D';
+    rectg(g,15,12,6,3,'B');
+    // flower beds (Celadon is the garden city)
+    rectg(g,11,10,4,3,'f'); rectg(g,12,3,3,2,'f');
+    // paths
+    rectg(g,10,2,2,16,'p'); rectg(g,4,10,17,1,'p'); rectg(g,4,14,15,1,'p');
+    return g;
+  },
+  stamps:[['mart',3,3],['gym',16,4],['pokecenter',3,11],['house',15,12]],
+  warps:[
+    {x:23,y:10,to:'route7',tx:1,ty:6,dir:2},{x:23,y:11,to:'route7',tx:1,ty:7,dir:2},
+    {x:4,y:11,to:'celadon_pc',tx:7,ty:8,dir:1},{x:5,y:11,to:'celadon_pc',tx:7,ty:8,dir:1},
+    {x:17,y:8,to:'celadon_gym',tx:8,ty:14,dir:1},{x:18,y:8,to:'celadon_gym',tx:9,ty:14,dir:1},
+  ],
+  npcs:[
+    { id:'cd_guide', sprite:'gymguide', x:18, y:9, dir:0,
+      script:(f)=> f.beat_erika ? [ "You bested ERIKA's garden?! And you still smell of roses. Impressive on both counts." ]
+        : [ "CELADON GYM's LEADER is ERIKA — a master of GRASS POKéMON. Her gym's a real greenhouse!",
+            "FIRE, FLYING, ICE and PSYCHIC types cut through GRASS. PIDGEOT or MOLTRES would wilt her lineup!" ]},
+    { id:'cd_store', sprite:'girl', x:8, y:10, dir:0, wander:true,
+      script:()=>[ "The CELADON DEPT. STORE is the biggest in KANTO — five whole floors of everything!" ]},
+    { id:'cd_gambler', sprite:'oldman', x:16, y:15, dir:0,
+      script:()=>[ "The GAME CORNER's slots ate my savings. But between us... I heard TEAM ROCKET runs the place." ]},
+    { id:'cd_sign', sprite:'sign', x:9, y:10, dir:0,
+      script:()=>[ "CELADON CITY\n\"The City of Rainbow Dreams\"\nEast: ROUTE 7 → SAFFRON" ]},
+    { id:'cd_gymsign', sprite:'sign', x:19, y:9, dir:0,
+      script:()=>[ "CELADON GYM\nLEADER: ERIKA\n\"Nature-Loving Princess of GRASS!\"" ]},
+  ],
+},
+
+celadon_pc:{
+  name:'POKéMON CENTER', music:'center', outdoor:false, ground:'F', void:'W',
+  build(){ return kantoPC(); },
+  stamps:[['machine',11,1],['plant',1,2],['plant',1,7]],
+  warps:[ {x:7,y:9,to:'celadon',tx:4,ty:12,dir:0} ],
+  npcs:[ kantoNurse(), { id:'cdpc_t', sprite:'girl', x:11, y:5, dir:2,
+    script:()=>[ "CELADON's flowers bloom year round. ERIKA says a calm heart makes strong GRASS POKéMON." ]} ],
+},
+
+celadon_gym:{
+  name:'CELADON GYM', music:'route', outdoor:false, ground:'F', void:'Z',
+  build(){
+    const g = grid(18,16,'F');
+    rectg(g,0,0,18,2,'Z'); for(let j=0;j<16;j++){ g[j][0]='Z'; g[j][17]='Z'; }
+    rectg(g,0,15,18,1,'Z'); g[15][8]='k'; g[15][9]='k';
+    // greenhouse flower beds & potted trees
+    rectg(g,2,4,4,3,'f'); rectg(g,12,4,4,3,'f'); rectg(g,2,9,4,3,'f'); rectg(g,12,9,4,3,'f');
+    g[3][3]='T'; g[3][14]='T'; g[11][3]='T'; g[11][14]='T';
+    return g;
+  },
+  warps:[ {x:8,y:15,to:'celadon',tx:17,ty:9,dir:0},{x:9,y:15,to:'celadon',tx:18,ty:9,dir:0} ],
+  npcs:[
+    { id:'cg_jr', sprite:'misty', x:9, y:10, dir:1, script:trainerScript('gym_beauty') },
+    { id:'erika', sprite:'erika', x:9, y:4, dir:0,
+      script:(f)=> f.beat_erika ? [
+        "ERIKA: The garden is peaceful today. Come admire the blooms any time, champion.",
+      ] : [ TRAINERS.erika.intro, {trainer:'erika'}, TRAINERS.erika.after ] },
+    { id:'cg_sign', sprite:'sign', x:6, y:13, dir:0,
+      script:()=>[ "CELADON GYM — a greenhouse in bloom. ERIKA rests among the flowers ahead." ]},
+  ],
+},
 };
 
 // scripts referenced by name
@@ -3794,6 +4232,8 @@ const FLY_POINTS = [
   { name:'PALLET TOWN',    map:'pallet',    x:9,  y:10, dir:1 },
   { name:'VIRIDIAN CITY',  map:'viridian',  x:10, y:15, dir:1 },
   { name:'PEWTER CITY',    map:'pewter',    x:10, y:14, dir:1 },
+  { name:'CELADON CITY',   map:'celadon',   x:11, y:14, dir:1 },
+  { name:'SAFFRON CITY',   map:'saffron',   x:11, y:16, dir:1 },
   { name:'CERULEAN CITY',  map:'cerulean',  x:11, y:14, dir:1 },
   { name:'VERMILION CITY', map:'vermilion', x:11, y:12, dir:1 },
   { name:'ONE ISLAND',     map:'town',      x:14, y:10, dir:0 },
@@ -5702,8 +6142,8 @@ function debugSpriteSheet(){
 function debugSpriteSheet2(){
   const x = G_ctx;
   x.fillStyle='#20303c'; x.fillRect(0,0,VW,VH);
-  const kanto = ['caterpie','metapod','weedle','kakuna','zubat','paras','clefairy','pikachu','onix',
-    'pidgey','rattata','ekans','sandshrew','mankey','oddish','bellsprout','tentacool','staryu'];
+  const kanto = ['kadabra','alakazam','mrmime','tangela','gloom','vileplume','victreebel','clefairy','pikachu',
+    'caterpie','weedle','metapod','kakuna','zubat','paras','oddish','bellsprout','onix'];
   kanto.forEach((id,i)=>{
     const col = i%9, row = Math.floor(i/9);
     x.fillStyle='#2a3a48'; x.fillRect(2+col*53, 2+row*62, 52,60);
@@ -5723,8 +6163,8 @@ function debugSpriteSheet2(){
     x.drawImage(SPR.tile(ch,0), 10+i*40, 190, 32,32);
     x.textAlign='center'; x.fillText(ch, 10+i*40+16, 234);
   });
-  // trainer sprites incl. Brock
-  ['brock','surge','misty','sailor','bugcatcher'].forEach((id,i)=>{ x.drawImage(SPR.trainer(id), 250+i*40, 176, 32,38); });
+  // trainer sprites incl. leaders
+  ['brock','misty','surge','sabrina','erika'].forEach((id,i)=>{ x.drawImage(SPR.trainer(id), 250+i*40, 176, 32,38); });
 }
 
 // ---------------- boot ----------------

@@ -78,6 +78,8 @@ const FLY_POINTS = [
   { name:'PALLET TOWN',    map:'pallet',    x:9,  y:10, dir:1 },
   { name:'VIRIDIAN CITY',  map:'viridian',  x:10, y:15, dir:1 },
   { name:'PEWTER CITY',    map:'pewter',    x:10, y:14, dir:1 },
+  { name:'CELADON CITY',   map:'celadon',   x:11, y:14, dir:1 },
+  { name:'SAFFRON CITY',   map:'saffron',   x:11, y:16, dir:1 },
   { name:'CERULEAN CITY',  map:'cerulean',  x:11, y:14, dir:1 },
   { name:'VERMILION CITY', map:'vermilion', x:11, y:12, dir:1 },
   { name:'ONE ISLAND',     map:'town',      x:14, y:10, dir:0 },

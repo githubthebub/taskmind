@@ -106,6 +106,11 @@ const MOVES = {
   metalclaw:   { name:'Metal Claw',   type:'steel',   pow:50,  acc:95,  pp:35 },
   megadrain:   { name:'Mega Drain',   type:'grass',   pow:40,  acc:100, pp:15 },
   stringshot:  { name:'String Shot',  type:'bug',     pow:0,   acc:95,  pp:40, fx:{stage:{stat:'spe',delta:-1,target:'foe'}} },
+  psychic:     { name:'Psychic',      type:'psychic', pow:90,  acc:100, pp:10 },
+  razorleaf:   { name:'Razor Leaf',   type:'grass',   pow:55,  acc:95,  pp:25, fx:{highcrit:true} },
+  petaldance:  { name:'Petal Dance',  type:'grass',   pow:70,  acc:100, pp:10 },
+  doubleslap:  { name:'DoubleSlap',   type:'normal',  pow:15,  acc:85,  pp:10, fx:{multihit:true} },
+  metronome:   { name:'Metronome',    type:'normal',  pow:60,  acc:999, pp:10, fx:{neverMiss:true} },
 };
 
 // ---- Species
@@ -201,6 +206,22 @@ const SPECIES = {
     learn:[[1,'scratch'],[1,'stringshot'],[13,'absorb'],[22,'poisonpowder'],[30,'slash']] },
   clefairy:{ name:'CLEFAIRY', types:['normal'], base:[70,45,48,60,65,35], exp:68, catch:150,
     learn:[[1,'tackle'],[1,'growl'],[13,'headbutt'],[23,'bodyslam'],[30,'psybeam']] },
+
+  // ---- Saffron (Psychic) & Celadon (Grass) ----
+  kadabra:{ name:'KADABRA', types:['psychic'], base:[40,35,30,120,70,105], exp:145, catch:100,
+    learn:[[1,'confusion'],[1,'psybeam'],[16,'psychic'],[20,'hypnosis']] },
+  alakazam:{ name:'ALAKAZAM', types:['psychic'], base:[55,50,45,135,95,120], exp:186, catch:50,
+    learn:[[1,'confusion'],[1,'psybeam'],[1,'hypnosis'],[1,'psychic']] },
+  mrmime:{ name:'MR. MIME', types:['psychic'], base:[40,45,65,100,120,90], exp:136, catch:45,
+    learn:[[1,'confusion'],[1,'doubleslap'],[15,'psybeam'],[27,'psychic']] },
+  tangela:{ name:'TANGELA', types:['grass'], base:[65,55,115,100,40,60], exp:87, catch:45,
+    learn:[[1,'vinewhip'],[1,'absorb'],[15,'megadrain'],[25,'razorleaf']] },
+  vileplume:{ name:'VILEPLUME', types:['grass','poison'], base:[75,80,85,110,90,50], exp:184, catch:45,
+    learn:[[1,'absorb'],[1,'poisonpowder'],[1,'megadrain'],[1,'razorleaf'],[1,'sludgebomb']] },
+  victreebel:{ name:'VICTREEBEL', types:['grass','poison'], base:[80,105,65,100,70,70], exp:191, catch:45,
+    learn:[[1,'vinewhip'],[1,'razorleaf'],[1,'megadrain'],[1,'poisonpowder'],[1,'sludgebomb']] },
+  gloom:{ name:'GLOOM', types:['grass','poison'], base:[60,65,70,85,75,40], exp:138, catch:120,
+    learn:[[1,'absorb'],[1,'poisonpowder'],[15,'megadrain'],[28,'razorleaf']] },
 };
 
 // ---- Status conditions
@@ -226,6 +247,8 @@ const ITEMS = {
   thunderbadge:{ name:'THUNDER BADGE', kind:'key', desc:'Proof of victory over VERMILION\'s LT. SURGE.' },
   cascadebadge:{ name:'CASCADE BADGE', kind:'key', desc:'Proof of victory over CERULEAN\'s MISTY.' },
   boulderbadge:{ name:'BOULDER BADGE', kind:'key', desc:'Proof of victory over PEWTER\'s BROCK.' },
+  rainbowbadge:{ name:'RAINBOW BADGE', kind:'key', desc:'Proof of victory over CELADON\'s ERIKA.' },
+  marshbadge:{  name:'MARSH BADGE',   kind:'key', desc:'Proof of victory over SAFFRON\'s SABRINA.' },
 };
 
 // ---- Trainers
@@ -341,6 +364,46 @@ const TRAINERS = {
     intro:'I\'m BROCK! I\'m PEWTER\'s GYM LEADER! My rock-hard willpower is evident even in my POKéMON! Show me you\'ve got what it takes!',
     lose:'...Incredible. My rock-solid defense, shattered. You\'ve earned this fair and square.',
     after:'Take the BOULDER BADGE. Now the road east — ROUTE 3, MT. MOON, all the way to CERULEAN — is yours to walk. Go show the world!' },
+
+  // ---- Route 6 / Route 7 / Saffron & Celadon gyms ----
+  bird_keeper:{ cls:'BIRD KEEPER', name:'DALE', sprite:'youngster', party:[['pidgey',22],['spearow',23],['fearow',24]],
+    intro:'My birds rule the skies over ROUTE 6! Let\'s see your POKéMON fly!',
+    lose:'Grounded...!',
+    after:'SAFFRON CITY is the crossroads of KANTO. Every road meets there.' },
+  gambler_rich:{ cls:'GAMBLER', name:'RICH', sprite:'gymguide', party:[['growlithe',23],['ponyta',24]],
+    intro:'I\'ll bet my whole wallet my POKéMON beat yours! ...I probably shouldn\'t bet my whole wallet.',
+    lose:'Aw, I never win!',
+    after:'CELADON has a GAME CORNER, y\'know. That\'s where I lost the OTHER wallet.' },
+  lass_petal:{ cls:'LASS', name:'DAISY', sprite:'lass', party:[['oddish',24],['gloom',25]],
+    intro:'The flowers of ROUTE 7 are the prettiest in KANTO! My POKéMON are just as lovely — and tough!',
+    lose:'Oh, petals!',
+    after:'ERIKA\'s CELADON GYM is a real greenhouse. Mind the perfume!' },
+  beauty_grace:{ cls:'BEAUTY', name:'GRACE', sprite:'misty', party:[['bellsprout',25],['tangela',26]],
+    intro:'A trainer should be graceful in victory AND defeat. Shall we find out which you\'ll be?',
+    lose:'Gracious! You win.',
+    after:'ERIKA only battles those who appreciate GRASS POKéMON. You seem the type.' },
+  psychic_liam:{ cls:'PSYCHIC', name:'LIAM', sprite:'youngster', party:[['drowzee',26],['kadabra',27]],
+    intro:'I foresaw your arrival... and your defeat! The mind is the strongest muscle!',
+    lose:'My prediction... was wrong?!',
+    after:'SABRINA\'s power is on another level entirely. Steady your mind before you face her.' },
+  gym_beauty:{ cls:'BEAUTY', name:'IVY', sprite:'misty', party:[['gloom',28],['victreebel',29]],
+    intro:'Welcome to CELADON\'s garden gym! You\'ll have to get through me before you meet ERIKA.',
+    lose:'Wilted so soon...',
+    after:'ERIKA may look like she\'s napping. Do NOT let that fool you.' },
+  erika:{ cls:'LEADER', name:'ERIKA', sprite:'erika', gym:true, badge:'rainbowbadge',
+    party:[['bellsprout',29],['tangela',30],['victreebel',30],['vileplume',32]],
+    intro:'Oh...! Welcome. I am ERIKA, of CELADON GYM. I teach the art of flowers... and of battle. I shall not lose!',
+    lose:'Oh! I concede — I must concede. You are as splendid as a garden in full bloom.',
+    after:'This RAINBOW BADGE is yours. And a whiff of perfume, perhaps? Ehehe. Travel safely.' },
+  gym_psychic:{ cls:'PSYCHIC', name:'RENA', sprite:'youngster', party:[['kadabra',30],['mrmime',31]],
+    intro:'SABRINA can bend spoons with her mind. I can only bend POKéMON to my will — but that\'s enough for YOU!',
+    lose:'My focus... shattered!',
+    after:'SABRINA is waiting at the heart of the maze. Her eyes... they see everything.' },
+  sabrina:{ cls:'LEADER', name:'SABRINA', sprite:'sabrina', gym:true, badge:'marshbadge',
+    party:[['drowzee',32],['kadabra',34],['mrmime',35],['alakazam',38]],
+    intro:'I am SABRINA. I knew you would come — I saw it. I have honed my PSYCHIC power until it frightens even me. Now: prove my vision wrong, if you can.',
+    lose:'...I did not foresee this. You have shattered a future I was certain of. How... wonderful.',
+    after:'The MARSH BADGE is yours. My power feels lighter, sharing this world with a mind like yours. Go — the crossroads are open to you.' },
 };
 
 // ---- Mon factory

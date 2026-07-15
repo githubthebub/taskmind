@@ -287,8 +287,8 @@ function debugSpriteSheet(){
 function debugSpriteSheet2(){
   const x = G_ctx;
   x.fillStyle='#20303c'; x.fillRect(0,0,VW,VH);
-  const kanto = ['caterpie','metapod','weedle','kakuna','zubat','paras','clefairy','pikachu','onix',
-    'pidgey','rattata','ekans','sandshrew','mankey','oddish','bellsprout','tentacool','staryu'];
+  const kanto = ['kadabra','alakazam','mrmime','tangela','gloom','vileplume','victreebel','clefairy','pikachu',
+    'caterpie','weedle','metapod','kakuna','zubat','paras','oddish','bellsprout','onix'];
   kanto.forEach((id,i)=>{
     const col = i%9, row = Math.floor(i/9);
     x.fillStyle='#2a3a48'; x.fillRect(2+col*53, 2+row*62, 52,60);
@@ -308,8 +308,8 @@ function debugSpriteSheet2(){
     x.drawImage(SPR.tile(ch,0), 10+i*40, 190, 32,32);
     x.textAlign='center'; x.fillText(ch, 10+i*40+16, 234);
   });
-  // trainer sprites incl. Brock
-  ['brock','surge','misty','sailor','bugcatcher'].forEach((id,i)=>{ x.drawImage(SPR.trainer(id), 250+i*40, 176, 32,38); });
+  // trainer sprites incl. leaders
+  ['brock','misty','surge','sabrina','erika'].forEach((id,i)=>{ x.drawImage(SPR.trainer(id), 250+i*40, 176, 32,38); });
 }
 
 // ---------------- boot ----------------
