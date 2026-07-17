@@ -5,7 +5,7 @@ export function mentorsView() {
   return el(
     "div",
     {},
-    el("h1", {}, "The mentors"),
+    el("h1", {}, "The five voices"),
     el(
       "p",
       { class: "lede" },

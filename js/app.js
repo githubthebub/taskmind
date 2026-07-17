@@ -12,6 +12,43 @@ const root = document.getElementById("app");
 
 const ctx = { store, router: null };
 
+/* ---- theme: auto (follow OS) → light → dark → auto ---- */
+
+const THEME_KEY = "bd-theme";
+const THEME_ICON = { auto: "◐", light: "☀", dark: "☾" };
+const THEME_LABEL = { auto: "Theme: auto (following your system)", light: "Theme: light", dark: "Theme: dark" };
+const themeBtn = document.getElementById("theme-toggle");
+
+function readTheme() {
+  try {
+    const t = localStorage.getItem(THEME_KEY);
+    return t === "light" || t === "dark" ? t : "auto";
+  } catch {
+    return "auto";
+  }
+}
+
+function applyTheme(mode) {
+  if (mode === "light" || mode === "dark") document.documentElement.setAttribute("data-theme", mode);
+  else document.documentElement.removeAttribute("data-theme");
+  if (themeBtn) {
+    themeBtn.textContent = THEME_ICON[mode];
+    themeBtn.setAttribute("aria-label", `${THEME_LABEL[mode]}. Click to change.`);
+    themeBtn.title = THEME_LABEL[mode];
+  }
+}
+
+let themeMode = readTheme();
+applyTheme(themeMode);
+themeBtn?.addEventListener("click", () => {
+  themeMode = themeMode === "auto" ? "light" : themeMode === "light" ? "dark" : "auto";
+  try {
+    if (themeMode === "auto") localStorage.removeItem(THEME_KEY);
+    else localStorage.setItem(THEME_KEY, themeMode);
+  } catch { /* private mode — keep it in memory for this session */ }
+  applyTheme(themeMode);
+});
+
 const router = createRouter(
   [
     { path: "/", handler: () => render(root, homeView(ctx)) },

@@ -15,7 +15,7 @@ export function homeView(ctx) {
   const hero = el(
     "section",
     { class: "hero" },
-    el("h1", {}, "Decide like your smartest mentors are in the room."),
+    el("h1", {}, "Bring five kinds of thinking to any decision."),
     el(
       "p",
       { class: "lede" },
@@ -28,7 +28,7 @@ export function homeView(ctx) {
       { class: "btn-row" },
       el("a", { class: "btn primary", href: "#/new" }, draft ? "Resume your decision" : "Start a decision"),
       el("a", { class: "btn ghost", href: "#/gut-check" }, "Quick gut check"),
-      el("a", { class: "btn ghost", href: "#/mentors" }, "Meet the mentors")
+      el("a", { class: "btn ghost", href: "#/mentors" }, "Meet the voices")
     )
   );
 

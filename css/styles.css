@@ -2,9 +2,98 @@
    BetterDecisions — design system
    ============================================================ */
 
-:root {
-  color-scheme: dark;
+/* ---- theme tokens ----
+   Light is the default (:root). Dark is applied when the OS prefers it
+   (media query) and re-stated for the explicit toggle so the manual choice
+   wins over the OS in both directions. Style everything through the tokens,
+   never inside the media query. */
 
+:root {
+  color-scheme: light dark;
+
+  --bg: #f4f1ea;
+  --bg-soft: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #f1ede4;
+  --panel-3: #e7e1d4;
+  --border: rgba(45, 37, 22, 0.12);
+  --border-strong: rgba(45, 37, 22, 0.22);
+
+  --text: #221d15;
+  --muted: #5e594e;
+  --faint: #8a8578;
+
+  --accent: #c9891d;        /* warm gold — judgement, wisdom */
+  --accent-ink: #241a04;
+  --accent-soft: rgba(201, 137, 29, 0.15);
+  --accent-text: #97640f;   /* gold that stays legible as text on this ground */
+
+  --good: #15803d;
+  --warn: #8a5a06;
+  --bad: #b23429;
+  --info: #1d5fbf;
+
+  /* voice hues — one per lens (tuned for legible text on this ground) */
+  --c-steady: #2f9e57;       /* awareness — green */
+  --c-experimenter: #0f9d90; /* energy — teal */
+  --c-strategist: #3d7ed4;   /* mental models — blue */
+  --c-realist: #cf6d12;      /* values — orange */
+  --c-confidant: #7a54d1;    /* courage — violet */
+
+  --glow-1: rgba(201, 137, 29, 0.12);
+  --glow-2: rgba(61, 126, 212, 0.08);
+  --topbar-bg: rgba(244, 241, 234, 0.82);
+  --shadow: 0 8px 24px rgba(45, 37, 22, 0.10);
+
+  --radius: 14px;
+  --radius-sm: 9px;
+
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Palatino,
+    Georgia, Cambria, "Times New Roman", serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* dark palette — restated for OS preference and for the explicit toggle */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1116;
+    --bg-soft: #12161d;
+    --panel: #161b23;
+    --panel-2: #1b212b;
+    --panel-3: #222a36;
+    --border: rgba(255, 255, 255, 0.09);
+    --border-strong: rgba(255, 255, 255, 0.16);
+
+    --text: #e8eaf0;
+    --muted: #9aa3b2;
+    --faint: #6b7280;
+
+    --accent: #e6b455;
+    --accent-ink: #1a1405;
+    --accent-soft: rgba(230, 180, 85, 0.14);
+    --accent-text: #e6b455;
+
+    --good: #6ee7a8;
+    --warn: #fcd34d;
+    --bad: #fca5a5;
+    --info: #93c5fd;
+
+    --c-steady: #4ade80;
+    --c-experimenter: #2dd4bf;
+    --c-strategist: #60a5fa;
+    --c-realist: #fb923c;
+    --c-confidant: #a78bfa;
+
+    --glow-1: rgba(230, 180, 85, 0.07);
+    --glow-2: rgba(96, 165, 250, 0.05);
+    --topbar-bg: rgba(14, 17, 22, 0.85);
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
   --bg: #0e1116;
   --bg-soft: #12161d;
   --panel: #161b23;
@@ -17,28 +106,26 @@
   --muted: #9aa3b2;
   --faint: #6b7280;
 
-  --accent: #e6b455;        /* warm gold — judgement, wisdom */
+  --accent: #e6b455;
   --accent-ink: #1a1405;
   --accent-soft: rgba(230, 180, 85, 0.14);
+  --accent-text: #e6b455;
 
-  --good: #4ade80;
-  --warn: #fbbf24;
-  --bad: #f87171;
+  --good: #6ee7a8;
+  --warn: #fcd34d;
+  --bad: #fca5a5;
+  --info: #93c5fd;
 
-  /* mentor hues — one per voice */
-  --c-steady: #4ade80;       /* the awareness voice — green */
-  --c-experimenter: #2dd4bf; /* the energy voice — teal */
-  --c-strategist: #60a5fa;   /* the mental-models voice — blue */
-  --c-realist: #fb923c;      /* the values voice — orange */
-  --c-confidant: #a78bfa;    /* the courage voice — violet */
+  --c-steady: #4ade80;
+  --c-experimenter: #2dd4bf;
+  --c-strategist: #60a5fa;
+  --c-realist: #fb923c;
+  --c-confidant: #a78bfa;
 
-  --radius: 14px;
-  --radius-sm: 9px;
+  --glow-1: rgba(230, 180, 85, 0.07);
+  --glow-2: rgba(96, 165, 250, 0.05);
+  --topbar-bg: rgba(14, 17, 22, 0.85);
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-
-  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -48,8 +135,8 @@ html { scroll-behavior: smooth; }
 body {
   margin: 0;
   background:
-    radial-gradient(1200px 500px at 70% -10%, rgba(230, 180, 85, 0.07), transparent 60%),
-    radial-gradient(900px 420px at 10% 110%, rgba(96, 165, 250, 0.05), transparent 60%),
+    radial-gradient(1200px 500px at 70% -10%, var(--glow-1), transparent 60%),
+    radial-gradient(900px 420px at 10% 110%, var(--glow-2), transparent 60%),
     var(--bg);
   color: var(--text);
   font-family: var(--font);
@@ -58,6 +145,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* ---------- top bar ---------- */
@@ -80,7 +168,7 @@ body {
   gap: 1.25rem;
   padding: 0.8rem clamp(1rem, 4vw, 2.2rem);
   border-bottom: 1px solid var(--border);
-  background: rgba(14, 17, 22, 0.85);
+  background: var(--topbar-bg);
   backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
@@ -98,8 +186,8 @@ body {
   font-size: 1.06rem;
   letter-spacing: 0.01em;
 }
-.brand-mark { color: var(--accent); font-size: 1.1rem; }
-.brand-name em { font-style: normal; color: var(--accent); }
+.brand-mark { color: var(--accent-text); font-size: 1.1rem; }
+.brand-name em { font-style: normal; color: var(--accent-text); }
 
 .nav {
   display: flex;
@@ -117,7 +205,7 @@ body {
 }
 .nav a:hover { color: var(--text); background: var(--panel-2); }
 .nav a.active {
-  color: var(--accent);
+  color: var(--accent-text);
   background: var(--accent-soft);
   font-weight: 600;
 }
@@ -160,8 +248,14 @@ body {
 /* ---------- typography ---------- */
 
 h1, h2, h3, h4 { line-height: 1.25; margin: 0 0 0.5rem; }
-h1 { font-size: clamp(1.5rem, 3.4vw, 2.1rem); letter-spacing: -0.01em; }
-h2 { font-size: 1.3rem; }
+h1, h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  line-height: 1.16;
+}
+h1 { font-size: clamp(1.6rem, 3.6vw, 2.25rem); text-wrap: balance; }
+h2 { font-size: 1.35rem; }
 h3 { font-size: 1.05rem; }
 p { margin: 0.4rem 0; }
 
@@ -232,7 +326,7 @@ p { margin: 0.4rem 0; }
   transition: transform 0.08s, background 0.15s, border-color 0.15s;
   user-select: none;
 }
-.btn:hover { background: var(--panel-3); border-color: rgba(255,255,255,0.25); }
+.btn:hover { background: var(--panel-3); border-color: var(--border-strong); }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
@@ -241,7 +335,7 @@ p { margin: 0.4rem 0; }
   border-color: var(--accent);
   color: var(--accent-ink);
 }
-.btn.primary:hover { background: #f0c26b; }
+.btn.primary:hover { filter: brightness(1.06); }
 .btn.ghost { background: transparent; }
 .btn.subtle { border-color: transparent; background: transparent; color: var(--muted); }
 .btn.subtle:hover { color: var(--text); background: var(--panel-2); }
@@ -303,11 +397,11 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   cursor: pointer;
   transition: all 0.12s;
 }
-.chip:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
+.chip:hover { color: var(--text); border-color: var(--border-strong); }
 .chip[aria-pressed="true"] {
   background: var(--accent-soft);
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 600;
 }
 .chip.static { cursor: default; }
@@ -325,7 +419,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   cursor: pointer;
   transition: border-color 0.12s, background 0.12s;
 }
-.choice-card:hover { border-color: rgba(255,255,255,0.3); }
+.choice-card:hover { border-color: var(--border-strong); }
 .choice-card[aria-pressed="true"] {
   border-color: var(--accent);
   background: var(--accent-soft);
@@ -376,9 +470,11 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   margin: 1rem 0;
   padding: 0.35rem 0 0.35rem 0.9rem;
   color: var(--muted);
+  font-family: var(--font-display);
   font-style: italic;
+  font-size: 1.05rem;
 }
-.step-quote .who { display: block; font-style: normal; font-size: 0.8rem; color: var(--faint); margin-top: 0.25rem; }
+.step-quote .who { display: block; font-style: normal; font-family: var(--font); font-size: 0.8rem; color: var(--faint); margin-top: 0.25rem; }
 
 .callout {
   border-radius: var(--radius-sm);
@@ -387,9 +483,9 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   font-size: 0.93rem;
   border: 1px solid;
 }
-.callout.warn { background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.35); color: #fde68a; }
-.callout.good { background: rgba(74, 222, 128, 0.07); border-color: rgba(74, 222, 128, 0.3); color: #bbf7d0; }
-.callout.info { background: rgba(96, 165, 250, 0.08); border-color: rgba(96, 165, 250, 0.3); color: #bfdbfe; }
+.callout.warn { background: rgba(251, 191, 36, 0.10); border-color: rgba(251, 191, 36, 0.38); color: var(--warn); }
+.callout.good { background: rgba(45, 158, 87, 0.10); border-color: rgba(45, 158, 87, 0.32); color: var(--good); }
+.callout.info { background: rgba(61, 126, 212, 0.10); border-color: rgba(61, 126, 212, 0.32); color: var(--info); }
 
 /* rating pills 1..5 */
 .rating-row { display: flex; gap: 0.35rem; align-items: center; }
@@ -443,7 +539,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   white-space: nowrap;
 }
 .badge.draft { background: rgba(154, 163, 178, 0.15); color: var(--muted); }
-.badge.decided { background: rgba(96, 165, 250, 0.15); color: #93c5fd; }
+.badge.decided { background: rgba(61, 126, 212, 0.16); color: var(--info); }
 .badge.review-due { background: rgba(251, 191, 36, 0.15); color: var(--warn); }
 .badge.reviewed { background: rgba(74, 222, 128, 0.13); color: var(--good); }
 .badge.good { background: rgba(74, 222, 128, 0.13); color: var(--good); }
@@ -485,14 +581,14 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 /* ---------- quote card on home ---------- */
 
 .quote-card {
-  background: linear-gradient(135deg, rgba(230, 180, 85, 0.1), rgba(230, 180, 85, 0.02));
-  border: 1px solid rgba(230, 180, 85, 0.25);
+  background: linear-gradient(135deg, var(--accent-soft), transparent);
+  border: 1px solid var(--accent-soft);
   border-radius: var(--radius);
   padding: 1.2rem 1.4rem;
   margin: 1.2rem 0;
 }
-.quote-card blockquote { margin: 0; font-size: 1.08rem; font-style: italic; }
-.quote-card cite { display: block; margin-top: 0.5rem; color: var(--muted); font-style: normal; font-size: 0.88rem; }
+.quote-card blockquote { margin: 0; font-family: var(--font-display); font-size: 1.28rem; line-height: 1.4; font-style: italic; }
+.quote-card cite { display: block; margin-top: 0.6rem; color: var(--muted); font-style: normal; font-size: 0.88rem; }
 
 /* home hero */
 .hero { margin-bottom: 1.4rem; }
@@ -534,7 +630,41 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
+/* content links (inside callouts, briefs) — legible accent in both themes */
+.app a:not(.btn):not(.decision-card):not(.faint) { color: var(--accent-text); }
+
+/* ---------- theme toggle ---------- */
+
+.theme-toggle {
+  flex: none;
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.theme-toggle:hover { color: var(--text); background: var(--panel-3); }
+
+/* ---------- view entrance ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .app > * { animation: view-in 0.28s ease both; }
+}
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: none; }
+}
+
 @media (max-width: 640px) {
   .nav { margin-left: 0; width: 100%; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
   .nav a { white-space: nowrap; }
+  .theme-toggle { order: -1; margin-left: auto; }
 }
