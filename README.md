@@ -56,10 +56,17 @@ python3 -m http.server 8000
 | Choose an action in a scene | **1–4** (or click) |
 | Open the **Menu** | **F** or **Enter** |
 | **Bicycle** on/off (on 🚲 cycle paths) | **S** |
+| **Sound** on/off | **M** (or the 🔊 button) |
 | Quick-open Friends / Phrasebook / Business / Journal | **C** / **P** / **B** / **J** |
 
 On phones and tablets an on-screen D-pad plus **Talk**, **Menu** and **🚲**
 buttons appear automatically.
+
+**Turn the sound on** — it's best with audio. Every land has its own
+synthesized ambient music (no sound files — it's all Web Audio) and weather:
+cherry blossom petals drift through Japan, rain falls on London, warm motes glow
+in India, and leaves tumble across the USA. Relighting a Lantern sets off a
+golden flash and a burst of sparks.
 
 ## 🎯 The quest loop
 

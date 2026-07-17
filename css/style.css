@@ -119,6 +119,7 @@ html, body {
   text-align: left;
 }
 .controls-help b { color: var(--india-deep); }
+.title-tip { margin: 14px 0 0; font-size: 0.8rem; color: #8a6b45; }
 
 /* ------------------------------------------------------------------ *
  *  Game screen layout
@@ -137,8 +138,14 @@ html, body {
   font-size: 0.9rem;
 }
 .hud-title { font-weight: 800; letter-spacing: 1px; }
-.hud-stats { display: flex; gap: 14px; }
+.hud-stats { display: flex; gap: 14px; align-items: center; }
 .hud-stats .stat b { color: var(--gold); }
+.hud-btn {
+  background: rgba(255,255,255,0.12); border: none; color: #fff;
+  border-radius: 8px; width: 30px; height: 26px; cursor: pointer;
+  font-size: 0.95rem; line-height: 1; padding: 0;
+}
+.hud-btn:hover { background: rgba(255,255,255,0.22); }
 
 #objective {
   width: min(96vw, 720px);
@@ -305,6 +312,8 @@ html, body {
   animation: pop 0.2s ease;
 }
 .quiz-result .r-head { font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; }
+.quiz-result.ok .r-head { animation: gpop 0.42s ease; }
+@keyframes gpop { 0% { transform: scale(0.9); } 55% { transform: scale(1.07); } 100% { transform: scale(1); } }
 .quiz-result.ok .r-head { color: #1e8449; }
 .quiz-result.no .r-head { color: #c0392b; }
 .r-explain { font-size: 0.9rem; line-height: 1.5; color: #4a3520; }

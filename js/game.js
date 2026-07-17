@@ -46,6 +46,70 @@
     uk: ['#7fa06d', '#8cae76'], usa: ['#9caf5a', '#aec06a'], hub: ['#83bd77', '#8fc783']
   };
 
+  /* ------------------------------- audio ---------------------------------- *
+   * Everything is synthesised with the Web Audio API — no sound files, so the
+   * game stays a single self-contained page. Gentle, culture-flavoured ambient
+   * notes play in the background; short SFX punctuate the action.
+   * ------------------------------------------------------------------------ */
+  const SCALES = {
+    india: [261.6, 293.7, 349.2, 392.0, 466.2, 523.3],   // raga-ish
+    japan: [261.6, 311.1, 349.2, 392.0, 466.2, 523.3],   // hirajoshi-ish
+    usa:   [261.6, 329.6, 392.0, 440.0, 523.3, 659.3],   // bright major pentatonic
+    uk:    [246.9, 293.7, 329.6, 392.0, 440.0, 493.9],   // wistful
+    hub:   [261.6, 329.6, 392.0, 493.9, 587.3]
+  };
+  const Sound = {
+    ctx: null, master: null, muted: false, region: 'hub', _amb: null, _step: 0,
+    init() {
+      if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AC();
+        this.master = this.ctx.createGain();
+        this.master.gain.value = this.muted ? 0 : 0.55;
+        this.master.connect(this.ctx.destination);
+        this.startAmbient();
+      } catch (e) { this.ctx = null; }
+    },
+    setMuted(m) { this.muted = m; if (this.master) this.master.gain.value = m ? 0 : 0.55; },
+    tone(freq, dur, type, gain, delay) {
+      if (!this.ctx || this.muted) return;
+      const t = this.ctx.currentTime + (delay || 0);
+      const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+      o.type = type || 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(gain || 0.18, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + 0.03);
+    },
+    arp(freqs, step, type, gain) { freqs.forEach((f, i) => this.tone(f, step * 2.1, type, gain, i * step)); },
+    select() { this.tone(660, 0.05, 'square', 0.06); },
+    menu() { this.tone(440, 0.05, 'square', 0.07); this.tone(587, 0.06, 'square', 0.06, 0.04); },
+    good() { this.arp([523, 659, 784, 1047], 0.075, 'triangle', 0.16); },
+    friend() { this.arp([523, 659, 784, 1047, 1319], 0.08, 'triangle', 0.18); },
+    bad() { this.tone(196, 0.18, 'sawtooth', 0.08); this.tone(165, 0.22, 'sawtooth', 0.07, 0.04); },
+    dispel() { this.arp([392, 523, 659, 880, 1175], 0.055, 'sine', 0.14); },
+    lantern() { this.arp([392, 494, 587, 784, 988, 1175, 1568], 0.11, 'triangle', 0.2); },
+    stamp() { this.tone(320, 0.05, 'square', 0.1); this.tone(640, 0.08, 'square', 0.1, 0.05); },
+    bike() { this.tone(300, 0.07, 'triangle', 0.08); this.tone(450, 0.09, 'triangle', 0.08, 0.05); },
+    victory() { this.arp([523, 659, 784, 1047, 784, 1047, 1319, 1568], 0.13, 'triangle', 0.22); },
+    startAmbient() {
+      const tick = () => {
+        this._amb = setTimeout(tick, 1350 + Math.random() * 900);
+        if (!this.ctx || this.muted || state.mode !== 'play') return;
+        const sc = SCALES[this.region] || SCALES.hub;
+        const n = sc[Math.floor(Math.random() * sc.length)];
+        this.tone(n, 1.8, 'sine', 0.05);
+        if (this._step++ % 4 === 0) this.tone(sc[0] / 2, 2.6, 'sine', 0.04);  // soft bass
+      };
+      tick();
+    }
+  };
+
+  /* particles: ambient weather + celebratory bursts (screen-space) */
+  const WEATHER = { india: 'mote', japan: 'petal', uk: 'rain', usa: 'leaf', hub: 'spark' };
+  let weather = [], bursts = [], flash = 0;
+
   /* --------------------------------- state -------------------------------- */
   const state = {
     mode: 'play',                 // play | dialogue | scene | menu
@@ -312,8 +376,15 @@
 
   function drawPlayer(sx, sy) {
     const p = state.player;
+    // a little bounce while walking (more springy on the bike)
+    let bob = 0;
+    if (p.moving) {
+      const tt = Math.min(1, (performance.now() - p.moveStart) / p.moveDur);
+      bob = -Math.abs(Math.sin(tt * Math.PI)) * (state.biking ? 3 : 2);
+    }
+    sy += bob;
     ctx.fillStyle = 'rgba(0,0,0,0.2)';
-    ctx.beginPath(); ctx.ellipse(sx + TILE / 2, sy + TILE - 4, 9, 4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(sx + TILE / 2, sy - bob + TILE - 4, 9, 4, 0, 0, Math.PI * 2); ctx.fill();
     if (state.biking) {
       circle(sx + 9, sy + TILE - 6, 5, '#212121'); circle(sx + 23, sy + TILE - 6, 5, '#212121');
       circle(sx + 9, sy + TILE - 6, 2, '#9e9e9e'); circle(sx + 23, sy + TILE - 6, 2, '#9e9e9e');
@@ -384,6 +455,21 @@
     });
     drawPlayer((px - camX) * TILE, (py - camY) * TILE);
 
+    // celebratory bursts (world-anchored)
+    for (const b of bursts) {
+      const bx = (b.wx - camX) * TILE, by = (b.wy - camY) * TILE;
+      ctx.globalAlpha = Math.max(0, b.life);
+      circle(bx, by, b.size, b.color);
+      ctx.globalAlpha = 1;
+    }
+    drawWeather();
+
+    // lantern-relight screen flash
+    if (flash > 0) {
+      ctx.fillStyle = 'rgba(255,235,160,' + (flash * 0.5) + ')';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
     if (state.toast && performance.now() < state.toastUntil) {
       ctx.fillStyle = 'rgba(0,0,0,0.78)'; ctx.fillRect(0, canvas.height - 34, canvas.width, 34);
       ctx.fillStyle = '#fff'; ctx.font = '14px "Segoe UI", sans-serif'; ctx.textAlign = 'center';
@@ -391,6 +477,60 @@
     }
   }
   function showToast(msg, ms) { state.toast = msg; state.toastUntil = performance.now() + (ms || 2600); }
+
+  /* --------------------------- particles / weather ------------------------ */
+  function setWeather(region) {
+    const type = WEATHER[region] || 'spark';
+    const n = type === 'rain' ? 46 : 34;
+    weather = [];
+    for (let i = 0; i < n; i++) weather.push(newParticle(type, true));
+  }
+  function newParticle(type, anywhere) {
+    const p = { type, x: Math.random() * (VIEW_W * TILE), y: anywhere ? Math.random() * (VIEW_H * TILE) : -8 };
+    if (type === 'rain') { p.vx = -0.6; p.vy = 8 + Math.random() * 4; p.len = 8 + Math.random() * 6; }
+    else if (type === 'petal') { p.vx = -0.4 + Math.random() * 0.2; p.vy = 0.7 + Math.random() * 0.5; p.r = Math.random() * 6.28; p.spin = -0.05 + Math.random() * 0.1; p.size = 3 + Math.random() * 2; p.sway = Math.random() * 6.28; }
+    else if (type === 'leaf') { p.vx = -0.3 + Math.random() * 0.2; p.vy = 0.6 + Math.random() * 0.5; p.size = 3 + Math.random() * 2; p.sway = Math.random() * 6.28; p.col = ['#e59866', '#d68910', '#ca6f1e'][Math.floor(Math.random() * 3)]; }
+    else if (type === 'mote') { p.vx = -0.15 + Math.random() * 0.3; p.vy = -0.2 - Math.random() * 0.3; p.size = 1.5 + Math.random() * 1.5; p.tw = Math.random() * 6.28; }
+    else { p.vx = -0.1 + Math.random() * 0.2; p.vy = -0.15 + Math.random() * 0.3; p.size = 1.2 + Math.random() * 1.4; p.tw = Math.random() * 6.28; }
+    return p;
+  }
+  function drawWeather() {
+    const W = VIEW_W * TILE, H = VIEW_H * TILE, t = performance.now() / 1000;
+    for (const p of weather) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.type === 'petal' || p.type === 'leaf') p.x += Math.sin(t + p.sway) * 0.4;
+      if (p.y > H + 10 || p.x < -12) { Object.assign(p, newParticle(p.type, false)); p.x = Math.random() * W; continue; }
+      if (p.type === 'rain') {
+        ctx.strokeStyle = 'rgba(174,214,241,0.5)'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + p.vx, p.y + p.len); ctx.stroke();
+      } else if (p.type === 'petal') {
+        p.r += p.spin;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+        ctx.fillStyle = 'rgba(248,187,208,0.85)';
+        ctx.beginPath(); ctx.ellipse(0, 0, p.size, p.size * 0.6, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      } else if (p.type === 'leaf') {
+        ctx.fillStyle = p.col; ctx.globalAlpha = 0.8;
+        ctx.beginPath(); ctx.ellipse(p.x, p.y, p.size, p.size * 0.55, t + p.sway, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+      } else {
+        const a = 0.35 + 0.35 * Math.sin(t * 3 + p.tw);
+        ctx.fillStyle = p.type === 'mote' ? 'rgba(255,224,150,' + a + ')' : 'rgba(255,255,255,' + a + ')';
+        circle(p.x, p.y, p.size, ctx.fillStyle);
+      }
+    }
+  }
+  function spawnBurst(wx, wy, color, count) {
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2, sp = 0.05 + Math.random() * 0.14;
+      bursts.push({ wx, wy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 0.06, life: 1, size: 2 + Math.random() * 3, color });
+    }
+  }
+  function updateParticles() {
+    for (let i = bursts.length - 1; i >= 0; i--) {
+      const b = bursts[i]; b.wx += b.vx; b.wy += b.vy; b.vy += 0.008; b.life -= 0.02;
+      if (b.life <= 0) bursts.splice(i, 1);
+    }
+    if (flash > 0) flash = Math.max(0, flash - 0.02);
+  }
 
   function drawMuddle(sx, sy) {
     const t = performance.now() / 260;
@@ -433,9 +573,11 @@
     const region = regionAt(p.x, p.y);
     if (region !== state.currentRegion) {
       state.currentRegion = region;
+      Sound.region = region; setWeather(region);
       if (COUNTRIES.indexOf(region) >= 0 && !state.passport.has(region)) {
         state.passport.add(region);
         state.rapport[region] = Math.min(100, state.rapport[region] + 5);
+        Sound.stamp();
         showToast('🛂 Passport stamped: ' + CULTURE_META[region].flag + ' ' + CULTURE_META[region].name + '!', 2800);
         save();
       }
@@ -449,10 +591,16 @@
     const on = tileAt(state.player.x, state.player.y) === T.BIKE;
     if (!state.biking) {
       if (!on) { showToast('You can only hop on your bike on a 🚲 cycle path!'); return; }
-      state.biking = true; showToast('🚲 Hopped on your bike! Zoom around. (S to hop off)');
+      state.biking = true; Sound.bike(); showToast('🚲 Hopped on your bike! Zoom around. (S to hop off)');
     } else {
-      state.biking = false; showToast('🚶 Hopped off your bike.');
+      state.biking = false; Sound.bike(); showToast('🚶 Hopped off your bike.');
     }
+  }
+  function toggleMute() {
+    Sound.setMuted(!Sound.muted);
+    showToast(Sound.muted ? '🔇 Sound off' : '🔊 Sound on');
+    save();
+    const btn = document.getElementById('btn-mute'); if (btn) btn.textContent = Sound.muted ? '🔇' : '🔊';
   }
 
   function facingTile() {
@@ -604,11 +752,13 @@
     if (a.good) {
       state.harmony += 10;
       state.rapport[k.home] = Math.min(100, state.rapport[k.home] + 12);
-      if (dispel && state.activeMuddle) { state.activeMuddle.alive = false; clearedMuddle = true; state.harmony += 5; }
-      else if (!dispel && !state.befriended.has(k.id)) { state.befriended.add(k.id); newFriend = true; state.harmony += 5; }
+      if (dispel && state.activeMuddle) { state.activeMuddle.alive = false; clearedMuddle = true; state.harmony += 5; Sound.dispel(); }
+      else if (!dispel && !state.befriended.has(k.id)) { state.befriended.add(k.id); newFriend = true; state.harmony += 5; Sound.friend(); }
+      else Sound.good();
     } else {
       state.harmony += 2;
       state.rapport[k.home] = Math.min(100, state.rapport[k.home] + 3);
+      Sound.bad();
     }
     logTip(k.home, a.tip);
     save();
@@ -651,6 +801,8 @@
   function lightLantern(culture) {
     state.lanterns.add(culture);
     save(); updateHud();
+    Sound.lantern(); flash = 1;
+    const L = LANTERN_AT[culture]; if (L) spawnBurst(L[0] + 0.5, L[1] + 0.5, '#ffe082', 26);
     const g = GUARDIANS[culture];
     const lines = g.lines.concat(['🏮 ' + state.lanterns.size + ' of 4 Lanterns are lit. ' +
       (state.lanterns.size < 4 ? 'The Bridge grows brighter — on to the next land!' : '')]);
@@ -677,10 +829,10 @@
     el.textContent = text;
   }
 
-  function showEnding() { openDialogue(STORY_END, '🌏 The World Bridge'); }
+  function showEnding() { Sound.victory(); flash = 1; openDialogue(STORY_END, '🌏 The World Bridge'); }
 
   /* --------------------------------- menu --------------------------------- */
-  function openMenu() { state.mode = 'menu'; state.menuView = 'main'; renderMenu(); }
+  function openMenu() { Sound.menu(); state.mode = 'menu'; state.menuView = 'main'; renderMenu(); }
   function closeMenu() { document.getElementById('menu').classList.remove('show'); state.mode = 'play'; }
   function setMenuView(v) { state.menuView = v; renderMenu(); }
 
@@ -798,7 +950,8 @@
         passport: Array.from(state.passport), rapport: state.rapport,
         journal: state.journal, won: state.won,
         lanterns: Array.from(state.lanterns), introSeen: state.introSeen,
-        dispelled: state.muddles.filter(mu => !mu.alive).map(mu => mu.x + ',' + mu.y)
+        dispelled: state.muddles.filter(mu => !mu.alive).map(mu => mu.x + ',' + mu.y),
+        muted: Sound.muted
       }));
     } catch (e) {}
   }
@@ -812,6 +965,7 @@
       (d.journal || []).forEach(e => { state.journal.push(e); state.journalKeys.add(e.tip); });
       (d.lanterns || []).forEach(c => state.lanterns.add(c));
       state.introSeen = !!d.introSeen;
+      Sound.muted = !!d.muted;
       const dispelled = new Set(d.dispelled || []);
       state.muddles.forEach(mu => { if (dispelled.has(mu.x + ',' + mu.y)) mu.alive = false; });
     } catch (e) {}
@@ -834,6 +988,7 @@
       if (k === 'f' || k === 'F' || k === 'Enter') { e.preventDefault(); openMenu(); return; }
       if (k === ' ') { e.preventDefault(); interact(); return; }
       if (k === 's' || k === 'S') { e.preventDefault(); toggleBike(); return; }
+      if (k === 'm' || k === 'M') { e.preventDefault(); toggleMute(); return; }
       // quick-jump menu shortcuts
       if (k === 'c' || k === 'C') { e.preventDefault(); openMenu(); setMenuView('friends'); return; }
       if (k === 'p' || k === 'P') { e.preventDefault(); openMenu(); setMenuView('phrase'); return; }
@@ -899,6 +1054,8 @@
     if (menuBtn) menuBtn.addEventListener('click', () => { if (state.mode === 'play') openMenu(); else if (state.mode === 'menu') closeMenu(); });
     const bikeBtn = document.getElementById('btn-bike');
     if (bikeBtn) bikeBtn.addEventListener('click', () => { if (state.mode === 'play') toggleBike(); });
+    const muteBtn = document.getElementById('btn-mute');
+    if (muteBtn) muteBtn.addEventListener('click', () => { Sound.init(); toggleMute(); });
   }
 
   /* --------------------------------- loop --------------------------------- */
@@ -910,6 +1067,7 @@
         for (const d of ['up', 'down', 'left', 'right']) if (state.keys.has(d)) { tryMove(d); break; }
       }
     }
+    updateParticles();
     render();
     requestAnimationFrame(loop);
   }
@@ -920,6 +1078,8 @@
     state.player = { x: 23, y: 20, dir: 'down', moving: false, fromX: 23, fromY: 20, moveStart: 0, moveDur: WALK_MS };
     state.currentRegion = regionAt(23, 20);
     load(); initCanvas(); updateHud(); wireTouch(); updateObjective();
+    Sound.init(); Sound.region = state.currentRegion; setWeather(state.currentRegion);
+    const mb = document.getElementById('btn-mute'); if (mb) mb.textContent = Sound.muted ? '🔇' : '🔊';
     window.addEventListener('keydown', onKeyDown); window.addEventListener('keyup', onKeyUp);
     requestAnimationFrame(loop);
     if (!state.introSeen) {
