@@ -68,6 +68,9 @@ Kanto is now walkable end to end:
 - **3 save slots** — START → SAVE picks a slot (with overwrite confirmation); the title screen's CONTINUE opens a slot picker showing each save's location, party, playtime and date. Saved to `localStorage`; the post-credits autosave writes to your current slot
 - Original chiptune soundtrack (WebAudio sequencer): 9 tracks + full SFX set
 - GBA-feel UI: typewriter dialogue, FRLG-style boxes, HP/EXP bar animations, location banners, ending credits
+- **Typed move particle effects** — every attack throws a themed burst on impact (fire embers rise, water splashes, electric zaps, leaves flutter, rocks tumble, psychic rings, ghost wisps…), scaled up on super-effective hits
+- **Real-time day/night** tint on the overworld (dawn/day/dusk/night follow your actual clock)
+- **Text-speed setting** (Slow / Mid / Fast) in the START menu, saved with your file
 
 ## 🧱 Code layout
 

@@ -70,8 +70,22 @@ const Game = {
   player:{ x:14, y:22, dir:0, ox:0, oy:0, moving:false, prog:0, anim:0, run:false },
   cam:{x:0,y:0},
   busy:false, steps:0, time:0, playFrames:0, saveSlot:null,
-  surfing:false, strengthActive:false, noEncounters:false,
+  surfing:false, strengthActive:false, noEncounters:false, textSpeed:1,
 };
+function textRate(){ return [1.0,1.9,3.4][Game.textSpeed]||1.9; }
+
+// real-time day/night tint for outdoor maps → [r,g,b,a] or null
+function dayNightOverlay(){
+  const d = new Date(), h = d.getHours() + d.getMinutes()/60;
+  let night = 0;
+  if(h<5 || h>=20) night = 1;
+  else if(h<6) night = 6-h;           // 05:00–06:00 fade out
+  else if(h>=19) night = h-19;        // 19:00–20:00 fade in
+  if(night>0) return [24,32,76, 0.34*Math.min(1,night)];
+  if(h>=6 && h<8){ const t=1-(h-6)/2; return [250,175,115, 0.18*t]; }   // dawn
+  if(h>=17 && h<19){ const t=(h-17)/2; return [250,150,90, 0.22*t]; }   // dusk
+  return null;
+}
 
 // Fly / teleport destinations (Everything-Allowed mode & post-game)
 const FLY_POINTS = [
@@ -302,8 +316,9 @@ Dlg.sayHold = async function(text){
   const wrapped = UI.wrap(G_ctx, text, L.w - L.pad*2 - 14, FONT_D);
   Dlg.active=true; Dlg.lines=wrapped.slice(0,2); Dlg.shown=0; Dlg.done=false;
   const total = Dlg.lines.join('').length;
+  const base = textRate();
   while(Dlg.shown < total){
-    Dlg.shown = Math.min(total, Dlg.shown + 1.6);
+    Dlg.shown = Math.min(total, Dlg.shown + base);
     if(Input.took('A')){ Dlg.shown=total; break; }
     await nextFrame();
   }
@@ -634,6 +649,11 @@ function worldDraw(x){
       drawActor(x, n.x*TILE+n.ox, n.y*TILE+n.oy, n.sprite, n.dirN, n.anim, cx, cy, m);
     }
   }
+  // real-time day/night tint (outdoor maps only)
+  if(m.outdoor){
+    const t = dayNightOverlay();
+    if(t){ x.save(); x.fillStyle=`rgba(${t[0]},${t[1]},${t[2]},${t[3]})`; x.fillRect(0,0,VW,VH); x.restore(); }
+  }
 }
 function drawActor(x, ax, ay, sprite, dir, anim, cx, cy, m){
   const sxp = Math.round((ax-cx)*DS), syp = Math.round((ay-5-cy)*DS);
@@ -659,8 +679,8 @@ async function openStartMenu(){
       if(canFly()) items.push('FLY');
       items.push('SAVE');
       if(Game.flags.freeRoam) items.push('ENCOUNTERS: '+(Game.noEncounters?'OFF':'ON'));
-      items.push('SOUND: '+(SND.muted?'OFF':'ON'), 'CLOSE');
-      const w = Game.flags.freeRoam ? 214 : 182;
+      items.push('TEXT: '+['SLOW','MID','FAST'][Game.textSpeed], 'SOUND: '+(SND.muted?'OFF':'ON'), 'CLOSE');
+      const w = 220;
       const idx = await Menu.open(items, {x:VW-w-8, y:8, w});
       if(idx<0) break;
       const label = items[idx];
@@ -685,6 +705,7 @@ async function openStartMenu(){
         }
       }
       else if(label.startsWith('ENCOUNTERS')){ Game.noEncounters = !Game.noEncounters; continue; }
+      else if(label.startsWith('TEXT')){ Game.textSpeed = (Game.textSpeed+1)%3; continue; }
       else if(label.startsWith('SOUND')){ SND.toggleMute(); continue; }
       else break; // CLOSE
     }
@@ -887,7 +908,7 @@ function saveGame(slot){
     v:2, flags:Game.flags, bag:Game.bag, party:Game.party,
     map:Game.map.id, x:P.x, y:P.y, dir:P.dir, steps:Game.steps,
     playFrames:Game.playFrames||0, savedAt:Date.now(),
-    noEncounters:!!Game.noEncounters,
+    noEncounters:!!Game.noEncounters, textSpeed:Game.textSpeed,
   };
   try{
     localStorage.setItem(slotKey(slot), JSON.stringify(data));
@@ -904,6 +925,7 @@ function loadGame(slot){
     Game.flags = d.flags||{}; Game.bag = d.bag||defaultBag(); Game.party = d.party||defaultParty();
     Game.steps = d.steps||0; Game.playFrames = d.playFrames||0;
     Game.noEncounters = !!d.noEncounters;
+    Game.textSpeed = d.textSpeed ?? 1;
     Game.saveSlot = slot;
     loadMap(d.map||'town', d.x??14, d.y??22, d.dir??1);
     return true;

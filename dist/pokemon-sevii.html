@@ -4027,8 +4027,9 @@ Dlg.say = async function(text){
     Dlg.active=true; Dlg.lines=page; Dlg.shown=0; Dlg.done=false;
     const total = page.join('').length;
     // typewriter
+    const base = (typeof textRate==='function') ? textRate() : 1.6;
     while(Dlg.shown < total){
-      Dlg.shown = Math.min(total, Dlg.shown + (Input.held('A')||Input.held('B') ? 3 : 1.4));
+      Dlg.shown = Math.min(total, Dlg.shown + ((Input.held('A')||Input.held('B')) ? base*2.4 : base));
       if(Input.took('A')) { Dlg.shown = total; break; }
       await nextFrame();
     }
@@ -4224,8 +4225,22 @@ const Game = {
   player:{ x:14, y:22, dir:0, ox:0, oy:0, moving:false, prog:0, anim:0, run:false },
   cam:{x:0,y:0},
   busy:false, steps:0, time:0, playFrames:0, saveSlot:null,
-  surfing:false, strengthActive:false, noEncounters:false,
+  surfing:false, strengthActive:false, noEncounters:false, textSpeed:1,
 };
+function textRate(){ return [1.0,1.9,3.4][Game.textSpeed]||1.9; }
+
+// real-time day/night tint for outdoor maps → [r,g,b,a] or null
+function dayNightOverlay(){
+  const d = new Date(), h = d.getHours() + d.getMinutes()/60;
+  let night = 0;
+  if(h<5 || h>=20) night = 1;
+  else if(h<6) night = 6-h;           // 05:00–06:00 fade out
+  else if(h>=19) night = h-19;        // 19:00–20:00 fade in
+  if(night>0) return [24,32,76, 0.34*Math.min(1,night)];
+  if(h>=6 && h<8){ const t=1-(h-6)/2; return [250,175,115, 0.18*t]; }   // dawn
+  if(h>=17 && h<19){ const t=(h-17)/2; return [250,150,90, 0.22*t]; }   // dusk
+  return null;
+}
 
 // Fly / teleport destinations (Everything-Allowed mode & post-game)
 const FLY_POINTS = [
@@ -4456,8 +4471,9 @@ Dlg.sayHold = async function(text){
   const wrapped = UI.wrap(G_ctx, text, L.w - L.pad*2 - 14, FONT_D);
   Dlg.active=true; Dlg.lines=wrapped.slice(0,2); Dlg.shown=0; Dlg.done=false;
   const total = Dlg.lines.join('').length;
+  const base = textRate();
   while(Dlg.shown < total){
-    Dlg.shown = Math.min(total, Dlg.shown + 1.6);
+    Dlg.shown = Math.min(total, Dlg.shown + base);
     if(Input.took('A')){ Dlg.shown=total; break; }
     await nextFrame();
   }
@@ -4788,6 +4804,11 @@ function worldDraw(x){
       drawActor(x, n.x*TILE+n.ox, n.y*TILE+n.oy, n.sprite, n.dirN, n.anim, cx, cy, m);
     }
   }
+  // real-time day/night tint (outdoor maps only)
+  if(m.outdoor){
+    const t = dayNightOverlay();
+    if(t){ x.save(); x.fillStyle=`rgba(${t[0]},${t[1]},${t[2]},${t[3]})`; x.fillRect(0,0,VW,VH); x.restore(); }
+  }
 }
 function drawActor(x, ax, ay, sprite, dir, anim, cx, cy, m){
   const sxp = Math.round((ax-cx)*DS), syp = Math.round((ay-5-cy)*DS);
@@ -4813,8 +4834,8 @@ async function openStartMenu(){
       if(canFly()) items.push('FLY');
       items.push('SAVE');
       if(Game.flags.freeRoam) items.push('ENCOUNTERS: '+(Game.noEncounters?'OFF':'ON'));
-      items.push('SOUND: '+(SND.muted?'OFF':'ON'), 'CLOSE');
-      const w = Game.flags.freeRoam ? 214 : 182;
+      items.push('TEXT: '+['SLOW','MID','FAST'][Game.textSpeed], 'SOUND: '+(SND.muted?'OFF':'ON'), 'CLOSE');
+      const w = 220;
       const idx = await Menu.open(items, {x:VW-w-8, y:8, w});
       if(idx<0) break;
       const label = items[idx];
@@ -4839,6 +4860,7 @@ async function openStartMenu(){
         }
       }
       else if(label.startsWith('ENCOUNTERS')){ Game.noEncounters = !Game.noEncounters; continue; }
+      else if(label.startsWith('TEXT')){ Game.textSpeed = (Game.textSpeed+1)%3; continue; }
       else if(label.startsWith('SOUND')){ SND.toggleMute(); continue; }
       else break; // CLOSE
     }
@@ -5041,7 +5063,7 @@ function saveGame(slot){
     v:2, flags:Game.flags, bag:Game.bag, party:Game.party,
     map:Game.map.id, x:P.x, y:P.y, dir:P.dir, steps:Game.steps,
     playFrames:Game.playFrames||0, savedAt:Date.now(),
-    noEncounters:!!Game.noEncounters,
+    noEncounters:!!Game.noEncounters, textSpeed:Game.textSpeed,
   };
   try{
     localStorage.setItem(slotKey(slot), JSON.stringify(data));
@@ -5058,6 +5080,7 @@ function loadGame(slot){
     Game.flags = d.flags||{}; Game.bag = d.bag||defaultBag(); Game.party = d.party||defaultParty();
     Game.steps = d.steps||0; Game.playFrames = d.playFrames||0;
     Game.noEncounters = !!d.noEncounters;
+    Game.textSpeed = d.textSpeed ?? 1;
     Game.saveSlot = slot;
     loadMap(d.map||'town', d.x??14, d.y??22, d.dir??1);
     return true;
@@ -5177,6 +5200,86 @@ const B = Battle;
 function bmon(){ return Game.party[B.pIdx]; }
 function emon(){ return B.eParty[B.eIdx]; }
 
+// ---------- typed move particle effects ----------
+const TYPE_FX = {
+  fire:    { colors:['#f8e070','#f89030','#e84820'], mode:'rise',    spd:2.2, g:-0.05, life:22, size:3.2, count:16 },
+  water:   { colors:['#a8d8f8','#5aa0e8','#3878c8'], mode:'burst',   spd:2.4, g:0.14,  life:22, size:3.0, count:16 },
+  electric:{ colors:['#f8f070','#f8d030'],           mode:'zap',     spd:3.2, g:0,     life:12, size:3.0, count:14 },
+  grass:   { colors:['#78c850','#48a038','#a0d860'], mode:'flutter', spd:1.6, g:0.05,  life:30, size:4.0, count:12 },
+  ice:     { colors:['#c8f0f8','#a0e0f0','#ffffff'], mode:'burst',   spd:2.2, g:0.06,  life:22, size:2.6, count:16 },
+  rock:    { colors:['#b09068','#8a6a48','#c8b090'], mode:'fall',    spd:2.4, g:0.24,  life:22, size:3.4, count:14 },
+  ground:  { colors:['#c8a870','#a07840','#8a6030'], mode:'fall',    spd:2.2, g:0.24,  life:22, size:3.4, count:14 },
+  poison:  { colors:['#c060c0','#a040a0','#e080e0'], mode:'rise',    spd:1.6, g:-0.02, life:26, size:3.0, count:14 },
+  psychic: { colors:['#e080e0','#c060c0','#f8b0f8'], mode:'ring',    spd:2.2, g:0,     life:20, size:3.0, count:8  },
+  ghost:   { colors:['#7050a0','#4a3868','#9070c0'], mode:'wisp',    spd:1.4, g:-0.03, life:28, size:4.0, count:12 },
+  dark:    { colors:['#4a3850','#2e2440','#6a5078'], mode:'wisp',    spd:1.6, g:0,     life:24, size:4.0, count:12 },
+  bug:     { colors:['#a8c040','#88a838','#c0d860'], mode:'burst',   spd:2.0, g:0.10,  life:20, size:3.0, count:14 },
+  flying:  { colors:['#e8f0f8','#c8d8f0','#ffffff'], mode:'burst',   spd:2.8, g:0.02,  life:16, size:2.6, count:14 },
+  fighting:{ colors:['#f8f0d0','#f8d048','#ffffff'], mode:'burst',   spd:3.0, g:0.05,  life:14, size:3.6, count:12, star:true },
+  normal:  { colors:['#ffffff','#f8f0d0','#f8e8b0'], mode:'burst',   spd:2.6, g:0.05,  life:14, size:3.2, count:12, star:true },
+  steel:   { colors:['#d8dce4','#a8b0bc','#ffffff'], mode:'burst',   spd:2.8, g:0.06,  life:16, size:2.6, count:14 },
+  dragon:  { colors:['#7868c8','#a890f0','#c0b0f8'], mode:'burst',   spd:2.6, g:0.03,  life:20, size:3.2, count:14 },
+};
+function spawnMoveFx(type, side, boost){
+  const def = TYPE_FX[type] || TYPE_FX.normal;
+  const tx = side==='p' ? 338 : 120;   // enemy mon vs player mon centre
+  const ty = side==='p' ? 100 : 200;
+  const n = Math.round((def.count||14) * (boost||1));
+  for(let i=0;i<n;i++){
+    const a = Math.random()*Math.PI*2, sp = def.spd*(0.5+Math.random());
+    let vx = Math.cos(a)*sp, vy = Math.sin(a)*sp;
+    if(def.mode==='rise'){ vy = -Math.abs(vy)-1; vx*=0.6; }
+    else if(def.mode==='fall'){ vy = Math.abs(vy)*0.6 - 1; }
+    else if(def.mode==='ring'){ vx = Math.cos(a)*def.spd; vy = Math.sin(a)*def.spd*0.55; }
+    B.view.fx.push({
+      x: tx + (Math.random()*24-12), y: ty + (Math.random()*24-12), vx, vy,
+      g: def.g||0, life: def.life, max: def.life, size: def.size,
+      col: def.colors[i%def.colors.length], mode: def.mode,
+      star: !!def.star, rot: Math.random()*6.28, spin: (Math.random()-0.5)*0.5,
+    });
+  }
+}
+function updateFx(){
+  const fx = B.view.fx; if(!fx) return;
+  for(let i=fx.length-1;i>=0;i--){
+    const p = fx[i];
+    p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.rot+=p.spin; p.life--;
+    if(p.life<=0) fx.splice(i,1);
+  }
+}
+function drawFx(x){
+  const fx = B.view.fx; if(!fx) return;
+  for(const p of fx){
+    const a = Math.max(0, p.life/p.max);
+    x.save(); x.globalAlpha = a;
+    if(p.mode==='zap'){
+      x.strokeStyle=p.col; x.lineWidth=1.8; x.lineCap='round';
+      const s=p.size*1.8;
+      x.beginPath(); x.moveTo(p.x-s,p.y-s*0.5); x.lineTo(p.x,p.y);
+      x.lineTo(p.x-s*0.4,p.y+s*0.4); x.lineTo(p.x+s,p.y+s*0.2); x.stroke();
+    } else if(p.mode==='ring'){
+      x.strokeStyle=p.col; x.lineWidth=2; x.globalAlpha=a*0.85;
+      const r=(p.max-p.life)*1.5+2; x.beginPath(); x.arc(p.x,p.y,r,0,7); x.stroke();
+    } else if(p.mode==='flutter'){
+      x.translate(p.x,p.y); x.rotate(p.rot); x.fillStyle=p.col;
+      x.beginPath(); x.ellipse(0,0,p.size,p.size*0.42,0,0,7); x.fill();
+    } else if(p.mode==='wisp'){
+      x.fillStyle=p.col; x.globalAlpha=a*0.7;
+      x.beginPath(); x.arc(p.x,p.y,p.size*(0.6+a*0.6),0,7); x.fill();
+    } else if(p.star){
+      x.translate(p.x,p.y); x.rotate(p.rot); x.fillStyle=p.col;
+      const s=p.size;
+      x.beginPath();
+      for(let k=0;k<8;k++){ const rr=k%2?s*0.4:s; const aa=k*Math.PI/4;
+        const px=Math.cos(aa)*rr, py=Math.sin(aa)*rr; k?x.lineTo(px,py):x.moveTo(px,py); }
+      x.closePath(); x.fill();
+    } else {
+      x.fillStyle=p.col; x.beginPath(); x.arc(p.x,p.y,p.size,0,7); x.fill();
+    }
+    x.restore();
+  }
+}
+
 function stageMul(s){ return s>=0 ? (2+s)/2 : 2/(2-s); }
 function initVolatile(m){ m._st={atk:0,def:0,spa:0,spd:0,spe:0}; m._flinch=false; }
 function clearVolatile(m){ delete m._st; delete m._flinch; }
@@ -5192,8 +5295,9 @@ async function bmsg(text, opts){
   opts = opts||{};
   B.text = text; B.textShown = 0;
   const total = text.length;
+  const base = (typeof textRate==='function') ? textRate() : 1.7;
   while(B.textShown < total){
-    B.textShown = Math.min(total, B.textShown + (Input.held('A')? 3.4 : 1.7));
+    B.textShown = Math.min(total, B.textShown + (Input.held('A')? base*2 : base));
     if(Input.took('A')) { B.textShown = total; break; }
     await nextFrame();
   }
@@ -5262,6 +5366,7 @@ async function runBattle(){
     eX:520, eY:0, pX:-200, pY:0, eHp:1, pHp:1, exp:0,
     eShake:0, pShake:0, eFlash:0, pFlash:0, eDrop:0, pDrop:0,
     trainerX:null, ballFrame:-1, ballX:0, ballY:0, eHidden:false, pHidden:true,
+    fx:[],
   };
   const pm0 = bmon();
   B.view.exp = (pm0.exp-expForLevel(pm0.lvl))/(expForLevel(pm0.lvl+1)-expForLevel(pm0.lvl));
@@ -5537,6 +5642,7 @@ async function useMove(user, target, slot, side){
       target.hp = Math.max(0, target.hp - r.dmg);
       // hit feedback
       SND.sfx(eff>1?'hitSuper': eff<1?'hitWeak':'hit');
+      spawnMoveFx(M.type, side, eff>1?1.6:eff<1?0.6:1);   // typed particle burst on target
       const vk = side==='p' ? 'eShake':'pShake';
       const fk = side==='p' ? 'eFlash':'pFlash';
       B.view[fk]=1;
@@ -5796,6 +5902,7 @@ async function throwBall(item){
 // ---------- draw ----------
 Battle.draw = function(x){
   if(!B.active) return;
+  updateFx();
   const bg = battleBg();
   const grd = x.createLinearGradient(0,0,0,VH);
   grd.addColorStop(0,bg.sky[0]); grd.addColorStop(1,bg.sky[1]);
@@ -5840,6 +5947,9 @@ Battle.draw = function(x){
     x.restore();
     x.restore();
   }
+
+  // move particle effects (above mons, below panels)
+  drawFx(x);
 
   // enemy info panel
   const em = emon();

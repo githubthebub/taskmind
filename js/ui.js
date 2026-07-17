@@ -125,8 +125,9 @@ Dlg.say = async function(text){
     Dlg.active=true; Dlg.lines=page; Dlg.shown=0; Dlg.done=false;
     const total = page.join('').length;
     // typewriter
+    const base = (typeof textRate==='function') ? textRate() : 1.6;
     while(Dlg.shown < total){
-      Dlg.shown = Math.min(total, Dlg.shown + (Input.held('A')||Input.held('B') ? 3 : 1.4));
+      Dlg.shown = Math.min(total, Dlg.shown + ((Input.held('A')||Input.held('B')) ? base*2.4 : base));
       if(Input.took('A')) { Dlg.shown = total; break; }
       await nextFrame();
     }
