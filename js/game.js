@@ -216,11 +216,13 @@
 
     // Muddles — grey obstacles of misunderstanding, 3 per country. Clear all
     // three (with a Kindred ally) to relight that country's Lantern.
+    // Muddle spots are chosen on open ground (not on tall-grass patches, signs,
+    // NPCs or landmarks) so they read as distinct obstacles and stay reachable.
     const mud = [
-      ['india', 8, 18], ['india', 12, 25], ['india', 4, 24],
-      ['japan', 31, 25], ['japan', 37, 19], ['japan', 41, 25],
-      ['uk', 20, 8], ['uk', 26, 6], ['uk', 21, 14],
-      ['usa', 20, 30], ['usa', 27, 33], ['usa', 22, 38]
+      ['india', 11, 23], ['india', 16, 19], ['india', 8, 26],
+      ['japan', 36, 19], ['japan', 37, 25], ['japan', 41, 18],
+      ['uk', 20, 10], ['uk', 26, 9], ['uk', 21, 15],
+      ['usa', 20, 32], ['usa', 27, 35], ['usa', 21, 35]
     ];
     state.muddles = mud.map(([culture, x, y]) => ({ culture, x, y, alive: true }));
   }
@@ -499,7 +501,10 @@
     for (const p of weather) {
       p.x += p.vx; p.y += p.vy;
       if (p.type === 'petal' || p.type === 'leaf') p.x += Math.sin(t + p.sway) * 0.4;
-      if (p.y > H + 10 || p.x < -12) { Object.assign(p, newParticle(p.type, false)); p.x = Math.random() * W; continue; }
+      // wrap around every edge (handles up-drifting motes/sparks too)
+      if (p.y > H + 10) { p.y = -8; p.x = Math.random() * W; }
+      else if (p.y < -14) { p.y = H + 8; p.x = Math.random() * W; }
+      if (p.x < -14) p.x = W + 8; else if (p.x > W + 14) p.x = -8;
       if (p.type === 'rain') {
         ctx.strokeStyle = 'rgba(174,214,241,0.5)'; ctx.lineWidth = 1.4;
         ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + p.vx, p.y + p.len); ctx.stroke();
@@ -942,7 +947,7 @@
     document.getElementById('hud-caught').textContent = state.befriended.size + '/' + KINDREDS.length;
     const lan = document.getElementById('hud-lanterns'); if (lan) lan.textContent = state.lanterns.size + '/4';
   }
-  const SAVE_KEY = 'culture-bridge-save-v4';
+  const SAVE_KEY = 'culture-bridge-save-v5';
   function save() {
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify({
