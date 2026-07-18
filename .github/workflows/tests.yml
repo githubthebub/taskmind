@@ -1,0 +1,22 @@
+name: Tests
+
+# BetterDecisions unit tests. This workflow deliberately does NOT touch
+# GitHub Pages — this repo's Pages site belongs to Archetype Atlas
+# (deploy-pages.yml); BetterDecisions deploys from its own repo.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run unit tests
+        run: node --test
