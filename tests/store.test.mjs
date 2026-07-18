@@ -6,6 +6,7 @@ import {
   newDecision,
   checkinVerdict,
   triageRecommendation,
+  recommendFrameworks,
   valuesFitScore,
   rankOptionsByValues,
   isReviewDue,
@@ -170,6 +171,18 @@ test("triage: reversible low/medium stakes fast-track; everything else full", ()
   assert.equal(triageRecommendation(null, "low"), "full");
 });
 
+test("recommendFrameworks matches the decision's shape and returns real ids", () => {
+  assert.deepEqual(recommendFrameworks(false, "high"), ["fear-setting", "premortem", "regret-minimization"]);
+  assert.deepEqual(recommendFrameworks(false, "medium"), ["fear-setting", "regret-minimization", "second-order"]);
+  assert.deepEqual(recommendFrameworks(true, "high"), ["premortem", "outside-view", "ten-ten-ten"]);
+  assert.deepEqual(recommendFrameworks(true, "low"), ["ten-ten-ten", "opportunity-cost", "second-order"]);
+  assert.deepEqual(recommendFrameworks(null, null), ["ten-ten-ten", "opportunity-cost", "second-order"]);
+  const ids = FRAMEWORKS.map((f) => f.id);
+  for (const rec of [recommendFrameworks(false, "high"), recommendFrameworks(true, "low")]) {
+    for (const id of rec) assert.ok(ids.includes(id), `${id} is a real framework`);
+  }
+});
+
 test("valuesFitScore averages only rated values", () => {
   assert.equal(valuesFitScore(null), null);
   assert.equal(valuesFitScore({}), null);
@@ -275,6 +288,19 @@ test("compileBrief assembles the narrative from wizard answers", () => {
   assert.match(brief, /coin said "Take the job" and I felt relieved/);
 
   assert.equal(compileBrief(newDecision(), FRAMEWORKS), "");
+});
+
+test("compileBrief includes plan, tripwire and shadow values", () => {
+  const d = newDecision();
+  d.options = ["Go", "Stay"];
+  d.shadowValues = ["Being liked", "Comfort"];
+  d.plan = "When Monday 9am hits, I send the email.";
+  d.tripwire = "still dreading it after 3 months";
+  const brief = compileBrief(d, FRAMEWORKS);
+  assert.match(brief, /Honesty check — also in the driver's seat: being liked, comfort\./);
+  assert.match(brief, /The plan: When Monday 9am hits, I send the email\./);
+  assert.match(brief, /Tripwire — revisit if: still dreading it after 3 months\./);
+  assert.ok(!brief.includes(".."), "no double punctuation");
 });
 
 test("compileBrief keeps option/notes pairing when a middle option is blanked", () => {

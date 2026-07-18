@@ -1,9 +1,10 @@
 import { el, toast, chip, ratingRow } from "../ui.js";
-import { VALUES, FRAMEWORKS } from "../data/content.js";
+import { VALUES, SHADOW_VALUES, FRAMEWORKS } from "../data/content.js";
 import {
   newDecision,
   checkinVerdict,
   triageRecommendation,
+  recommendFrameworks,
   valuesFitScore,
   defaultReviewDate,
   compileBrief,
@@ -64,14 +65,29 @@ export function wizardView(ctx) {
   }
 
   function renderProgress() {
+    // Completed steps are buttons — one tap takes you back to revise.
     progress.replaceChildren(
       ...STEPS.map((s, i) =>
-        el("div", {
-          class: `step-dot${i < draft.step ? " done" : i === draft.step ? " current" : ""}`,
-          title: s.label,
-        })
+        i < draft.step
+          ? el("button", {
+              type: "button",
+              class: "step-dot done",
+              title: `Back to: ${s.label}`,
+              "aria-label": `Back to step ${i + 1}: ${s.label}`,
+              onClick: () => goStep(i),
+            })
+          : el("div", {
+              class: `step-dot${i === draft.step ? " current" : ""}`,
+              title: s.label,
+            })
       )
     );
+  }
+
+  /** Focus the first text field of a step — desktop only (no popping mobile keyboards). */
+  function autofocus() {
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+    stage.querySelector('input[type="text"], textarea')?.focus({ preventScroll: true });
   }
 
   function header(step) {
@@ -189,7 +205,7 @@ export function wizardView(ctx) {
         )
       ),
       el("label", { class: "field-label", for: "emotion" }, "Name what you're feeling about this decision"),
-      el("p", { class: "field-hint" }, "A feeling you can name is a feeling you can factor in. One or two words is plenty."),
+      el("p", { class: "field-hint" }, "One or two words is plenty. (This isn't a ritual — affect-labeling studies show that putting a feeling into words measurably lowers its grip on you.)"),
       emotionInput,
       el("label", { class: "field-label", for: "intensity" }, "How loud is that feeling?"),
       slider,
@@ -276,6 +292,8 @@ export function wizardView(ctx) {
       }, draft.detail),
       el("span", { class: "field-label" }, "Your options (2–5)"),
       optionsWrap,
+      el("p", { class: "field-hint" },
+        "Stuck at two options? “Whether or not” is the classic narrow frame — decision research finds that adding even one genuinely different third option markedly improves outcomes."),
       el("label", { class: "field-label", for: "d-deadline" }, "Real deadline (optional)"),
       el("p", { class: "field-hint" }, "Parkinson's law applies to choices too — an open-ended decision expands to fill your whole head."),
       el("input", {
@@ -340,7 +358,7 @@ export function wizardView(ctx) {
             "div",
             { class: "callout info" },
             draft.reversible === false
-              ? "One-way door — worth the full walkthrough. Slow is appropriate here; this is exactly the kind of choice the next five steps exist for."
+              ? "One-way door — worth the full walkthrough. Slow is appropriate here; this is exactly the kind of choice the next five steps exist for. And if the deadline allows: sleep on it once before committing — preferences genuinely stabilise overnight."
               : "High stakes even if reversible — give it the full walkthrough."
           )
         );
@@ -403,6 +421,18 @@ export function wizardView(ctx) {
   function stepValues() {
     const step = STEPS[3];
     syncOptionNotes();
+    if (!Array.isArray(draft.shadowValues)) draft.shadowValues = [];
+    const shadowNote = el("div", {});
+    function refreshShadowNote() {
+      shadowNote.replaceChildren(
+        draft.shadowValues.length
+          ? el("div", { class: "callout info" },
+              "Named, not shamed. Just check each option: would you still pick it if " +
+              draft.shadowValues.join(", ").toLowerCase() +
+              " weren't watching? If the answer flips, that motive was steering.")
+          : null
+      );
+    }
     const optionCardsWrap = el("div", {});
     const chipsWrap = el("div", { class: "chip-row" });
 
@@ -483,6 +513,7 @@ export function wizardView(ctx) {
 
     renderChips();
     renderOptionCards();
+    refreshShadowNote();
 
     const content = el(
       "div",
@@ -503,6 +534,20 @@ export function wizardView(ctx) {
       el("div", { style: { display: "flex", gap: "0.5rem", marginTop: "0.4rem" } },
         customInput,
         el("button", { class: "btn small ghost", type: "button", onClick: addCustom }, "Add")),
+      el("span", { class: "field-label", style: { marginTop: "1.4rem" } }, "Honesty check — anything else secretly in the driver's seat?"),
+      el("p", { class: "field-hint" },
+        "No judgement; these motives ride along in almost every big choice. Naming them takes their hands off the wheel — a motive you admit is one you can weigh."),
+      el("div", { class: "chip-row" },
+        SHADOW_VALUES.map((v) =>
+          chip(v, draft.shadowValues.includes(v), (pressed) => {
+            draft.shadowValues = pressed
+              ? [...new Set([...draft.shadowValues, v])]
+              : draft.shadowValues.filter((x) => x !== v);
+            refreshShadowNote();
+          })
+        )
+      ),
+      shadowNote,
       optionCardsWrap,
       navRow({ next: () => goStep(4) })
     );
@@ -521,12 +566,19 @@ export function wizardView(ctx) {
     }
     refreshCounter();
 
-    const cards = FRAMEWORKS.map((f) =>
-      el(
+    // Suggested lenses for this decision's shape open expanded; the rest sit
+    // collapsed behind a tap — eight open textareas at once is a wall, not a tool.
+    const suggested = recommendFrameworks(draft.reversible, draft.stakes);
+    const ordered = [
+      ...suggested.map((id) => FRAMEWORKS.find((f) => f.id === id)).filter(Boolean),
+      ...FRAMEWORKS.filter((f) => !suggested.includes(f.id)),
+    ];
+
+    const cards = ordered.map((f) => {
+      const startOpen = suggested.includes(f.id) || !!draft.frameworks[f.id]?.trim();
+      const body = el(
         "div",
-        { class: "card fw-card", style: { marginTop: "0.8rem" } },
-        el("h3", {}, f.name),
-        el("p", { class: "fw-source" }, f.source),
+        { class: "fw-body", hidden: !startOpen },
         el("p", { class: "fw-question" }, f.question),
         el("p", { class: "small muted" }, f.hint),
         el("textarea", {
@@ -537,8 +589,29 @@ export function wizardView(ctx) {
             refreshCounter();
           },
         }, draft.frameworks[f.id] || "")
-      )
-    );
+      );
+      const chevron = el("span", { class: "fw-chevron", "aria-hidden": "true" }, startOpen ? "▾" : "▸");
+      const head = el(
+        "button",
+        {
+          type: "button",
+          class: "fw-head",
+          "aria-expanded": String(startOpen),
+          onClick: () => {
+            const open = body.hidden;
+            body.hidden = !open;
+            head.setAttribute("aria-expanded", String(open));
+            chevron.textContent = open ? "▾" : "▸";
+            if (open) body.querySelector("textarea")?.focus({ preventScroll: true });
+          },
+        },
+        chevron,
+        el("span", { class: "fw-name" }, f.name),
+        suggested.includes(f.id) ? el("span", { class: "badge decided fw-suggested" }, "suggested") : null,
+        el("span", { class: "fw-source" }, f.source)
+      );
+      return el("div", { class: "card fw-card", style: { marginTop: "0.8rem" } }, head, body);
+    });
 
     const content = el(
       "div",
@@ -551,7 +624,7 @@ export function wizardView(ctx) {
           "p",
           { class: "muted" },
           "The Strategist's approach: you can't remove uncertainty, but you can remove predictable stupidity. " +
-            "Pick the two or three lenses that fit this decision and actually write — writing is where the fog lifts. " +
+            "The lenses that fit this decision's shape are already open — write in those, and tap open any other that calls to you. " +
             "(And watch for sunk costs: what you've already spent doesn't get a vote.)"
         ),
         el("div", { class: "step-quote" },
@@ -625,6 +698,8 @@ export function wizardView(ctx) {
       ),
       pleasingDetail,
       el("label", { class: "field-label", for: "c-confident" }, "3 · What would the most confident version of you do — the you that keeps promises to yourself?"),
+      el("p", { class: "field-hint" },
+        "Tip: answer in the third person — “what should [your name] do?”. Distanced self-talk measurably improves reasoning under emotion."),
       el("textarea", {
         id: "c-confident",
         placeholder: "Not the loudest you. The one with nothing to prove.",
@@ -812,6 +887,20 @@ export function wizardView(ctx) {
         placeholder: "The two or three reasons that actually carried the decision.",
         onInput: (e) => (draft.rationale = e.target.value),
       }, draft.rationale),
+      el("label", { class: "field-label", for: "d-plan" }, "Turn it into an if-then plan (optional, but it roughly doubles follow-through)"),
+      el("p", { class: "field-hint" }, "“When X happens, I will Y.” Implementation-intention research: a decision tied to a concrete trigger is far more likely to actually happen."),
+      el("input", {
+        type: "text", id: "d-plan", value: draft.plan || "",
+        placeholder: "e.g. When I get to my desk Monday 9am, I'll email my acceptance.",
+        onInput: (e) => (draft.plan = e.target.value),
+      }),
+      el("label", { class: "field-label", for: "d-tripwire" }, "Set a tripwire (optional)"),
+      el("p", { class: "field-hint" }, "One concrete early signal that means “stop and revisit this” — so drift can't quietly carry you past the exit."),
+      el("input", {
+        type: "text", id: "d-tripwire", value: draft.tripwire || "",
+        placeholder: "e.g. If I'm still dreading Mondays after 3 months, we re-decide.",
+        onInput: (e) => (draft.tripwire = e.target.value),
+      }),
       el("label", { class: "field-label", for: "review-on" }, "Honest look back on…"),
       el("input", {
         type: "date", id: "review-on", value: draft.reviewOn,
@@ -872,6 +961,7 @@ export function wizardView(ctx) {
   function renderStep() {
     renderProgress();
     stage.replaceChildren(...[renderers[draft.step]()].flat(Infinity));
+    autofocus();
   }
 
   renderStep();

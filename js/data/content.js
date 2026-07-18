@@ -41,6 +41,8 @@ export const MENTORS = [
       "Reduce the cost of failure instead of agonising over the odds of success.",
       "Ask what 10-years-older you would advise. Distance shrinks fake stakes and reveals real ones.",
       "If it isn't a clear yes, treat that as information — enthusiasm is data.",
+      "Finish with an if-then plan. 'When X happens, I will Y' roughly doubles follow-through in the research on implementation intentions — a decision without one is a wish.",
+      "Vote for an identity, not just an outcome: ask which option matches the person you're trying to become, then let the choice be one small vote for them.",
     ],
     readingDirections: [
       "Habit and identity — how small repeated choices compound into who you become.",
@@ -48,6 +50,9 @@ export const MENTORS = [
       "Saying no by default so the rare full yes has room to exist.",
       "Decision speed — sorting cheap reversible bets from the rare ones worth slowing down for.",
       "Fear-setting — defining a worst case precisely enough that it stops running the show.",
+      "Money psychology — being reasonable beats being perfectly rational, and room for error beats precision.",
+      "Deep focus — attention as the resource behind every other resource.",
+      "Thinking in bets — judging decisions by process, and quitting on time instead of on tilt.",
     ],
   },
   {
@@ -65,6 +70,8 @@ export const MENTORS = [
       "Run a premortem: assume it's a year later and the choice failed badly. Writing the story surfaces risks optimism hides.",
       "Beware sunk costs — the money, time or pride already spent is gone either way and shouldn't cast a vote.",
       "Quitting on time usually feels like quitting too early.",
+      "Beware 'whether or not' decisions. A choice with only two options usually means the real options haven't been found yet — widening the frame is the cheapest upgrade in decision science.",
+      "Prepare to be wrong: set a tripwire — a concrete early signal that means 'revisit this' — so drift can't quietly carry you past the exit.",
     ],
   },
   {
@@ -81,6 +88,7 @@ export const MENTORS = [
       "Not deciding is also a decision — it just hands the steering wheel to circumstance.",
       "Use the deathbed test: from the end of your life, most options don't even register. The ones that do are your answer.",
       "Action isn't just the effect of motivation, it's also the cause. If you're stuck, do something small and let clarity follow.",
+      "Fault and responsibility are different things. Whatever got you into this choice, the response is 100% yours — and that's good news, because responses are decidable.",
     ],
   },
   {
@@ -108,6 +116,16 @@ export const VALUES = [
 ];
 
 /**
+ * Counterfeit motives — the values-voice's honesty check. These aren't evil;
+ * they're just poor masters, because they put your worth in other people's
+ * hands or in outcomes you don't control.
+ */
+export const SHADOW_VALUES = [
+  "Being liked", "Looking successful", "Comfort", "Being right",
+  "Not rocking the boat", "Keeping up with others", "Proving someone wrong",
+];
+
+/**
  * Frameworks offered in the "Think it through" step and the mentors library.
  * These are widely taught decision techniques, described generically rather
  * than credited to a single named originator.
@@ -119,7 +137,7 @@ export const FRAMEWORKS = [
     source: "A classic time-horizon test",
     mentorId: "experimenter",
     question: "How will you feel about each option in 10 minutes, 10 months, and 10 years?",
-    hint: "Snap feelings fade; write down which option still looks right at each horizon.",
+    hint: "Snap feelings fade; write down which option still looks right at each horizon. (Distancing tricks like this measurably reduce hot-emotion bias in choices.)",
   },
   {
     id: "regret-minimization",
@@ -127,7 +145,7 @@ export const FRAMEWORKS = [
     source: "A well-known long-view test",
     mentorId: "experimenter",
     question: "Imagine you're 80, looking back. Which choice would you regret NOT making?",
-    hint: "Regret usually attaches to the untried thing, not the failed attempt.",
+    hint: "Regret research is consistent: over the long run people regret inactions far more than actions. The untried thing stings longer than the failed attempt.",
   },
   {
     id: "fear-setting",
@@ -135,7 +153,7 @@ export const FRAMEWORKS = [
     source: "A structured way to size up worst-case fear",
     mentorId: "experimenter",
     question: "Define the worst realistic case. How would you prevent it, and how would you repair it if it happened?",
-    hint: "Fear thrives on vagueness. Spell the disaster out and it usually shrinks to an inconvenience.",
+    hint: "Fear thrives on vagueness — the same mechanism exposure therapy uses in reverse. Spell the disaster out in detail and it usually shrinks to an inconvenience.",
   },
   {
     id: "premortem",
@@ -143,7 +161,7 @@ export const FRAMEWORKS = [
     source: "A pre-decision risk-surfacing exercise",
     mentorId: "strategist",
     question: "It's one year later and this choice failed badly. Write the story: what went wrong?",
-    hint: "You're not predicting failure, you're surfacing risks while they're still cheap to fix.",
+    hint: "Studies on 'prospective hindsight' find that imagining an outcome as already-happened lifts your ability to generate reasons for it by roughly 30%.",
   },
   {
     id: "inversion",
@@ -167,7 +185,7 @@ export const FRAMEWORKS = [
     source: "A base-rate reality check",
     mentorId: "strategist",
     question: "Forget your specifics: how does this decision usually turn out for people like you?",
-    hint: "Base rates beat vibes. You are probably not the exception — plan as if you're the average case.",
+    hint: "Base rates beat vibes — planners who start from the average case forecast far better than ones who start from their own story. You are probably not the exception.",
   },
   {
     id: "opportunity-cost",
@@ -198,6 +216,9 @@ export const QUOTES = [
   { text: "Saying yes to one thing quietly says no to everything else you could have chosen instead.", who: "The Experimenter", paraphrase: true },
   { text: "Worry less about the odds of failing and more about how expensive failing would be — keep the downside small, then take the bet.", who: "The Experimenter", paraphrase: true },
   { text: "If quitting doesn't feel a little too early, you probably waited too long.", who: "The Strategist", paraphrase: true },
+  { text: "A decision without an if-then plan is a wish with a deadline.", who: "The Experimenter", paraphrase: true },
+  { text: "Fault is about the past. Responsibility is about your next move — and the next move is always yours.", who: "The Straight Talker", paraphrase: true },
+  { text: "Only two options on the table usually means the real ones haven't been found yet.", who: "The Strategist", paraphrase: true },
 ];
 
 /** Pick the quote of the day deterministically (stable across reloads). */

@@ -1,12 +1,15 @@
 import { el, toast } from "../ui.js";
+import { newDecision, defaultReviewDate } from "../store.js";
 
 /**
  * The gut check — an old therapist's trick, in the spirit of an awareness practice.
  * The coin doesn't make the decision; your reaction to the result does.
  */
-export function coinFlipView() {
+export function coinFlipView(ctx) {
+  const { store, router } = ctx;
   let headsLabel = "";
   let tailsLabel = "";
+  let lastResultWasHeads = null;
   let flipping = false;
 
   const headsInput = el("input", {
@@ -31,6 +34,7 @@ export function coinFlipView() {
       coin.classList.remove("spinning");
       flipping = false;
       const heads = Math.random() < 0.5;
+      lastResultWasHeads = heads;
       const label = heads ? headsLabel.trim() : tailsLabel.trim();
       coin.textContent = label || (heads ? "Heads" : "Tails");
       verdict.append(
@@ -50,6 +54,14 @@ export function coinFlipView() {
   }
 
   function conclude(feeling) {
+    // The gut's actual vote: relief endorses the result, disappointment endorses the other option.
+    const h = headsLabel.trim();
+    const t = tailsLabel.trim();
+    const resultLabel = lastResultWasHeads ? h : t;
+    const otherLabel = lastResultWasHeads ? t : h;
+    const gutPick = feeling === "relieved" ? resultLabel : feeling === "disappointed" ? otherLabel : null;
+    const canLog = h && t && gutPick;
+
     verdict.replaceChildren(
       el(
         "div",
@@ -60,14 +72,42 @@ export function coinFlipView() {
             ? "Disappointment is your gut voting for the other option. Ignore the coin; it did its job."
             : "No reaction can mean genuinely low stakes — in which case, pick either and move — or it can mean you're out of touch with the feeling. If it matters and you feel nothing, run the full decision flow instead."
       ),
+      canLog
+        ? el("p", { class: "small muted" }, `So your gut says: “${gutPick}”.`)
+        : null,
       el(
         "div",
         { class: "btn-row" },
+        canLog
+          ? el("button", {
+              class: "btn small primary",
+              type: "button",
+              onClick: () => logDecision(gutPick, feeling, resultLabel),
+            }, "Log it in the journal")
+          : null,
         el("button", { class: "btn small ghost", type: "button", onClick: flip }, "Flip again"),
-        el("a", { class: "btn small primary", href: "#/new" }, "Run the full flow")
+        el("a", { class: `btn small ${canLog ? "ghost" : "primary"}`, href: "#/new" }, "Run the full flow")
       )
     );
     toast("Gut consulted.");
+  }
+
+  /** Save the flip as a decided decision so it gets an honest look back too. */
+  function logDecision(gutPick, feeling, resultLabel) {
+    const d = newDecision();
+    d.title = `${headsLabel.trim()} vs ${tailsLabel.trim()}`;
+    d.options = [headsLabel.trim(), tailsLabel.trim()];
+    d.chosenIndex = d.options.indexOf(gutPick);
+    d.confidence = 60;
+    d.gut = { done: true, result: resultLabel, feeling };
+    d.rationale = "Coin-flip gut check: the reaction to the result made the preference obvious.";
+    d.reviewOn = defaultReviewDate();
+    d.status = "decided";
+    d.decidedAt = Date.now();
+    delete d.step;
+    store.upsertDecision(d);
+    toast("Logged. The look back is booked — that's how the gut gets calibrated.");
+    router.go(`/decision/${d.id}`);
   }
 
   return el(

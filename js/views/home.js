@@ -26,7 +26,8 @@ export function homeView(ctx) {
     el(
       "div",
       { class: "btn-row" },
-      el("a", { class: "btn primary", href: "#/new" }, draft ? "Resume your decision" : "Start a decision"),
+      el("a", { class: "btn primary", href: "#/new" },
+        draft ? `Resume your decision (step ${(draft.step ?? 0) + 1} of 8)` : "Start a decision"),
       el("a", { class: "btn ghost", href: "#/gut-check" }, "Quick gut check"),
       el("a", { class: "btn ghost", href: "#/mentors" }, "Meet the voices")
     )

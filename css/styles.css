@@ -503,9 +503,36 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 }
 
 /* framework picker */
-.fw-card { position: relative; }
+.fw-card { position: relative; padding: 0.35rem 0.6rem; }
 .fw-card .fw-source { color: var(--faint); font-size: 0.8rem; }
 .fw-question { font-weight: 600; margin: 0.4rem 0; }
+
+.fw-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  padding: 0.6rem 0.5rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  flex-wrap: wrap;
+}
+.fw-head:hover { background: var(--panel-2); }
+.fw-head .fw-name { font-weight: 700; font-size: 1rem; }
+.fw-head .fw-chevron { color: var(--faint); width: 1rem; }
+.fw-head .fw-source { margin-left: auto; }
+.fw-suggested { flex: none; }
+.fw-body { padding: 0 0.5rem 0.8rem 2.05rem; }
+
+/* progress dots as buttons */
+.wizard-progress .step-dot { border: none; padding: 0; cursor: default; }
+.wizard-progress button.step-dot { cursor: pointer; }
+.wizard-progress button.step-dot:hover { opacity: 0.85; }
 
 /* ---------- mentor library ---------- */
 
@@ -667,4 +694,11 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   .nav { margin-left: 0; width: 100%; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
   .nav a { white-space: nowrap; }
   .theme-toggle { order: -1; margin-left: auto; }
+
+  /* comfortable thumb targets */
+  .rating-row .rate-btn { width: 2.6rem; height: 2.6rem; }
+  .chip { padding: 0.5rem 1rem; }
+  .btn { padding: 0.65rem 1.3rem; }
+  .fw-head { padding: 0.75rem 0.5rem; }
+  .fw-head .fw-source { display: none; }
 }

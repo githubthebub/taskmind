@@ -74,6 +74,7 @@ export function newDecision(now = Date.now()) {
 
     // Step 4 — values
     values: [],            // chosen value names (max 3)
+    shadowValues: [],      // counterfeit motives the user admits are in play
     optionNotes: [],       // per option: { pain: "", fit: { [value]: 1..5 } }
 
     // Step 5 — think it through (mental models)
@@ -89,6 +90,8 @@ export function newDecision(now = Date.now()) {
     chosenIndex: null,
     confidence: 70,        // 0..100
     rationale: "",
+    plan: "",              // implementation intention: "when X, I will Y"
+    tripwire: "",          // early signal that means "revisit this decision"
     reviewOn: "",          // yyyy-mm-dd
 
     // Review (later)
@@ -280,6 +283,24 @@ export function triageRecommendation(reversible, stakes) {
 }
 
 /**
+ * Which thinking lenses fit this decision's shape? Returns framework ids,
+ * best-first. One-way doors get the risk lenses; two-way doors get the
+ * horizon and trade-off lenses.
+ */
+export function recommendFrameworks(reversible, stakes) {
+  if (reversible === false && stakes === "high") {
+    return ["fear-setting", "premortem", "regret-minimization"];
+  }
+  if (reversible === false) {
+    return ["fear-setting", "regret-minimization", "second-order"];
+  }
+  if (stakes === "high") {
+    return ["premortem", "outside-view", "ten-ten-ten"];
+  }
+  return ["ten-ten-ten", "opportunity-cost", "second-order"];
+}
+
+/**
  * Average values-fit score for one option's fit map, or null when unrated.
  * When `values` is given, only ratings for those values count — ratings left
  * behind by since-deselected values must not skew the score.
@@ -384,6 +405,9 @@ export function compileBrief(d, frameworksCatalog = []) {
   if (d.values?.length) {
     lines.push(`Values on the table: ${d.values.join(", ")}.`);
   }
+  if (d.shadowValues?.length) {
+    lines.push(`Honesty check — also in the driver's seat: ${d.shadowValues.join(", ").toLowerCase()}.`);
+  }
   // Iterate original indices — optionNotes is parallel to the unfiltered
   // options array, and a blank row in the middle must not shift the pairing.
   (d.options || []).forEach((opt, i) => {
@@ -411,6 +435,14 @@ export function compileBrief(d, frameworksCatalog = []) {
   }
   if (d.gut?.done && d.gut.feeling) {
     lines.push(`Gut check: coin said "${d.gut.result}" and I felt ${d.gut.feeling}.`);
+  }
+  if (d.plan?.trim()) {
+    const line = `The plan: ${d.plan.trim()}`;
+    lines.push(line + dot(line));
+  }
+  if (d.tripwire?.trim()) {
+    const line = `Tripwire — revisit if: ${d.tripwire.trim()}`;
+    lines.push(line + dot(line));
   }
   return lines.join("\n");
 }
