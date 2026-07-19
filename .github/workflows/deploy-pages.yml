@@ -1,7 +1,8 @@
-name: Publish site to GitHub Pages
+name: Deploy site to GitHub Pages
 
-# Keeps the gh-pages branch (the hosted site) in sync with the game branch.
-# GitHub Pages serves gh-pages at https://githubthebub.github.io/taskmind/
+# Deploys the whole repo as the site:
+#   /                  → Backbone (Big Five training game)
+#   /archetype-atlas/  → Archetype Atlas (person–culture fit simulator)
 
 on:
   push:
@@ -9,19 +10,35 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: gh-pages
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Sync this commit to gh-pages
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git push origin HEAD:gh-pages --force
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure Pages (enable if needed)
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
