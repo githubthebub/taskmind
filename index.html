@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backbone — The Big Five Training Game</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦴</text></svg>">
+</head>
+<body>
+
+<div class="aurora a1"></div>
+<div class="aurora a2"></div>
+<div class="aurora a3"></div>
+<canvas id="fx-confetti"></canvas>
+
+<header id="topbar" class="hidden">
+  <div class="topbar-inner">
+    <button class="brand" data-nav="home">🦴 Backbone</button>
+    <div class="topbar-right">
+      <button id="culture-chip" class="chip" data-nav="culture" title="Change culture"></button>
+      <span id="streak-chip" class="chip chip-flat" title="Daily streak">🔥 0</span>
+      <span id="score-chip" class="chip chip-flat" title="Total score">⭐ 0</span>
+    </div>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- ============ CULTURE SELECT ============ -->
+  <section id="screen-culture" class="screen">
+    <div class="hero">
+      <div class="hero-emoji">🦴</div>
+      <h1>Backbone</h1>
+      <p class="tagline">A game that trains the Big Five traits your culture actually rewards —
+      and makes sure you never play the doormat.</p>
+      <div class="row-buttons" style="justify-content:center; margin-top:16px">
+        <button id="quick-start" class="btn">🧳 Take the 2-minute Workplace Backbone Test</button>
+      </div>
+      <p class="muted tiny">Skip the setup — get your Backbone Index first. You can pick your culture anytime after.</p>
+    </div>
+    <h2 class="section-title">Where are you playing from?</h2>
+    <p class="muted small">Pick the country or culture you live and work in. It sets which traits the
+    game emphasizes and which <em>style</em> of assertiveness scores best. Being a pushover never wins anywhere.</p>
+    <div class="card culture-pick">
+      <label class="pick-label" for="culture-select">Country or culture style</label>
+      <select id="culture-select">
+        <option value="">— Choose —</option>
+      </select>
+      <div id="culture-preview" class="hidden"></div>
+      <button id="culture-confirm" class="btn" disabled>Train for this culture →</button>
+    </div>
+    <p class="muted tiny">Culture profiles are broad-brush averages from cross-cultural research, not
+    stereotypes about individuals. You can switch anytime.</p>
+  </section>
+
+  <!-- ============ HOME / DASHBOARD ============ -->
+  <section id="screen-home" class="screen hidden">
+    <div id="home-culture-banner" class="banner"></div>
+
+    <div class="meters">
+      <div class="meter-card" id="backbone-card">
+        <div class="meter-head"><span>🦴 Backbone Meter</span><span id="backbone-pct">–</span></div>
+        <div class="bar"><div id="backbone-bar" class="bar-fill bar-backbone"></div></div>
+        <p class="muted tiny">Share of assertive choices when someone pushed on you. Doormat and blow-up answers drag it down.</p>
+      </div>
+      <div class="meter-card">
+        <div class="meter-head"><span>😌 Calm Meter</span><span id="calm-pct">–</span></div>
+        <div class="bar"><div id="calm-bar" class="bar-fill bar-calm"></div></div>
+        <p class="muted tiny">Built by beating anxiety rounds, catching distorted thoughts, and finishing breathing sessions.</p>
+      </div>
+    </div>
+
+    <div id="trait-bars" class="trait-bars"></div>
+
+    <h2 class="section-title">Play</h2>
+    <div class="mode-grid">
+      <button class="mode-card" data-nav="board">
+        <span class="mode-emoji">🎲</span>
+        <span class="mode-name">Life Board</span>
+        <span class="mode-desc">Roll, land, survive what life throws. Doormat answers slide you back — spine boosts you forward.</span>
+        <span class="mode-progress" id="board-mode-progress"></span>
+      </button>
+      <button class="mode-card" data-nav="workday">
+        <span class="mode-emoji">🧳</span>
+        <span class="mode-name">Workplace Backbone Test</span>
+        <span class="mode-desc">10 office standoffs, same for everyone. Get your Backbone Index /100.</span>
+        <span class="mode-progress" id="workday-mode-progress"></span>
+      </button>
+      <button class="mode-card" data-nav="scenario">
+        <span class="mode-emoji">🎭</span>
+        <span class="mode-name">Situations</span>
+        <span class="mode-desc">Real-life dilemmas. Hold your ground without blowing up.</span>
+      </button>
+      <button class="mode-card" data-nav="distortion">
+        <span class="mode-emoji">🔍</span>
+        <span class="mode-name">Spot the Distortion</span>
+        <span class="mode-desc">Catch the anxious thinking trap before it catches you.</span>
+      </button>
+      <button class="mode-card" data-nav="drill">
+        <span class="mode-emoji">🗣️</span>
+        <span class="mode-name">Say It With Spine</span>
+        <span class="mode-desc">Pick the wording that's firm, fair, and doormat-free.</span>
+      </button>
+      <button class="mode-card" data-nav="breathe">
+        <span class="mode-emoji">🌬️</span>
+        <span class="mode-name">Steady Breath</span>
+        <span class="mode-desc">Box-breathing pacer. Train the body's calm switch.</span>
+      </button>
+      <button class="mode-card" data-nav="career">
+        <span class="mode-emoji">💼</span>
+        <span class="mode-name">Career Ladder</span>
+        <span class="mode-desc">Campaign: climb from the interview to the corner office.</span>
+        <span class="mode-progress" id="career-mode-progress"></span>
+      </button>
+      <button class="mode-card" data-nav="love">
+        <span class="mode-emoji">❤️</span>
+        <span class="mode-name">Relationships</span>
+        <span class="mode-desc">Romantic and platonic. Pick any chapter — no locks, no order.</span>
+        <span class="mode-progress" id="love-mode-progress"></span>
+      </button>
+      <button class="mode-card" data-nav="safety">
+        <span class="mode-emoji">🛡️</span>
+        <span class="mode-name">Safety Radar</span>
+        <span class="mode-desc">Name the manipulation tactic. Trust your gut. Exit clean.</span>
+      </button>
+      <button class="mode-card" data-nav="gauntlet">
+        <span class="mode-emoji">⚡</span>
+        <span class="mode-name">The Gauntlet</span>
+        <span class="mode-desc">Timed rapid-fire. 3 lives, combo multipliers, and a verdict on who you are.</span>
+        <span class="mode-progress" id="gauntlet-mode-progress"></span>
+      </button>
+      <button class="mode-card" data-nav="perception">
+        <span class="mode-emoji">🧪</span>
+        <span class="mode-name">Perception Lab</span>
+        <span class="mode-desc">Behavioral alchemy: the counterintuitive move that actually works.</span>
+      </button>
+    </div>
+
+    <div class="row-buttons">
+      <button class="btn ghost" data-nav="progress">📊 Progress &amp; badges</button>
+      <button class="btn ghost" data-nav="about">ℹ️ How this works</button>
+    </div>
+  </section>
+
+  <!-- ============ SCENARIO GAME ============ -->
+  <section id="screen-scenario" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="scenario-progress" class="round-dots"></div>
+    </div>
+    <div id="scenario-card" class="card"></div>
+    <div id="scenario-feedback" class="feedback hidden"></div>
+    <div id="scenario-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ DISTORTION GAME ============ -->
+  <section id="screen-distortion" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="distortion-progress" class="round-dots"></div>
+    </div>
+    <div id="distortion-card" class="card"></div>
+    <div id="distortion-feedback" class="feedback hidden"></div>
+    <div id="distortion-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ DRILL GAME ============ -->
+  <section id="screen-drill" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="drill-progress" class="round-dots"></div>
+    </div>
+    <div id="drill-card" class="card"></div>
+    <div id="drill-feedback" class="feedback hidden"></div>
+    <div id="drill-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ CAREER CAMPAIGN ============ -->
+  <section id="screen-career" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="career-progress" class="round-dots"></div>
+    </div>
+    <div id="career-map"></div>
+    <div id="career-card" class="card hidden"></div>
+    <div id="career-feedback" class="feedback hidden"></div>
+    <div id="career-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ RELATIONSHIPS CAMPAIGN ============ -->
+  <section id="screen-love" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="love-progress" class="round-dots"></div>
+    </div>
+    <div id="love-map"></div>
+    <div id="love-card" class="card hidden"></div>
+    <div id="love-feedback" class="feedback hidden"></div>
+    <div id="love-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ SAFETY RADAR ============ -->
+  <section id="screen-safety" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="safety-progress" class="round-dots"></div>
+    </div>
+    <p class="muted tiny">🛡️ Educational awareness training only — not professional security, medical, or legal advice.
+    If you're in real danger, contact your local emergency services. Full disclaimer under “How this works”.</p>
+    <div id="safety-card" class="card"></div>
+    <div id="safety-feedback" class="feedback hidden"></div>
+    <div id="safety-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ WORKPLACE BACKBONE TEST ============ -->
+  <section id="screen-workday" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="workday-progress" class="round-dots"></div>
+    </div>
+    <div id="workday-intro" class="card center-card">
+      <h2>🧳 The Workplace Backbone Test</h2>
+      <p class="muted">Ten real office standoffs — the Friday 5:45pm ask, the credit thief, the salary
+      silence. No right-sounding answers; pick what you'd <em>actually</em> do. Everyone gets the same
+      ten, in the same order, so your <b>Backbone Index</b> compares straight across.</p>
+      <p class="muted tiny">~2 minutes · retake anytime · your picks also train your trait XP</p>
+      <button id="workday-start" class="btn">Start the test</button>
+    </div>
+    <div id="workday-card" class="card hidden"></div>
+    <div id="workday-feedback" class="feedback hidden"></div>
+    <div id="workday-result" class="hidden"></div>
+  </section>
+
+  <!-- ============ LIFE BOARD ============ -->
+  <section id="screen-board" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div class="gauntlet-hud">
+        <span id="board-energy" class="hud-hearts"></span>
+        <span id="board-coins" class="hud-combo"></span>
+        <span id="board-tile" class="hud-score muted"></span>
+      </div>
+    </div>
+    <div id="board-view"></div>
+    <div id="board-round" class="hidden"></div>
+  </section>
+
+  <!-- ============ GAUNTLET ============ -->
+  <section id="screen-gauntlet" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div class="gauntlet-hud">
+        <span id="gauntlet-hearts" class="hud-hearts"></span>
+        <span id="gauntlet-combo" class="hud-combo"></span>
+        <span id="gauntlet-score" class="hud-score"></span>
+      </div>
+    </div>
+    <div id="gauntlet-daily" class="card center-card verdict-card"></div>
+    <div id="gauntlet-intro" class="card center-card" style="margin-top:14px">
+      <h2>⚡ Practice Gauntlet</h2>
+      <p class="muted">Ten rapid-fire rounds, randomized. ~12 seconds each. Three lives. Every
+      consecutive strong answer cranks the multiplier — every miss costs a heart and resets the
+      combo. At the end, the game reads your character out loud. Good luck.</p>
+      <button id="gauntlet-start" class="btn ghost">Practice run (unlimited)</button>
+    </div>
+    <div id="gauntlet-play" class="hidden">
+      <div class="timer-bar"><div id="gauntlet-timer" class="timer-fill"></div></div>
+      <div id="gauntlet-card" class="card"></div>
+      <div id="gauntlet-flash" class="gauntlet-flash"></div>
+    </div>
+    <div id="gauntlet-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ PERCEPTION LAB ============ -->
+  <section id="screen-perception" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Quit</button>
+      <div id="perception-progress" class="round-dots"></div>
+    </div>
+    <div id="perception-card" class="card"></div>
+    <div id="perception-feedback" class="feedback hidden"></div>
+    <div id="perception-summary" class="hidden"></div>
+  </section>
+
+  <!-- ============ BREATHING ============ -->
+  <section id="screen-breathe" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Back</button>
+    </div>
+    <div class="card center-card">
+      <h2>🌬️ Steady Breath</h2>
+      <p class="muted">Box breathing: in 4s → hold 4s → out 4s → hold 4s. Slow exhales tell your
+      nervous system the threat is over. Tap the circle right when the phase changes for bonus points.</p>
+      <div id="breathe-setup">
+        <div class="row-buttons">
+          <button class="btn" data-breathe="60">1 min</button>
+          <button class="btn" data-breathe="120">2 min</button>
+          <button class="btn" data-breathe="180">3 min</button>
+        </div>
+      </div>
+      <div id="breathe-stage" class="hidden">
+        <div id="breathe-circle-wrap">
+          <div id="breathe-circle"><span id="breathe-phase">Ready</span></div>
+        </div>
+        <div id="breathe-timer" class="muted"></div>
+        <div id="breathe-bonus" class="muted small"></div>
+        <button id="breathe-stop" class="btn ghost small-btn">Stop</button>
+      </div>
+      <div id="breathe-done" class="hidden"></div>
+    </div>
+  </section>
+
+  <!-- ============ PROGRESS ============ -->
+  <section id="screen-progress" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Back</button>
+    </div>
+    <h2 class="section-title">📊 Your character sheet</h2>
+    <div id="verdict-slot"></div>
+    <div class="card">
+      <h3 class="chart-title">You vs. what <span id="radar-culture-name"></span> rewards</h3>
+      <canvas id="radar" width="640" height="480"></canvas>
+      <p class="muted tiny">Purple = your training so far. Gold = the trait profile your selected culture
+      tends to reward. Play modes that feed your weakest gold-vs-purple gaps.</p>
+    </div>
+    <div id="stats-grid" class="stats-grid"></div>
+    <h2 class="section-title">🏅 Badges</h2>
+    <div id="badge-grid" class="badge-grid"></div>
+    <h2 class="section-title">🧹 Fine-grained resets</h2>
+    <p class="muted tiny">Zero out one meter or mode without touching the rest. Every button asks twice.
+    Badges you've already earned stay earned.</p>
+    <div id="reset-grid" class="row-buttons"></div>
+    <div class="row-buttons">
+      <button id="reset-save" class="btn danger">☢️ Reset absolutely everything</button>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section id="screen-about" class="screen hidden">
+    <div class="game-head">
+      <button class="btn ghost small-btn" data-nav="home">← Back</button>
+    </div>
+    <h2 class="section-title">ℹ️ How Backbone works</h2>
+    <div class="card prose">
+      <h3>The Big Five</h3>
+      <p>Psychology's best-supported model of personality measures five traits:
+      <strong>Openness</strong> (curiosity, trying new things), <strong>Conscientiousness</strong>
+      (follow-through, order, reliability), <strong>Extraversion</strong> (social energy, initiative),
+      <strong>Agreeableness</strong> (warmth and cooperation), and <strong>Neuroticism</strong>
+      (proneness to anxiety and negative emotion). Backbone trains the first four upward and trains the
+      behaviors that pull neuroticism <em>down</em> — shown here as its positive mirror,
+      <strong>Emotional Stability</strong>.</p>
+      <p>Traits aren't fixed. Studies on deliberate personality change show that repeatedly
+      <em>acting</em> like the person you want to be — small, concrete behaviors, done often — shifts
+      the traits themselves. That's what the rounds in this game are: reps.</p>
+
+      <h3>Warmth ≠ doormat</h3>
+      <p>The game deliberately splits healthy agreeableness (warm, fair, cooperative) from doormat
+      behavior (swallowing your needs to avoid conflict). Doormat answers <em>lose points in every
+      culture</em>, and so do aggressive blow-ups. The winning move is always some form of assertiveness:
+      stating what you want, calmly, without apologizing for existing. What changes by culture is the
+      <em>style</em> — blunt-and-brief scores best in direct cultures like Germany or the Netherlands,
+      while firm-but-face-saving scores best in high-context cultures like Japan or Thailand. Same spine,
+      different wrapping.</p>
+
+      <h3>Anxiety and negative emotion</h3>
+      <p>You can't delete emotions — and you wouldn't want to; anxiety is your alarm system. What you
+      <em>can</em> train is the response: catching distorted thoughts (the CBT skill behind Spot the
+      Distortion), approaching instead of avoiding (the Situations rounds), and downshifting your body
+      (Steady Breath). Do the reps and the alarm fires less often, less loudly, and stops running your life.
+      That's what "low neuroticism" actually looks like from the inside.</p>
+
+      <h3>Cultures are averages</h3>
+      <p>The country profiles here are broad-brush tendencies drawn from cross-cultural psychology
+      (trait-value surveys, communication-directness research). Real people vary hugely within every
+      culture. Use the profiles as a lens, not a box.</p>
+
+      <h3>Safety Radar</h3>
+      <p>The Safety Radar rounds teach you to recognize common manipulation and scam patterns —
+      the kind popularized by safety writers and fraud-prevention research: a "no" that gets negotiated,
+      forced teaming, loan-sharking, manufactured urgency, isolation pressure, and money that flows the
+      wrong way. The through-line is the same as the rest of the game: your gut is data, your "no" is a
+      complete sentence, and awkwardness is a fee worth paying.</p>
+
+      <h3>Credits &amp; inspiration</h3>
+      <p>The negotiation rounds draw on publicly taught ideas from negotiation and communication
+      educators — including techniques popularized by former FBI negotiator Chris Voss (labeling,
+      mirroring, calibrated questions, the accusation audit) and delivery principles discussed by
+      Charisma on Command (conviction, pacing, comfort with silence). The Perception Lab draws on
+      behavioral-science ideas popularized by advertising thinker Rory Sutherland — "psycho-logic,"
+      costly signaling, the doorman fallacy, and the general heresy that the psychological fix often
+      beats the engineering fix at 1% of the price. Backbone is an independent game and is not
+      affiliated with, endorsed by, or connected to any of these people or brands.</p>
+
+      <h3>Disclaimer (the legal bit)</h3>
+      <p>Backbone is provided for education and entertainment only, "as is," without warranties of any
+      kind. It is not — and does not substitute for — professional advice of any sort: medical,
+      psychological, legal, financial, career, or personal-security. Scenarios are simplified fiction;
+      real situations vary, and no strategy in this game guarantees any outcome. You are responsible for
+      your own decisions. To the maximum extent permitted by law, the creators and contributors accept no
+      liability for any loss or harm arising from use of this game. If you are in danger, contact your
+      local emergency services. If anxiety or low mood is seriously interfering with your life, a
+      professional (a CBT therapist especially) is the real power-up.</p>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

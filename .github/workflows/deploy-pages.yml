@@ -1,5 +1,11 @@
-name: Deploy Archetype Atlas to Pages
+name: Deploy site to GitHub Pages
 
+# Deploys the whole repo as the site:
+#   /                  → Backbone (Big Five training game)
+#   /archetype-atlas/  → Archetype Atlas (person–culture fit simulator)
+
+# Note: the github-pages environment only permits deployments from main,
+# so feature-branch pushes are not in the trigger list.
 on:
   push:
     branches: [main]
@@ -24,10 +30,10 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           enablement: true
-      - name: Upload the game as the site
+      - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: archetype-atlas
+          path: .
   deploy:
     needs: build
     runs-on: ubuntu-latest
