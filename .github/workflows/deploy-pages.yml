@@ -4,9 +4,11 @@ name: Deploy site to GitHub Pages
 #   /                  → Backbone (Big Five training game)
 #   /archetype-atlas/  → Archetype Atlas (person–culture fit simulator)
 
+# Note: the github-pages environment only permits deployments from main,
+# so feature-branch pushes are not in the trigger list.
 on:
   push:
-    branches: [main, claude/big-five-personality-game-cazxnq]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
