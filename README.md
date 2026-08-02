@@ -1,6 +1,6 @@
 # taskmind
 
-Two small, dependency-free web apps live in this repo.
+Three small, dependency-free web apps live in this repo.
 
 ## BetterDecisions ◆
 
@@ -38,6 +38,12 @@ or legal advice.
 index.html            BetterDecisions shell + nav
 css/, js/, tests/     BetterDecisions design system, app code, unit tests
 ```
+
+## Pokémon Sevii Adventures 🌋
+
+A **FireRed/LeafGreen-style fan game** in vanilla JS + Canvas: the Sevii Islands' Ruby quest plus nine walkable Kanto towns, five gyms, HM field moves (Surf/Cut/Strength/Fly), catching, saves, an original chiptune soundtrack, and Free-Roam / Master extra modes. All art, music, and dialogue are original and generated in code.
+
+→ Open [`pokemon-sevii/index.html`](pokemon-sevii/index.html) in a browser (no build, no dependencies), or run `pokemon-sevii/build.sh` for a single-file version. See [`pokemon-sevii/README.md`](pokemon-sevii/README.md) for controls and the full feature list.
 
 ## Archetype Atlas
 
