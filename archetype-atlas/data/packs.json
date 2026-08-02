@@ -1,0 +1,1402 @@
+{
+ "india": {
+  "overview": "Urban India rewards ambition that wears the clothing of duty: strive hard, defer visibly, and deliver dissent in private to the person who can act on it. It punishes public challenges to seniority, legalistic insistence on written rules, and self-assertion that spends the family's or group's face without permission. The system is rigid about persons — who outranks whom — and flexible about process, so improvisers tend to thrive where proceduralists stall. Standing accrues slowly, through presence, service, and relationships, and rarely through a single impressive display.",
+  "norms": [
+   "Correct seniors in private. The meeting is for alignment; the chai afterwards is where the truth actually travels.",
+   "Route big personal decisions through the family and let the elders feel they decided. Speed reads as disrespect; patient lobbying wins.",
+   "Invest in relationships before you need them — chai, weddings, festivals, small talk. The network is the infrastructure, and it cannot be built on demand.",
+   "Treat rules as opening positions. Presence, persistence, and a respected intermediary move files faster than portals and complaint letters.",
+   "Serve without claiming credit. Seva compounds into standing faster than self-promotion, and the score is quietly kept.",
+   "Ambition is welcome, but frame it as duty — to team, family, or boss — never as self-expression. Duty is the licence under which striving gets admired."
+  ],
+  "scenarios": [
+   {
+    "id": "workplace-sprint-review",
+    "title": "The Launch Date Is Fiction",
+    "setup": "Eight months into your product role at a Koramangala startup, the founder-CEO announces a Diwali-week launch date at the all-hands sprint review. The engineering leads nod along, but your own capacity analysis says it slips by six weeks minimum. The room is waiting for the next slide.",
+    "choices": [
+     {
+      "archetype": "rebel",
+      "text": "Say it in the room: 'This date isn't happening — here's the burndown data,' and put your chart on the screen.",
+      "socialDelta": -2,
+      "feedback": "The room goes very quiet, the CEO thanks you with a thin smile, and within a week the phrase 'not a culture fit' starts trailing you in corridor conversations. Public contradiction of a senior costs both of you face; in a high power-distance office, dissent tends to be legitimate only when it travels privately and upward, rarely across a full room.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "Nod along, then catch the CEO alone at the chai machine that evening and walk him through the risk one-on-one, framing it as protecting his launch.",
+      "socialDelta": 2,
+      "feedback": "In Monday's standup the date quietly shifts, announced as the CEO's own recalibration, and you get pulled into the next planning huddle. You delivered the correction without taking the credit or the face — the approved route for bad news up a steep hierarchy.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "hero",
+      "text": "Publicly commit your pod to the date, start visibly pulling twelve-hour days, and post the midnight build screenshots in the team channel.",
+      "socialDelta": 1,
+      "feedback": "Leadership starts name-dropping you as the example, and the hustle buys real capital — visible striving is respected currency in metro startup culture. Just know you now personally own that date; if it slips anyway, the applause converts directly into your liability.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "Stay quiet in the review, then volunteer to own the launch plan end-to-end and bring the CEO a de-risked, re-scoped path to his date by Friday.",
+      "socialDelta": 1,
+      "feedback": "The CEO hands you the plan gladly — you've made his number your burden, which is what taking charge is supposed to look like under a strong boss. Authority delegated downward to someone who asked for responsibility is the approved way to lead here; authority claimed sideways is not.",
+      "dimension": "PDI"
+     }
+    ]
+   },
+   {
+    "id": "family-roka-match",
+    "title": "Bua Has Found Someone",
+    "setup": "You're 29, working in Mumbai, and two years into a relationship your parents don't know about. At your cousin's roka in Delhi, your bua catches the room's attention mid-celebration and declares she has found you 'a very good match — khandaani family, well-settled in the US.' Your mother is glowing, and forty relatives turn to look at you.",
+    "choices": [
+     {
+      "archetype": "rebel",
+      "text": "Tell the room the truth: you're already with someone, you'll be choosing your own partner, and the matchmaking can stop.",
+      "socialDelta": -2,
+      "feedback": "Your bua's face freezes, your mother is silent for the entire drive home, and the family group chat burns for a week. The announcement wasn't yours to make alone — in family-collectivist logic, the clan's izzat was on that stage and you spent it without asking. The relationship itself was survivable; the public unilateralism wasn't.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "caregiver",
+      "text": "Deflect with a smile — 'whatever you all think best, let's talk at home' — spend the evening serving snacks to the elders, then privately tell your mother everything and ask for her help.",
+      "socialDelta": 2,
+      "feedback": "Within a month your mother has met your partner and started a quiet lobbying campaign of her own. Routing your choice through the family, so the elders feel they decided, is how a great many urban love marriages actually get approved. The evening spent passing namkeen looked like surrender; it was the winning move.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "sage",
+      "text": "Say you're heads-down for a promotion cycle and can't consider matches until next year, then use that year to plan the reveal properly.",
+      "socialDelta": 1,
+      "feedback": "'Career first' is a fully legible deferral — the aunties grumble but accept it, because ambition in service of the family's future is respectable. Steady, unexplosive delay outlasts most matchmaking campaigns; time is often the strongest negotiator in an Indian family.",
+      "dimension": "LTO"
+     },
+     {
+      "archetype": "explorer",
+      "text": "Laugh it off, agree to 'just one meeting, no pressure,' and figure you'll improvise your way out later.",
+      "socialDelta": 0,
+      "feedback": "Nothing here is a contract — 'let's see' is a genuinely stable state, and everyone plays the ambiguity game. But agreeing to meet feeds a momentum machine of photos, kundlis, and follow-up calls; you've bought a pleasant evening today at compound interest.",
+      "dimension": "UAI"
+     }
+    ]
+   },
+   {
+    "id": "civic-police-clearance",
+    "title": "The File Is Under Process",
+    "setup": "Your company's onsite posting needs a police clearance certificate, and your file has sat 'under process' at the local thana for three weeks. The constable at the desk says 'come next week' without looking up. Your housing society's WhatsApp group offers everything from a tout's number to somebody's retired-inspector uncle.",
+    "choices": [
+     {
+      "archetype": "craftsman",
+      "text": "Do it properly: file an RTI request, log a grievance on the official portal, keep every receipt, and wait for the system to respond.",
+      "socialDelta": -1,
+      "feedback": "The portal auto-acknowledges, the RTI clock starts, and the desk now handles you with icy correctness; the paper may eventually shake the file loose, but not on your deadline. In a low uncertainty-avoidance system the written rule is the slow path — the machinery runs on presence, persistence, and persons, and you've announced you'd rather deal with paper than people.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "explorer",
+      "text": "Start showing up in person — chat with the constable, learn which afternoons the verifying officer actually sits, bring chai, and adapt each visit.",
+      "socialDelta": 2,
+      "feedback": "On the third visit you catch the right officer at the right hour, and the file moves the same day. This is jugaad in its native habitat: not bribery, just improvised navigation of a system whose real timetable is unwritten. Persistence in the flesh usually beats the portal.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "Take the society secretary up on his offer and ask his retired-inspector uncle to put in a word for you.",
+      "socialDelta": 1,
+      "feedback": "A two-minute phone call between men of rank reorders the queue, and few in the chain would call it cheating. Sifarish — a respected intermediary vouching for you — is standard infrastructure where authority is personal; the uncle's word carries what your documents couldn't.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "hero",
+      "text": "Demand to see the SHO by name, cite your deadline loudly at the desk, and threaten to tag the police commissioner on X.",
+      "socialDelta": -1,
+      "feedback": "Your file finds its way to the bottom of the pile, and 'next week' becomes 'next month'. Volume aimed at a desk that outranks you in situational power reads as disrespect to the uniform; the tweet occasionally works spectacularly, but it torches the local relationship you'll need again next year.",
+      "dimension": "PDI"
+     }
+    ]
+   },
+   {
+    "id": "status-ganeshotsav",
+    "title": "New Flat, Old Committee",
+    "setup": "You've just bought a flat in a Powai society whose five-day Ganeshotsav is run by a committee of seniors who've done it for fifteen years. The society WhatsApp group runs at four hundred messages a day, and everyone notices exactly who does what at the pandal.",
+    "choices": [
+     {
+      "archetype": "sovereign",
+      "text": "Introduce yourself with a plan: a sponsorship spreadsheet, a vendor comparison, and a proposal to modernize how the committee runs the festival.",
+      "socialDelta": -1,
+      "feedback": "The uncles thank you warmly, forward your spreadsheet to no one, and quietly route around you. Standing in a society is earned through years of showing up, not competence displays — you tried to claim a rank the queue hadn't assigned you yet.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "caregiver",
+      "text": "Show up early every morning to carry, serve prasad, wash vessels, and make chai for the volunteers — no title, no posts in the group.",
+      "socialDelta": 2,
+      "feedback": "By day three the committee chairman knows your name, your floor, and your parents' hometown, and by visarjan you're inside-jokes deep. In a culture that leans restraint, self-effacing seva earns more trust than display — the volunteer seen washing vessels and claiming nothing banks standing faster than the name on any banner.",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "hero",
+      "text": "Sponsor the biggest line item — the sound system and the DJ night — and make sure your family name is on the banner.",
+      "socialDelta": 1,
+      "feedback": "The banner works; visible generosity is genuinely respected, and your name now opens conversations. But money tends to buy the donor lane, not the inner circle — the committee will honour you at the mic and still not call you when decisions get made.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "sage",
+      "text": "Stay mostly out of it — attend the aartis, watch who actually decides things, and offer one precise fix when the caterer billing dispute erupts.",
+      "socialDelta": 0,
+      "feedback": "Your caterer intervention earns a genuine nod from the treasurer, and your read of the society's real org chart is now excellent. But standing here compounds through daily presence over years, and absence from the churn reads as aloofness; you've gathered intelligence and banked almost no belonging.",
+      "dimension": "LTO"
+     }
+    ]
+   },
+   {
+    "id": "conflict-rent-renewal",
+    "title": "Fifteen Percent and a Leaking Wall",
+    "setup": "Your Bandra landlord wants a fifteen percent hike at the renewal of your eleven-month leave-and-licence agreement, while the bathroom seepage he promised to fix before last monsoon still spreads. The broker, who calls you 'like family,' relays the demand. Your six-month deposit is sitting in the landlord's account.",
+    "choices": [
+     {
+      "archetype": "craftsman",
+      "text": "Send a formal email citing the agreement clauses and the seepage commitment, requesting written confirmation of repairs before you'll discuss renewal.",
+      "socialDelta": -1,
+      "feedback": "The landlord goes cold, the broker reports that 'sir is very hurt,' and the deposit-return timeline suddenly turns vague. Here the agreement is the beginning of a relationship, not its referee — going legalistic early converts a haggle into a standoff, and he's holding six months of your money.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "Visit landlord uncle at home, ask after his family, and over chai frame it as 'we've cared for the flat like our own' — letting the broker carry the actual number.",
+      "socialDelta": 2,
+      "feedback": "An hour of chai and family talk later, the hike settles at seven percent and a plumber materializes on Monday. In a relationship-first market, the warmth is the negotiation; the number usually only moves after the person feels respected.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "sage",
+      "text": "Say you must 'discuss with family and revert,' then quietly research comparable rents and the vacancy season, timing your counter for when an empty flat would hurt him.",
+      "socialDelta": 1,
+      "feedback": "Three weeks later, staring at a possible vacant month, he accepts eight percent through the broker. 'Let me ask my family' is an accepted move that slows the clock without confrontation — patience is read as prudence, not weakness.",
+      "dimension": "LTO"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "Take charge of the negotiation: state your terms flat — five percent, seepage fixed before signing, or you walk — and start visibly viewing other flats.",
+      "socialDelta": 0,
+      "feedback": "He blinks down to ten percent, so the brinkmanship half-works. But the broker now files you under 'difficult party,' and next year's conversation opens colder; assertiveness wins the round while forfeiting the goodwill discount that warmth quietly buys here.",
+      "dimension": "MAS"
+     }
+    ]
+   }
+  ],
+  "caveats": [
+   "Hofstede's India scores descend from IBM employee surveys run 1967-73 — before the 1991 liberalisation, the IT boom, and the birth of most of today's metro workforce — then stretched across 1.4 billion people as a single mean. The low uncertainty-avoidance score is the shakiest input: GLOBE's India data measures that dimension very differently, so hold the 'rules are negotiable' scenarios loosely.",
+   "This pack models upper-middle-class metro life (Mumbai, Delhi, Bangalore). Tier-2/3 cities, rural India, and older generations typically run steeper on power distance and family authority, while a 24-year-old in a VC-funded Bangalore startup may face flatter hierarchies than any scenario here implies.",
+   "Caste, religion, region, and class shape real interactions more than any national average captures — a Punjabi business family, a Tamil Brahmin household, and a Mumbai chawl run on noticeably different grammars. The mid-range individualism score (48) reflects this: Indian collectivism is family- and jati-bounded rather than generalised, and the same person who defers at the dinner table can be fiercely individualist among strangers.",
+   "Several outcomes shown as fixed are probabilistic in reality: tagging officials on X does sometimes move files spectacularly, some founders genuinely reward public pushback, and jugaad shades into corruption at edges the game doesn't model.",
+   "India's very low indulgence score (26) sits oddly against big-fat-wedding and festival exuberance; in practice, indulgence is often collectively licensed on ritual occasions rather than individually chosen — a nuance one number cannot express."
+  ],
+  "voiceNotes": {
+   "archetypist": "Look at the structure before you judge it: power distance at 77 with uncertainty avoidance at 40 means the order lives in persons, not procedures. The hierarchy is load-bearing — responsibility is supposed to flow up it and care back down — so the competent move is to voluntarily shoulder a burden inside the structure before you presume to critique it. The rebel pays sticker price more often than not; the sovereign who serves first and commands later ends up with the hierarchy at their back. And the chaos tolerance is real: improvise freely at the level of process, because order will be enforced at the level of people.",
+   "clinician": "If your temperament is blunt or novelty-hungry, chronically performing the deferential diplomat here carries a real cost — the low-grade resentment of always managing other people's faces, and a burnout that looks like laziness but is actually masking fatigue. The culture itself offers a healthier frame: dharma, duty you choose and find meaning in, is psychologically different from compliance driven by log-kya-kahenge anxiety, even when the outward behavior is identical — so notice which one you're running on. And build spaces where the mask comes fully off — one honest friend, one mentor — because adaptation with recovery is sustainable and permanent performance is not.",
+   "skeptic": "Quick audit: the power-distance findings replicate reasonably well, so 'don't torch your boss in a full meeting' is solid advice — though frankly it's solid in Ohio too. The low uncertainty-avoidance number is the shakiest input here; GLOBE's India data disagrees with Hofstede's, so hold the 'rules are always negotiable' claims loosely. And the big one: within-country variance dwarfs between-country variance on every dimension — your actual Bangalore manager might love public pushback, and plenty of families handle a direct announcement just fine. Treat these deltas as base rates for a first encounter with a median stranger, not as laws of physics."
+  }
+ },
+ "london": {
+  "overview": "London rewards self-directed competence delivered with irony: results that circulate on their own, ambition that never announces itself, warmth encoded as teasing. It taxes earnestness, self-promotion, queue violations, and any claim to authority that hasn't been conferred — personal freedom is wide (PDI 35, IDV 89), but so is the expectation that you'll manage yourself without fuss. Competition is genuinely fierce (MAS 66) yet worn as effortlessness, and the pub, the joke, and the round carry much of the relational load (IVR 69). The structural bet: those fluent in understatement compound status invisibly, while those who say what they mean at full volume pay a quiet, cumulative tax — though in a city where over a third of residents were born abroad, whole industries run on louder codes.",
+  "norms": [
+   "Calibrate to understatement: 'not bad at all' is high praise, 'quite good' can be a demotion, and effusive praise tends to get discounted rather than banked. Match the volume of the room before spending compliments.",
+   "Pursue ambition quietly. Do the work, let results circulate on their own, and if asked how it's going, say 'fine'. Announcing a goal tends to convert your allies into an audience.",
+   "Master the apology economy: 'sorry' opens negotiations, ends collisions, and signals you're safe. It costs nothing and admits nothing; it's the absence that gets noticed.",
+   "Find the queue before you act — especially the invisible one. It's the closest thing to a sacred procedure in an otherwise rule-relaxed society, enforced entirely by stares, tuts, and the stories told about you afterwards.",
+   "Treat being teased as a door opening, not an attack. Tease back lightly rather than explaining yourself; banter is a standard way of saying 'you're in'. The earnest register exists, but it unlocks later.",
+   "Show up for the round and buy yours on time — the drink is optional, the reciprocity isn't. A striking amount of consequential conversation (promotions, reconciliations, alliances) happens at the pub disguised as nothing."
+  ],
+  "scenarios": [
+   {
+    "id": "workplace",
+    "title": "The Unannounced Vacancy",
+    "setup": "Three months into your job at a fintech near Old Street roundabout, a team-lead role opens up above you. Your manager mentions it in passing on Friday, mid-round at the pub, then changes the subject to the football. You want this job more than you've wanted anything in years.",
+    "choices": [
+     {
+      "archetype": "hero",
+      "text": "Monday morning you tell your manager you want the role, then make your case publicly in stand-up: your numbers, your shipped features, your record.",
+      "socialDelta": -1,
+      "feedback": "Your manager says 'good to know' with a smile that stops below the eyes, and by Thursday the team channel is calling you 'gaffer' in a tone you can't quite price. Wanting the job was fine — even saying so privately was fine — but campaigning in stand-up broke the rule that competition stays masked (MAS 66). Open striving tends to collect banter rather than backing.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "sage",
+      "text": "You say nothing about the role. Instead you quietly take on the unglamorous data migration the director has complained about twice, fix it, and answer questions about it in one dry sentence.",
+      "socialDelta": 2,
+      "feedback": "The director mentions your name in a meeting you weren't in; your manager suddenly wants a 'quick coffee'. You played the most reliably sanctioned route to rank: visible results, invisible wanting. Striving is respected here (MAS 66) so long as it looks like it cost you nothing.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "At the pub you buy your round promptly, deflect a question about the role with 'God, no, I'd be a disaster', and steer the conversation until your manager is the one floating your name.",
+      "socialDelta": 1,
+      "feedback": "Two pints in, your manager says 'you know, you should actually think about it' as if the idea were theirs. The pub is often the real meeting room, and self-deprecation is the licensed way to signal you're safe to promote. In a high-indulgence culture (IVR 69) the sociable route isn't a detour from the career track — much of the time it is the track.",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "rebel",
+      "text": "At the all-hands you ask, earnestly and on the record, why the promotion process is opaque and who actually decides.",
+      "socialDelta": 0,
+      "feedback": "Nobody pulls rank — the COO answers you by first name and admits the process is 'a bit vibes-based', which gets a laugh. Low power distance (PDI 35) means the challenge itself costs you almost nothing; it's the earnest delivery that gets quietly discounted. You're filed under 'fair point, that' — and also 'takes things a bit seriously'.",
+      "dimension": "PDI"
+     }
+    ]
+   },
+   {
+    "id": "family",
+    "title": "The Kettle Goes On",
+    "setup": "Your flatmate of three years in your Walthamstow flatshare comes home late and puts the kettle on with unusual violence. The relationship everyone assumed was heading for a deposit on a two-bed has just ended by text. You went through the same thing last spring.",
+    "choices": [
+     {
+      "archetype": "caregiver",
+      "text": "You knock on their door, tell them you know exactly how this feels, and offer to sit up and talk through everything they're feeling tonight.",
+      "socialDelta": -1,
+      "feedback": "They go rigid, say 'honestly, I'm fine', and take their tea to their room. In a fiercely individualist culture (IDV 89) emotional privacy is the default gift, and unsolicited full-frontal sincerity can read as pressure rather than care. The love was correct; the delivery skipped the invitation step — here you generally don't enter until asked.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "You make two teas, put the good biscuits on a plate, sit at the other end of the sofa and start a low-stakes conversation about absolutely nothing.",
+      "socialDelta": 2,
+      "feedback": "Forty minutes into a discussion of whether the corner shop has changed hands, they suddenly tell you everything. You offered presence without demanding resolution — low uncertainty avoidance (UAI 35) means nothing has to be named, scheduled, or 'processed'; the unresolved is allowed to just sit there. Tea, proximity, and no agenda is a recognized ritual for exactly this.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "explorer",
+      "text": "You give them ten minutes, then announce you've found a comedy night in a Camden basement that starts in an hour, and their coat is already by the door.",
+      "socialDelta": 1,
+      "feedback": "They protest, come anyway, and laugh properly twice, which you both pretend not to notice. High indulgence (IVR 69) makes distraction a legitimate form of first aid — fun is allowed to do the work that feelings-talk would do elsewhere. The debrief, if it ever happens, will arrive later and sideways.",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "You take charge: a recovery plan on the kitchen whiteboard — gym slots, a delete-the-ex protocol, and a rebalanced bills spreadsheet by Sunday.",
+      "socialDelta": 0,
+      "feedback": "The spreadsheet is silently appreciated; the whiteboard is silently wiped. In a flat-hierarchy culture (PDI 35) nobody appointed you director of another adult's grief, and self-issued authority tends to get politely ignored rather than obeyed. Logistics you may command; the inner life you may not.",
+      "dimension": "PDI"
+     }
+    ]
+   },
+   {
+    "id": "civic",
+    "title": "Rail Replacement Justice",
+    "setup": "Engineering works have replaced your Overground service with a rail replacement bus outside Hackney Central. An unmarked but absolutely real queue has formed along the railings in light rain. As the bus finally pulls in, a man in a gilet strides past all forty of you toward the doors.",
+    "choices": [
+     {
+      "archetype": "craftsman",
+      "text": "You hold your place, follow the unwritten procedure, and register protest through the approved channels: an audible tut and a raised eyebrow shared with the woman beside you.",
+      "socialDelta": 2,
+      "feedback": "The driver, alerted by the collective bristle, lets the queue board first anyway; you and the woman are allies for life, or at least until Highbury. In a society relaxed about almost every formal rule (UAI 35), order runs on informal procedure instead — and the queue is the most sacred procedure of all, with the tut as its enforcement mechanism of choice. You upheld it at exactly the volume the culture licenses.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "rebel",
+      "text": "You call it loudly down the line: 'Mate. There's a queue. It starts back there.'",
+      "socialDelta": 0,
+      "feedback": "He mutters and slots in near the back; half the queue silently canonizes you, the other half now finds you more uncomfortable than him. You said the thing everyone was tutting, but in a high-privacy culture (IDV 89) you also conscripted forty strangers into your scene. The verdict: right, useful, a bit much.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "You step out of the line and start marshalling: directing people into tighter formation, coordinating who boards first, waving the bus forward.",
+      "socialDelta": -1,
+      "feedback": "People comply minimally while radiating 'who put you in charge?', and someone films you. Low power distance (PDI 35) means authority must be conferred, never self-awarded — a hi-vis vest would help, and even then. The queue was already governing itself; unrequested command reads as queue-jumping's pompous cousin.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "hero",
+      "text": "You match him stride for stride, reach the doors first, and take the best seat. If the queue is collapsing, you're not losing.",
+      "socialDelta": -2,
+      "feedback": "You get the seat, and forty people get a story about you; the woman with the eyebrow memorizes your face. Competition here is real but expected to stay masked (MAS 66) — naked zero-sum grabbing in shared space is about the gravest offence available, worse than the gilet man's because you visibly knew better. Nobody says anything, which is how you know it's serious.",
+      "dimension": "MAS"
+     }
+    ]
+   },
+   {
+    "id": "status",
+    "title": "So What Do You Do?",
+    "setup": "Friend-of-a-friend's birthday drinks in the upstairs room of a pub in Peckham. Yesterday your company closed a funding round that made you, on paper, briefly unable to breathe. A stranger hands you a crisp and asks, 'So what do you do?'",
+    "choices": [
+     {
+      "archetype": "hero",
+      "text": "You tell them straight: the company, the round, the valuation, and where you plan to take it. Confidence is honesty.",
+      "socialDelta": -2,
+      "feedback": "The circle nods, someone says 'wow, amazing', and the conversation dies of politeness in ninety seconds; later you clock two people doing an impression of you by the crisps. Boasting is among the fastest status-destroyers in the room — success is mainly spendable as understatement, competition worn inside out (MAS 66). The pitch that works in a funding meeting is precisely what fails at a birthday.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "caregiver",
+      "text": "You say 'oh, it's mostly spreadsheets and mild panic', wave the question away, and ask what they do with genuine interest.",
+      "socialDelta": 2,
+      "feedback": "An hour later, someone who Googled you says 'hang on, is that YOUR company?' and your stock jumps on the spot. Self-deprecation works because most rooms decode it — playing yourself down is the approved way of being discovered to be impressive (MAS 66). 'Mostly spreadsheets' from a founder is local dialect for 'not bad', which is to say 'very good indeed'.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "sage",
+      "text": "You answer accurately in one dry sentence — 'I run a small software company; it had a good week' — and go back to listening.",
+      "socialDelta": 1,
+      "feedback": "Nobody presses — prying is held to be roughly as vulgar as boasting — and your one calibrated sentence gets quoted across the room as 'refreshingly normal'. High individualism (IDV 89) protects reserve: you're entitled to your privacy and tend to be rewarded for exercising it gracefully. 'A good week' is doing heavy, deniable lifting, and the room knows it.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "explorer",
+      "text": "You dodge the script entirely: 'Terrible question, let's do better — what's the strangest thing in your flat?' and steer your corner of the party somewhere weirder.",
+      "socialDelta": 1,
+      "feedback": "Your corner becomes the loud corner, and by closing time three people have your number and nobody has your job title. High indulgence (IVR 69) rewards whoever makes the night better, and banter is the working intimacy test — you passed it without disclosing a thing. Status here can be earned largely in the currency of fun.",
+      "dimension": "IVR"
+     }
+    ]
+   },
+   {
+    "id": "conflict",
+    "title": "Hope You're Well!",
+    "setup": "The letting agent emails — 'Hope you're well!' — to announce a 15% rent increase on your Zone 2 flatshare at renewal. You know two identical flats in the building sat empty on Rightmove for six weeks. You and your two flatmates have until Friday to respond.",
+    "choices": [
+     {
+      "archetype": "diplomat",
+      "text": "You draft the reply: 'So sorry to be a pain', 'completely understand the market's difficult' — followed by the Rightmove listings, a firm counter-offer, and 'hope that's not too cheeky'.",
+      "socialDelta": 2,
+      "feedback": "The agent comes back within two days at 5%, matching your politeness beat for beat. The apologies were never weakness — 'sorry' is the licensed wrapper that lets a hard position travel without triggering confrontation, negative politeness doing contract work between parties who owe each other nothing (IDV 89). Both sides know the letter was steel; the wrapping is what made it deliverable.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "rebel",
+      "text": "You reply naming the game — the fake friendliness, the empty flats, the fee structure — and state that if the increase stands, your next letter is a formal complaint to their redress scheme, The Property Ombudsman.",
+      "socialDelta": 0,
+      "feedback": "The agent's tone goes glacially procedural, but the increase quietly drops to 8% — the threat lands because redress membership is mandatory for agents and deference to institutions is thin (PDI 35): people here expect complaints machinery to actually work on the powerful. Your flatmates are grateful and also slightly exhausted by you. You won on substance and spent something social doing it.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "craftsman",
+      "text": "You spend the evening with the tenancy agreement and gov.uk — deposit protection compliance, the notice's validity, the exact renewal clause — then respond citing chapter and verse.",
+      "socialDelta": 1,
+      "feedback": "The agent, discovering you're the one tenant in the building who has actually read the contract, becomes strangely accommodating. Low uncertainty avoidance (UAI 35) makes this a muddle-through culture where most people never check the clause — so the person who has quietly done the reading holds rare leverage. You're now 'the sensible one', which is worth money at every future renewal.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "explorer",
+      "text": "You skip the argument: book four SpareRoom viewings for Saturday, get a genuine alternative in hand, and mention in your reply that you're 'having a bit of a look around'.",
+      "socialDelta": 1,
+      "feedback": "The agent, who can smell a tenant with options, finds 'some flexibility' within the week. Low uncertainty avoidance (UAI 35) means few people here are fazed by your willingness to gamble on the open market — 'something will turn up' is a legitimate negotiating posture. Leverage acquired by wandering off is still leverage.",
+      "dimension": "UAI"
+     }
+    ]
+   }
+  ],
+  "caveats": [
+   "Hofstede's UK scores descend from IBM employee surveys of the late 1960s-70s; London in 2026 — where over a third of residents were born abroad and many workplaces run on imported norms — is far more plural than any national average captures.",
+   "The understatement and anti-earnestness codes are strongest in middle-class southern England. Much of the North, Scotland, and working-class and diaspora London runs warmer and more direct; a Glaswegian or Scouse reading would shrink or flip several of these deltas.",
+   "Generation matters: Londoners under 35, raised on therapy-literate internet culture, are measurably more comfortable with sincerity, and the irony-only register is weakening in exactly the domains (feelings, mental health) where this pack scores it as near-mandatory.",
+   "Two of the six numbers deserve extra suspicion: MAS (66) comes from the worst-replicating scale in Hofstede's model yet underwrites every 'masked competition' delta here, while LTO (51) sits so close to the midpoint that it predicts nothing — which is why this pack attributes nothing to it.",
+   "Five scenarios cannot model code-switching: real Londoners run several registers a day — office, pub, family, group chat — and the 'correct' move often depends on which room you're standing in, not which country."
+  ],
+  "voiceNotes": {
+   "archetypist": "This is a society that has made hierarchy nearly invisible without abolishing it. Power distance is low (35), so authority must be earned through demonstrated competence and voluntarily shouldered responsibility — but masculinity at 66 means the competition for rank is real, and the local rule is that you carry your load without ever appearing to strain. Order here isn't imposed from above; it's maintained through micro-rituals — the queue, the round, the tut — that everyone enforces and no one commands. If you want responsibility in London, take it quietly, fix what's broken before you're asked, and let others discover you've done it. The person who demands the crown tends to be disqualified by the demanding.",
+   "clinician": "If your temperament runs earnest — high in agreeableness, low in appetite for irony — London can feel like a place where your best qualities are contraband. Chronically converting every sincere impulse into a joke before it leaves your mouth is masking, and masking carries a real, well-documented cost: it works right up until you notice that nobody actually knows you. The healthy adaptation is narrower than it looks — learn the wrapper (understatement, the well-timed deflection) without amputating the sincerity underneath, and protect two or three relationships where earnestness is explicitly allowed. Banter can be genuine intimacy here, but only if there is somewhere the mask comes off. If there isn't, that's not adaptation; that's disappearance, and no amount of fluency in the local code compensates for it.",
+   "skeptic": "Quick calibration check before you internalize any of this: the UK's Hofstede numbers come from decades-old corporate surveys, the masculinity scale in particular has replication problems, and every score is a country mean — the spread between two Londoners in the same pub dwarfs the gap between most national averages. Some of this pack is genuinely well-supported: queueing norms and understatement are documented to death, and Kate Fox's fieldwork on 'the importance of not being earnest' is decent observational ethnography — though it's one anthropologist's notebook, not an experiment, and it describes the English middle class, not the whole city. 'Brits punish sincerity' is a tendency, not a law; plenty of Londoners are earnest, direct, and doing fine. Treat these deltas as weak priors about the median room, then update fast on the actual humans in front of you."
+  }
+ },
+ "japan": {
+  "overview": "Urban Japan structurally rewards preparation, procedural mastery, visible endurance, and truth delivered without ever being said aloud. Its near-record masculinity (MAS 95) is channeled into competition between groups — company against company, team against team — so individual credit-seeking is punished even while collective perfectionism is demanded; meanwhile PDI 54 and IDV 46 sit mid-scale, so the hierarchy that binds is seniority and ritual rather than raw command, and loyalty attaches to the immediate group more than to extended kin. Very high uncertainty avoidance (UAI 92) makes double-checking and pre-arranged consensus (nemawashi) the price of trust, and LTO 88 means reputations compound slowly and quietly, over years. What gets punished: improvising around shared procedure, public confrontation up the ladder, and visibly preferring personal time to group ritual.",
+  "norms": [
+   "Deliver corrections privately and let seniors announce them — being right in public is a demotion, not a win.",
+   "Master the procedure before you question it: the garbage chart, the form, the meishi ritual are membership tests, not bureaucracy.",
+   "Apologize early and often. Apology is social maintenance, not an admission of guilt — refusing to apologize is the actual loss.",
+   "Read what isn't said (kuuki o yomu): the real decision happens before the meeting, and the real answer usually arrives before the sentence ends.",
+   "Show dedication in forms the group can see — the unglamorous duty, the toban shift, staying for the second round — because effort is scored socially, not just by output.",
+   "Play in years, not weeks: contributions credited to nobody compound into trust faster than visible wins credited to you."
+  ],
+  "scenarios": [
+   {
+    "id": "workplace",
+    "title": "The Stamped Error",
+    "setup": "Three weeks into your job at a mid-size trading company in Shinagawa, you spot a unit-conversion error in the proposal your team submits to the client tomorrow. Your senpai, Takahashi-san, compiled it and has already circulated the PDF with his hanko on the cover sheet. The morning meeting is in fourteen hours.",
+    "choices": [
+     {
+      "archetype": "craftsman",
+      "text": "You stay late, re-verify every figure in the deck against the source data, and prepare a one-page errata plus a proposed extra checking step for next time.",
+      "socialDelta": 2,
+      "feedback": "Takahashi-san corrects the file that night, and weeks later the bucho cites your 'careful work' in your evaluation. At UAI 92 an error is treated as a hole in procedure, not a personal failing — kakunin, the double-checking culture, means the person who quietly closes the hole is exactly who this system promotes.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "hero",
+      "text": "At the morning meeting you flag the error openly, volunteer to fix it, and make sure the room knows you were the one who caught it.",
+      "socialDelta": -1,
+      "feedback": "The error gets fixed, but the room goes quiet and Takahashi-san bows a fraction too long. Japan's MAS 95 is among the highest Hofstede ever recorded, but the competition it fuels runs between companies and teams, not between colleagues — claiming solo credit at a teammate's expense tends to read as defecting from the side you are supposed to win with.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "rebel",
+      "text": "You tell Takahashi-san, in front of the team, that stamping documents nobody re-reads is exactly why this keeps happening.",
+      "socialDelta": -2,
+      "feedback": "You are technically correct and now, for a long while, 'difficult.' Japan's power distance is only mid-scale, but hierarchy here runs on seniority and face: correcting upward is acceptable through channels that let the senpai own the fix. Doing it in front of the team turns a procedural error into a face injury, and the senpai–kohai ladder has a long memory.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "You catch Takahashi-san alone by the elevator, mention you 'may have misread something on page 12,' and let him discover the error himself.",
+      "socialDelta": 2,
+      "feedback": "He fixes it overnight and starts inviting you to the pre-meetings where things are actually decided. You performed the tatemae that he was never wrong while delivering the honne that he was — face-preserving indirection is how trust gets built where the group's harmony outranks any one member's scorecard.",
+      "dimension": "IDV"
+     }
+    ]
+   },
+   {
+    "id": "family",
+    "title": "The Stairs Are Getting Difficult",
+    "setup": "Obon at your spouse's family home in suburban Osaka. After the visit to the family grave, your father-in-law mentions — to the television, not to anyone in particular — that the stairs are getting difficult. Nobody responds, and your mother-in-law refills the tea. Everyone at the table has understood that the question of who will care for them has just been asked.",
+    "choices": [
+     {
+      "archetype": "caregiver",
+      "text": "Over the following months you quietly take on the hospital runs and the ward-office paperwork, mentioning it to no one.",
+      "socialDelta": 2,
+      "feedback": "Nothing is ever said, but your place at the table changes; a year later your mother-in-law introduces you to a neighbor as 'the reliable one.' Absorbing burden without display — gaman — is the currency a restrained society tends to count, and it is counted in silence.",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "You put down your chopsticks and lay out a plan: a care manager, a visiting schedule, who pays for what — decided tonight.",
+      "socialDelta": -1,
+      "feedback": "The table agrees to everything and decides nothing, and the topic never resurfaces in your presence. You presided in the household of the man who presides — the question was his to open formally — and your plan will now be quietly reassembled, without your fingerprints on it.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "explorer",
+      "text": "You brightly suggest the new serviced-apartment complex near Umeda — great facilities, and there's even an app for coordinating family visits.",
+      "socialDelta": -1,
+      "feedback": "Polite interest, then someone changes the subject to the high-school baseball tournament. At UAI 92 an unfamiliar arrangement is a bundle of unpriced risks, and you answered aloud a question that had been asked obliquely — the family may get there eventually, but only after the option has stopped feeling new.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "sage",
+      "text": "You say nothing at the table. Over the next weeks you research care options and hand your spouse a short, sourced summary to float with the family at their own pace.",
+      "socialDelta": 1,
+      "feedback": "Six months later 'the family's idea' looks remarkably like your document. You ran nemawashi inside a family: in a long-term-oriented culture, being the invisible origin of a good decision is a durable form of credit.",
+      "dimension": "LTO"
+     }
+    ]
+   },
+   {
+    "id": "civic",
+    "title": "The Laminated Notice",
+    "setup": "A laminated notice from the kanri kumiai — the owners' association — appears in the lobby of your mansion in Koto-ku: burnable garbage was put out on a non-collection day, and residents' cooperation is requested. The kanrinin-san has started watching the bin area in the mornings. Separately, the rotation chart shows your unit is due for common-area duty — toban — next month.",
+    "choices": [
+     {
+      "archetype": "craftsman",
+      "text": "You print the ward's full separation chart — every category and collection day — tape it inside your kitchen cupboard, and quietly take your toban slot a month early to cover a vacationing neighbor.",
+      "socialDelta": 2,
+      "feedback": "The kanrinin-san begins greeting you by name, and when you later need the community room on short notice, it is somehow available. Mastering shared procedure is close to the whole social contract at UAI 92 — the chart isn't pedantry, it's a membership test.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "rebel",
+      "text": "You pin up your own note arguing that this many garbage categories is bureaucratic overreach and proposing the building relax enforcement.",
+      "socialDelta": -1,
+      "feedback": "Your note disappears within a day, and at the next kumiai meeting 'a resident's opinion' is acknowledged and gently deplored. Nobody confronts you — the sanction is quieter than that — but the rules belong to the group, and publicly renegotiating them solo files you as someone the building now has to manage.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "explorer",
+      "text": "Collection days never match your schedule, so you start dropping bagged garbage in the konbini bin on your commute.",
+      "socialDelta": -2,
+      "feedback": "The konbini owner mentions it to a customer who lives on your floor, and the laminated notices are now — everyone understands — about you. Household garbage in a konbini bin is a recognized offense, and improvising around procedure isn't read as efficiency here; it's read as unpredictability, the thing a UAI-92 society organizes itself to prevent.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "Though it wasn't you, you apologize to the kanrinin-san on behalf of your floor and ask what residents can do to help.",
+      "socialDelta": 1,
+      "feedback": "He waves it off, embarrassed, and the matter closes — a small deposit, but exactly the kind this ledger records. Apology here is social maintenance rather than admission of guilt; volunteering to carry a sliver of collective responsibility is a quiet status move, not a loss.",
+      "dimension": "IDV"
+     }
+    ]
+   },
+   {
+    "id": "social",
+    "title": "Under the Yurakucho Tracks",
+    "setup": "Your division hit its numbers, and the launch nomikai is at an izakaya under the Yurakucho train tracks. The kacho is in good form, the beer is doing its rounds, and someone has already floated a nijikai at a karaoke box. Your last train from Tokyo Station is at 12:10, and Saturday morning was supposed to be yours.",
+    "choices": [
+     {
+      "archetype": "hero",
+      "text": "You stay to the end — pouring for the kacho with both hands, matching every toast, last one standing at the karaoke box, taxi fare accepted as the cost of entry.",
+      "socialDelta": 1,
+      "feedback": "On Monday the kacho uses your name without checking who you are first — with his cohort, you posted a number, because MAS 95 can turn even a party into an event with a winner. But note that the two youngest at the table left after the first party and nobody blinked: endurance drinking still buys entry at old-line firms, and it is a visibly depreciating currency.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "caregiver",
+      "text": "You spend the night making sure the new hire from Sendai isn't stranded at the end of the table — topping up her oolong tea, pulling her into the conversation.",
+      "socialDelta": 1,
+      "feedback": "Nobody comments, but the new hire relaxes, and the senior admin notices you noticing. Kizukai — attentiveness to unspoken needs — is logged silently in the group's ledger, and that ledger tends to get consulted when opportunities are handed out.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "You volunteer to be kanji for the year-end party — booking the room, drawing the seating chart, collecting money, herding drunk colleagues to the exit.",
+      "socialDelta": 1,
+      "feedback": "It's unglamorous logistics, and it's also how the hierarchy auditions people. At a mid-scale PDI of 54, leadership is displayed by serving the group's order from below — sovereigns here climb by carrying, not by commanding.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "explorer",
+      "text": "After the first party you make a cheerful exit — friends are waiting at a bar in Shimokitazawa, and honestly, that sounds like more fun.",
+      "socialDelta": -1,
+      "feedback": "No one says anything, and one early exit is survivable — leaving after the ichijikai is increasingly ordinary, especially for younger staff. But in a restrained culture the pattern is what counts: repeated, visible preference for your own fun over group ritual gets filed, silently, under 'belongs elsewhere.'",
+      "dimension": "IVR"
+     }
+    ]
+   },
+   {
+    "id": "conflict",
+    "title": "The Meeting Before the Meeting",
+    "setup": "A longtime supplier has slipped a component spec, and it will cost your firm the launch window. A formal meeting is set at their Nihonbashi office; your bucho will attend, fresh meishi will be exchanged two-handed with the managers each side has brought in for the occasion, and both sides already know exactly what happened. You have been asked to 'prepare.'",
+    "choices": [
+     {
+      "archetype": "diplomat",
+      "text": "Two days before, you invite your counterpart for coffee near Tokyo Station and quietly agree on what the meeting will conclude: their apology, your revised schedule, no surprises.",
+      "socialDelta": 2,
+      "feedback": "The formal meeting takes forty minutes and consists mostly of bowing; the twenty-year relationship survives intact. That was nemawashi — at UAI 92, meetings exist to ratify certainty, not to produce it, and the person who removes surprise is the one both sides remember warmly.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "You open the meeting yourself, state your firm's position plainly, and set a deadline for their remediation plan.",
+      "socialDelta": -1,
+      "feedback": "Their side goes formal and glacial, and your bucho's jaw tightens — you spoke over him in front of another company. Rank determines who may open, concede, and close; a mid-level voice claiming the head of the table costs face on both sides of it.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "sage",
+      "text": "You say almost nothing in the room. Afterward you draft a precise chronology with data attached and route it through your company's ringi approval, creating a written record both firms can build the fix on.",
+      "socialDelta": 1,
+      "feedback": "Nobody thanks you this quarter; two years later, at contract renewal, your document is the reference everyone works from. LTO 88 pays out in exactly this currency — patient, boring, compounding.",
+      "dimension": "LTO"
+     },
+     {
+      "archetype": "rebel",
+      "text": "Mid-meeting you cut through the choreography: 'We all know the spec was missed. Can we skip the theater and talk about the actual fix?'",
+      "socialDelta": -2,
+      "feedback": "The room does not relax — it freezes, and the suppliers' bucho apologizes to yours for 'the confusion,' pointedly not to you. You said the honne aloud in a tatemae room; everyone already knew the truth, and naming it stripped both sides of the fiction that lets them keep working together.",
+      "dimension": "IDV"
+     }
+    ]
+   }
+  ],
+  "caveats": [
+   "Hofstede's Japan numbers come from surveys of a heavily male IBM workforce in 1967–73; MAS 95 in particular partly measures that sample (and it is not the world's highest — Slovakia outscores it). Gender-role attitudes and workplace norms have moved substantially since, fastest among younger urban workers.",
+   "This pack models Tokyo/Osaka corporate and neighborhood life. Startups, gaishikei (foreign-owned firms), creative industries, and rural communities run on visibly different rules — nomikai pressure, overtime expectations, and seniority weight vary enormously by sector and firm age.",
+   "Change here is fast and partly legally driven: the 2018–19 Work Style Reform laws, post-2020 remote work, and younger cohorts' open reluctance about drinking parties and unpaid overtime mean several rewarded behaviors in this pack are weakening norms, not eternal ones — the deltas assume an old-line firm and an established residential building.",
+   "Honne/tatemae and kuuki o yomu are real, well-documented patterns but easy to overweight: plenty of Japanese people are blunt, chaotic, or rule-averse, and within-Japan variance dwarfs the Japan-versus-anywhere gap. The scores model a default audience's likely reaction, not any individual's.",
+   "Two scores contradict the popular caricature: PDI 54 and IDV 46 are mid-scale. Japanese hierarchy is seniority and ritual rather than steep command, and group loyalty attaches to the immediate workplace or building, not to clan or extended family — 'rigidly hierarchical, hive-mind Japan' overshoots Hofstede's own data."
+  ],
+  "voiceNotes": {
+   "archetypist": "This is one of the most order-saturated societies in the dataset: UAI 92 treats chaos as something close to a moral problem, and the cultural answer is procedure, rehearsal, and rank. But note that PDI sits at a middling 54 — the hierarchy is seniority and ritual, not command — which is why the sovereign only wins here when responsibility points downward, into carrying the group: organizing the party, taking the toban shift, closing the hole in the process. The senpai/kohai ladder is a genuine competence hierarchy with a long memory, and it tests whether you can shoulder duty before it grants you a voice. Craftsmen and diplomats compound value in this structure; the rebel pays full price for speaking truth before earning the standing to be heard.",
+   "clinician": "If your temperament runs open, spontaneous, or blunt, urban Japan will ask you to mask a great deal, and chronic masking has a real cost — the honne/tatemae split is functional for the group but corrosive when you have nobody left to be honne with. Watch especially for the endurance trap: earning belonging through overtime and nomikai until exhaustion starts to feel like virtue. Gaman is a skill, not an identity. Healthy adaptation means consciously choosing which rituals to perform and protecting at least one space — a friend group, a hobby, a therapist — where the performance fully stops. If no such space exists, that isn't cultural fit; that's disappearance, and it deserves attention, not self-criticism.",
+   "skeptic": "Separate what replicates from what's vibes. Japanese institutions really do run on procedure, indirect negative feedback is well documented, and skipping group rituals can genuinely cost you at some companies — that much holds. But MAS 95 comes from surveying a mostly male IBM workforce half a century ago, so don't restructure your personality around one number. Meanwhile PDI 54 and IDV 46 are mid-scale: the data itself refuses the rigid-hierarchy, hive-mind caricature this genre loves. And the boring statistical truth: within-Japan variance dwarfs the Japan-versus-anywhere gap. Your specific boss might love bluntness; your specific building might not care about garbage days. Country averages describe a default audience, never the person actually in front of you."
+  }
+ },
+ "china": {
+  "overview": "Urban China rewards visible diligence in service of the hierarchy, patient relationship-building, and pragmatic flexibility about rules — and punishes public confrontation, boundary-declaring individualism, and legalism that spends a relationship for a one-time win. Face (mianzi) functions as a real currency: giving it upward and protecting it laterally opens doors that merit alone will not. The long game dominates — education, savings, favors, and careers are multi-year family projects — so deferred gratification reads as competence while demands for immediate payoff read as naivety. Because uncertainty avoidance is low, the written rule is rarely the last word: the skilled operator knows which of the three doors is actually open today.",
+  "norms": [
+   "Protect face reflexively: praise in public, disagree in private, and route criticism through a one-on-one or an intermediary — where you make your point matters more than the point itself.",
+   "Treat the junior position as a stage, not a punishment: pour the tea, take the seat by the door, hold your toast glass lower — the people who decide your future are watching for exactly this.",
+   "Rules are opening positions. When the official channel stalls, ask whether there is 'a flexible way' (biantong) and work your WeChat network for the side door before you escalate.",
+   "Guanxi is a ledger, not a vibe: accept favors, repay them slightly over-weight, and never cash a relationship out for a single win.",
+   "In family matters, buy time instead of declaring independence — a concrete five-year plan or one token blind date preserves everyone's face and most of your freedom.",
+   "Grind visibly, collect later: deferred payoff is legible and trusted here, while demanding immediate terms — in salary, contracts, or marriage timelines — reads as short-sighted."
+  ],
+  "scenarios": [
+   {
+    "id": "workplace-996-sprint",
+    "title": "The Double 11 Sprint",
+    "setup": "It is 11:40 p.m. and your team lead at a Shenzhen e-commerce SaaS company has just posted in the project WeChat group: the Double 11 release is moving up two weeks, and 'everyone's cooperation' is expected through the weekends. The thumbs-up stickers are already stacking up. You are two years in and up for a title bump at year-end review.",
+    "choices": [
+     {
+      "archetype": "sovereign",
+      "text": "Reply in the group within minutes: you volunteer to draft tonight's sprint roster and module breakdown for the lead to sign off, and offer to keep a daily progress board.",
+      "socialDelta": 2,
+      "feedback": "By Monday the lead is forwarding your board upward with your name still on it, and the department head learns who you are. Visible, orderly ownership of a results push tends to be exactly what this success-driven workplace promotes — provided, as here, the initiative is framed as serving your lead's goal rather than replacing him.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "hero",
+      "text": "Message the lead privately: give me the payments module, the hardest one. Then ask plainly whether delivering it puts you in line for the year-end promotion.",
+      "socialDelta": 1,
+      "feedback": "He hands you the module with a noncommittal 'we'll see,' but you are now marked as someone who runs toward hard things. Ambition is broadly acceptable here when it is routed privately and paid for in output — striving for rank is normal, so long as you never perform it over anyone's head.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "craftsman",
+      "text": "Say nothing in the group. Overnight, build a regression test harness so the crunch ships fewer bugs, and flag two timeline risks to the lead in a private one-on-one message.",
+      "socialDelta": 1,
+      "feedback": "Nothing happens for three weeks — then the launch is the only one in the division without a P0 incident, and the lead remembers exactly why. Quiet, deferred, private competence compounds in a long-term-oriented culture, and you spared him face by raising the risks off the record.",
+      "dimension": "LTO"
+     },
+     {
+      "archetype": "rebel",
+      "text": "Reply in the group that uncompensated weekend overtime exceeds the labor-law cap, link an article about 'lying flat,' and suggest the deadline move instead.",
+      "socialDelta": -2,
+      "feedback": "The message sits unanswered for nine minutes, then the lead replies 'let's discuss offline,' and your name quietly drops off the interesting workstreams. Plenty of colleagues privately agree — tang ping is a real current, and the courts have even sided with your legal reading — but contradicting your lead where his own boss could see it cost him mianzi, and that, not the law, is what tends to get punished.",
+      "dimension": "PDI"
+     }
+    ]
+   },
+   {
+    "id": "family-spring-festival",
+    "title": "Second Aunt Has Arranged Something",
+    "setup": "Spring Festival at your grandparents' flat in Wuxi. Over dumplings, Second Aunt announces she has arranged a xiangqin — a blind date with someone 'very stable: civil servant, apartment already bought' — and your mother has clearly pre-approved. You are 29, single, and happy with your life in Shanghai.",
+    "choices": [
+     {
+      "archetype": "caregiver",
+      "text": "Retreat to the kitchen with your grandmother, wash and chop through the afternoon, keep the elders' teacups full, and tell your mother privately you will 'meet the person, no promises.'",
+      "socialDelta": 2,
+      "feedback": "The aunts' verdict travels fast: dongshi — someone who knows how to behave. In a restrained, duty-first culture, quietly absorbing the work and the pressure without complaint reads as maturity, and it likely bought you a year of peace at the cost of one coffee date.",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "Toast Second Aunt for her thoughtfulness, accept the WeChat contact, exchange three polite messages over the holiday, and let it dissolve naturally afterward.",
+      "socialDelta": 2,
+      "feedback": "Your mother gets to report that 'they're chatting,' which is all she needed in front of the relatives. You gave her mianzi where it counts — before an audience — while committing to nothing; once the family's face was served, nobody tends to audit the outcome.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "sage",
+      "text": "Say almost nothing at the table. That night, sit down with your father alone and walk him through your actual five-year plan — the promotion track, the savings target, when marriage plausibly fits.",
+      "socialDelta": 1,
+      "feedback": "Your father starts running interference with the aunts, because now he has something concrete to defend. A long-horizon plan is legible currency in a family that thinks in decades; vague independence is not, but a schedule is.",
+      "dimension": "LTO"
+     },
+     {
+      "archetype": "rebel",
+      "text": "Put your chopsticks down and say it clearly and kindly: you may never marry, that is your decision, and you would like the family to respect it.",
+      "socialDelta": -2,
+      "feedback": "The table goes quiet, your grandmother looks at your mother, and your mother spends the rest of the holiday apologizing for you to the aunts. What you framed as an honest boundary, a deeply collectivist family is primed to hear as resigning from a joint project in public — the content mattered less than making your parents lose face at their own table.",
+      "dimension": "IDV"
+     }
+    ]
+   },
+   {
+    "id": "civic-residence-permit-window",
+    "title": "The Missing Stamp",
+    "setup": "You are assembling documents for Shanghai residence-permit points (juzhuzheng jifen) so your child can enroll in school locally. At the government service center window, the clerk says your old employer's social-insurance record needs a stamp from an office that 'is being reorganized' and slides your folder back. The queue behind you is twelve deep.",
+    "choices": [
+     {
+      "archetype": "explorer",
+      "text": "Post in your residential-compound WeChat group asking if anyone has cleared this. By evening a neighbor's voice memo explains that since last year's pilot, the record can be pulled from the Suishenban app with an electronic seal — no physical stamp required.",
+      "socialDelta": 2,
+      "feedback": "A different window accepts the e-sealed printout in twenty minutes. Routing around a stuck channel through the informal information network is the expected skill here, not a cheat: in a system this relaxed about ambiguity, people assume there are usually three doors, and only newcomers keep knocking on the locked one.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "Return at 2:30 on a rainy Tuesday when the hall is empty, chat with the same clerk about the reorganized office's troubles, then ask softly whether there is 'any flexible way' — biantong — to handle it.",
+      "socialDelta": 1,
+      "feedback": "She sighs, pulls out an affidavit form you have never seen, and says this usually works. The window clerk has discretion, and discretion tends to flow toward people who honor her position instead of challenging it — you treated her as the authority she locally is.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "craftsman",
+      "text": "Come back Thursday with an indexed folder: notarized copies, every version of the form, and a printout of the exact regulation, and ask her to specify precisely which item fails.",
+      "socialDelta": 0,
+      "feedback": "She flips through it, concedes it is thorough, then cites an implementation notice from March that superseded your printout. In this system the written rule is a snapshot, not a contract — thoroughness earns you politeness, but the ground often moves faster than your folder.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "Point to the 'one visit max' (zuiduo pao yi ci) service pledge on the wall, ask for her supervisor, and say you will raise it on the 12345 hotline.",
+      "socialDelta": -1,
+      "feedback": "The supervisor apologizes smoothly and your file enters a review that takes six weeks; the 12345 ticket gets a prompt callback — agencies are graded on those — but the answer is the same. The complaint machinery is real leverage here, yet making a clerk lose face before a full queue tends to convert a person with discretion into a person with procedures: you usually win the letter of the rule and little else.",
+      "dimension": "PDI"
+     }
+    ]
+   },
+   {
+    "id": "status-client-banquet",
+    "title": "The Seat Nearest the Door",
+    "setup": "A client dinner in a private room (baofang) at a Beijing roast-duck restaurant: your company is hosting a state-owned enterprise's deputy general manager. You are the most junior person there, and the lazy Susan, the baijiu bottles, and the seating all mean something. Your director nods you toward a chair.",
+    "choices": [
+     {
+      "archetype": "diplomat",
+      "text": "Take the seat nearest the door without being told, keep the teacups on your side filled all night, and when your turn comes, toast the deputy GM with your glass held lower than his.",
+      "socialDelta": 2,
+      "feedback": "As the cars are being called, the deputy GM tells your director, 'this young person understands the rules' (dong guiju). In a steep hierarchy the junior seat is not invisibility — it is a stage, and executing the protocol precisely is how juniors get talent-spotted.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "sage",
+      "text": "Drink as little as courtesy allows, watch who defers to whom, and near the end offer one short toast that precisely echoes a point the deputy GM made an hour earlier.",
+      "socialDelta": 1,
+      "feedback": "He pauses, actually looks at you, and asks your name. In a culture that prizes restraint over display, having demonstrably listened is rarer currency than eloquence — one measured, well-timed sentence can outweigh an evening of noise.",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "explorer",
+      "text": "Keep your corner of the table laughing — stories, one wildcard dish onto the lazy Susan — and add the deputy GM's two young staffers on WeChat before dessert.",
+      "socialDelta": 1,
+      "feedback": "Weeks later, those staffers are the ones who tell you what their boss actually thinks before the formal meeting. Every banquet needs an atmosphere-maker, and guanxi is built sideways as often as upward — the network you seeded at the junior end of the table is often the one you end up using.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "hero",
+      "text": "Midway through the fish course, catch the deputy GM's attention across the table and deliver your two-minute pitch on the project you would run for his division.",
+      "socialDelta": -1,
+      "feedback": "He nods politely and refills his own tea; your director's smile stiffens. The banquet exists to build the relationship inside which business later happens — pitching over your director's head skipped the hierarchy and spent his mianzi, so the idea likely dies regardless of merit.",
+      "dimension": "PDI"
+     }
+    ]
+   },
+   {
+    "id": "negotiation-hangzhou-supplier",
+    "title": "Dinner by the Lake",
+    "setup": "Your Hangzhou packaging supplier is three weeks late, threatening your Double 11 stock, and the contract's penalty clause would fully cover the damage. Their laoban has invited you to dinner at a lakeside restaurant to 'discuss the situation together.' Your CFO wants blood; your gut says it is more complicated than that.",
+    "choices": [
+     {
+      "archetype": "sage",
+      "text": "Never mention the delay through dinner. When the laoban finally raises it himself over tea, state your shipment numbers and your deadline once, precisely, and let the silence sit.",
+      "socialDelta": 2,
+      "feedback": "He fills the silence with a recovery plan more generous than your clause: air freight at his cost and priority on his best line. Because you never forced him to lose face, he had room to volunteer more than you could have extracted — in a face economy, the concession offered is often larger than the one demanded.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "caregiver",
+      "text": "Offer to embed your own QC engineer on his line for two weeks at your expense to unblock the delay, and treat the penalty clause as something 'we can set aside for now.'",
+      "socialDelta": 1,
+      "feedback": "The shipment lands four days early, and in October a crate of hairy crabs from his hometown arrives at your office unannounced. You converted a breach into renqing — a favor logged in a ledger both sides track for years — which is worth more than the penalty fee, provided you eventually collect.",
+      "dimension": "LTO"
+     },
+     {
+      "archetype": "explorer",
+      "text": "Sketch a restructure on a napkin over the baijiu: split the order across his two plants, reroute half through a bonded warehouse in Ningbo, and convert the penalty into a discount on next year's volume.",
+      "socialDelta": 1,
+      "feedback": "He counters, you adjust, and by the last toast there is a deal no contract anticipated. Improvised, pragmatic restructuring is the native language of commerce here — the plan matters less than proving you are the kind of partner who can re-plan.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "hero",
+      "text": "Open before the cold dishes arrive: read out the penalty clause, name the figure, and say you expect it wired before you will discuss any future orders.",
+      "socialDelta": -1,
+      "feedback": "He pays — and next spring, when capacity is tight everywhere, your orders sit at the back of his queue. In a long-horizon business culture the contract is a snapshot of the relationship, not its ceiling; cashing out a one-time penalty at the cost of years of priority treatment is remembered as choosing the paper over the person.",
+      "dimension": "LTO"
+     }
+    ]
+   }
+  ],
+  "caveats": [
+   "China was not in Hofstede's original IBM dataset; its scores come from later extensions built largely on older managerial samples. Post-1990s urban cohorts measure markedly more individualist, and 'lying flat' and DINK households are that generational shift in action — a 26-year-old Shanghai designer may play these scenarios very differently than the averages predict.",
+   "Within-country variance is enormous: Shanghai, a Dongbei industrial town, and a Gansu county seat differ from one another more than many country pairs do, and the hukou system means migrants and locals in the same city face different rules and different norms.",
+   "China's UAI score of 30 is genuinely contested — everyday pragmatism coexists with intense exam credentialism (gaokao), heavy formal bureaucracy, and rising compliance culture; a single number hides both halves.",
+   "The simulation compresses guanxi and mianzi into instant point deltas; in reality both are slow, relationship-specific, and non-transferable — a favor banked with one clerk buys nothing at the next window.",
+   "Civic scenarios here cover bureaucracy and neighbors only; constraints on public speech and political life shape behavior in ways Hofstede's dimensions were never designed to measure, and this pack does not model them."
+  ],
+  "voiceNotes": {
+   "archetypist": "Look at the numbers: PDI 80 stacked on LTO 87. This is a society that decided hierarchy is the price of coordination across generations, not just quarters — and it pays out for the archetypes who take responsibility inside the structure rather than against it. The diplomat, the craftsman, and the sage climb precisely because they do not grab; the sovereign is rewarded chiefly when taking charge visibly serves the person above them. The rebel's function — saying the unsayable — still exists, but the tolerated channel is private, upward, and earned; spend your dissent in the group chat and the structure simply routes around you. Order first, authorship later.",
+   "clinician": "If you are temperamentally blunt, high in openness, or low in trait agreeableness, this environment will ask you to mask a lot — and there is a real difference between strategic code-switching you consciously choose and chronic self-erasure you stop noticing. The local virtue of chiku, 'eating bitterness,' is genuine resilience, but it can become a script where burnout looks like moral failure; the neijuan (involution) discourse and the lying-flat movement are, clinically speaking, an entire cohort naming that cost at once. Adaptation is not betrayal of self — but check in with yourself: are you performing the diplomat at the banquet and coming home to someone real, or has the performance become the only self anyone has met, including you?",
+   "skeptic": "Quick reality check on how much of this generalizes. The face-and-hierarchy etiquette — toast order, never contradicting the boss in public, the junior seat — is well-documented across sources and you should actually follow it; that part is real. But Hofstede's China numbers come from limited, dated, mostly corporate samples, the UAI score is disputed in the literature, and the within-country spread on every one of these traits dwarfs the China-versus-anywhere gap. The introverted rule-follower from Chengdu and the loudmouth founder from Shenzhen differ more from each other than the 'average Chinese person' differs from the 'average American' — neither of whom exists. Use these norms as priors, then update fast on the actual human in front of you."
+  }
+ },
+ "germany": {
+  "overview": "German big-city society structurally rewards demonstrated competence, written planning, punctuality, and rule-following, and it grants authority to whoever arrives with documentation and a Konzept — rank claimed without evidence tends to get audited on the spot. It punishes improvisation presented as a virtue, self-promotion, vagueness dressed up as politeness, and violations of time boundaries (Feierabend, Sundays, the stated meeting time). The distinctive combination is flat hierarchy with strong procedure: PDI 35 means anyone may correct the boss, but UAI 65 means with facts and through the recognized channel. Warmth is back-loaded — reliability buys entry, and depth arrives slowly or not at all.",
+  "norms": [
+   "Criticism of your work is not criticism of you. Sachlichkeit means blunt factual correction — including of your boss — is respect for the task; answer the substance and skip the hurt feelings.",
+   "Say no directly and expect to hear it. Softening bad news into ambiguity reads as unreliability, not kindness; if something matters, put it in writing and set a Frist (deadline).",
+   "Feierabend and Sundays are load-bearing walls: after-hours work contact needs a genuine emergency, Sunday drilling or lawn-mowing draws complaints under the Ruhezeit rules, and arriving at the stated time — not 'ish' — is read as respect for other people's plans.",
+   "Follow small public rules even when nobody official is watching — bin sorting, bike lanes, red pedestrian lights when children are present. Berliners jaywalk plenty, but visible rule-following is still widely read as trustworthiness, and its absence as free-riding on the collective.",
+   "Don't force friendship. Expect months at Bekannter (acquaintance) status; join a Verein, show up every week, take the unglamorous jobs. The slow track is the reliable one, and it ends somewhere real.",
+   "Lead with qualifications, not charisma. Degrees, certifications, and a worked-out plan are how seriousness is signaled; confident vibes without documentation tend to draw pointed questions."
+  ],
+  "scenarios": [
+   {
+    "id": "workplace-jour-fixe",
+    "title": "Jour Fixe, Slide 14",
+    "setup": "Monday, 9:00 sharp: the weekly Jour fixe at the Munich Mittelstand machine-tool firm where you started six weeks ago. Your Abteilungsleiter — Dr.-Ing., twenty years in the house — walks the team through the rollout plan for a new control unit. Slide 14 contains a load calculation you are fairly sure is wrong by a margin that will matter in certification.",
+    "choices": [
+     {
+      "archetype": "craftsman",
+      "text": "You raise your hand and lay out the error in front of everyone: the figures, the DIN standard it would violate, and your corrected calculation — no cushioning, no apology.",
+      "socialDelta": 2,
+      "feedback": "Dr. Weber checks your numbers, nods, corrects the slide, and the meeting moves on with no visible awkwardness — under Sachlichkeit, factual criticism of the boss is respect for the work, not insubordination. Note the sequence, though: the reward came after your numbers held; had they not, the audit would have run the other way. Within weeks colleagues are bringing you drawings to check.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "You wait, catch him alone after the meeting, open with praise for the overall plan, and gently suggest slide 14 'might be worth a second look' — better not to correct him in front of the team.",
+      "socialDelta": -1,
+      "feedback": "He hears you out — the private route isn't taboo here — but he's irritated that the error stood all meeting while others planned around it, and 'might be worth a second look' read as hedging rather than tact. You were managing a face problem the room mostly didn't have; the task-first norm wanted the flaw named when it mattered.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "hero",
+      "text": "You speak up to volunteer: you'll take ownership of the entire control-unit workstream and commit to beating the current timeline.",
+      "socialDelta": 1,
+      "feedback": "He gives it to you — visible striving is respected in this performance culture — and then asks for a written Konzept with milestones and risk assessment by Friday. Ambition is welcome here; it just has to arrive with a plan stapled to it.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "explorer",
+      "text": "You suggest skipping further planning rounds entirely and building a quick-and-dirty prototype — 'we'll iterate, the plan will emerge as we go.'",
+      "socialDelta": -2,
+      "feedback": "There is a silence, and then someone asks, not unkindly, how you intend to certify a prototype with no requirements document. Planning here is not bureaucratic theater; under high uncertainty avoidance, 'the plan will emerge' tends to translate as 'I have not thought about the consequences.'",
+      "dimension": "UAI"
+     }
+    ]
+   },
+   {
+    "id": "family-kaffee-kuchen",
+    "title": "Cake and Cross-Examination",
+    "setup": "Sunday, 15:00 on the dot: Kaffee und Kuchen at your partner's parents' house near Stuttgart. Her father, a retired Daimler engineer, has already asked — pleasantly, precisely — whether you carry Berufsunfähigkeitsversicherung and what your plan is for the next ten years. The cake is homemade; the questions are not small talk.",
+    "choices": [
+     {
+      "archetype": "sage",
+      "text": "You answer plainly: what you earn, what you haven't sorted out yet, and the ten-year plan you actually have, boring parts included.",
+      "socialDelta": 2,
+      "feedback": "He refills your coffee and starts sketching pension options on a napkin — you have been taken seriously. In a culture that scores among the world's highest on long-term orientation, a sober plan with admitted gaps is how commitment is read; charm expires, Konzepte don't.",
+      "dimension": "LTO"
+     },
+     {
+      "archetype": "caregiver",
+      "text": "You keep your answers short, then quietly get up to help his wife carry plates and keep the Kaffeetafel running.",
+      "socialDelta": 1,
+      "feedback": "Nobody comments, which is the compliment. In a restrained culture that distrusts performance, unfussy usefulness reads as solidity; you'll hear secondhand that you were 'sehr angenehm' — from this family, high praise.",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "You take the reins of the table — steering conversation to your ventures and projecting confidence about prospects you can't yet document.",
+      "socialDelta": -1,
+      "feedback": "He begins asking for specifics — figures, qualifications, timelines — and the gap between claim and evidence becomes the afternoon's quiet subject. In a low-power-distance household, standing tends to be granted for demonstrated competence, not for claimed presence.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "rebel",
+      "text": "You laugh that Germans insure everything including their insurance, and say you'd rather live now than optimize for age 67.",
+      "socialDelta": -2,
+      "feedback": "The table goes polite, which is worse than going cold. Haftpflicht and provision for the future read here less as paranoia than as adulthood — respect for the people your risks would otherwise land on — and you have just announced you'd let them land.",
+      "dimension": "UAI"
+     }
+    ]
+   },
+   {
+    "id": "civic-hausordnung",
+    "title": "The Note by the Bins",
+    "setup": "Three weeks into your Leipzig Altbau flat, a typed, unsigned note appears by the bins: someone has been putting Verpackung in the Restmüll, and if the Entsorger rejects the bins again, the extra sorting charge lands on the whole Hausgemeinschaft. Your name is not mentioned; everyone knows it's you. Your week on the stairwell-cleaning roster starts Monday.",
+    "choices": [
+     {
+      "archetype": "craftsman",
+      "text": "You print the city's sorting chart, fix your bins, and do your stairwell week properly — swept, mopped, doormat corners lifted.",
+      "socialDelta": 2,
+      "feedback": "Within a month the ground-floor neighbor greets you by name and holds the door. Sorting garbage correctly looks like the lowest-status move available, but Ordnung is a local language of trust: following shared rules signals you won't offload costs onto the collective, and the building noticed.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "You bake a cake, knock on every door, apologize warmly for any trouble, and say you're sure it will all work itself out — without actually changing how you sort.",
+      "socialDelta": -1,
+      "feedback": "Polite thanks at every door, and a second, sharper note in week five. Relational warmth doesn't offset non-compliance in this individualist, rule-bound setting — your contract with the Hausgemeinschaft is behavioral, not social, and they wanted the bins fixed, not a friendship.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "rebel",
+      "text": "You post your own note next to theirs: 'To whoever audits their neighbors' garbage — get a hobby.'",
+      "socialDelta": -2,
+      "feedback": "The Hausverwaltung receives a formal written complaint within the week. Mocking rule-enforcement rarely reads as wit here; it reads as free-riding on a shared liability, and the machinery that now engages with you is procedural, patient, and documented.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "You post a notice in the stairwell: you'll label the bins in three languages, you're proposing a simple sorting system at the next Hausversammlung, and you'll take questions.",
+      "socialDelta": 1,
+      "feedback": "Two neighbors show up, one corrects your color-coding, and the system is adopted. A three-week newcomer can organize the whole building because low power distance means initiative needs competence, not seniority — though note they still audited your color-coding first.",
+      "dimension": "PDI"
+     }
+    ]
+   },
+   {
+    "id": "social-verein",
+    "title": "Fourth Thursday at the Vereinsheim",
+    "setup": "You joined a Frankfurt Ruderverein to meet people, and on your fourth Thursday, training ends and everyone drifts to the Vereinsheim for Apfelwein. Membership here runs in decades; the man across the table has stroked the same eight since 1998. Someone finally asks what you do.",
+    "choices": [
+     {
+      "archetype": "sage",
+      "text": "You answer in one sentence, then ask the 1998 man a precise question about why the club still rigs its boats the old way.",
+      "socialDelta": 2,
+      "feedback": "He talks for twenty minutes, and three weeks later you're invited to the smaller Thursday crew. Friendship here moves slowly along the Bekannter-to-Freund track, and understatement plus genuine interest is the entry fee — the invitation, not the job title, is the real status marker.",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "hero",
+      "text": "You give the full elevator pitch: title, recent promotion, the trajectory you're building.",
+      "socialDelta": -1,
+      "feedback": "Polite nods, and the conversation flows around you like water around a piling. Self-marketing tends to read as insecurity in a restrained culture, and the club already has a rank system — measured in years on the water and offices held, not salaries.",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "caregiver",
+      "text": "You volunteer for the jobs nobody wants: the Kuchentheke at the autumn regatta and Saturday's boat-hall cleanup.",
+      "socialDelta": 2,
+      "feedback": "The Vorstand learns your name before it learns your profession. Standing in a Verein accrues through sustained, unglamorous Ehrenamt — the actual currency of German associational life — and it compounds over years; the ledger is quietly kept.",
+      "dimension": "LTO"
+     },
+     {
+      "archetype": "explorer",
+      "text": "In week four you propose the club scrap its rigid training plan and try your improvised circuit format — shake things up a little.",
+      "socialDelta": -1,
+      "feedback": "You are referred, kindly, to the Satzung and to the next Jahreshauptversammlung, where such changes are tabled and voted on. The club has outlived several German states; it plays long games, and it changes on the timescale of annual meetings, not a newcomer's enthusiasm.",
+      "dimension": "LTO"
+     }
+    ]
+   },
+   {
+    "id": "conflict-maengelruege",
+    "title": "The Leak and the Letter",
+    "setup": "The Meisterbetrieb that retiled your Munich bathroom left a leaking joint, and water is now staining your downstairs neighbor's ceiling — she has already photographed it. The firm's office says the Meister is 'very busy until September.' Something has to move, and it won't be September.",
+    "choices": [
+     {
+      "archetype": "craftsman",
+      "text": "You photograph everything, then send a written Mängelrüge by registered post: defect described, statutory Gewährleistung invoked, a 14-day Frist for the remedy (Nacherfüllung) — courteous throughout.",
+      "socialDelta": 2,
+      "feedback": "The office calls within three days to schedule. A formal letter with a deadline isn't aggression here — it's the recognized grammar of a dispute, and it tells the firm you know the procedure they are legally bound by, which re-sorts you out of the 'can wait' pile.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "You keep calling the office in a friendly tone, empathize with their busy season, and avoid words like Frist or Haftung so as not to poison the relationship.",
+      "socialDelta": -1,
+      "feedback": "September becomes October. In a contract culture, goodwill without a written Frist creates little to answer to — legally or socially — and friendly patience tends to be read, accurately, as someone who can be deprioritized.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "hero",
+      "text": "You get the Meister himself on the phone and go hard: lawyer threats, one-star reviews, and a few words about what kind of outfit he runs.",
+      "socialDelta": -1,
+      "feedback": "He stops taking your calls and refers you back to the office. Hard conflict itself is normal in this assertive culture — but Sachlichkeit demands you attack the defect, not the man, and threats issued before any Frist was even set read as bluster rather than strength.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "You take charge of the whole mess: coordinate the neighbor, the Hausverwaltung, and the firm's Betriebshaftpflicht insurer, then propose one joint on-site Termin with a written agenda.",
+      "socialDelta": 1,
+      "feedback": "Everyone accepts, because someone competent finally owns the problem. Authority is granted readily here when it arrives as organization plus documentation rather than as rank or volume — you have made yourself the person the file goes through.",
+      "dimension": "PDI"
+     }
+    ]
+   }
+  ],
+  "caveats": [
+   "Hofstede's German scores are effectively West German scores; three decades after reunification, East-West differences in institutional trust, income, and social norms persist, and Leipzig or Rostock will diverge from what these averages describe.",
+   "Berlin — especially its international startup and creative scenes — runs looser norms than Munich or Swabia; an English-speaking Berlin workplace may actively penalize some advice in this pack, while a Bavarian small town is more formal than our big-city default. Sie/du conventions and punctuality are also visibly loosening among under-35s.",
+   "Hofstede's core data comes from IBM employee surveys run 1967-1973; the LTO score (83) comes from a later, different instrument and is among the most contested figures for Germany. Treat all six numbers as coarse priors, not measurements of anyone you will meet.",
+   "In Germany's big cities the share of residents with a migration background runs from roughly a third (Berlin) to over half (Frankfurt); Turkish-German, post-Soviet, and other communities operate partly distinct norm sets that this pack's socialDelta values do not model.",
+   "socialDelta scores mainstream approval of visible behavior — not moral worth, and not what's psychologically good for you. Within-country individual variation dwarfs the differences between country averages."
+  ],
+  "voiceNotes": {
+   "archetypist": "Germany is what a society looks like when it answers chaos with order and then writes the order down. Look at the structure: power distance of 35 next to uncertainty avoidance of 65 — the hierarchy is flat, but the procedure is iron. You cannot perform status here; you have to demonstrate competence, and the system will audit you if you try to skip that step. The craftsman and sage strategies pay because responsibility in this culture means the boring kind — documentation, deadlines, showing up sorted, doing your stairwell week. If you want to be the sovereign, understand that authority is downstream of demonstrated competence: earn the right to impose order by first submitting to it, visibly, for longer than feels fair.",
+   "clinician": "If you're temperamentally an explorer — high openness, low conscientiousness, energized by improvisation — Germany can feel like wearing a suit two sizes too small, and the question is whether you're adapting or masking. Adaptation is learning the register: you plan because plans are the local love language, but you still know who you are. Masking is performing conscientiousness sixteen hours a day and quietly concluding your temperament is a defect — that road runs toward burnout and a strange, lonely competence. Two things help. First, this culture hands you a structural gift most don't: Feierabend is institutionalized permission to stop performing — actually use it. Second, the restraint norm means nobody will ask how you're doing, so you have to tell someone; find your Verein, or a therapist — Germans genuinely go, even if the Kassenplatz waiting list tests your newfound long-term orientation.",
+   "skeptic": "Quick epistemic check before you treat these deltas as physics. Hofstede's numbers are country means from IBM employee surveys taken fifty years ago; the distributions overlap so much that a random Berliner and a random Bavarian can easily differ more than the German and Dutch averages do. Some of this pack is genuinely well-supported: directness norms, punctuality expectations, and the written-procedure reflex in German institutions are documented across multiple lines of evidence, and you'll observe them within a week. But 'Germans are orderly' as a personality claim? Cross-cultural Big Five studies find national stereotypes barely correlate with measured trait means. So use these scores as priors on public behavior — how the median stranger will react to what you visibly do — and never as a read on the actual person in front of you, who has not taken the survey and does not owe the average anything."
+  }
+ },
+ "switzerland": {
+  "overview": "Swiss society structurally rewards demonstrated reliability — precision, punctuality, procedural correctness, and long-horizon consistency — and converts those into deep but slowly granted trust. It punishes surprise in most forms: ambush proposals, last-minute cancellations, improvised rule-bending, and visible claims to status, because competition here is intense but conducted quietly through quality of work. Authority is flat and earned; the person who takes the worst volunteer shift often outranks, socially, the person with the biggest title. Newcomers who mistake reserve for rejection, or who try to charm their way past the rules, pay a tax that simple compliance would have waived.",
+  "norms": [
+   "Be five minutes early, and treat every stated plan — a lunch, a deadline, a laundry slot — as a signed contract.",
+   "Circulate proposals before the meeting; decisions ripen through prior consultation, and the meeting mostly ratifies what the corridor has already agreed.",
+   "Compete through quality, not volume: let your work, your punctuality, and your paperwork brag for you — never your mouth, your salary, or your car.",
+   "Follow shared-space rules exactly — quiet hours, recycling, the Waschplan. Neighbors enforce them horizontally, and your compliance is your reputation.",
+   "Use the official channel for every conflict: forms, deadlines, arbitration boards. It's free, it works, and filing carries no stigma.",
+   "Expect years, not weeks, before you're in. Join a Verein, take the unglamorous volunteer shifts, and let trust accumulate at its own pace."
+  ],
+  "scenarios": [
+   {
+    "id": "workplace-tolerance-error",
+    "title": "The Tolerance Error",
+    "setup": "Three months into your engineering job at a precision-machinery firm in Winterthur, you find a tolerance error in a component spec that has already survived two review rounds. The weekly planning meeting is Monday at 08:00 — and it starts at 08:00. Fixing it would move a delivery date the firm has never once missed.",
+    "choices": [
+     {
+      "archetype": "sovereign",
+      "text": "You open Monday's meeting by presenting the flaw, your solution, and a task list — assigning follow-ups to colleagues before anyone else has spoken.",
+      "socialDelta": -1,
+      "feedback": "The room receives it in polite silence, and your team lead reroutes the item to the responsible engineer 'for proper assessment.' The flaw itself is taken seriously — this is a precision firm — but your delivery costs you: proposals here tend to ripen through pre-consultation, and at a power distance this low nobody, including your boss, assigns work by decree. The fix eventually ships with someone else's name on the process.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "hero",
+      "text": "You stay late all week machining a test piece that proves the flaw beyond argument, then present hard measurements with your name on every chart.",
+      "socialDelta": 1,
+      "feedback": "The data lands; measured proof is the one kind of self-assertion this culture reliably respects, and the spec gets corrected. Swiss competitiveness runs on demonstrated quality, so results buy real standing — though a senior colleague dryly notes that leaving at six with the same data would have counted double, since staying late here tends to hint at poor planning rather than heroism.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "craftsman",
+      "text": "You document the deviation to the third decimal, cite the relevant ISO norm, and hand the dossier to the responsible engineer on Thursday so it can enter Monday's agenda properly.",
+      "socialDelta": 2,
+      "feedback": "The responsible engineer thanks you, the item appears on the agenda with your documentation attached, and the delivery date is renegotiated without drama. Precision routed through the correct procedure is the local love language: a flaw caught and filed properly makes you trustworthy rather than troublesome, and word of the dossier travels further than any speech would have.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "Over coffee breaks you sound out the two engineers who own the spec, fold their objections into your proposal, and let your team lead table it on Monday.",
+      "socialDelta": 1,
+      "feedback": "By Monday the fix is pre-agreed and passes in four minutes flat. You gave the credit away and bought something better: the spec owners now count you as someone who works correctly — an entry in a ledger this culture keeps for years, not quarters. One of them does hint that for a measurable defect, a written dossier alone would have sufficed; the full choreography is for contested terrain.",
+      "dimension": "LTO"
+     }
+    ]
+   },
+   {
+    "id": "family-sunday-lunch",
+    "title": "Sunday at Twelve Sharp",
+    "setup": "Sunday lunch at your partner's parents' house in Aargau was fixed three weeks ago: 12:00, Sonntagsbraten, done by 15:30. You wake to a flawless July morning and a text from friends heading to the Seebad for a spontaneous lake day.",
+    "choices": [
+     {
+      "archetype": "explorer",
+      "text": "You call at 10:15 and ask to move lunch to next weekend — the lake only looks like this a few days a year.",
+      "socialDelta": -2,
+      "feedback": "Your partner's mother says 'of course' in a tone that means the opposite, and the story of the cancellation outlives the summer. A fixed plan here is close to a contract: reliability is how this family measures character, and a sunny sky is not force majeure. Your partner spends the drive home not talking about it, which is worse than talking about it.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "caregiver",
+      "text": "At the table, you warmly press your partner's mother about her recent knee operation and offer to coordinate her physio appointments.",
+      "socialDelta": -1,
+      "feedback": "She answers in two polite sentences and steers the conversation to the weather. Asking after the knee is fine; offering to run her physio calendar is not — in this individualist, reserved culture, managing one's own health is a private domain, and a newer family member volunteering to administer it tends to read as overstep rather than warmth. You will be invited into that room eventually; you cannot knock the door down with kindness.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "sage",
+      "text": "You say little, refill glasses, and ask the father one precise question about the model railway in his basement — referencing a detail he mentioned at Christmas.",
+      "socialDelta": 2,
+      "feedback": "He talks for forty minutes and later tells your partner you are 'vernünftig' — sensible — which is close to a medal. Swiss belonging runs on the long game: remembered details and low-key consistency accumulate trust the way loud charm rarely does, and this family plays by much the same rules as the Verein and the office.",
+      "dimension": "LTO"
+     },
+     {
+      "archetype": "rebel",
+      "text": "You joke, fondly, that this family books its fun three weeks in advance and probably keeps a spreadsheet for spontaneity.",
+      "socialDelta": -1,
+      "feedback": "A beat of silence; then the father says, without smiling, 'Yes. That is why we never miss it.' Enjoyment here is genuinely prized — these people ski, hike, and swim more than you do — but it is protected by structure, and mocking the scaffolding that guarantees the fun wins you nothing at this particular table.",
+      "dimension": "IVR"
+     }
+    ]
+   },
+   {
+    "id": "civic-waschkueche-note",
+    "title": "The Note in the Stairwell",
+    "setup": "A typed, unsigned note appears in the entryway of your Zurich apartment building: someone has been running the washing machine past the 22:00 Nachtruhe and putting cardboard into ordinary Züri-Säcke instead of out for the bundled Karton collection. The Waschplan hangs beside it, and your laundry slot is highlighted in yellow.",
+    "choices": [
+     {
+      "archetype": "craftsman",
+      "text": "You reread the Hausordnung, bundle your cardboard with string for Thursday's Karton collection, and from now on finish laundry by 21:45 — no reply, no fuss.",
+      "socialDelta": 2,
+      "feedback": "Within weeks the notes stop, and the pensioner from the second floor starts greeting you by name. Rules about noise, laundry, and recycling are the grammar of shared space in Switzerland; silent, exact compliance is read as respect for the community, and it buys more goodwill than any apology speech could.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "rebel",
+      "text": "You pin up a reply: adults should not police each other's laundry hours, and whoever wrote the note is welcome to come say it to your face.",
+      "socialDelta": -2,
+      "feedback": "Nobody comes to your face; instead the Hausverwaltung sends a registered letter citing the Hausordnung, and the stairwell goes cold. You have imported the wrong individualism: the Swiss kind is real but domain-bounded — your salary, your politics, and your weekends are nobody's business, while the stairwell, the Waschküche, and the Nachtruhe sit on the communal side of the fence, where neighbors enforcing shared rules on each other counts as civic virtue, not pettiness.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "You knock on the Hauswart's door, apologize plainly for the slip, and ask him to walk you through the Waschplan and the recycling calendar.",
+      "socialDelta": 1,
+      "feedback": "He softens visibly, lends you the official Entsorgungskalender, and mentions which neighbor wrote the note — 'she means well.' Going straight to the designated responsible person works in a flat, functional hierarchy: the Hauswart is approachable precisely because his role is defined, and owning the mistake without drama closes the file.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "explorer",
+      "text": "You counter the frost with warmth: a handwritten invitation to a Saturday apéro in the courtyard, your treat, so the building can finally meet properly.",
+      "socialDelta": -1,
+      "feedback": "Four neighbors attend, are impeccably polite for fifty minutes, and the following week a fresh note appears — the cardboard was never addressed. The apéro is genuinely enjoyed; it just doesn't touch the ledger that matters. Trust in a Swiss building accrues through years of correct, predictable behavior, and charm gets filed in a separate drawer from your reliability record.",
+      "dimension": "LTO"
+     }
+    ]
+   },
+   {
+    "id": "social-verein-clubhouse",
+    "title": "Clubhouse Rules",
+    "setup": "You've joined a Turnverein in Zurich — the classic route into local life — and after Thursday training the group settles in at the clubhouse over beers. You've just landed a major promotion, with a bonus that still makes you grin. Someone asks, mildly, how work is going.",
+    "choices": [
+     {
+      "archetype": "hero",
+      "text": "You share the good news properly: the promotion, the ballpark of the number, and a celebratory round for the whole table on you.",
+      "socialDelta": -2,
+      "feedback": "The round is accepted, the subject is changed, and you are never quite asked about work again. Swiss competitiveness is real but worn under a plain jacket: wealth is what you do not mention, and a bought round that announces success reads as showing off rather than generosity. The club will remember the number longer than you will.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "sage",
+      "text": "'Going fine, thanks' — and you turn the question around, asking the veteran beside you how the club fared at last summer's Kantonalturnfest.",
+      "socialDelta": 1,
+      "feedback": "He tells you, at length, and you learn who actually runs this place. Career and money are private property in this individualist culture, so deflecting the question is not evasive here — it's literate — and curiosity about the club is the currency that actually trades at this table.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "caregiver",
+      "text": "When the sign-up sheet for the club festival circulates, you take the slot nobody wants: sausage grill, Saturday, setup at 06:00.",
+      "socialDelta": 2,
+      "feedback": "The Präsident himself takes the shift next to yours — he's a cantonal bank executive, and inside the clubhouse that means nothing. Fronarbeit is how Vereinsleben works: at this power distance, status buys no exemption from grunt work, and volunteering for the worst shift unprompted marks you, quietly and durably, as one of them.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "Three weeks in, you've spotted obvious inefficiencies — you propose a restructured training plan to the committee and offer to run it yourself.",
+      "socialDelta": -1,
+      "feedback": "The committee thanks you and tables it 'for the autumn assembly,' where it will die peacefully. The Verein has run this drill order since before you arrived in the country; in a long-term-oriented culture, the right to change an institution is earned through years of showing up, not weeks of good ideas.",
+      "dimension": "LTO"
+     }
+    ]
+   },
+   {
+    "id": "conflict-yellow-form",
+    "title": "The Yellow Form",
+    "setup": "Your Zurich landlord sends a formal letter raising your rent, citing 'general cost increases' — but the reference interest rate (Referenzzinssatz) just fell, which normally means rents go down. The official form gives you 30 days to contest the increase at the cantonal Schlichtungsbehörde, the free tenancy arbitration board.",
+    "choices": [
+     {
+      "archetype": "sage",
+      "text": "You look up the Referenzzinssatz tables, calculate the legally supportable rent, and file the challenge by registered post with your arithmetic attached — well inside the deadline.",
+      "socialDelta": 2,
+      "feedback": "At the hearing, the landlord's agent glances at your numbers and settles before the board even rules; your rent goes down. Contesting through the Schlichtungsbehörde is not aggression here — it is the designed channel, free and routine — and a Swiss counterparty tends to respect nothing more than a deadline met with correct figures.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "You call the landlord's office for a friendly chat, trusting that a good tenant relationship and a reasonable tone will soften the increase without formal unpleasantness.",
+      "socialDelta": -1,
+      "feedback": "The property manager is perfectly pleasant, promises to 'look into it,' and the 30-day deadline quietly expires — taking your legal right to contest with it. In this rule-based, individualist system, rights live in procedures, not relationships; choosing harmony over the form is read not as gracious but as not having done your homework.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "hero",
+      "text": "You fire back a scorching letter threatening legal consequences and demand the landlord meet you in person within the week.",
+      "socialDelta": -1,
+      "feedback": "You receive a two-line reply referring you to 'the ordinary legal channels' — which were always yours to use for free. Assertiveness here must be sachlich: cold, factual, procedural. Heat is not read as strength but as a loss of form, and you've burned goodwill you may want back at the hearing.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "You knock on every door in the building, compile who else received the letter, and organize a joint challenge with yourself as the tenants' spokesperson.",
+      "socialDelta": 1,
+      "feedback": "Five households sign on, the Mieterverband helps you file as a bloc, and the board takes the coordinated case seriously. At this power distance, organizing upward against a landlord is unremarkable civic behavior — the militia principle (Milizprinzip) applied to a stairwell — and orderly, form-correct leadership is one of the few kinds this society will actually follow.",
+      "dimension": "PDI"
+     }
+    ]
+   }
+  ],
+  "caveats": [
+   "Hofstede's Swiss data is usually split by language region: French-speaking Switzerland scores far higher on power distance and uncertainty avoidance (roughly PDI ~70, UAI ~70 in Hofstede's own regional tables) than the German-speaking majority this profile mostly reflects, and Ticino differs again. A Geneva or Lausanne scenario pack would need different deltas.",
+   "The first four scores derive from IBM employee surveys of the late 1960s-70s; LTO 74 and IVR 66 were bolted on decades later from Minkov's World Values Survey reanalysis, so they rest on a different instrument entirely. Meanwhile roughly 40% of residents in cities like Zurich and Geneva have a migration background, and international workplaces (Basel pharma, Geneva NGOs, Zug crypto-finance) often run on Anglo norms where several of these penalties never fire.",
+   "Urban, young, and creative-sector Switzerland tolerates spontaneity and status display far more than the median Gemeinde; conversely, a village in Appenzell or Central Switzerland enforces conformity harder than any scenario here. The simulation aims at a big-city middle that many residents don't inhabit.",
+   "The game compresses distinct mechanisms — statutory rules (Nachtruhe), private house rules (Hausordnung), and pure custom (Sunday laundry taboos) — into one social score, but real sanctions differ sharply: a registered letter from the Verwaltung is not a cold shoulder in the stairwell. And the classic Waschplan itself is fading — many newer city buildings run free-use laundry rooms or in-unit machines, so the most stereotyped scenario here is also the most dated.",
+   "socialDelta scores reflect mainstream norm enforcement, not what is effective or right for any individual: plenty of successful, well-liked people in Zurich violate several of these norms daily and absorb the costs happily."
+  ],
+  "voiceNotes": {
+   "archetypist": "Switzerland is what happens when a society decides order will be maintained from below rather than imposed from above: PDI 34 combined with UAI 58 means everyone is responsible for the structure and no one is exempt from it. That's aristocracy for the conscientious — the craftsman and the sage hold rank here, because industriousness and orderliness ARE the status hierarchy, just denominated in reliability instead of titles. Notice the entry fee, though: assertiveness must be decoupled from display. The hero who needs an audience starves; the one who can let ten years of flawless work speak quietly inherits the canton. Pick up responsibility nobody assigned you — the laundry roster, the club grill, the tenants' petition — and the hierarchy will find you on its own.",
+   "clinician": "If you run high on spontaneity or emotional expressiveness, be honest about what this environment asks: not one performance but a permanent baseline of scheduled, contained living, and chronic masking at that dose is expensive — it surfaces as low-grade resentment, Sunday dread, the sense of being managed by your own calendar. The good news is that Swiss structure is legible: the rules are literally written down, the sanctions are predictable, and IVR 66 means real joy is available — it's just booked in advance. Adaptation can be genuine rather than performative if you find the sanctioned containers for your chaos: the mountains, the lake at 6 a.m., Basel's Fasnacht, where an entire society schedules its own id. But if after two or three years the reserve still feels like rejection and the precision like surveillance, that isn't a character flaw to fix with more effort — it's data about fit, and you're allowed to weigh it.",
+   "skeptic": "Real talk on the data: these Hofstede numbers are decades-old survey aggregates — the first four dimensions from IBM offices in the late 1960s-70s, LTO and IVR from a later World Values Survey reanalysis — and Switzerland is a genuinely awkward case because the German- and French-speaking regions score differently enough that one national profile is doing heavy averaging. What's well-supported: punctuality norms, formal-channel dispute resolution, and quiet-money culture are extensively documented, and you'll verify all three within a week of arriving. What to hold loosely: any claim about what 'the Swiss' are like as individuals — country averages explain a small slice of person-level variance, and the spread inside Zurich dwarfs the gap between Zurich and Munich. Treat this pack as a prior on institutions, not a stereotype about people; when you meet a loud, chaotic, spontaneous Swiss person — and you will, constantly — the model didn't break, because it was never about individuals."
+  }
+ },
+ "usa": {
+  "overview": "Metro America pays out for legible individual achievement: self-authored, quantified, optimistically narrated, and refreshed quarterly. It tends to punish invisible service, unleveraged loyalty, and public negativity — while forgiving failure, job-hopping, and reinvention that would be disqualifying elsewhere. Hierarchy dresses casual but keeps score in money and metrics, and relationships are warm, voluntary, and revocable. The system is genuinely open and genuinely indifferent: nobody will stop you, and nobody will catch you.",
+  "norms": [
+   "Narrate your own wins, with numbers. Modesty tends to read as absence of impact, not as virtue — unclaimed work mostly doesn't count.",
+   "Default to upbeat. Vent to one close friend or a therapist; public complaining rarely starts a debate — it tends to get you quietly dropped from the invite list.",
+   "Make the ask directly — the raise, the intro, the favor. Directness is respected here, and hints mostly go undecoded.",
+   "Treat small talk and networking as sincere social forms, not phoniness. The warmth is real; it's just wide and shallow, and that's the design.",
+   "Failure converts to an asset if you frame it as Act One of the comeback. Hidden, it tends to curdle into stigma.",
+   "First-name the CEO, joke with your boss — then remember the org chart and the money are still keeping score. Informality is a style, not a truce."
+  ],
+  "scenarios": [
+   {
+    "id": "us-work-bragdoc",
+    "title": "Brag Doc Season",
+    "setup": "It's perf season at your Series B startup in Austin. Your manager Slacks the team: 'Reminder — brag docs due Friday for calibration.' You spent the quarter doing unglamorous migration work that kept the flagship launch from collapsing, and a louder teammate is already posting launch metrics with rocket-ship emojis.",
+    "choices": [
+     {
+      "archetype": "hero",
+      "text": "Write a brag doc that claims your migration work in hard numbers — uptime saved, launch unblocked — and post the highlight reel in the team channel before calibration.",
+      "socialDelta": 2,
+      "feedback": "Your manager quotes your numbers verbatim in the calibration meeting and you land an 'exceeds.' In brag-doc culture, self-report tends to be the official data source, and MAS-62 pays for visible, quantified winning — work that isn't written down rarely gets counted.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "caregiver",
+      "text": "Skip your own doc to help two overwhelmed teammates finish theirs, and quietly clear the on-call backlog nobody wants to touch.",
+      "socialDelta": -1,
+      "feedback": "Calibration lands you at 'meets expectations,' and your manager, genuinely apologetic, says he 'didn't have the data.' Nobody punishes the helping — IDV-91 just attaches credit to named individuals, so glue work is real work that tends to go officially unrecorded. The penalty is omission, not hostility.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "craftsman",
+      "text": "Submit a strictly accurate doc centered on code health, test coverage, and the maintenance debt you paid down, refusing to inflate anything.",
+      "socialDelta": -1,
+      "feedback": "The review says 'solid, but limited impact this quarter.' Stewardship is a long-term asset in a short-term ledger: LTO-26 tends to score quarters, not decades, so durability often reads as an absence of wins.",
+      "dimension": "LTO"
+     },
+     {
+      "archetype": "rebel",
+      "text": "Reply in the team channel that brag docs are performance theater that rewards writers over builders, and say you won't be submitting one.",
+      "socialDelta": -1,
+      "feedback": "You get three private 'so true' DMs and one public 'feedback is a gift!' from your manager — plus a quiet note about 'attitude.' Contrarianism sells in a job interview; sustained public negativity violates IVR-68's upbeat norm, and persistent complainers tend to get managed around, then out, politely.",
+      "dimension": "IVR"
+     }
+    ]
+   },
+   {
+    "id": "us-family-relocation",
+    "title": "The Sunday Call",
+    "setup": "You're on the Sunday-night phone call with your parents in Ohio. Your dad's knee replacement is scheduled for March, your mom keeps mentioning how nice it is that your cousin 'stayed close to home' — and you have an offer letter from a San Francisco company open on your screen: 40% raise, relocation paid.",
+    "choices": [
+     {
+      "archetype": "explorer",
+      "text": "Take the offer, tell your parents that night, and frame it as the adventure it is — new city, new chapter, flights home for the holidays.",
+      "socialDelta": 2,
+      "feedback": "Your mom cries a little and then says what so many American parents say: 'We'd never want to hold you back.' IDV-91 makes your trajectory the family's official priority; the guilt is real, but the norm is to process it privately — often with a therapist.",
+      "dimension": "IDV"
+     },
+     {
+      "archetype": "caregiver",
+      "text": "Turn the offer down and start planning a move back to Ohio to run point on Dad's surgery and recovery yourself.",
+      "socialDelta": -1,
+      "feedback": "Your parents are moved; your peers say 'that's so sweet' with a half-second pause. In an achievement-scored culture, years off the career ladder tend to read as lost rank rather than honored duty — the sacrifice is admired briefly and repriced quietly.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "Convene a family video call, present a plan — a hired home-health aide for six weeks, a shared care calendar, costs split with your sister — and take the offer.",
+      "socialDelta": 1,
+      "feedback": "Your sister is visibly relieved someone 'owned it,' and your parents accept the plan after negotiating details. In a PDI-40 family, elders are stakeholders rather than authorities: care delivered through logistics and paid professionals is the legitimate individualist compromise, even though it would scan as cold in many family cultures — including plenty inside these same metros.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "Keep the call pleasant, steer around both the surgery and the offer, and decide nothing until the mood is better.",
+      "socialDelta": -1,
+      "feedback": "Two weeks later your mom asks your sister if you're 'hiding something,' and the offer deadline forces a rushed yes anyway. Direct, low-context talk is the individualist default here — the unsaid tends to be treated as nonexistent, so harmony maintained by avoidance often reads as flakiness rather than consideration.",
+      "dimension": "IDV"
+     }
+    ]
+   },
+   {
+    "id": "us-civic-nextdoor",
+    "title": "The Party House Out Back",
+    "setup": "The house behind yours in East Austin turned into a full-time short-term rental, and every weekend a different bachelorette party's rented Suburban blocks your driveway. The Nextdoor thread about it is at 87 comments, and the neighborhood association meets Thursday.",
+    "choices": [
+     {
+      "archetype": "diplomat",
+      "text": "Message the owner through the listing, keep it friendly — 'hey neighbor!' — and suggest he add a bold parking note to his check-in instructions and a cone for your driveway.",
+      "socialDelta": 2,
+      "feedback": "He apologizes within the hour, updates the listing, and drops off a six-pack. IVR-68 runs on cheerful, low-stakes friendliness between strangers; offering an easy, face-saving fix before any authority got involved makes you 'a great neighbor' on the very thread you never posted in.",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "craftsman",
+      "text": "Document every blocked-driveway incident with timestamped photos, then file a 311 report and a formal complaint against his short-term-rental license before speaking to anyone.",
+      "socialDelta": -1,
+      "feedback": "The city opens a case — the procedure genuinely works — but Austin's 311 records are public, the complaint surfaces on Nextdoor, and the vibe curdles toward 'narc.' UAI-46 prefers the improvised handshake fix: going rulebook-first without a friendly attempt tends to read as officious rather than diligent.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "rebel",
+      "text": "Post the owner's name and the party-house photos on Nextdoor with a caption about greed destroying the neighborhood.",
+      "socialDelta": -1,
+      "feedback": "You get 62 likes and one 'THANK YOU' — then someone mentions defamation, someone screenshots it to the owner, and two neighbors stop waving. Outrage is engagement online, but IVR-68's optimism norm governs real-world standing: public shaming makes you polarizing rather than heroic, and the moderates now file you under 'the conflict.'",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "sage",
+      "text": "Say nothing online, read the city's short-term-rental ordinance over the weekend, and deliver one precise two-minute statement at Thursday's meeting citing the exact code section on licensing.",
+      "socialDelta": 1,
+      "feedback": "The board — three retirees and a realtor — adopts your language for their letter to the city almost word for word. PDI-40 keeps boards and officials approachable: a prepared nobody with the right citation frequently outranks an angry somebody with seniority.",
+      "dimension": "PDI"
+     }
+    ]
+   },
+   {
+    "id": "us-social-runclub",
+    "title": "Run Club Economics",
+    "setup": "Three weeks after the layoff hit your whole team, a former coworker drags you to an Austin run club that is transparently a networking scene — 5K first, then tacos and the 'so, what do you do?' carousel. Your LinkedIn still lists the old company.",
+    "choices": [
+     {
+      "archetype": "hero",
+      "text": "Answer straight: 'Got caught in the RIF three weeks ago — honestly a reset I needed. I'm looking for staff-level product roles. Who should I be talking to?'",
+      "socialDelta": 2,
+      "feedback": "By the second round of tacos you have two intros and someone's Notion doc of hiring managers. UAI-46 keeps failure cheap: careers are expected to be discontinuous, so a layoff carries little stigma when narrated as Act One of the comeback — and the direct ask tends to be the respected close, provided you name exactly what you want.",
+      "dimension": "UAI"
+     },
+     {
+      "archetype": "sage",
+      "text": "Hang back, listen to the conversations around the table, and speak only when you can add something genuinely substantive.",
+      "socialDelta": -1,
+      "feedback": "You make two genuinely smart contributions and nobody texts you afterward. In an indulgent, enthusiasm-priced scene, reserve rarely reads as depth — it reads as low energy, and low energy tends not to get remembered, let alone referred.",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "explorer",
+      "text": "Lean into funemployment: the Baja trip you finally booked, the welding class, the half-formed app idea — high energy, zero agenda.",
+      "socialDelta": 1,
+      "feedback": "You're the most fun person at the table and get added to the group chat by dessert. IVR-68 genuinely rewards whoever brings the fun; the job leads will arrive slower than on the direct-ask path, but you're in the room now, and the room is the asset.",
+      "dimension": "IVR"
+     },
+     {
+      "archetype": "diplomat",
+      "text": "Deflect the question each time it reaches you and become the best listener at the table, drawing out the shy guy who just moved from Ohio.",
+      "socialDelta": 0,
+      "feedback": "Everyone finds you lovely, and a week later nobody can say what you do. Nothing bad happens — and nothing happens. 'Tell me about yourself' is the social API of an IDV-91 culture: return no self-narrative and you simply don't get written into anyone's mental rolodex.",
+      "dimension": "IDV"
+     }
+    ]
+   },
+   {
+    "id": "us-negotiation-counteroffer",
+    "title": "The Counteroffer",
+    "setup": "Eighteen months into your job — already median tenure on your team — a recruiter's process you entered 'just for practice' ends in a written offer: 25% more money, better title. You like your manager, Dana. Your one-on-one with her starts in an hour.",
+    "choices": [
+     {
+      "archetype": "hero",
+      "text": "Put the offer on the table plainly: you'd rather stay, here's the number, and can she match it within two weeks.",
+      "socialDelta": 2,
+      "feedback": "Dana asks for a day, files a retention request, and comes back at 22% plus a title bump. In an at-will, achievement-scored labor market, comp is a scoreboard and leverage is the legitimate way to move it; few respect you less for playing a game everyone knows is running — though some managers will quietly start succession planning.",
+      "dimension": "MAS"
+     },
+     {
+      "archetype": "craftsman",
+      "text": "Don't mention the offer — you don't play games. Ask for a raise strictly on the merits: eighteen months of reliable, documented, high-quality work.",
+      "socialDelta": -1,
+      "feedback": "Dana agrees you deserve more and returns with the standard 4% band adjustment — 'that's what comp will approve without a competing offer.' Tenure and duty aren't currency in an LTO-26 labor market: the system prices market leverage, and unilateral loyalty tends to be a discount you give, not one you're paid for.",
+      "dimension": "LTO"
+     },
+     {
+      "archetype": "sovereign",
+      "text": "Skip the offer talk; tell Dana you want the promotion path made explicit, and propose taking ownership of the flailing platform migration to earn it.",
+      "socialDelta": 1,
+      "feedback": "Dana loops in her director that week, and you leave with a written promo plan tied to the migration. PDI-40 makes self-nomination legitimate rather than presumptuous — visibly volunteering for hard, ownable problems is a recognized route up, though without outside leverage the money usually moves slower than the title.",
+      "dimension": "PDI"
+     },
+     {
+      "archetype": "caregiver",
+      "text": "Tell Dana the whole truth: you got an offer, you feel guilty even considering it, the team depends on you — what does she think is fair?",
+      "socialDelta": -1,
+      "feedback": "Dana is warm and reassuring in the meeting — and afterward you're likely logged as a flight risk who probably won't fly, which prices you as safe to underpay. MAS-62 hides weakness and assumes negotiation: vulnerability handed up the org chart tends to become data, not intimacy.",
+      "dimension": "MAS"
+     }
+    ]
+   }
+  ],
+  "caveats": [
+   "This pack models coastal and Sunbelt metro professional culture (NYC, Austin, Bay Area). Rural and small-town America, the church-anchored South, and the modesty-normed Upper Midwest run meaningfully different payoff tables — several caregiver and craftsman moves penalized here would score positive there.",
+   "Provenance is uneven: PDI, IDV, MAS, and UAI descend from IBM employee surveys of 1967-73, while LTO 26 and IVR 68 were bolted on around 2010 from Minkov's World Values Survey reanalysis — different respondents, different decades, different instruments. Later work (GLOBE, WVS) confirms America's individualism rank but not the numbers' precision, and MAS 62 is among the most contested US scores.",
+   "Class, race, and gender change the payoffs: the double-bind literature documents that assertiveness and self-promotion are received differently depending on who performs them, which country-level averages cannot see. The +2 hero moves here are least reliable for people the culture stereotypes as 'should be modest.'",
+   "Immigrant families — a large share of exactly these metros — often run collectivist family scripts inside individualist workplaces; the family scenario's deltas assume the Anglo-American mainstream and will misprice many real households.",
+   "Institutional variance persists even among the named metros: at-will employment and HR culture are near-universal (Montana excepted on at-will), but HOA power, Nextdoor intensity, tech-labor leverage, and networking density differ sharply between NYC, Austin, and the Bay."
+  ],
+  "voiceNotes": {
+   "archetypist": "This is the highest individualism score Hofstede ever recorded, and its low power distance means no hierarchy will claim you — you have to climb voluntarily, visibly, and out loud. The trait data are unambiguous about what the system pays: assertiveness plus industriousness, the hero and sovereign patterns, with the ladder rebuilt every quarter because a short-term-oriented culture lets yesterday's competence buy you almost nothing. The bargain is at least honest. Pick up something heavy in public — a project, a problem, a room — and state plainly that you're carrying it; order here isn't handed down from above, it's assembled by whoever accepts responsibility first, and that assembly keeps getting rewarded.",
+   "clinician": "If your temperament runs reserved, agreeable, or high in negative emotion, notice what this place is actually asking of you: a chronic performance of enthusiasm and self-advocacy, which is a form of masking, and masking carries a real metabolic cost — part of why burnout here so often presents as 'I don't even know who I am at work anymore.' The optimism norm creates a strange paradox: it is high-status to have a therapist and low-status to be visibly struggling, so distress goes underground until it becomes a crisis. Adaptation is fine — learn the brag doc, learn the ask — but keep two or three relationships where the mask comes fully off, and treat those as infrastructure, not indulgence. The goal is not to become the hero archetype; it's to rent the behavior for an hour and then come back to your own side.",
+   "skeptic": "Let's separate what's supported from what's vibes. Self-promotion, direct negotiation, and networking paying off in US professional settings — reasonably solid, act on it. Much of the rest rests on a fifty-year-old IBM survey (with the last two dimensions bolted on from World Values Survey data decades later) plus pattern-matching, and the honest statistical point is that within-country variance dwarfs these between-country averages: a reserved engineer in Columbus and an Austin sales rep differ more from each other than the average American differs from the average Japanese. So treat every delta in this pack as a weak prior about the room, not a law about the person in front of you — they didn't take the survey, and they will surprise you."
+  }
+ }
+}
