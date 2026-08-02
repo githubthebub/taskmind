@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="BetterDecisions — a guided decision-making companion that walks any choice through five voices: awareness, energy & experiments, mental models, values, and courage." />
+  <title>BetterDecisions</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x2696;&#xFE0F;</text></svg>" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script>
+    // Apply the saved theme before first paint to avoid a flash of the wrong one.
+    try {
+      var t = localStorage.getItem("bd-theme");
+      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#app">Skip to content</a>
+  <header class="topbar">
+    <a class="brand" href="#/">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <span class="brand-name">Better<em>Decisions</em></span>
+    </a>
+    <nav class="nav" aria-label="Main navigation">
+      <a href="#/" data-nav="home">Home</a>
+      <a href="#/new" data-nav="new">New decision</a>
+      <a href="#/journal" data-nav="journal">Journal</a>
+      <a href="#/mentors" data-nav="mentors">Voices</a>
+      <a href="#/gut-check" data-nav="gut-check">Gut check</a>
+    </nav>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme"></button>
+  </header>
+  <main id="app" class="app" tabindex="-1">
+    <noscript>
+      <div class="card" style="margin:2rem auto;max-width:32rem;padding:1.5rem;">
+        BetterDecisions needs JavaScript to run. Please enable it and reload.
+      </div>
+    </noscript>
+  </main>
+  <footer class="footer">
+    <p>
+      Built from five ways of thinking about a choice — awareness, experimentation,
+      strategy, values, and courage. A thinking companion — not therapy, not financial
+      or medical advice.
+    </p>
+    <p class="footer-actions">
+      <button class="linklike" id="export-data" type="button">Export data</button>
+      <span aria-hidden="true">·</span>
+      <button class="linklike" id="import-data" type="button">Import data</button>
+      <span aria-hidden="true">·</span>
+      <button class="linklike danger" id="clear-data" type="button">Clear all data</button>
+    </p>
+  </footer>
+  <input type="file" id="import-file" accept="application/json,.json" hidden />
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
