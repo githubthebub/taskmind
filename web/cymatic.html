@@ -1,0 +1,1120 @@
+<style>
+  :root{
+    --ground:#0a0e15;
+    --ground-2:#0e131d;
+    --raised:#141a26;
+    --raised-2:#1b2330;
+    --line:#232c3d;
+    --text:#ece6da;
+    --muted:#7c8599;
+    --muted-2:#565f73;
+    --piti:#e6a94e;      /* rising energy — inhale, gold */
+    --piti-soft:#c9923f;
+    --sukha:#6f80c9;     /* grounding — exhale, indigo */
+    --sukha-soft:#4a5789;
+    --anchor:#9aa6c4;    /* the steady carrier */
+    --danger:#c86a5a;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SF Mono","JetBrains Mono","Roboto Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(120% 90% at 50% -10%, #141c2c 0%, var(--ground) 55%, #06080d 100%);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  .wrap{
+    max-width:960px;
+    margin:0 auto;
+    padding:clamp(20px,4vw,44px) clamp(18px,4vw,32px) 64px;
+    display:flex;
+    flex-direction:column;
+    gap:clamp(24px,4vw,40px);
+  }
+
+  /* ---------- masthead ---------- */
+  header{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:10px;
+    padding-top:8px;
+  }
+  .mark{
+    font-family:var(--mono);
+    font-size:.72rem;
+    letter-spacing:.42em;
+    text-indent:.42em;
+    color:var(--muted);
+    text-transform:uppercase;
+  }
+  h1{
+    font-family:var(--serif);
+    font-weight:500;
+    font-size:clamp(2.1rem,6vw,3.4rem);
+    line-height:1.04;
+    margin:0;
+    letter-spacing:.005em;
+    text-wrap:balance;
+  }
+  h1 em{font-style:italic;color:var(--piti)}
+  .sub{
+    color:var(--muted);
+    font-size:clamp(.9rem,2.4vw,1.02rem);
+    max-width:44ch;
+    text-wrap:balance;
+    margin:0;
+  }
+
+  /* ---------- stage / orb ---------- */
+  .stage{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+  }
+  .orb-holder{
+    position:relative;
+    width:min(78vw,360px);
+    height:min(78vw,360px);
+    display:grid;
+    place-items:center;
+  }
+  canvas#orb{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+  }
+  .orb-btn{
+    position:relative;
+    z-index:2;
+    appearance:none;
+    border:none;
+    background:transparent;
+    color:var(--text);
+    cursor:pointer;
+    width:96px;height:96px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    transition:transform .3s ease, opacity .3s ease;
+  }
+  .orb-btn:focus-visible{outline:2px solid var(--piti);outline-offset:6px}
+  .orb-btn .glyph{
+    font-family:var(--serif);
+    font-size:1rem;
+    letter-spacing:.24em;
+    text-indent:.24em;
+    text-transform:uppercase;
+    color:var(--text);
+    opacity:.92;
+  }
+  .orb-btn:hover{transform:scale(1.04)}
+  .orb-holder.running .orb-btn .glyph{opacity:0;}
+  .orb-holder.running .orb-btn:hover .glyph,
+  .orb-holder.running .orb-btn:focus-visible .glyph{opacity:.85}
+
+  .cue{
+    font-family:var(--mono);
+    font-size:.7rem;
+    letter-spacing:.3em;
+    text-indent:.3em;
+    text-transform:uppercase;
+    color:var(--muted-2);
+    min-height:1em;
+    transition:color .6s ease;
+  }
+  .cue.in{color:var(--piti)}
+  .cue.out{color:var(--sukha)}
+
+  /* ---------- telemetry ---------- */
+  .telemetry{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:6px 0;
+    font-family:var(--mono);
+    font-size:.82rem;
+    color:var(--muted);
+    letter-spacing:.02em;
+  }
+  .telemetry .cell{
+    padding:0 clamp(12px,3vw,20px);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    border-left:1px solid var(--line);
+  }
+  .telemetry .cell:first-child{border-left:none}
+  .telemetry .val{
+    color:var(--text);
+    font-variant-numeric:tabular-nums;
+    font-size:1.05rem;
+  }
+  .telemetry .k{
+    font-size:.62rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted-2);
+  }
+  .telemetry .val[data-role="beat"]{color:var(--anchor)}
+  .telemetry .val[data-role="breath"]{color:var(--piti)}
+
+  /* ---------- timeline ---------- */
+  .timeline{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    width:100%;
+    max-width:560px;
+    margin:0 auto;
+  }
+  .clock{
+    display:flex;
+    justify-content:space-between;
+    font-family:var(--mono);
+    font-size:.78rem;
+    color:var(--muted);
+    font-variant-numeric:tabular-nums;
+  }
+  .clock .phase{
+    color:var(--text);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    font-size:.7rem;
+  }
+  .track{
+    display:grid;
+    gap:4px;
+    height:6px;
+  }
+  .seg{
+    position:relative;
+    background:var(--raised-2);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .seg i{
+    position:absolute;
+    inset:0;
+    width:0%;
+    background:linear-gradient(90deg,var(--piti),var(--sukha));
+    border-radius:3px;
+  }
+  .phase-names{
+    display:grid;
+    gap:4px;
+    font-family:var(--mono);
+    font-size:.56rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--muted-2);
+  }
+  .phase-names span{text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .phase-names span.on{color:var(--piti)}
+
+  /* ---------- controls ---------- */
+  .controls{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    flex-wrap:wrap;
+  }
+  .vol{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--mono);
+    font-size:.66rem;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    width:110px;height:3px;border-radius:3px;
+    background:var(--line);
+    cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;
+    background:var(--piti);
+    border:2px solid var(--ground);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;
+    background:var(--piti);border:2px solid var(--ground);border-width:2px;
+  }
+  input[type=range]:focus-visible{outline:2px solid var(--piti);outline-offset:4px}
+  .ghost-btn{
+    appearance:none;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:.66rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    padding:9px 16px;
+    border-radius:100px;
+    cursor:pointer;
+    transition:border-color .2s,color .2s;
+  }
+  .ghost-btn:hover{border-color:var(--muted);color:var(--text)}
+  .ghost-btn:disabled{opacity:.4;cursor:default}
+  .ghost-btn:focus-visible{outline:2px solid var(--piti);outline-offset:3px}
+  .seg-toggle{
+    display:inline-flex;
+    border:1px solid var(--line);
+    border-radius:100px;
+    padding:3px;
+    gap:2px;
+    background:var(--ground-2);
+  }
+  .seg-toggle button{
+    appearance:none;
+    background:transparent;
+    border:none;
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:.62rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    padding:7px 13px;
+    border-radius:100px;
+    cursor:pointer;
+    transition:background .2s,color .2s;
+    white-space:nowrap;
+  }
+  .seg-toggle button:hover{color:var(--text)}
+  .seg-toggle button.on{
+    background:var(--raised-2);
+    color:var(--text);
+  }
+  .seg-toggle button[data-v="mic"].on,
+  .seg-toggle button[data-v="sleep"].on{color:var(--piti)}
+  .seg-toggle button:focus-visible{outline:2px solid var(--piti);outline-offset:2px}
+  .mic-status{
+    text-align:center;
+    font-family:var(--mono);
+    font-size:.66rem;
+    letter-spacing:.08em;
+    color:var(--muted);
+    min-height:1.2em;
+    margin-top:-14px;
+  }
+  .mic-status b{color:var(--piti);font-weight:400}
+  .mic-status.err{color:var(--danger)}
+  .ledger{
+    display:flex;align-items:center;justify-content:center;gap:12px;
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);flex-wrap:wrap;margin-top:-14px;
+  }
+  .ledger .lg-label{color:var(--anchor)}
+  .lg-dots{display:inline-flex;gap:5px}
+  .lg-dots i{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--raised-2);border:1px solid var(--line);display:inline-block;
+    transition:background .4s,box-shadow .4s;
+  }
+  .lg-dots i.on{background:var(--anchor);border-color:var(--anchor);box-shadow:0 0 6px color-mix(in srgb,var(--anchor) 60%,transparent)}
+  .lg-meta{color:var(--muted-2);text-transform:none;letter-spacing:.02em;font-size:.7rem}
+  .lg-reset{
+    appearance:none;background:none;border:none;color:var(--muted-2);
+    font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
+    cursor:pointer;text-decoration:underline;opacity:.55;
+  }
+  .lg-reset:hover{opacity:1;color:var(--muted)}
+  .lg-reset:focus-visible{outline:2px solid var(--piti);outline-offset:2px}
+  .set-meter{display:inline-flex;gap:3px;vertical-align:middle;margin-left:2px}
+  .set-meter i{width:6px;height:6px;border-radius:50%;background:var(--raised-2);border:1px solid var(--line);display:inline-block;transition:background .3s}
+  .set-meter i.on{background:var(--piti);border-color:var(--piti);box-shadow:0 0 5px color-mix(in srgb,var(--piti) 55%,transparent)}
+
+  /* ---------- legend ---------- */
+  .legend{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:14px;
+  }
+  .voice{
+    background:linear-gradient(180deg,var(--raised) 0%,var(--ground-2) 100%);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px 20px 22px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    position:relative;
+    overflow:hidden;
+  }
+  .voice::before{
+    content:"";
+    position:absolute;
+    left:0;top:0;bottom:0;width:3px;
+    background:var(--vc,var(--piti));
+    opacity:.9;
+  }
+  .voice[data-live="1"]{border-color:var(--vc)}
+  .voice .name{
+    font-family:var(--serif);
+    font-size:1.28rem;
+    font-weight:500;
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    color:var(--text);
+  }
+  .voice .name .en{font-style:italic;font-size:.9rem;color:var(--muted)}
+  .voice .freq{
+    font-family:var(--mono);
+    font-size:.72rem;
+    letter-spacing:.08em;
+    color:var(--vc);
+  }
+  .voice p{margin:0;font-size:.9rem;color:#c3c8d4}
+  .voice .feel{color:var(--muted);font-size:.82rem}
+  .dot{
+    display:inline-block;width:7px;height:7px;border-radius:50%;
+    background:var(--vc);
+    box-shadow:0 0 0 0 var(--vc);
+  }
+  .voice[data-live="1"] .dot{animation:pulse 1.6s ease-out infinite}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--vc) 60%,transparent)}
+    100%{box-shadow:0 0 0 9px transparent}
+  }
+
+  /* ---------- notes ---------- */
+  .notes{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    border-top:1px solid var(--line);
+    padding-top:22px;
+    font-size:.82rem;
+    color:var(--muted);
+  }
+  .notes .row{display:flex;gap:12px;align-items:flex-start}
+  .notes .tag{
+    flex:none;
+    font-family:var(--mono);
+    font-size:.6rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted-2);
+    border:1px solid var(--line);
+    border-radius:5px;
+    padding:3px 7px;
+    margin-top:2px;
+    min-width:86px;
+    text-align:center;
+  }
+  .notes .row.safety .tag{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,var(--line))}
+  .notes a{color:var(--piti)}
+  .notes code{font-family:var(--mono);font-size:.9em;color:var(--anchor)}
+  .fine{
+    font-size:.72rem;
+    color:var(--muted-2);
+    text-align:center;
+    font-family:var(--mono);
+    letter-spacing:.04em;
+  }
+
+  @media (max-width:560px){
+    .telemetry .cell{padding:0 14px}
+    .phase-names{font-size:.5rem}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .voice[data-live="1"] .dot{animation:none}
+    .orb-btn{transition:none}
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="mark">Cymatic · non-verbal sound conditioning</div>
+    <h1>Breathe with the <em>light</em>.</h1>
+    <p class="sub">A sound language that leads the breath from alert rhythm down into absorption — and, if you let it, sleep. No words. Just the anchor, the rising, and the landing.</p>
+  </header>
+
+  <div class="stage">
+    <div class="orb-holder" id="orbHolder">
+      <canvas id="orb" width="720" height="720" aria-hidden="true"></canvas>
+      <button class="orb-btn" id="playBtn" aria-label="Begin session">
+        <span class="glyph" id="glyph">Begin</span>
+      </button>
+    </div>
+    <div class="cue" id="cue">put on headphones · then begin</div>
+
+    <div class="telemetry" aria-hidden="true">
+      <div class="cell"><span class="val" data-role="carrier" id="tCarrier">110.0</span><span class="k">Carrier · Hz</span></div>
+      <div class="cell"><span class="val" data-role="beat" id="tBeat">—</span><span class="k">Binaural beat</span></div>
+      <div class="cell"><span class="val" data-role="breath" id="tBreath">—</span><span class="k">Breath · /min</span></div>
+    </div>
+  </div>
+
+  <div class="timeline">
+    <div class="clock">
+      <span class="phase" id="phaseLabel">Ready</span>
+      <span><span id="tElapsed">0:00</span> / <span id="tTotal">5:00</span></span>
+    </div>
+    <div class="track" id="track"></div>
+    <div class="phase-names" id="phaseNames"></div>
+  </div>
+
+  <div class="controls">
+    <div class="seg-toggle" id="modeToggle" role="group" aria-label="Session length">
+      <button type="button" data-v="practice" class="on">5-min practice</button>
+      <button type="button" data-v="sleep">Sleep · fades out</button>
+    </div>
+    <div class="seg-toggle" id="breathToggle" role="group" aria-label="Breath source">
+      <button type="button" data-v="pacer" class="on">Guided pace</button>
+      <button type="button" data-v="mic">Follow my breath</button>
+    </div>
+    <div class="vol">
+      <span>Vol</span>
+      <input type="range" id="vol" min="0" max="100" value="55" aria-label="Volume">
+    </div>
+    <button class="ghost-btn" id="restart" disabled>Restart</button>
+  </div>
+  <div class="mic-status" id="micStatus"></div>
+
+  <div class="ledger" id="ledger">
+    <span class="lg-label">Anchor strength</span>
+    <span class="lg-dots" id="lgDots"></span>
+    <span class="lg-meta" id="lgMeta">new</span>
+    <button type="button" class="lg-reset" id="lgReset" title="Clear conditioning progress on this device">reset</button>
+  </div>
+
+  <div class="legend">
+    <div class="voice" id="voiceAnchor" style="--vc:var(--anchor)">
+      <div class="name"><span class="dot"></span>Anchor <span class="en">the ground</span></div>
+      <div class="freq">110 Hz carrier · 4 Hz binaural</div>
+      <p>A low tone you feel in the chest, split slightly between the ears. It arrives first and never leaves.</p>
+      <p class="feel">Meaning: <b>you are safe — drop in.</b> Pair it with one long exhale each time you hear it; over many sessions the sound alone brings the settling.</p>
+    </div>
+    <div class="voice" id="voicePiti" style="--vc:var(--piti)">
+      <div class="name"><span class="dot"></span>Pīti <span class="en">the rising</span></div>
+      <div class="freq">inhale-gated · expands in 3D · 440–1760 Hz shimmer</div>
+      <p>On every in-breath a bright texture blooms wider and higher. The fuller you inhale, the more it opens.</p>
+      <p class="feel">Meaning: <b>gather the energy.</b> It amplifies attention to the tingle of the breath — follow the widening.</p>
+    </div>
+    <div class="voice" id="voiceSukha" style="--vc:var(--sukha)">
+      <div class="name"><span class="dot"></span>Sukha <span class="en">the landing</span></div>
+      <div class="freq">55 Hz sub-pulse · AUM-like beat · exhale bottom</div>
+      <p>At the very end of each out-breath, a deep pulse lands and rings out — the floor of the world rising to hold you.</p>
+      <p class="feel">Meaning: <b>rest here.</b> It marks the pause after the exhale, the moment of deepest stillness.</p>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="row">
+      <span class="tag">Headphones</span>
+      <span>The Anchor is a true binaural beat — 108 Hz in one ear, 112 Hz in the other. Without stereo separation you'll still hear a pacing tremolo, but the effect is far weaker. Sub-bass also carries better on headphones.</span>
+    </div>
+    <div class="row">
+      <span class="tag">Two modes</span>
+      <span><b>5-min practice</b> ends cleanly in silence. <b>Sleep</b> runs the same descent, then keeps darkening and thinning for ~20 minutes more before fading to true silence at ~25 min — no loop, so it won't wake you. <b>Follow my breath</b> uses your microphone to read your breathing and lock the pacer and shimmer to it — it meets you where you are, then leads you slower. The mic signal is analysed on-device only; nothing is recorded, stored, or sent anywhere.</span>
+    </div>
+    <div class="row safety">
+      <span class="tag">Care</span>
+      <span>Kept deliberately quiet — raise the volume only as far as is comfortable. This is not a medical device and makes no clinical claims. Don't use while driving or operating machinery. If you have epilepsy or are sensitive to rhythmic stimulation, skip it.</span>
+    </div>
+    <div class="row">
+      <span class="tag">Settling</span>
+      <span>In mic mode a live <em>settling</em> meter reads the breath domain — how slow your breathing is, how <em>even</em> it is (variability drops as you relax), and its depth — a genuine proxy for the parasympathetic shift. It is <b>not</b> HRV: a microphone can't read your heartbeat, and nothing here pretends to. The measured settling scales how much each session strengthens the anchor, so conditioning only grows as much as you actually let go. A wearable (Oura, Apple Watch) would fit as overnight/trend confirmation in a native app, not as a live input — see the architecture doc.</span>
+    </div>
+    <div class="row">
+      <span class="tag">How it works</span>
+      <span>The power is conditioning, not magic: the sounds gain meaning by being paired, session after session, with a genuinely settled breath. Sleep comes from <em>removing</em> arousal — dropping brightness, motion and pacing so your own sleep pressure can take over — not from forcing anything. Full architecture in <code>docs/jhana-sound-architecture.md</code>.</span>
+    </div>
+  </div>
+
+  <div class="fine" id="fine">a prototype of the Cymatic engine — HRTF 3D audio · optional mic breath-tracking · progress saved on this device</div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ============ session scores ============
+  // Each keyframe: t seconds -> target parameter vector, interpolated per frame.
+  const KEY_PRACTICE = [
+    { t:0,   bpm:13, df:8.0, car:110, cut:3600, piti:0.16, sukha:0.42, master:1.00, anchor:0.85 },
+    { t:60,  bpm:13, df:8.0, car:110, cut:3400, piti:0.18, sukha:0.48, master:1.00, anchor:0.85 },
+    { t:150, bpm:6,  df:5.0, car:110, cut:2100, piti:0.50, sukha:0.80, master:0.86, anchor:0.82 },
+    { t:225, bpm:6,  df:4.0, car:110, cut:900,  piti:0.30, sukha:1.00, master:0.70, anchor:0.66 },
+    { t:280, bpm:5,  df:1.5, car:98,  cut:400,  piti:0.09, sukha:0.72, master:0.42, anchor:0.40 },
+    { t:300, bpm:5,  df:0.0, car:90,  cut:230,  piti:0.00, sukha:0.00, master:0.00, anchor:0.00 },
+  ];
+  // Sleep: same active descent through ~5 min, then a long thinning tail to true silence ~25 min.
+  const KEY_SLEEP = [
+    { t:0,    bpm:13,  df:8.0, car:110, cut:3600, piti:0.16, sukha:0.42, master:1.00, anchor:0.85 },
+    { t:60,   bpm:13,  df:8.0, car:110, cut:3400, piti:0.18, sukha:0.48, master:1.00, anchor:0.85 },
+    { t:150,  bpm:6,   df:5.0, car:110, cut:2100, piti:0.45, sukha:0.80, master:0.86, anchor:0.82 },
+    { t:240,  bpm:6,   df:4.0, car:110, cut:820,  piti:0.24, sukha:0.96, master:0.66, anchor:0.62 },
+    { t:360,  bpm:5,   df:2.0, car:100, cut:420,  piti:0.06, sukha:0.72, master:0.46, anchor:0.42 },
+    { t:600,  bpm:4.5, df:0.8, car:92,  cut:300,  piti:0.00, sukha:0.44, master:0.30, anchor:0.24 },
+    { t:1020, bpm:4,   df:0.0, car:86,  cut:230,  piti:0.00, sukha:0.20, master:0.14, anchor:0.11 },
+    { t:1320, bpm:4,   df:0.0, car:82,  cut:190,  piti:0.00, sukha:0.07, master:0.05, anchor:0.03 },
+    { t:1500, bpm:4,   df:0.0, car:80,  cut:170,  piti:0.00, sukha:0.00, master:0.00, anchor:0.00 },
+  ];
+
+  const MODES = {
+    practice:{
+      duration:300, key:KEY_PRACTICE,
+      phases:[
+        {name:"Capture",end:60},{name:"Lead",end:150},
+        {name:"Absorption",end:225},{name:"Decay",end:280},{name:"Dissolve",end:300},
+      ],
+    },
+    sleep:{
+      duration:1500, key:KEY_SLEEP,
+      phases:[
+        {name:"Capture",end:60},{name:"Lead",end:150},
+        {name:"Absorption",end:360},{name:"Descent",end:1020},{name:"Dissolve",end:1500},
+      ],
+    },
+  };
+
+  let modeName="practice", breathSrc="pacer";
+  const mode = () => MODES[modeName];
+
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+  const smooth=t=>t*t*(3-2*t);
+  function sample(time){
+    const K=mode().key;
+    if(time<=K[0].t) return {...K[0]};
+    if(time>=K[K.length-1].t) return {...K[K.length-1]};
+    let i=0; while(i<K.length-1 && K[i+1].t<time) i++;
+    const a=K[i], b=K[i+1], raw=(time-a.t)/(b.t-a.t), s=smooth(raw), out={};
+    for(const k of ["bpm","df","car","cut","piti","sukha","master","anchor"]){
+      const t=(k==="bpm"||k==="df")?raw:s;
+      out[k]=lerp(a[k],b[k],t);
+    }
+    return out;
+  }
+
+  // breath envelope: inhale rise, hold, exhale fall, pause
+  const IN_END=0.42, HOLD_END=0.52, EX_END=0.92;
+  function breathEnv(p){
+    if(p<IN_END)   return 0.5-0.5*Math.cos(Math.PI*p/IN_END);
+    if(p<HOLD_END) return 1;
+    if(p<EX_END)   return 0.5+0.5*Math.cos(Math.PI*(p-HOLD_END)/(EX_END-HOLD_END));
+    return 0;
+  }
+  function breathStage(p){
+    if(p<IN_END)return "in";
+    if(p<HOLD_END)return "hold";
+    if(p<EX_END)return "out";
+    return "rest";
+  }
+
+  // ============ audio graph ============
+  let ctx=null, started=false, raf=null;
+  let t0=0, breathPhase=0, lastFrame=0, sukhaArmed=true, rings=[];
+  const nodes={};
+
+  function buildGraph(){
+    ctx=new (window.AudioContext||window.webkitAudioContext)();
+
+    // listener at origin, facing -z, up +y (for HRTF spatialisation of Pīti)
+    const L=ctx.listener;
+    if(L.positionX){
+      L.positionX.value=0; L.positionY.value=0; L.positionZ.value=0;
+      if(L.forwardX){ L.forwardX.value=0; L.forwardY.value=0; L.forwardZ.value=-1; L.upX.value=0; L.upY.value=1; L.upZ.value=0; }
+    } else if(L.setPosition){
+      L.setPosition(0,0,0); if(L.setOrientation) L.setOrientation(0,0,-1,0,1,0);
+    }
+
+    const userVol=ctx.createGain(); userVol.gain.value=volToGain(volEl.value);
+    const limiter=ctx.createDynamicsCompressor();
+    limiter.threshold.value=-3; limiter.knee.value=2; limiter.ratio.value=20;
+    limiter.attack.value=0.003; limiter.release.value=0.25;
+    userVol.connect(limiter); limiter.connect(ctx.destination);
+
+    // envelope = guaranteed session fade (native automation; survives tab throttling)
+    const envelope=ctx.createGain(); envelope.gain.value=1; envelope.connect(userVol);
+    const master=ctx.createGain(); master.gain.value=0; master.connect(envelope);
+
+    // ANCHOR: dichotic 108/112 via merger + centred octave harmonic + slow amplitude breath
+    const merger=ctx.createChannelMerger(2);
+    const oscL=ctx.createOscillator(); oscL.type="sine";
+    const oscR=ctx.createOscillator(); oscR.type="sine";
+    const gL=ctx.createGain(), gR=ctx.createGain(); gL.gain.value=gR.gain.value=0.5;
+    oscL.connect(gL).connect(merger,0,0);
+    oscR.connect(gR).connect(merger,0,1);
+    const harm=ctx.createOscillator(); harm.type="sine";
+    const harmG=ctx.createGain(); harmG.gain.value=0.10; harm.connect(harmG);
+    const anchorGain=ctx.createGain(); anchorGain.gain.value=0;
+    merger.connect(anchorGain); harmG.connect(anchorGain);
+    const anchorLFO=ctx.createOscillator(); anchorLFO.type="sine"; anchorLFO.frequency.value=0.1;
+    const anchorLFOg=ctx.createGain(); anchorLFOg.gain.value=0.12;
+    anchorLFO.connect(anchorLFOg).connect(anchorGain.gain);
+    anchorGain.connect(master);
+    [oscL,oscR,harm,anchorLFO].forEach(o=>o.start());
+
+    // PĪTI: HRTF-spatialised shimmer — voices fan outward and rise in 3D on the inhale
+    const pitiLPF=ctx.createBiquadFilter(); pitiLPF.type="lowpass"; pitiLPF.frequency.value=800; pitiLPF.Q.value=0.7;
+    const pitiGain=ctx.createGain(); pitiGain.gain.value=0;
+    pitiLPF.connect(pitiGain).connect(master);
+
+    const spatial=[]; // { panner, dir:[x,y,z] } — dir is the unit heading; radius/lift animate per frame
+    function mkPanner(){
+      const p=ctx.createPanner();
+      p.panningModel="HRTF"; p.distanceModel="inverse";
+      p.refDistance=1; p.maxDistance=24; p.rolloffFactor=0.4;
+      if(p.orientationX){ p.orientationX.value=0; p.orientationY.value=0; p.orientationZ.value=-1; }
+      p.connect(pitiLPF);
+      return p;
+    }
+    function spawnVoice(src, dir){
+      const pan=mkPanner(); src.connect(pan);
+      setPannerPos(pan, dir[0]*0.7, dir[1]*0.7, dir[2]*0.7, ctx.currentTime, 0.001);
+      spatial.push({panner:pan, dir});
+    }
+
+    // two decorrelated noise "air" voices — low and to the sides
+    const noiseBuf=makeNoise(ctx,2.7);
+    [[-0.7,0.15,-0.7,1.0],[0.7,0.15,-0.7,1.013]].forEach(d=>{
+      const n=ctx.createBufferSource(); n.buffer=noiseBuf; n.loop=true; n.playbackRate.value=d[3];
+      const hp=ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=600;
+      const g=ctx.createGain(); g.gain.value=0.22;
+      n.connect(hp).connect(g); spawnVoice(g,[d[0],d[1],d[2]]); n.start();
+    });
+    // four partials of the 110 series — placed higher; these rise most on the inhale
+    const partialDirs=[[-0.45,0.55,-0.55],[0.45,0.55,-0.55],[0.0,0.9,-0.35],[0.0,0.25,-1.0]];
+    [4,6,9,13].forEach((m,idx)=>{
+      const o=ctx.createOscillator(); o.type="sine"; o.frequency.value=110*m;
+      const g=ctx.createGain(); g.gain.value=(1/(idx+1))*0.4;
+      o.connect(g); spawnVoice(g,partialDirs[idx]); o.start();
+    });
+
+    // SUKHA bus (event pulses land here)
+    const sukhaBus=ctx.createGain(); sukhaBus.gain.value=1; sukhaBus.connect(master);
+
+    Object.assign(nodes,{userVol,envelope,master,oscL,oscR,harm,anchorGain,pitiLPF,pitiGain,sukhaBus,spatial});
+  }
+
+  function makeNoise(ctx,secs){
+    const len=Math.floor(ctx.sampleRate*secs);
+    const buf=ctx.createBuffer(1,len,ctx.sampleRate);
+    const d=buf.getChannelData(0); let last=0;
+    for(let i=0;i<len;i++){ const w=Math.random()*2-1; last=(last+0.02*w)/1.02; d[i]=last*3.2; }
+    return buf;
+  }
+
+  function fireSukha(level){
+    if(!ctx||level<0.03) return;
+    const t=ctx.currentTime;
+    const env=ctx.createGain(); env.gain.setValueAtTime(0.0001,t);
+    env.gain.linearRampToValueAtTime(level*0.9,t+0.3);
+    env.gain.exponentialRampToValueAtTime(0.0001,t+4.0);
+    env.connect(nodes.sukhaBus);
+    const am=ctx.createGain(); am.gain.value=0.82;
+    const beat=ctx.createOscillator(); beat.type="sine"; beat.frequency.value=7;
+    const beatG=ctx.createGain(); beatG.gain.value=0.16; beat.connect(beatG).connect(am.gain);
+    am.connect(env);
+    const sub=ctx.createOscillator(); sub.type="sine"; sub.frequency.setValueAtTime(58,t);
+    sub.frequency.exponentialRampToValueAtTime(54,t+1.2);
+    const subG=ctx.createGain(); subG.gain.value=1.0; sub.connect(subG).connect(am);
+    const ghost=ctx.createOscillator(); ghost.type="sine"; ghost.frequency.value=110;
+    const ghostG=ctx.createGain(); ghostG.gain.value=0.14; ghost.connect(ghostG).connect(am);
+    beat.start(t); sub.start(t); ghost.start(t);
+    beat.stop(t+4.2); sub.stop(t+4.2); ghost.stop(t+4.2);
+    rings.push({start:t});
+  }
+
+  const volToGain=v=>Math.pow(v/100,1.6)*0.9;
+
+  function setPannerPos(p,x,y,z,at,tc){
+    if(p.positionX){
+      p.positionX.setTargetAtTime(x,at,tc||0.06);
+      p.positionY.setTargetAtTime(y,at,tc||0.06);
+      p.positionZ.setTargetAtTime(z,at,tc||0.06);
+    } else if(p.setPosition){ p.setPosition(x,y,z); }
+  }
+
+  // ============ conditioning ledger (local-only) ============
+  const LKEY="cymatic.ledger.v1";
+  let anchorEmphasis=1;
+  function loadLedger(){
+    try{ return JSON.parse(localStorage.getItem(LKEY))||{sessions:0,strength:0,last:null}; }
+    catch(e){ return {sessions:0,strength:0,last:null}; }
+  }
+  function saveLedger(){ try{ localStorage.setItem(LKEY,JSON.stringify(ledger)); }catch(e){} }
+  let ledger=loadLedger();
+  const strengthWord=s => s<0.2?"forming":s<0.45?"taking hold":s<0.7?"strengthening":s<0.9?"strong":"deeply set";
+  function renderLedger(){
+    anchorEmphasis=1+ledger.strength*0.2;   // the anchor grows more present as conditioning deepens
+    const total=5, filled=Math.round(ledger.strength*total);
+    lgDots.innerHTML=Array.from({length:total},(_,i)=>`<i class="${i<filled?"on":""}"></i>`).join("");
+    lgMeta.textContent = ledger.sessions===0
+      ? "new — finish a session to begin conditioning the anchor"
+      : `${ledger.sessions} session${ledger.sessions>1?"s":""} paired · the anchor is ${strengthWord(ledger.strength)}`;
+  }
+  function recordCompletion(settled){
+    // measured settling (mic) scales the conditioning gain; unmeasured (pacer) gets the benefit of the doubt
+    const gain = settled==null ? 0.16 : 0.16*(0.35+0.65*clamp(settled,0,1));
+    ledger.sessions+=1;
+    ledger.strength=clamp(ledger.strength+(1-ledger.strength)*gain,0,1);   // diminishing-returns curve
+    try{ ledger.last=new Date().toISOString(); }catch(e){}
+    saveLedger(); renderLedger();
+  }
+
+  // ============ mic breath tracker ============
+  const mic={active:false,stream:null,analyser:null,data:null,
+             env:0,floor:0.002,level:0,rate:0,lastOnset:0,armed:true,intervals:[],err:null,
+             cyclePeak:0,depths:[],maxDepth:0,regularity:0,depthNorm:0,slowness:0,settling:0,settlingTarget:0};
+  let sessionSettleSum=0, sessionSettleCount=0;
+
+  async function enableMic(){
+    if(!ctx) buildGraph();
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ mic.err="unsupported"; return false; }
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+      const src=ctx.createMediaStreamSource(stream);
+      const hp=ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=180;
+      const lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=2200;
+      const an=ctx.createAnalyser(); an.fftSize=1024; an.smoothingTimeConstant=0.35;
+      src.connect(hp); hp.connect(lp); lp.connect(an); // never connected to destination — no feedback, no recording
+      mic.stream=stream; mic.analyser=an; mic.data=new Float32Array(an.fftSize);
+      mic.active=true; mic.err=null; mic.intervals=[]; mic.rate=0; mic.lastOnset=0;
+      return true;
+    }catch(e){ mic.err=(e&&e.name)||"denied"; mic.active=false; return false; }
+  }
+  function disableMic(){
+    mic.active=false;
+    if(mic.stream){ mic.stream.getTracks().forEach(t=>t.stop()); mic.stream=null; }
+  }
+  function micUpdate(nowSec){
+    if(!mic.active||!mic.analyser) return;
+    mic.analyser.getFloatTimeDomainData(mic.data);
+    let sum=0; for(let i=0;i<mic.data.length;i++){ const v=mic.data[i]; sum+=v*v; }
+    const rms=Math.sqrt(sum/mic.data.length);
+    mic.env+=(rms-mic.env)*0.25;
+    // slow adaptive noise floor
+    mic.floor+=((mic.env<mic.floor? mic.env : mic.floor*1.05) - mic.floor)*0.01;
+    mic.floor=Math.max(mic.floor,0.0006);
+    const activity=Math.max(0,mic.env-mic.floor*1.4);
+    mic.level=clamp(activity/(mic.floor*5+0.006),0,1);
+    mic.cyclePeak=Math.max(mic.cyclePeak,mic.env);
+    const thr=mic.floor*2.4+0.004;
+    if(mic.armed && mic.env>thr){
+      if(mic.lastOnset>0){
+        const dt=nowSec-mic.lastOnset;
+        if(dt>1.6 && dt<16){
+          mic.intervals.push(dt); if(mic.intervals.length>6) mic.intervals.shift();
+          const avg=mic.intervals.reduce((a,b)=>a+b,0)/mic.intervals.length;
+          mic.rate=clamp(60/avg,4,20);
+          // breath-rate regularity — settling makes breathing slower AND more even (low variability)
+          if(mic.intervals.length>=3){
+            const m=avg, va=mic.intervals.reduce((a,b)=>a+(b-m)*(b-m),0)/mic.intervals.length;
+            const cv=Math.sqrt(va)/(m||1);
+            mic.regularity=clamp(1-cv*2.2,0,1);
+          }
+          // per-breath depth relative to the deepest breath seen this session
+          mic.depths.push(mic.cyclePeak); if(mic.depths.length>6) mic.depths.shift();
+          mic.maxDepth=Math.max(mic.maxDepth,mic.cyclePeak);
+          const md=mic.depths.reduce((a,b)=>a+b,0)/mic.depths.length;
+          mic.depthNorm=clamp(md/((mic.maxDepth*0.85)||1),0,1);
+          // slowness toward resonance breathing (~5–6/min)
+          mic.slowness=clamp((13-mic.rate)/8,0,1);
+          // composite settling index — a breath-domain proxy for parasympathetic shift (NOT HRV)
+          mic.settlingTarget=0.5*mic.slowness+0.4*mic.regularity+0.1*mic.depthNorm;
+        }
+      }
+      mic.lastOnset=nowSec; mic.armed=false; mic.cyclePeak=0;
+    }
+    if(mic.env<thr*0.6) mic.armed=true;
+    mic.settling+=(mic.settlingTarget-mic.settling)*0.03;
+  }
+
+  // ============ main loop ============
+  function frame(now){
+    raf=requestAnimationFrame(frame);
+    const M=mode();
+    const tSec=(now-t0)/1000;
+    const dt=Math.min(0.05,(now-lastFrame)/1000||0);
+    lastFrame=now;
+
+    const s=sample(tSec);
+
+    // mic: read rate + live breath level
+    if(breathSrc==="mic") micUpdate(now/1000);
+    // accumulate settling across the back 60% of the session for an honest "did they settle?" measure
+    if(breathSrc==="mic" && mic.active && tSec>M.duration*0.4){
+      sessionSettleSum+=mic.settling; sessionSettleCount++;
+    }
+
+    // effective breath rate: early on, meet the user where they are (iso principle), then lead to score
+    let bpm=s.bpm;
+    if(breathSrc==="mic" && mic.active && mic.rate>0){
+      const adapt=clamp(1 - tSec/150, 0, 1);   // full follow at start -> pure score by Lead's end
+      bpm=lerp(s.bpm, mic.rate, adapt*0.75);
+    }
+
+    breathPhase+=(bpm/60)*dt; if(breathPhase>=1) breathPhase-=1;
+    let env=breathEnv(breathPhase);
+    const stage=breathStage(breathPhase);
+
+    // mic makes it responsive: louder actual breathing -> brighter shimmer / bigger orb
+    let pitiMul=1, orbBreath=env;
+    if(breathSrc==="mic" && mic.active){
+      pitiMul=0.7+0.7*mic.level;
+      orbBreath=clamp(0.55*env+0.55*mic.level,0,1);
+    }
+
+    if(breathPhase>=EX_END && sukhaArmed && tSec>1.5){ fireSukha(s.sukha); sukhaArmed=false; }
+    if(breathPhase<EX_END) sukhaArmed=true;
+
+    if(ctx){
+      const at=ctx.currentTime, tc=0.05;
+      nodes.master.gain.setTargetAtTime(s.master,at,tc);
+      nodes.anchorGain.gain.setTargetAtTime(s.anchor*0.5*anchorEmphasis,at,0.2);
+      nodes.oscL.frequency.setTargetAtTime(s.car-s.df/2,at,0.15);
+      nodes.oscR.frequency.setTargetAtTime(s.car+s.df/2,at,0.15);
+      nodes.harm.frequency.setTargetAtTime(s.car*2,at,0.2);
+      nodes.pitiGain.gain.setTargetAtTime(clamp(s.piti*env*pitiMul,0,1.2),at,0.05);
+      const cutoff=300+(s.cut-300)*env;
+      nodes.pitiLPF.frequency.setTargetAtTime(Math.max(180,cutoff),at,0.06);
+      // Pīti expands in 3D: voices push outward (radius) and lift upward with the inhale
+      const radius=0.7+1.7*env, lift=0.7*env;
+      for(const v of nodes.spatial){
+        setPannerPos(v.panner, v.dir[0]*radius, v.dir[1]*radius+lift, v.dir[2]*radius, at, 0.08);
+      }
+    }
+
+    drawOrb(tSec,orbBreath,s);
+    updateHUD(tSec,{...s,bpm},stage);
+
+    if(tSec>=M.duration) finish();
+  }
+
+  // ============ canvas orb ============
+  const cv=document.getElementById("orb");
+  const g=cv.getContext("2d");
+  const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const RAMP=[{t:0.0,c:[230,169,78]},{t:0.5,c:[138,111,208]},{t:0.8,c:[95,107,176]},{t:1.0,c:[55,69,110]}];
+  function rampColor(f){
+    f=clamp(f,0,1); let i=0; while(i<RAMP.length-1 && RAMP[i+1].t<f) i++;
+    const a=RAMP[i], b=RAMP[Math.min(i+1,RAMP.length-1)], r=(f-a.t)/((b.t-a.t)||1);
+    return a.c.map((v,k)=>Math.round(lerp(v,b.c[k],r)));
+  }
+  let idlePhase=0;
+  function drawOrb(tSec,breath,s){
+    const W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+    g.clearRect(0,0,W,H);
+    const prog=started?clamp(tSec/mode().duration,0,1):0;
+    const [r,gr,b]=rampColor(prog);
+    let br=breath;
+    if(!started){ idlePhase+=0.012; br=0.5+0.5*Math.sin(idlePhase); }
+    const R=W*0.17+W*0.16*br*(started?1:0.5);
+    const glow=g.createRadialGradient(cx,cy,R*0.15,cx,cy,R*2.4);
+    const bright=started?(0.5+0.5*br):0.4;
+    glow.addColorStop(0,`rgba(${r},${gr},${b},${0.42*bright})`);
+    glow.addColorStop(0.4,`rgba(${r},${gr},${b},${0.14*bright})`);
+    glow.addColorStop(1,"rgba(0,0,0,0)");
+    g.fillStyle=glow; g.fillRect(0,0,W,H);
+    if(ctx&&!reduceMotion){
+      const nowT=ctx.currentTime;
+      rings=rings.filter(ring=>nowT-ring.start<3.2);
+      for(const ring of rings){
+        const age=(nowT-ring.start)/3.2, rr=R+age*W*0.5;
+        g.beginPath(); g.arc(cx,cy,rr,0,Math.PI*2);
+        g.strokeStyle=`rgba(111,128,201,${(1-age)*0.5})`;
+        g.lineWidth=2.5*(1-age)+0.5; g.stroke();
+      }
+    }
+    const core=g.createRadialGradient(cx,cy-R*0.2,R*0.1,cx,cy,R);
+    core.addColorStop(0,`rgba(${Math.min(255,r+40)},${Math.min(255,gr+34)},${Math.min(255,b+30)},0.95)`);
+    core.addColorStop(0.7,`rgba(${r},${gr},${b},0.62)`);
+    core.addColorStop(1,`rgba(${r},${gr},${b},0.08)`);
+    g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.fillStyle=core; g.fill();
+    g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2);
+    g.strokeStyle=`rgba(${r},${gr},${b},0.55)`; g.lineWidth=1.5; g.stroke();
+  }
+
+  // ============ HUD ============
+  const el=id=>document.getElementById(id);
+  const tCarrier=el("tCarrier"),tBeat=el("tBeat"),tBreath=el("tBreath");
+  const tElapsed=el("tElapsed"),tTotal=el("tTotal"),phaseLabel=el("phaseLabel"),cue=el("cue");
+  const trackEl=el("track"),namesEl=el("phaseNames"),micStatus=el("micStatus");
+  const lgDots=el("lgDots"),lgMeta=el("lgMeta"),lgReset=el("lgReset");
+  const voiceEls={anchor:el("voiceAnchor"),piti:el("voicePiti"),sukha:el("voiceSukha")};
+  let segFills=[],nameSpans=[],bounds=[];
+
+  const fmt=t=>{const m=Math.floor(t/60),s=Math.floor(t%60);return `${m}:${String(s).padStart(2,"0")}`;};
+
+  function buildTimeline(){
+    const M=mode();
+    trackEl.innerHTML=""; namesEl.innerHTML=""; segFills=[]; nameSpans=[]; bounds=[0];
+    const cols=M.phases.map((p,i)=>{ const w=(p.end-(i?M.phases[i-1].end:0))/M.duration; return w.toFixed(4)+"fr"; }).join(" ");
+    trackEl.style.gridTemplateColumns=cols; namesEl.style.gridTemplateColumns=cols;
+    M.phases.forEach((p)=>{
+      bounds.push(p.end);
+      const seg=document.createElement("div"); seg.className="seg";
+      const fill=document.createElement("i"); seg.appendChild(fill); trackEl.appendChild(seg); segFills.push(fill);
+      const span=document.createElement("span"); span.textContent=p.name; namesEl.appendChild(span); nameSpans.push(span);
+    });
+    tTotal.textContent=fmt(M.duration);
+  }
+
+  function updateHUD(tSec,s,stage){
+    const M=mode();
+    tCarrier.textContent=s.car.toFixed(1);
+    tBeat.textContent=started?(s.df<0.05?"—":s.df.toFixed(1)+" Hz"):"—";
+    tBreath.textContent=started?s.bpm.toFixed(1):"—";
+    tElapsed.textContent=fmt(Math.min(tSec,M.duration));
+
+    let pi=M.phases.findIndex(p=>tSec<p.end); if(pi<0)pi=M.phases.length-1;
+    phaseLabel.textContent=started?M.phases[pi].name:"Ready";
+    nameSpans.forEach((n,i)=>n.classList.toggle("on",started&&i===pi));
+    for(let i=0;i<segFills.length;i++){
+      const a=bounds[i],b=bounds[i+1];
+      const f=tSec<=a?0:tSec>=b?1:(tSec-a)/(b-a);
+      segFills[i].style.width=(f*100)+"%";
+    }
+
+    // cue words fade out in the deep tail so they don't keep you tracking as you drift off
+    cue.classList.remove("in","out");
+    const quiet=s.master<0.3;
+    if(!started){ cue.textContent="put on headphones · then begin"; }
+    else if(quiet){ cue.textContent="·"; }
+    else if(stage==="in"){ cue.textContent="breathe in"; cue.classList.add("in"); }
+    else if(stage==="hold"){ cue.textContent="·"; }
+    else if(stage==="out"){ cue.textContent="breathe out"; cue.classList.add("out"); }
+    else { cue.textContent="rest"; }
+
+    voiceEls.anchor.dataset.live=s.anchor>0.05?"1":"0";
+    voiceEls.piti.dataset.live=(started&&s.piti>0.05&&(stage==="in"||stage==="hold"))?"1":"0";
+    voiceEls.sukha.dataset.live=(started&&s.sukha>0.05&&stage==="rest")?"1":"0";
+
+    if(breathSrc==="mic"&&started&&mic.active){
+      if(quiet){ micStatus.innerHTML=""; }   // let go of the readout as you drift into the deep tail
+      else {
+        micStatus.classList.remove("err");
+        const f=Math.round(mic.settling*5);
+        const meter=`<span class="set-meter">${Array.from({length:5},(_,i)=>`<i class="${i<f?"on":""}"></i>`).join("")}</span>`;
+        micStatus.innerHTML = mic.rate>0
+          ? `breath ≈ <b>${mic.rate.toFixed(1)}/min</b> · settling ${meter}`
+          : `listening · breathe audibly so it can find your rhythm…`;
+      }
+    }
+  }
+
+  // ============ transport ============
+  const holder=el("orbHolder"),playBtn=el("playBtn"),glyph=el("glyph"),
+        restart=el("restart"),volEl=el("vol"),
+        modeToggle=el("modeToggle"),breathToggle=el("breathToggle");
+
+  async function begin(){
+    if(!ctx) buildGraph();
+    if(ctx.state==="suspended") await ctx.resume();
+    started=true; holder.classList.add("running");
+    restart.disabled=false; glyph.textContent="";
+    playBtn.setAttribute("aria-label","Restart session");
+    t0=performance.now(); lastFrame=t0; breathPhase=0; sukhaArmed=true; rings=[];
+    sessionSettleSum=0; sessionSettleCount=0;
+    // native safety fade: guarantees silence at end even if the tab is throttled/backgrounded
+    const M=mode(), now=ctx.currentTime;
+    nodes.envelope.gain.cancelScheduledValues(now);
+    nodes.envelope.gain.setValueAtTime(1,now);
+    if(modeName==="sleep"){
+      nodes.envelope.gain.setValueAtTime(1,now+M.duration-180);
+      nodes.envelope.gain.linearRampToValueAtTime(0.0001,now+M.duration);
+    }
+    cancelAnimationFrame(raf); raf=requestAnimationFrame(frame);
+  }
+
+  function finish(){
+    cancelAnimationFrame(raf);
+    started=false; holder.classList.remove("running");
+    glyph.textContent="Again"; phaseLabel.textContent="Complete";
+    cue.textContent=modeName==="sleep"?"silence · sleep well":"silence · rest as long as you like";
+    cue.classList.remove("in","out");
+    if(ctx) nodes.master.gain.setTargetAtTime(0,ctx.currentTime,0.4);
+    const settled=(breathSrc==="mic"&&sessionSettleCount>0)?sessionSettleSum/sessionSettleCount:null;
+    if(settled!=null){
+      micStatus.classList.remove("err");
+      micStatus.textContent=`session complete · you settled ${settled<0.35?"a little":settled<0.6?"well":"deeply"} (${Math.round(settled*100)}%)`;
+    }
+    recordCompletion(settled);
+    idleLoop();
+  }
+  function stopHard(){
+    cancelAnimationFrame(raf); started=false; holder.classList.remove("running");
+    if(ctx){ nodes.master.gain.setTargetAtTime(0,ctx.currentTime,0.2); nodes.envelope.gain.cancelScheduledValues(ctx.currentTime); nodes.envelope.gain.setTargetAtTime(1,ctx.currentTime,0.2); }
+    idleLoop();
+  }
+  let idleRaf=null;
+  function idleLoop(){
+    cancelAnimationFrame(idleRaf);
+    const step=()=>{ idleRaf=requestAnimationFrame(step); drawOrb(0,0,sample(0)); };
+    step();
+  }
+
+  playBtn.addEventListener("click",()=>{ cancelAnimationFrame(idleRaf); begin(); });
+  restart.addEventListener("click",()=>{ cancelAnimationFrame(idleRaf); stopHard(); setTimeout(begin,140); });
+  volEl.addEventListener("input",()=>{ if(nodes.userVol) nodes.userVol.gain.setTargetAtTime(volToGain(volEl.value),ctx.currentTime,0.05); });
+
+  modeToggle.addEventListener("click",e=>{
+    const btn=e.target.closest("button"); if(!btn) return;
+    modeName=btn.dataset.v;
+    [...modeToggle.children].forEach(b=>b.classList.toggle("on",b===btn));
+    buildTimeline();
+    if(started){ stopHard(); setTimeout(begin,140); } else idleLoop();
+  });
+
+  breathToggle.addEventListener("click",async e=>{
+    const btn=e.target.closest("button"); if(!btn) return;
+    const want=btn.dataset.v;
+    if(want==="mic"){
+      micStatus.classList.remove("err"); micStatus.textContent="requesting microphone…";
+      const ok=await enableMic();
+      if(!ok){
+        micStatus.classList.add("err");
+        micStatus.textContent = mic.err==="unsupported"
+          ? "microphone not available in this browser — staying on guided pace"
+          : "microphone blocked — allow access to follow your breath, staying on guided pace";
+        return; // keep pacer selected
+      }
+      breathSrc="mic";
+      micStatus.classList.remove("err");
+      micStatus.textContent="microphone on · analysed on-device, nothing recorded";
+    }else{
+      breathSrc="pacer"; disableMic(); micStatus.textContent="";
+    }
+    [...breathToggle.children].forEach(b=>b.classList.toggle("on",b.dataset.v===breathSrc));
+  });
+
+  function fitCanvas(){
+    const rect=holder.getBoundingClientRect();
+    const dpr=Math.min(2,window.devicePixelRatio||1);
+    cv.width=Math.round(rect.width*dpr); cv.height=Math.round(rect.height*dpr);
+  }
+  lgReset.addEventListener("click",()=>{
+    ledger={sessions:0,strength:0,last:null}; saveLedger(); renderLedger();
+  });
+
+  window.addEventListener("resize",fitCanvas);
+  fitCanvas(); buildTimeline(); renderLedger(); idleLoop();
+})();
+</script>
