@@ -1,0 +1,1208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Choice Architecture Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ground:#0B0E14;
+    --surface:#141926;
+    --surface2:#1B2233;
+    --line:#252D42;
+    --ink:#E9E4D8;
+    --muted:#7C8398;
+    --faint:#4A5169;
+    --gold:#D9A441;
+    --gold-dim:#8A6B2E;
+    --blue:#6E86C0;
+    --ember:#C4604E;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"SF Mono","Cascadia Code",Consolas,"Liberation Mono",monospace;
+  }
+  /* This instrument is deliberately single-theme: a night tool. */
+  :root[data-theme="light"] body{ background:var(--ground); }
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:var(--sans);
+    min-height:100dvh;
+    display:flex;
+    justify-content:center;
+    line-height:1.5;
+  }
+  .app{
+    width:100%;
+    max-width:470px;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  /* ---------- chrome ---------- */
+  header.bar{
+    display:flex;align-items:baseline;justify-content:space-between;
+    padding:18px 20px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .wordmark{
+    font-family:var(--mono);font-size:11px;letter-spacing:.22em;
+    color:var(--muted);text-transform:uppercase;
+  }
+  .wordmark b{color:var(--gold);font-weight:600}
+  .bar-stats{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.08em}
+  .screen{display:none;flex:1;flex-direction:column;padding:24px 20px 32px}
+  .screen.on{display:flex}
+  h1{
+    font-family:var(--serif);font-weight:500;font-size:26px;line-height:1.25;
+    margin:0 0 6px;text-wrap:balance;letter-spacing:.01em;
+  }
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 22px;max-width:38ch}
+  .eyebrow{
+    font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--gold);margin:0 0 10px;
+  }
+  button{font:inherit;cursor:pointer;color:inherit;background:none;border:none;padding:0}
+  button:focus-visible,.chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+  .btn{
+    display:block;width:100%;text-align:center;
+    background:var(--gold);color:#100C04;
+    font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    padding:15px 16px;border-radius:3px;
+  }
+  .btn:hover{background:#E7B655}
+  .btn.ghost{background:none;color:var(--muted);border:1px solid var(--line)}
+  .btn.ghost:hover{color:var(--ink);border-color:var(--faint)}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn-row{display:flex;flex-direction:column;gap:10px;margin-top:auto;padding-top:26px}
+  .back{
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--faint);
+    text-transform:uppercase;margin-bottom:20px;align-self:flex-start;
+  }
+  .back:hover{color:var(--muted)}
+  /* ---------- intake ---------- */
+  .dial-wrap{margin:6px 0 26px}
+  .dial-num{
+    font-family:var(--mono);font-size:64px;line-height:1;color:var(--ink);
+    font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:10px;
+  }
+  .dial-num small{font-size:12px;color:var(--faint);letter-spacing:.14em;text-transform:uppercase}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;
+    background:linear-gradient(90deg,var(--blue),var(--gold) 60%,var(--ember));
+    margin:22px 0 4px;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;
+    background:var(--ink);border:3px solid var(--ground);box-shadow:0 0 0 1px var(--faint);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;border-radius:50%;background:var(--ink);
+    border:3px solid var(--ground);box-shadow:0 0 0 1px var(--faint);
+  }
+  .field-label{
+    font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--muted);margin:22px 0 10px;
+  }
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    border:1px solid var(--line);border-radius:3px;padding:9px 13px;
+    font-size:13px;color:var(--muted);background:var(--surface);
+  }
+  .chip[aria-pressed="true"]{border-color:var(--gold);color:var(--ink);background:var(--surface2)}
+  .toggle-line{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:22px;
+    border-top:1px solid var(--line);padding-top:16px;font-size:13.5px;color:var(--muted)}
+  .switch{
+    width:40px;height:22px;border-radius:12px;background:var(--surface2);
+    border:1px solid var(--line);position:relative;flex:none;
+  }
+  .switch::after{
+    content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+    background:var(--faint);transition:transform .15s,background .15s;
+  }
+  .switch[aria-pressed="true"]::after{transform:translateX(18px);background:var(--gold)}
+  /* ---------- matrix ---------- */
+  .sysnote{
+    font-family:var(--mono);font-size:11px;color:var(--blue);line-height:1.6;
+    border-left:2px solid var(--blue);padding:2px 0 2px 12px;margin:0 0 18px;
+  }
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:4px;
+    padding:15px 16px 13px;margin-bottom:12px;text-align:left;width:100%;
+    display:block;transition:border-color .12s;
+  }
+  .card:hover{border-color:var(--faint)}
+  .card.dim{opacity:.72}
+  .card-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .card h2{font-family:var(--serif);font-size:18px;font-weight:500;margin:0}
+  .card .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--faint);text-transform:uppercase;white-space:nowrap}
+  .scores{display:flex;gap:18px;margin:10px 0 6px;font-variant-numeric:tabular-nums}
+  .score{font-family:var(--mono)}
+  .score .v{font-size:19px;color:var(--ink)}
+  .score .v.warn{color:var(--ember)}
+  .score .v.good{color:var(--gold)}
+  .score .k{display:block;font-size:9px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase;margin-top:2px}
+  .spark{flex:1;align-self:center;min-width:0}
+  .spark svg{display:block;width:100%;height:34px}
+  .forecast{font-size:12.5px;color:var(--muted);margin:4px 0 0;line-height:1.5}
+  .yourdata{
+    font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:8px;letter-spacing:.04em;
+  }
+  .yourdata em{color:var(--gold-dim);font-style:normal}
+  /* ---------- configurator ---------- */
+  .opt{
+    background:var(--surface);border:1px solid var(--line);border-radius:4px;
+    padding:15px 16px;margin-bottom:12px;text-align:left;width:100%;display:block;
+  }
+  .opt:hover{border-color:var(--faint)}
+  .opt.locked{opacity:.45;cursor:not-allowed}
+  .opt h3{font-family:var(--serif);font-size:17px;font-weight:500;margin:0 0 3px}
+  .opt p{font-size:12.5px;color:var(--muted);margin:0;line-height:1.5}
+  .opt .lockmsg{font-family:var(--mono);font-size:10px;color:var(--ember);margin-top:8px;letter-spacing:.06em}
+  .pace{display:flex;gap:8px;margin-top:4px}
+  .pace .chip{flex:1;text-align:center}
+  /* ---------- commit ---------- */
+  .vow{
+    font-family:var(--serif);font-size:22px;line-height:1.55;margin:34px 0;
+    padding-left:16px;border-left:2px solid var(--gold);text-wrap:balance;
+  }
+  .fineprint{font-family:var(--mono);font-size:11px;color:var(--faint);line-height:1.7}
+  /* ---------- session ---------- */
+  #s-session{padding:0;background:#05070C}
+  .stage{
+    position:relative;flex:1;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;overflow:hidden;min-height:66dvh;
+  }
+  #blob{position:absolute;inset:0;width:100%;height:100%}
+  #guide{position:absolute;inset:0;margin:auto;width:min(64%,270px);aspect-ratio:200/250;transition:opacity 2.5s ease}
+  #guide .stroke{fill:none;stroke:#8E93A8;stroke-width:1.6;stroke-linecap:round}
+  #guide .glabella{fill:var(--gold)}
+  #guide .halo{fill:var(--gold);opacity:.14}
+  .asset-note{
+    position:absolute;top:14px;left:0;right:0;text-align:center;
+    font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:#39405A;text-transform:uppercase;
+  }
+  .breath-line{
+    position:absolute;bottom:112px;left:0;right:0;text-align:center;pointer-events:none;
+  }
+  .breath-word{font-family:var(--serif);font-size:24px;letter-spacing:.1em;color:var(--ink);text-transform:uppercase}
+  .breath-count{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums;letter-spacing:.14em}
+  .caption{
+    position:absolute;bottom:48px;left:24px;right:24px;text-align:center;
+    font-family:var(--serif);font-size:17px;line-height:1.5;color:#C9C2B2;
+    text-shadow:0 1px 8px #000;min-height:52px;transition:opacity .8s;
+  }
+  .lex-name{
+    position:absolute;top:38%;left:0;right:0;text-align:center;pointer-events:none;
+    font-family:var(--serif);font-size:30px;color:var(--ink);letter-spacing:.04em;
+    text-shadow:0 2px 14px #000;display:none;
+  }
+  .mic-dot{
+    position:absolute;top:16px;right:16px;font-family:var(--mono);font-size:9px;
+    letter-spacing:.16em;color:var(--faint);text-transform:uppercase;display:none;
+    align-items:center;gap:6px;
+  }
+  .mic-dot.on{display:flex}
+  .mic-dot i{width:8px;height:8px;border-radius:50%;background:var(--faint);display:inline-block}
+  .session-modes{
+    display:flex;justify-content:center;gap:8px;
+    padding:10px 16px 0;background:#05070C;
+  }
+  .mode-chip{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--faint);border:1px solid var(--line);border-radius:3px;padding:7px 12px;
+  }
+  .mode-chip[aria-pressed="true"]{color:var(--gold);border-color:var(--gold-dim)}
+  .session-foot{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:10px 16px 16px;background:#05070C;
+  }
+  .fork-btn{
+    font-family:var(--mono);font-size:12px;letter-spacing:.22em;color:var(--ember);
+    border:1px solid #4A2B25;border-radius:3px;padding:12px 22px;text-transform:uppercase;
+  }
+  .fork-btn:hover{border-color:var(--ember)}
+  .tiny{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase}
+  .tiny:hover{color:var(--muted)}
+  .phase-track{
+    position:absolute;top:0;left:0;height:2px;background:var(--gold);opacity:.55;width:0%;
+  }
+  .fork-overlay{
+    position:absolute;inset:0;background:rgba(5,7,12,.92);display:none;
+    flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;z-index:5;
+  }
+  .fork-overlay.on{display:flex}
+  .fork-overlay .big{font-family:var(--serif);font-size:24px;line-height:1.45;text-wrap:balance}
+  .fork-overlay .sub2{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:14px;letter-spacing:.1em}
+  .toast{
+    position:absolute;top:44px;left:24px;right:24px;text-align:center;z-index:6;
+    font-family:var(--mono);font-size:11px;color:var(--blue);letter-spacing:.08em;
+    opacity:0;transition:opacity .6s;
+  }
+  .toast.on{opacity:1}
+  /* ---------- somatic / kinetic ---------- */
+  .ring-wrap{display:flex;justify-content:center;margin:34px 0 10px}
+  .ring{width:170px;height:170px;border-radius:50%;border:1px solid var(--blue);
+    display:flex;align-items:center;justify-content:center;position:relative}
+  .ring::before{content:"";position:absolute;inset:-14px;border-radius:50%;
+    border:1px solid rgba(110,134,192,.25)}
+  .ring .t{font-family:var(--mono);font-size:30px;font-variant-numeric:tabular-nums}
+  .stage-prompt{
+    font-family:var(--serif);font-size:20px;line-height:1.55;text-align:center;
+    min-height:92px;margin:22px auto 0;max-width:30ch;text-wrap:balance;
+  }
+  .stage-idx{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--faint);
+    text-transform:uppercase;text-align:center;margin-top:16px}
+  /* ---------- log ---------- */
+  .slider-block{margin:20px 0}
+  .slider-block .head{display:flex;justify-content:space-between;align-items:baseline}
+  .slider-block .head .n{font-family:var(--mono);font-size:22px;color:var(--gold);font-variant-numeric:tabular-nums}
+  .done-quote{
+    font-family:var(--serif);font-size:20px;line-height:1.6;margin:34px 0;
+    padding-left:16px;border-left:2px solid var(--blue);color:var(--ink);text-wrap:balance;
+  }
+  .receipt{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:2;letter-spacing:.04em}
+  .receipt b{color:var(--ink);font-weight:500}
+  @media (prefers-reduced-motion: reduce){
+    .switch::after{transition:none}
+    #guide{transition:opacity .5s}
+  }
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="wordmark">Choice <b>Architecture</b> Engine</div>
+    <div class="bar-stats" id="barStats"></div>
+  </header>
+
+  <!-- ============ INTAKE ============ -->
+  <section class="screen on" id="s-home">
+    <p class="eyebrow">Trigger intake</p>
+    <h1>Name its heat.</h1>
+    <div class="dial-wrap">
+      <div class="dial-num"><span id="dialV">6</span><small>intensity</small></div>
+      <input type="range" id="intensity" min="1" max="10" value="6" aria-label="Urge intensity, 1 to 10">
+    </div>
+    <div class="field-label">Trigger vector</div>
+    <div class="chips" id="vectors">
+      <button class="chip" data-v="visual" aria-pressed="false">Visual cue</button>
+      <button class="chip" data-v="memory" aria-pressed="true">Memory</button>
+      <button class="chip" data-v="somatic" aria-pressed="false">Spontaneous-somatic</button>
+      <button class="chip" data-v="boredom" aria-pressed="false">Boredom-drift</button>
+    </div>
+    <div class="toggle-line">
+      <span>Under 6 hours of sleep</span>
+      <button class="switch" id="sleepSw" aria-pressed="false" aria-label="Sleep debt toggle"></button>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="toMatrix">Open the matrix</button>
+    </div>
+  </section>
+
+  <!-- ============ MATRIX ============ -->
+  <section class="screen" id="s-matrix">
+    <button class="back" data-go="s-home">‹ Re-assess</button>
+    <p class="eyebrow">Assessment matrix</p>
+    <h1>Four doors. All open.</h1>
+    <p class="sub">Every path is costed. Pick one — the session starts immediately.</p>
+    <div class="sysnote" id="matrixNotes"></div>
+    <div id="cards"></div>
+  </section>
+
+  <!-- ============ FANTASY ============ -->
+  <section class="screen" id="s-fantasy">
+    <button class="back" data-go="s-matrix">‹ Back</button>
+    <p class="eyebrow">Path 1 · The Fantasy Loop</p>
+    <h1>Open door. Here is the toll.</h1>
+    <p class="sub" id="fantasyForecast"></p>
+    <div class="fineprint" id="fantasyData"></div>
+    <div class="btn-row">
+      <button class="btn" data-go="s-matrix">Return to the matrix</button>
+      <button class="btn ghost" id="fantasyProceed">Proceed with eyes open — log it</button>
+    </div>
+  </section>
+
+  <!-- ============ SOMATIC ============ -->
+  <section class="screen" id="s-somatic">
+    <button class="back" id="somaticAbort">‹ Abort</button>
+    <p class="eyebrow">Path 2 · The Somatic Pivot</p>
+    <div class="ring-wrap"><div class="ring" id="somaticRing"><span class="t" id="somaticT">0:00</span></div></div>
+    <div class="stage-prompt" id="somaticPrompt"></div>
+    <div class="stage-idx" id="somaticIdx"></div>
+    <div class="btn-row">
+      <button class="btn ghost" id="somaticSkip">Advance stage ›</button>
+    </div>
+  </section>
+
+  <!-- ============ KINETIC ============ -->
+  <section class="screen" id="s-kinetic">
+    <button class="back" data-go="s-matrix">‹ Back</button>
+    <p class="eyebrow">Path 4 · The Kinetic Discharge</p>
+    <h1 id="kineticTitle">Choose the override.</h1>
+    <div id="kineticChoices" style="margin-top:18px">
+      <button class="opt" data-k="cold"><h3>Cold — 90 seconds</h3><p>Water to the face and neck. Overwrites the signature.</p></button>
+      <button class="opt" data-k="move"><h3>Movement — 3 minutes</h3><p>Squats, burpees, to failure. Consumes the charge.</p></button>
+    </div>
+    <div class="ring-wrap" id="kineticRingWrap" style="display:none"><div class="ring"><span class="t" id="kineticT">1:30</span></div></div>
+    <div class="btn-row" id="kineticDoneRow" style="display:none">
+      <button class="btn" id="kineticDone">Done — log it</button>
+    </div>
+  </section>
+
+  <!-- ============ CONFIGURATOR ============ -->
+  <section class="screen" id="s-config">
+    <button class="back" data-go="s-matrix">‹ Back</button>
+    <p class="eyebrow">Anchor select</p>
+    <h1>What will outbid the imagery?</h1>
+    <button class="opt" id="optA">
+      <h3>A · The Grounded Aesthetic</h3>
+      <p>A guide, face and breath only. Perfectly looped — no next scene. Fades at the taper, no exceptions.</p>
+      <div class="lockmsg" id="optALock" style="display:none">LOCKED — visual trigger. Like-for-like is highest-risk.</div>
+    </button>
+    <button class="opt" id="optB">
+      <h3>B · The Cosmic Abstract</h3>
+      <p>Luminous form pulsing with your breath. Blue toward gold as stability builds.</p>
+    </button>
+    <button class="opt" id="optC">
+      <h3>C · The Sound Field</h3>
+      <p>Eyes closed. The tide carries the pace — every sound is taught before it is used.</p>
+    </button>
+    <div class="field-label">Pacing</div>
+    <div class="pace">
+      <button class="chip" data-pace="demo" aria-pressed="true">Demo · ~5 min</button>
+      <button class="chip" data-pace="full" aria-pressed="false">Full · ~17 min</button>
+    </div>
+  </section>
+
+  <!-- ============ COMMIT ============ -->
+  <section class="screen" id="s-commit">
+    <button class="back" data-go="s-config">‹ Reconfigure</button>
+    <p class="eyebrow">One tap</p>
+    <div class="vow">If imagery or storyline arises, I return to the tide on the very next inhale.</div>
+    <div class="fineprint" id="commitFine"></div>
+    <div class="btn-row">
+      <button class="btn" id="beginSession">I commit — begin</button>
+    </div>
+  </section>
+
+  <!-- ============ SESSION ============ -->
+  <section class="screen" id="s-session">
+    <div class="stage" id="stage">
+      <div class="phase-track" id="phaseTrack"></div>
+      <canvas id="blob"></canvas>
+      <svg id="guide" viewBox="0 0 200 250" style="opacity:0" aria-hidden="true">
+        <circle class="halo" cx="100" cy="76" r="26"></circle>
+        <ellipse class="stroke" cx="100" cy="92" rx="50" ry="60"></ellipse>
+        <path class="stroke" d="M72 96 q9 7 18 0"></path>
+        <path class="stroke" d="M110 96 q9 7 18 0"></path>
+        <path class="stroke" d="M100 106 l-3 12 q3 3 6 0"></path>
+        <path class="stroke" d="M90 134 q10 6 20 0"></path>
+        <g id="shoulders">
+          <path class="stroke" d="M84 150 L82 170"></path>
+          <path class="stroke" d="M116 150 L118 170"></path>
+          <path class="stroke" d="M18 246 Q58 178 100 174 Q142 178 182 246"></path>
+        </g>
+        <circle class="glabella" cx="100" cy="76" r="3.4"></circle>
+      </svg>
+      <div class="asset-note" id="assetNote" style="display:none">Stand-in · cinematic guide loop renders here</div>
+      <div class="lex-name" id="lexName"></div>
+      <div class="mic-dot" id="micDot"><i id="micDotI"></i><span id="micDotT">listening</span></div>
+      <div class="toast" id="toast"></div>
+      <div class="breath-line" id="breathLine" style="display:none">
+        <div class="breath-word" id="breathWord">Ride</div>
+        <div class="breath-count" id="breathCount"></div>
+      </div>
+      <div class="caption" id="caption"></div>
+      <div class="fork-overlay" id="forkOverlay">
+        <div class="big">Exhale fully.<br>Palms.<br>One whole breath.</div>
+        <div class="sub2" id="forkCountMsg"></div>
+      </div>
+    </div>
+    <div class="session-modes">
+      <button class="mode-chip" id="tglSound" aria-pressed="true">sound</button>
+      <button class="mode-chip" id="tglVoice" aria-pressed="true">voice</button>
+      <button class="mode-chip" id="tglMic" aria-pressed="false">mic · hear my breath</button>
+    </div>
+    <div class="session-foot">
+      <button class="tiny" id="sessionAbort">✕ abort</button>
+      <button class="fork-btn" id="forkBtn" style="visibility:hidden">Fork</button>
+      <button class="tiny" id="advPhase">advance ›</button>
+    </div>
+  </section>
+
+  <!-- ============ LOG ============ -->
+  <section class="screen" id="s-log">
+    <p class="eyebrow">Episode log</p>
+    <h1>Two numbers. That's all.</h1>
+    <div class="slider-block">
+      <div class="head"><span class="field-label" style="margin:0">Calm now</span><span class="n" id="calmV">6</span></div>
+      <input type="range" id="calm" min="1" max="10" value="6" aria-label="Calm, 1 to 10">
+    </div>
+    <div class="slider-block">
+      <div class="head"><span class="field-label" style="margin:0">Mental clarity</span><span class="n" id="clarityV">6</span></div>
+      <input type="range" id="clarity" min="1" max="10" value="6" aria-label="Clarity, 1 to 10">
+    </div>
+    <div class="field-label">The urge, right now</div>
+    <div class="chips" id="urgeChips">
+      <button class="chip" data-u="gone" aria-pressed="false">Gone</button>
+      <button class="chip" data-u="faded" aria-pressed="true">Faded</button>
+      <button class="chip" data-u="present" aria-pressed="false">Still present</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="saveLog">Save episode</button>
+    </div>
+  </section>
+
+  <!-- ============ DONE ============ -->
+  <section class="screen" id="s-done">
+    <p class="eyebrow">Episode closed</p>
+    <h1 id="doneH">Logged.</h1>
+    <div class="done-quote" id="doneQuote"></div>
+    <div class="receipt" id="doneReceipt"></div>
+    <div class="btn-row">
+      <button class="btn ghost" data-go="s-home">Return to intake</button>
+    </div>
+  </section>
+</div>
+
+<script>
+"use strict";
+/* ============================ state ============================ */
+const S = {
+  intensity: 6, vector: "memory", sleepDebt: false,
+  path: null, anchor: null, pace: "demo", forks: 0, sessionResult: "",
+};
+const PATH_NAMES = {fantasy:"The Fantasy Loop", somatic:"The Somatic Pivot", visual:"The Visual Guide Core", kinetic:"The Kinetic Discharge"};
+const store = {
+  load(){ try{ return JSON.parse(localStorage.getItem("cae_log")||"[]"); }catch(e){ return []; } },
+  save(list){ try{ localStorage.setItem("cae_log", JSON.stringify(list.slice(-120))); }catch(e){} },
+  add(entry){ const l=this.load(); l.push(entry); this.save(l); },
+};
+const $ = id => document.getElementById(id);
+
+/* ============================ audio engine ============================ */
+const audio = {
+  ctx:null, droneGain:null, noiseBuf:null,
+  soundOn:true, voiceOn:true, dim:1,
+  init(){
+    if(this.ctx){ if(this.ctx.state==="suspended") this.ctx.resume(); return; }
+    const C = new (window.AudioContext||window.webkitAudioContext)();
+    this.ctx=C;
+    const buf=C.createBuffer(1,C.sampleRate*2,C.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+    this.noiseBuf=buf;
+    const o=C.createOscillator(); o.frequency.value=174;
+    const og=C.createGain(); og.gain.value=0;
+    o.connect(og); og.connect(C.destination); o.start();
+    this.droneGain=og;
+  },
+  breath(b){
+    if(!this.ctx) return;
+    const t=this.ctx.currentTime;
+    const amp = this.soundOn ? (0.004+0.011*b.v)*this.dim : 0;
+    this.droneGain.gain.setTargetAtTime(amp,t,.25);
+  },
+  silence(){
+    if(!this.ctx) return;
+    this.droneGain.gain.setTargetAtTime(0,this.ctx.currentTime,.15);
+    if("speechSynthesis" in window) speechSynthesis.cancel();
+  },
+  speak(text, soft){
+    if(!this.voiceOn || !("speechSynthesis" in window)) return;
+    if(soft && speechSynthesis.speaking) return;   /* whispers never interrupt teaching */
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=0.86; u.pitch=0.8; u.volume=soft?0.55:0.9;
+    if(!soft) speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  },
+};
+
+/* ============================ the sonic lexicon ============================
+   Every sound means one thing. The voice teaches the pairing once;
+   after that, the sounds ARE the instructions.                              */
+const cues = {
+  ok(){ return audio.ctx && audio.soundOn; },
+  g(peak){ const C=audio.ctx,g=C.createGain(); g.gain.value=0.0001; g.connect(C.destination); return g; },
+  noise(filterType, f0){
+    const C=audio.ctx;
+    const src=C.createBufferSource(); src.buffer=audio.noiseBuf; src.loop=true;
+    const f=C.createBiquadFilter(); f.type=filterType; f.frequency.value=f0; f.Q.value=0.9;
+    src.connect(f); return {src,f};
+  },
+  /* THE BELL — a turn in the session (phase change) */
+  bell(){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    [[660,.05],[990,.018]].forEach(([fr,p])=>{
+      const o=C.createOscillator(); o.frequency.value=fr;
+      const g=this.g(); o.connect(g);
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002,p*d),t+.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+1.5);
+      o.start(t); o.stop(t+1.6);
+    });
+  },
+  /* THE SWELL — ride the inhale; the wave moves in (rising water) */
+  swell(dur){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    const {src,f}=this.noise("bandpass",480);
+    f.frequency.linearRampToValueAtTime(1500,t+dur);
+    const g=this.g(); f.connect(g);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(0.05*d,t+dur*0.8);
+    g.gain.linearRampToValueAtTime(0.0001,t+dur);
+    src.start(t); src.stop(t+dur+.1);
+    const o=C.createOscillator(); o.frequency.setValueAtTime(196,t);
+    o.frequency.linearRampToValueAtTime(294,t+dur);
+    const og=this.g(); o.connect(og);
+    og.gain.linearRampToValueAtTime(0.014*d,t+dur*0.7);
+    og.gain.linearRampToValueAtTime(0.0001,t+dur);
+    o.start(t); o.stop(t+dur+.1);
+  },
+  /* THE CREST — the tide is rising; hold (suspended shimmer) */
+  crest(dur){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    const o=C.createOscillator(); o.frequency.value=880;
+    const lfo=C.createOscillator(); lfo.frequency.value=5;
+    const lg=C.createGain(); lg.gain.value=7;
+    lfo.connect(lg); lg.connect(o.frequency);
+    const g=this.g(); o.connect(g);
+    g.gain.linearRampToValueAtTime(0.02*d,t+.25);
+    g.gain.setValueAtTime(0.02*d,t+dur-.25);
+    g.gain.linearRampToValueAtTime(0.0001,t+dur);
+    o.start(t); o.stop(t+dur+.1); lfo.start(t); lfo.stop(t+dur+.1);
+    const o2=C.createOscillator(); o2.frequency.value=1320;
+    const g2=this.g(); o2.connect(g2);
+    g2.gain.linearRampToValueAtTime(0.008*d,t+.3);
+    g2.gain.linearRampToValueAtTime(0.0001,t+dur);
+    o2.start(t); o2.stop(t+dur+.1);
+  },
+  /* THE WASH — the wave crashes; pour the exhale out (falling water) */
+  wash(dur){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    const {src,f}=this.noise("lowpass",2200);
+    f.frequency.exponentialRampToValueAtTime(260,t+dur);
+    const g=this.g(); f.connect(g);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(0.065*d,t+.18);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    src.start(t); src.stop(t+dur+.1);
+  },
+  /* STILL WATER — rest, empty (one deep soft drop) */
+  stillWater(){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    const o=C.createOscillator(); o.frequency.value=88;
+    const g=this.g(); o.connect(g);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002,0.05*d),t+.04);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+.9);
+    o.start(t); o.stop(t+1);
+  },
+  /* THE DEEP — warmth found you; rest attention in it (warm low dyad) */
+  dyad(){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    [220,277].forEach(fr=>{
+      const o=C.createOscillator(); o.frequency.value=fr;
+      const g=this.g(); o.connect(g);
+      g.gain.linearRampToValueAtTime(0.028*d,t+1);
+      g.gain.setValueAtTime(0.028*d,t+2.2);
+      g.gain.linearRampToValueAtTime(0.0001,t+3.4);
+      o.start(t); o.stop(t+3.5);
+    });
+  },
+  /* THE GULL — you have drifted; come back (two high plinks) */
+  plink(){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    [0,.22].forEach(off=>{
+      const o=C.createOscillator(); o.frequency.value=1240;
+      const g=this.g(); o.connect(g);
+      g.gain.setValueAtTime(0.0001,t+off);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002,0.04*d),t+off+.015);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+off+.18);
+      o.start(t+off); o.stop(t+off+.25);
+    });
+  },
+  /* THE RELEASE — fork acknowledged; let it go (three falling notes) */
+  release(){
+    if(!this.ok()) return; const C=audio.ctx,t=C.currentTime,d=audio.dim;
+    [660,523,392].forEach((fr,idx)=>{
+      const o=C.createOscillator(); o.frequency.value=fr;
+      const g=this.g(); o.connect(g);
+      const t0=t+idx*.28;
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002,0.04*d),t0+.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+.4);
+      o.start(t0); o.stop(t0+.45);
+    });
+  },
+};
+/* the teaching order: name → meaning → the sound itself */
+const LEXICON = [
+  {name:"The Bell",    line:"The bell. A turn in the session.",                        cue:()=>cues.bell()},
+  {name:"The Swell",   line:"The swell. Ride the inhale — the wave is moving in.",     cue:()=>cues.swell(3)},
+  {name:"The Crest",   line:"The crest. The tide is rising. Hold.",                    cue:()=>cues.crest(2.5)},
+  {name:"The Wash",    line:"The wash. The wave is crashing. Pour the exhale out.",    cue:()=>cues.wash(4)},
+  {name:"Still Water", line:"Still water. Rest, empty.",                               cue:()=>cues.stillWater()},
+  {name:"The Deep",    line:"The deep. Warmth has found you. Rest attention in it.",   cue:()=>cues.dyad()},
+  {name:"The Gull",    line:"The gull. You have drifted. Come back.",                  cue:()=>cues.plink()},
+];
+const LEX_SLOT = 6.5;
+
+/* microphone: hear the user's actual breath */
+const mic = {
+  stream:null, analyser:null, buf:null, level:0, active:false, lastHeard:0,
+  async start(){
+    audio.init();
+    try{
+      this.stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false}});
+      const s=audio.ctx.createMediaStreamSource(this.stream);
+      this.analyser=audio.ctx.createAnalyser(); this.analyser.fftSize=1024;
+      s.connect(this.analyser);
+      this.buf=new Float32Array(1024);
+      this.active=true; this.lastHeard=performance.now();
+      return true;
+    }catch(e){ return false; }
+  },
+  read(){
+    if(!this.active) return 0;
+    this.analyser.getFloatTimeDomainData(this.buf);
+    let s=0; for(let i=0;i<this.buf.length;i++) s+=this.buf[i]*this.buf[i];
+    const rms=Math.sqrt(s/this.buf.length);
+    this.level=this.level*0.9+rms*0.1;
+    if(this.level>0.012) this.lastHeard=performance.now();
+    return this.level;
+  },
+  stop(){
+    if(this.stream) this.stream.getTracks().forEach(t=>t.stop());
+    this.stream=null; this.active=false; this.level=0;
+  },
+};
+
+/* ============================ router ============================ */
+let activeTimers = [];
+function clearTimers(){ activeTimers.forEach(t=>clearInterval(t)); activeTimers=[]; stopSessionLoop(); }
+function show(id){
+  clearTimers();
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
+  $(id).classList.add("on");
+  window.scrollTo(0,0);
+  updateBar();
+}
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.go)));
+function updateBar(){
+  const l = store.load();
+  const aSessions = l.filter(e=>e.path==="visual"&&e.anchor==="A");
+  let trend = "";
+  if(aSessions.length>=2){
+    const last = aSessions[aSessions.length-1].forks, prev = aSessions[aSessions.length-2].forks;
+    trend = last<prev ? " · forks ↓" : last>prev ? " · forks ↑" : " · forks →";
+  }
+  $("barStats").textContent = l.length ? `${l.length} logged${trend}` : "no episodes yet";
+}
+updateBar();
+
+/* ============================ intake ============================ */
+$("intensity").addEventListener("input", e=>{ S.intensity=+e.target.value; $("dialV").textContent=S.intensity; });
+$("vectors").addEventListener("click", e=>{
+  const b = e.target.closest(".chip"); if(!b) return;
+  S.vector = b.dataset.v;
+  $("vectors").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed", c===b?"true":"false"));
+});
+$("sleepSw").addEventListener("click", ()=>{
+  S.sleepDebt=!S.sleepDebt;
+  $("sleepSw").setAttribute("aria-pressed", S.sleepDebt?"true":"false");
+});
+$("toMatrix").addEventListener("click", ()=>{ renderMatrix(); show("s-matrix"); });
+
+/* ============================ scoring ============================ */
+function computeMatrix(){
+  const i=S.intensity, hour=new Date().getHours();
+  const night = hour>=22 || hour<2;
+  const notes=[];
+  const P = {
+    fantasy:{ utility:1.5, jhana:5,
+      fc:"Spike now — trough or rebound later. The loop re-consolidates either way.",
+      spark:[3,8,10,9,4,1,1,2,2,2], tag:"indulgence · costed" },
+    somatic:{ utility:(i>=8?6:8), jhana:(i>=8?40:55),
+      fc:"Ride the sensation, drop the story. Peak passes in minutes; the loop weakens.",
+      spark:[3,5,6,4,5,6,7,7,7,7], tag:"interoceptive" },
+    visual:{ utility:(i>=7?9:6), jhana:(i>=7?70:60),
+      fc:"An anchor outbids the imagery; the charge is re-bound to breath. Warm afterglow.",
+      spark:[3,4,3,5,7,8,8,8,8,7], tag:"guided session" },
+    kinetic:{ utility:(night?5:7), jhana:30,
+      fc:"Fast kill by cold or effort. Escaped, not defused.",
+      spark:[3,9,2,1,3,4,4,4,4,4], tag:"override" },
+  };
+  if(S.sleepDebt){
+    Object.values(P).forEach(p=>p.jhana=Math.max(3,p.jhana-15));
+    notes.push("Sleep debt — absorption probabilities −15 pts.");
+  }
+  if(night) notes.push("Sleep-adjacent hours — Kinetic demoted.");
+  if(S.vector==="visual") notes.push("Visual trigger — anchor A locked out this episode.");
+  if(S.vector==="boredom") notes.push("Boredom vector — likely a proxy urge. Most dissolve in under 2 minutes.");
+  if(i>=8) notes.push("Intensity ≥ 8 — Somatic demoted; anchored session promoted.");
+  return {P, notes};
+}
+function sparkline(points, hot){
+  const w=90,h=32, max=10;
+  const step=w/(points.length-1);
+  const pts = points.map((p,idx)=>`${(idx*step).toFixed(1)},${(h-3-(p/max)*(h-6)).toFixed(1)}`).join(" ");
+  const col = hot ? "#C4604E" : "#6E86C0";
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <line x1="0" y1="${h-3-(3/max)*(h-6)}" x2="${w}" y2="${h-3-(3/max)*(h-6)}" stroke="#252D42" stroke-width="1" stroke-dasharray="2 3"/>
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.5"/>
+    <circle cx="${w}" cy="${(h-3-(points[points.length-1]/max)*(h-6)).toFixed(1)}" r="2.4" fill="${col}"/>
+  </svg>`;
+}
+function yourData(path){
+  const l = store.load().filter(e=>e.path===path).slice(-5);
+  if(!l.length) return "";
+  const avg = a=> (a.reduce((s,e)=>s+e,0)/a.length).toFixed(1);
+  return `<div class="yourdata">your last ${l.length}: clarity <em>${avg(l.map(e=>e.clarity))}</em> · calm <em>${avg(l.map(e=>e.calm))}</em></div>`;
+}
+function renderMatrix(){
+  const {P,notes} = computeMatrix();
+  $("matrixNotes").innerHTML = notes.length ? notes.map(n=>"▸ "+n).join("<br>") : "▸ Baseline — no modifiers active.";
+  const order = ["fantasy","somatic","visual","kinetic"].sort(()=>Math.random()-.5);
+  $("cards").innerHTML = order.map(k=>{
+    const p=P[k], hot=k==="fantasy";
+    const uCls = p.utility<=3?"warn":p.utility>=8?"good":"";
+    const jCls = p.jhana<=10?"warn":p.jhana>=55?"good":"";
+    return `<button class="card ${hot?'dim':''}" data-path="${k}">
+      <div class="card-top"><h2>${PATH_NAMES[k]}</h2><span class="tag">${p.tag}</span></div>
+      <div class="scores">
+        <span class="score"><span class="v ${uCls}">${p.utility}</span><span class="k">utility /10</span></span>
+        <span class="score"><span class="v ${jCls}">${p.jhana}%</span><span class="k">jhāna access</span></span>
+        <span class="spark">${sparkline(p.spark, hot)}</span>
+      </div>
+      <p class="forecast">${p.fc}</p>
+      ${yourData(k)}
+    </button>`;
+  }).join("");
+  $("cards").querySelectorAll(".card").forEach(c=>c.addEventListener("click",()=>choosePath(c.dataset.path)));
+}
+function choosePath(k){
+  S.path=k; S.forks=0; S.anchor=null; S.sessionResult="";
+  if(k==="fantasy"){ renderFantasy(); show("s-fantasy"); }
+  else if(k==="somatic"){ show("s-somatic"); runSomatic(); }
+  else if(k==="kinetic"){ resetKinetic(); show("s-kinetic"); }
+  else { renderConfig(); show("s-config"); }
+}
+
+/* ============================ fantasy ============================ */
+function renderFantasy(){
+  $("fantasyForecast").textContent = "Real relief now. Then: the trough or the rebound, 12–48 h of dulled drive, and a loop that bids harder next time.";
+  const l = store.load().filter(e=>e.path==="fantasy");
+  $("fantasyData").innerHTML = l.length
+    ? `Your record: ${l.length} walk-through${l.length>1?"s":""} · avg post-clarity ${(l.reduce((s,e)=>s+e.clarity,0)/l.length).toFixed(1)}/10.`
+    : "No walk-throughs logged. If you proceed, the aftermath gets written down — that is the deal.";
+}
+$("fantasyProceed").addEventListener("click", ()=>{
+  S.sessionResult="eyes-open choice";
+  show("s-log");
+});
+
+/* ============================ somatic (voiced, wave language) ============================ */
+const SOMATIC_STAGES = [
+  {d:24, p:"Find where it lives. The address, not the story."},
+  {d:24, p:"Temperature. Pressure. Movement. Edges."},
+  {d:28, p:"It is a wave. Watch it crest. Don't feed it."},
+  {d:24, p:"Still solid — or just heat with no owner? Let it rise and disperse."},
+];
+let somaticStage=0, somaticElapsed=0;
+function runSomatic(){
+  somaticStage=0; somaticElapsed=0;
+  audio.init();
+  paintSomatic();
+  const t = setInterval(()=>{
+    somaticElapsed++;
+    const st=SOMATIC_STAGES[somaticStage];
+    if(somaticElapsed>=st.d){ nextSomaticStage(); } else { paintSomaticClock(); }
+  },1000);
+  activeTimers.push(t);
+}
+function nextSomaticStage(){
+  somaticElapsed=0; somaticStage++;
+  if(somaticStage>=SOMATIC_STAGES.length){
+    clearTimers();
+    audio.speak("The wave passed. Log it.");
+    S.sessionResult="urge surfed · extinction trial banked";
+    show("s-log"); return;
+  }
+  cues.bell();
+  paintSomatic();
+}
+function paintSomatic(){
+  const p=SOMATIC_STAGES[somaticStage].p;
+  $("somaticPrompt").textContent = p;
+  $("somaticIdx").textContent = `stage ${somaticStage+1} of ${SOMATIC_STAGES.length}`;
+  audio.speak(p);
+  paintSomaticClock();
+}
+function paintSomaticClock(){
+  const rem = SOMATIC_STAGES[somaticStage].d - somaticElapsed;
+  $("somaticT").textContent = `0:${String(rem).padStart(2,"0")}`;
+  const b = 1+0.03*Math.sin(somaticElapsed*0.9);
+  $("somaticRing").style.transform = `scale(${b})`;
+}
+$("somaticSkip").addEventListener("click", nextSomaticStage);
+$("somaticAbort").addEventListener("click", ()=>{ audio.silence(); show("s-matrix"); });
+
+/* ============================ kinetic ============================ */
+function resetKinetic(){
+  $("kineticChoices").style.display="";
+  $("kineticRingWrap").style.display="none";
+  $("kineticDoneRow").style.display="none";
+  $("kineticTitle").textContent="Choose the override.";
+}
+$("kineticChoices").addEventListener("click", e=>{
+  const b=e.target.closest(".opt"); if(!b) return;
+  const secs = b.dataset.k==="cold"?90:180;
+  $("kineticChoices").style.display="none";
+  $("kineticRingWrap").style.display="";
+  $("kineticDoneRow").style.display="";
+  $("kineticTitle").textContent = b.dataset.k==="cold" ? "Cold. Ninety seconds. Go." : "Move. Three minutes. Go.";
+  audio.init(); audio.speak($("kineticTitle").textContent);
+  let rem=secs;
+  const paint=()=>{ $("kineticT").textContent=`${Math.floor(rem/60)}:${String(rem%60).padStart(2,"0")}`; };
+  paint();
+  const t=setInterval(()=>{ rem=Math.max(0,rem-1); paint();
+    if(rem===0){clearInterval(t); $("kineticTitle").textContent="Done. Signature overwritten."; cues.bell(); audio.speak("Done.");} },1000);
+  activeTimers.push(t);
+});
+$("kineticDone").addEventListener("click", ()=>{ S.sessionResult="brute-force override"; show("s-log"); });
+
+/* ============================ configurator ============================ */
+function renderConfig(){
+  const locked = S.vector==="visual";
+  $("optA").classList.toggle("locked", locked);
+  $("optALock").style.display = locked?"":"none";
+}
+$("optA").addEventListener("click", ()=>{
+  if(S.vector==="visual") return;
+  S.anchor="A"; renderCommit(); show("s-commit");
+});
+$("optB").addEventListener("click", ()=>{ S.anchor="B"; renderCommit(); show("s-commit"); });
+$("optC").addEventListener("click", ()=>{ S.anchor="C"; renderCommit(); show("s-commit"); });
+document.querySelectorAll("[data-pace]").forEach(b=>b.addEventListener("click", ()=>{
+  S.pace=b.dataset.pace;
+  document.querySelectorAll("[data-pace]").forEach(c=>c.setAttribute("aria-pressed", c===b?"true":"false"));
+}));
+function renderCommit(){
+  const base = "Seven sounds are taught before they are used — after that, the tide speaks for itself. ";
+  $("commitFine").textContent = base + (
+    S.anchor==="A" ? "Anchor A: the guide fades at the taper — a kept promise. Three forks in 90 s switches you to the abstract."
+    : S.anchor==="B" ? "Anchor B: the form breathes when you breathe, and dims as stability builds."
+    : "Anchor C: eyes closed from the first sigh. Sound carries everything.");
+}
+
+/* ============================ session engine ============================ */
+const canvas=$("blob"); const ctx=canvas.getContext("2d");
+let sessionOn=false, rafId=null, sessionT0=0, phaseIdx=0, phaseT0=0;
+let mode="B", forkTimes=[], forkOverlayUntil=0, crossfadeStart=null;
+let lastCap="", micWarned=false, lastGull=0;
+let lastBreathPhase="", whisperCycles=0, sungOff=false, lexSlot=-1;
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function phases(){
+  const m = S.pace==="full"?4:1;
+  const A=S.anchor==="A", C=S.anchor==="C";
+  return [
+    {id:"preload", d:24*m, caps:[[0,"Sit tall."],[7,"Three sighs — double inhale, long exhale."],[17,"Release jaw, tongue, pelvic floor."]]},
+    {id:"lexicon", d:LEXICON.length*LEX_SLOT, caps:[]},   /* taught at full length in both pacings */
+    {id:"induction", d:42*m, caps:
+      A ? [[0,"Gaze between her eyes. The tide will call the turns."]]
+      : C ? [[0,"Eyes closed. The tide calls the turns now."]]
+      : [[0,"Rest at the center. The tide calls the turns."]]},
+    {id:"pivot", d:80*m, caps:[
+      [0,"The deep — find where the warmth registers in your body."],
+      [24,"Rest in the warm current."],
+      [48,"Each wash, let it widen."],
+      [64,"A storyline means fork."]]},
+    {id:"taper", d:26*m, caps:
+      C ? [[0,"The tide can carry itself now."]]
+      : [[0,"The warmth no longer needs the screen."]]},
+    {id:"stillness", d:9999, caps:[[0,"Still water. Let the warmth be the whole object."],[24,"End below when ready."]]},
+  ];
+}
+let PH=[];
+$("beginSession").addEventListener("click", startSession);
+function startSession(){
+  PH = phases(); phaseIdx=0; forkTimes=[]; S.forks=0; crossfadeStart=null;
+  lastCap=""; micWarned=false; lastGull=0; lastBreathPhase=""; whisperCycles=0; sungOff=false; lexSlot=-1;
+  mode = S.anchor;
+  audio.init(); audio.dim=1;
+  show("s-session");
+  sizeCanvas();
+  sessionOn=true; sessionT0=performance.now(); phaseT0=sessionT0;
+  $("advPhase").textContent="advance ›";
+  loop(sessionT0);
+}
+function sizeCanvas(){
+  const r=$("stage").getBoundingClientRect();
+  canvas.width=r.width*devicePixelRatio; canvas.height=r.height*devicePixelRatio;
+}
+addEventListener("resize", ()=>{ if(sessionOn) sizeCanvas(); });
+
+/* the tide: RIDE 4s in · HOLD 2s crest · CRASH 6s out · STILL 2s empty (14s cycle, ~4.3/min) */
+const TIDE_HINT = {Ride:"the wave moves in", Hold:"the tide is rising", Crash:"the wave breaks", Still:"rest, empty"};
+function breathState(t){
+  const c=(t/1000)%14;
+  if(c<4)  return {phase:"Ride",  frac:c/4,       v:easeInOut(c/4),        dur:4};
+  if(c<6)  return {phase:"Hold",  frac:(c-4)/2,   v:1,                     dur:2};
+  if(c<12) return {phase:"Crash", frac:(c-6)/6,   v:1-easeInOut((c-6)/6),  dur:6};
+  return   {phase:"Still", frac:(c-12)/2, v:0,                     dur:2};
+}
+function easeInOut(x){ return x<.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; }
+
+function loop(now){
+  if(!sessionOn) return;
+  rafId=requestAnimationFrame(loop);
+  const ph=PH[phaseIdx];
+  const pt=(now-phaseT0)/1000;
+  if(pt>=ph.d && ph.id!=="stillness"){ advancePhase(now); return; }
+
+  const fixed=PH.slice(0,PH.length-1).reduce((s,p)=>s+p.d,0);
+  const done=PH.slice(0,phaseIdx).reduce((s,p)=>s+p.d,0)+Math.min(pt,ph.d);
+  $("phaseTrack").style.width = Math.min(100,(done/fixed)*100)+"%";
+
+  /* ---- lexicon: teach each sound, then play it ---- */
+  if(ph.id==="lexicon"){
+    const slot=Math.min(LEXICON.length-1, Math.floor(pt/LEX_SLOT));
+    if(slot!==lexSlot){
+      lexSlot=slot;
+      const L=LEXICON[slot];
+      $("lexName").style.display="block";
+      $("lexName").textContent=L.name;
+      $("caption").textContent=L.line;
+      audio.speak(L.line);
+      setTimeout(()=>{ if(sessionOn && PH[phaseIdx] && PH[phaseIdx].id==="lexicon") L.cue(); }, 2800);
+    }
+  } else {
+    $("lexName").style.display="none";
+    /* captions — spoken once, shown always */
+    const cap = [...ph.caps].reverse().find(c=>pt>=c[0]);
+    const capText = cap?cap[1]:"";
+    if(capText!==lastCap){ lastCap=capText; $("caption").textContent=capText; if(capText) audio.speak(capText); }
+  }
+
+  const b=breathState(now-sessionT0);
+  const inTide = ph.id!=="preload" && ph.id!=="lexicon";
+
+  /* ---- tide cues fire at every turn of the breath ---- */
+  if(b.phase!==lastBreathPhase){
+    const entering=b.phase; lastBreathPhase=entering;
+    if(inTide){
+      if(entering==="Ride"){ cues.swell(4); if(ph.id==="induction") whisperCycles++; }
+      else if(entering==="Hold") cues.crest(2);
+      else if(entering==="Crash") cues.wash(6);
+      else cues.stillWater();
+      /* first cycles: the voice whispers the word over its sound, then retires */
+      if(ph.id==="induction" && whisperCycles>0 && whisperCycles<=2){
+        audio.speak(entering==="Ride"?"ride":entering==="Hold"?"hold":entering==="Crash"?"pour":"still", true);
+      } else if(ph.id==="induction" && whisperCycles===3 && entering==="Ride" && !sungOff){
+        sungOff=true; audio.speak("The sounds carry it now.");
+      }
+    }
+  }
+
+  $("breathLine").style.display = inTide?"":"none";
+  if(inTide){
+    $("breathWord").textContent=b.phase;
+    $("breathCount").textContent=TIDE_HINT[b.phase];
+  }
+
+  $("forkBtn").style.visibility = (ph.id==="induction"||ph.id==="pivot")?"visible":"hidden";
+  if(forkOverlayUntil && now>forkOverlayUntil){ forkOverlayUntil=0; $("forkOverlay").classList.remove("on"); }
+
+  /* mic: blend the real breath in; the gull calls when nothing is heard */
+  let micBoost=0, breathHeard=false;
+  if(mic.active){
+    const lvl=mic.read();
+    micBoost=Math.min(1,lvl*28);
+    breathHeard = (now-mic.lastHeard)<4000;
+    $("micDotI").style.background = breathHeard ? "var(--gold)" : "var(--faint)";
+    $("micDotT").textContent = breathHeard ? "breath heard" : "listening";
+    if(inTide && !breathHeard && now-lastGull>20000){
+      lastGull=now; cues.plink(); audio.speak("Come back.", true);
+    }
+  }
+
+  audio.dim = ph.id==="stillness" ? Math.max(0.15, 1-pt/40) : 1;
+  audio.breath(b);
+
+  const prog = Math.min(1, done/fixed);
+  drawScene(now, b, ph, pt, prog, micBoost, breathHeard);
+}
+function advancePhase(now){
+  phaseIdx++;
+  phaseT0=now||performance.now();
+  const ph=PH[phaseIdx];
+  cues.bell();                                    /* the bell marks every turn */
+  if(ph.id==="pivot"){ setTimeout(()=>{ if(sessionOn) cues.dyad(); }, 1200); }
+  if(ph.id==="taper" && mode==="A"){ crossfadeStart=phaseT0; }
+  if(ph.id==="stillness"){ $("advPhase").textContent="end session ›"; }
+}
+$("advPhase").addEventListener("click", ()=>{
+  if(PH[phaseIdx].id==="stillness"){ endSession(); } else { advancePhase(); }
+});
+$("sessionAbort").addEventListener("click", ()=>{ sessionOn=false; audio.silence(); mic.stop(); show("s-matrix"); });
+function endSession(){
+  sessionOn=false; audio.silence(); mic.stop();
+  S.sessionResult = mode==="B"&&S.anchor==="A" ? "anchor A bridged to abstract"
+    : S.anchor==="C" ? "sound-field session completed"
+    : "entrainment session completed";
+  show("s-log");
+}
+function stopSessionLoop(){ if(rafId){cancelAnimationFrame(rafId); rafId=null;} sessionOn=false; if(audio.ctx) audio.silence(); }
+
+/* ---------- session toggles ---------- */
+$("tglSound").addEventListener("click", ()=>{
+  audio.soundOn=!audio.soundOn;
+  $("tglSound").setAttribute("aria-pressed", audio.soundOn?"true":"false");
+});
+$("tglVoice").addEventListener("click", ()=>{
+  audio.voiceOn=!audio.voiceOn;
+  if(!audio.voiceOn && "speechSynthesis" in window) speechSynthesis.cancel();
+  $("tglVoice").setAttribute("aria-pressed", audio.voiceOn?"true":"false");
+});
+$("tglMic").addEventListener("click", async ()=>{
+  if(mic.active){
+    mic.stop();
+    $("tglMic").setAttribute("aria-pressed","false");
+    $("micDot").classList.remove("on");
+    return;
+  }
+  const ok = await mic.start();
+  if(ok){
+    $("tglMic").setAttribute("aria-pressed","true");
+    $("micDot").classList.add("on");
+    showToast("listening — the pulse follows your actual breath");
+  } else {
+    showToast("mic unavailable — pacing by clock");
+  }
+});
+
+/* ---------- fork ---------- */
+$("forkBtn").addEventListener("click", ()=>{
+  const now=performance.now();
+  forkTimes.push(now); S.forks++;
+  forkTimes=forkTimes.filter(t=>now-t<90000);
+  $("forkOverlay").classList.add("on");
+  $("forkCountMsg").textContent=`fork ${S.forks} · no penalty`;
+  cues.release();
+  audio.speak("Exhale. Palms. One breath.");
+  forkOverlayUntil=now+6500;
+  if(forkTimes.length>=3 && mode==="A"){
+    mode="B"; crossfadeStart=now;
+    showToast("bridge outbid — switching to the abstract");
+  }
+});
+let toastTimer=null;
+function showToast(msg){
+  $("toast").textContent=msg; $("toast").classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>$("toast").classList.remove("on"),5200);
+}
+
+/* ---------- drawing ---------- */
+function drawScene(now, b, ph, pt, prog, micBoost, breathHeard){
+  const w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle="#05070C"; ctx.fillRect(0,0,w,h);
+
+  const preload = ph.id==="preload", lexicon = ph.id==="lexicon";
+  let guideAlpha=0, blobAlpha=0;
+  if(preload){ blobAlpha=0.12; }
+  else if(lexicon){ blobAlpha=0.3; }
+  else{
+    if(mode==="A"){ guideAlpha=1; blobAlpha=0.18; }
+    else if(mode==="C"){ guideAlpha=0; blobAlpha=0.14; }
+    else { guideAlpha=0; blobAlpha=1; }
+    if(crossfadeStart){
+      const cf=Math.min(1,(now-crossfadeStart)/9000);
+      guideAlpha=(1-cf); blobAlpha=0.18+0.82*cf;
+      if(cf>=1 && mode==="A") mode="B";
+    }
+    if(ph.id==="stillness"){ blobAlpha*= Math.max(0.12, 1-pt/40); guideAlpha=0; }
+    if(mode==="A" && mic.active && !breathHeard){
+      guideAlpha*=0.3;
+      if(!micWarned){ micWarned=true; showToast("no breath heard — the guide dims until it returns"); }
+    } else if(breathHeard){ micWarned=false; }
+  }
+
+  if(blobAlpha>0.01){
+    const cx=w/2, cy=h*0.46;
+    const base=Math.min(w,h)*0.19;
+    const pulse = Math.min(1.15, 0.72+0.4*b.v + 0.25*micBoost);
+    const r=base*pulse;
+    const hue = 235 - 190*prog;
+    const sat = 62 - 14*prog;
+    const t=now/1000;
+    const wob = reduceMotion?0:1;
+    ctx.save();
+    ctx.globalAlpha=blobAlpha;
+    for(let ring=4;ring>=1;ring--){
+      const rr=r*(0.55+ring*0.28) + wob*Math.sin(t*0.7+ring)*base*0.04;
+      const g=ctx.createRadialGradient(cx,cy,rr*0.05,cx,cy,rr);
+      g.addColorStop(0,`hsla(${hue},${sat}%,${72-ring*6}%,${0.5/ring})`);
+      g.addColorStop(1,`hsla(${hue},${sat}%,30%,0)`);
+      ctx.fillStyle=g;
+      ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2); ctx.fill();
+    }
+    const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,r*0.6);
+    cg.addColorStop(0,`hsla(${hue},${sat+8}%,86%,${0.75})`);
+    cg.addColorStop(1,`hsla(${hue},${sat}%,55%,0)`);
+    ctx.fillStyle=cg;
+    ctx.beginPath(); ctx.arc(cx,cy,r*0.6,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  $("guide").style.opacity=guideAlpha.toFixed(2);
+  $("assetNote").style.display = guideAlpha>0.4 ? "" : "none";
+  if(guideAlpha>0.01){
+    const sh=$("shoulders");
+    const s=1+0.018*b.v;
+    sh.setAttribute("transform",`translate(0 ${-(s-1)*160}) scale(1 ${s})`);
+    document.querySelector("#guide .halo").setAttribute("r",(22+8*b.v).toFixed(1));
+  }
+}
+
+/* ============================ log ============================ */
+$("calm").addEventListener("input",e=>$("calmV").textContent=e.target.value);
+$("clarity").addEventListener("input",e=>$("clarityV").textContent=e.target.value);
+let urgeNow="faded";
+$("urgeChips").addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b) return;
+  urgeNow=b.dataset.u;
+  $("urgeChips").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c===b?"true":"false"));
+});
+$("saveLog").addEventListener("click", ()=>{
+  const entry={
+    ts:Date.now(), path:S.path, anchor:S.anchor, intensity:S.intensity, vector:S.vector,
+    forks:S.forks, calm:+$("calm").value, clarity:+$("clarity").value, urge:urgeNow,
+  };
+  store.add(entry);
+  renderDone(entry);
+  show("s-done");
+});
+function renderDone(e){
+  const quotes={
+    fantasy:"Chosen with open eyes. The aftermath is evidence now.",
+    somatic:"The wave crested and passed unfed. Extinction trials compound.",
+    visual:"Not suppressed — re-bound. The corridor gets shorter every time.",
+    kinetic:"Overwritten. The brake stops the car; it doesn't teach the driver.",
+  };
+  $("doneQuote").textContent=quotes[e.path];
+  const n=store.load().length;
+  $("doneReceipt").innerHTML =
+    `path <b>${PATH_NAMES[e.path]}${e.anchor?" · anchor "+e.anchor:""}</b><br>`+
+    `intensity in <b>${e.intensity}</b> → calm <b>${e.calm}</b> · clarity <b>${e.clarity}</b><br>`+
+    (e.path==="visual"?`forks <b>${e.forks}</b><br>`:"")+
+    `urge now <b>${e.urge}</b> · episode <b>#${n}</b>`;
+}
+</script>
+
+</html>
